@@ -14,6 +14,29 @@ const DATA_DIR = process.env.DATA_DIR
 
 app.use(cors());
 app.use(express.json());
+
+// ─── Lichtap Data API ────────────────────────────────────────────────────────
+const LICHTAP_VOLUME_FILE = path.join(DATA_DIR, 'lichtap-data.json');
+const LICHTAP_DEFAULT_FILE = path.join(__dirname, 'lichtap-data.json');
+
+app.get('/api/lichtap', (req, res) => {
+  const file = fs.existsSync(LICHTAP_VOLUME_FILE) ? LICHTAP_VOLUME_FILE : LICHTAP_DEFAULT_FILE;
+  try {
+    res.json(JSON.parse(fs.readFileSync(file, 'utf8')));
+  } catch {
+    res.json({ students: [] });
+  }
+});
+
+app.post('/api/lichtap', (req, res) => {
+  try {
+    fs.writeFileSync(LICHTAP_VOLUME_FILE, JSON.stringify(req.body));
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: 'Lỗi lưu dữ liệu' });
+  }
+});
+
 // Serve uploaded images from persistent volume first
 app.use('/images/products', express.static(path.join(DATA_DIR, 'images', 'products')));
 app.use('/images/banners', express.static(path.join(DATA_DIR, 'images', 'banners')));

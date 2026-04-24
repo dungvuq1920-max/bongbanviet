@@ -1,0 +1,102 @@
+{
+  "students": [
+    {
+      "id": "10001",
+      "name": "Anh Huy",
+      "note": "",
+      "paidAmount": "0",
+      "color": "#00FFFF",
+      "fixedSchedules": [
+        {"id": "f10001", "day": "T3", "startTime": "17:30", "duration": 60},
+        {"id": "f10002", "day": "T6", "startTime": "17:30", "duration": 60}
+      ],
+      "sessions": [
+        {"id": "s10001", "date": "2026-03-31", "type": "1:2", "duration": "1h", "fee": "300k", "note": ""},
+        {"id": "s10002", "date": "2026-04-03", "type": "1:2", "duration": "1h", "fee": "300k", "note": ""},
+        {"id": "s10003", "date": "2026-04-07", "type": "1:2", "duration": "1h", "fee": "300k", "note": ""},
+        {"id": "s10004", "date": "2026-04-10", "type": "1:2", "duration": "1h", "fee": "300k", "note": ""},
+        {"id": "s10005", "date": "2026-04-14", "type": "1:2", "duration": "1h", "fee": "300k", "note": ""},
+        {"id": "s10006", "date": "2026-04-21", "type": "1:1", "duration": "30p", "fee": "125k", "note": ""},
+        {"id": "s10007", "date": "2026-04-24", "type": "1:1", "duration": "1h", "fee": "250k", "note": ""}
+      ]
+    },
+    {
+      "id": "10002",
+      "name": "Anh Thọ",
+      "note": "",
+      "paidAmount": "0",
+      "color": "#FFD700",
+      "fixedSchedules": [
+        {"id": "f10003", "day": "T2", "startTime": "17:30", "duration": 60},
+        {"id": "f10004", "day": "T5", "startTime": "17:30", "duration": 60}
+      ],
+      "sessions": [
+        {"id": "s10008", "date": "2026-04-09", "type": "1:2", "duration": "1h", "fee": "300k", "note": ""},
+        {"id": "s10009", "date": "2026-04-13", "type": "1:2", "duration": "1h", "fee": "300k", "note": ""},
+        {"id": "s10010", "date": "2026-04-16", "type": "1:2", "duration": "30p", "fee": "150k", "note": ""},
+        {"id": "s10011", "date": "2026-04-20", "type": "1:1", "duration": "30p", "fee": "125k", "note": ""},
+        {"id": "s10012", "date": "2026-04-23", "type": "1:1", "duration": "30p", "fee": "125k", "note": ""}
+      ]
+    },
+    {
+      "id": "10003",
+      "name": "Anh Minh",
+      "note": "Thanh toán lần 1 - 31/7\nThanh toán lần 2 - 29/8",
+      "paidAmount": "0",
+      "color": "#90EE90",
+      "fixedSchedules": [],
+      "sessions": [
+        {"id": "s10013", "date": "2025-10-27", "type": "1:1", "duration": "1h", "fee": "250k", "note": ""},
+        {"id": "s10014", "date": "2025-10-31", "type": "1:1", "duration": "1h", "fee": "250k", "note": ""},
+        {"id": "s10015", "date": "2025-11-03", "type": "1:1", "duration": "1h", "fee": "250k", "note": ""},
+        {"id": "s10016", "date": "2025-11-21", "type": "1:1", "duration": "1h", "fee": "250k", "note": ""},
+        {"id": "s10017", "date": "2025-12-14", "type": "1:1", "duration": "30p", "fee": "125k", "note": ""},
+        {"id": "s10018", "date": "2025-12-15", "type": "1/2", "duration": "30p", "fee": "250k", "note": ""},
+        {"id": "s10019", "date": "2025-12-17", "type": "1:1", "duration": "1h", "fee": "250k", "note": ""},
+        {"id": "s10020", "date": "2026-01-12", "type": "1/2", "duration": "30p", "fee": "250k", "note": ""},
+        {"id": "s10021", "date": "2026-03-11", "type": "1:1", "duration": "1h", "fee": "250k", "note": ""},
+        {"id": "s10022", "date": "2026-03-13", "type": "1:1", "duration": "1h", "fee": "250k", "note": ""},
+        {"id": "s10023", "date": "2026-03-17", "type": "1/2", "duration": "30p", "fee": "250k", "note": ""},
+        {"id": "s10024", "date": "2026-03-27", "type": "1/2", "duration": "30p", "fee": "250k", "note": ""}
+      ]
+    },
+    {
+      "id": "10004",
+      "name": "Anh Dương",
+      "note": "Thanh toán 10 buổi 9/9",
+      "paidAmount": "0",
+      "color": "#F5DEB3",
+      "fixedSchedules": [
+        {"id": "f10005", "day": "T4", "startTime": "18:00", "duration": 60}
+      ],
+      "sessions": [
+        {"id": "s10025", "date": "2025-09-09", "type": "1:1", "duration": "1h", "fee": "250k", "note": ""},
+        {"id": "s10026", "date": "2025-09-11", "type": "1:1", "duration": "1h", "fee": "250k", "note": ""},
+        {"id": "s10027", "date": "2025-10-03", "type": "1:1", "duration": "1h", "fee": "250k", "note": ""},
+        {"id": "s10028", "date": "2025-10-07", "type": "1:1", "duration": "1h", "fee": "250k", "note": ""},
+        {"id": "s10029", "date": "2025-10-09", "type": "1:1", "duration": "1h", "fee": "250k", "note": ""},
+        {"id": "s10030", "date": "2025-11-11", "type": "1:1", "duration": "1h", "fee": "250k", "note": ""},
+        {"id": "s10031", "date": "2025-12-15", "type": "1:1", "duration": "1h", "fee": "250k", "note": ""},
+        {"id": "s10032", "date": "2026-04-10", "type": "1:1", "duration": "1h", "fee": "250k", "note": ""},
+        {"id": "s10033", "date": "2026-04-17", "type": "1:1", "duration": "1h", "fee": "250k", "note": ""}
+      ]
+    },
+    {
+      "id": "10005",
+      "name": "Em Quý",
+      "note": "Thanh toán lần 1: 22/4",
+      "paidAmount": "2.5tr",
+      "color": "#B0C4DE",
+      "fixedSchedules": [
+        {"id": "f10006", "day": "T2", "startTime": "18:30", "duration": 60},
+        {"id": "f10007", "day": "T3", "startTime": "18:30", "duration": 60},
+        {"id": "f10008", "day": "T6", "startTime": "18:30", "duration": 60}
+      ],
+      "sessions": [
+        {"id": "s10034", "date": "2026-04-20", "type": "1:1", "duration": "1h", "fee": "250k", "note": ""},
+        {"id": "s10035", "date": "2026-04-23", "type": "1:1", "duration": "1h", "fee": "250k", "note": ""},
+        {"id": "s10036", "date": "2026-04-24", "type": "1:1", "duration": "1h", "fee": "250k", "note": ""}
+      ]
+    }
+  ]
+}
