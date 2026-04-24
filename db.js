@@ -86,6 +86,15 @@ db.exec(`
   );
 `);
 
+// Migrations: add columns if not yet present (must run BEFORE seed)
+[
+  "ALTER TABLE products ADD COLUMN price TEXT DEFAULT ''",
+  "ALTER TABLE products ADD COLUMN in_stock INTEGER DEFAULT 1",
+  "ALTER TABLE products ADD COLUMN variants TEXT DEFAULT '[]'",
+  "ALTER TABLE combos ADD COLUMN price TEXT DEFAULT ''",
+  "ALTER TABLE combos ADD COLUMN in_stock INTEGER DEFAULT 1",
+].forEach(sql => { try { db.exec(sql); } catch {} });
+
 // Seed từ db-seed.json nếu có (dữ liệu thực), hoặc fallback sample data
 const SEED_FILE = path.join(__dirname, 'db-seed.json');
 if (fs.existsSync(SEED_FILE)) {
@@ -166,14 +175,5 @@ if (fs.existsSync(SEED_FILE)) {
       .forEach(b => ins.run(...b));
   }
 }
-
-// Migrations: add columns if not yet present
-[
-  "ALTER TABLE products ADD COLUMN price TEXT DEFAULT ''",
-  "ALTER TABLE products ADD COLUMN in_stock INTEGER DEFAULT 1",
-  "ALTER TABLE products ADD COLUMN variants TEXT DEFAULT '[]'",
-  "ALTER TABLE combos ADD COLUMN price TEXT DEFAULT ''",
-  "ALTER TABLE combos ADD COLUMN in_stock INTEGER DEFAULT 1",
-].forEach(sql => { try { db.exec(sql); } catch {} });
 
 module.exports = db;
