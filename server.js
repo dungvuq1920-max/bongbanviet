@@ -17,8 +17,21 @@ app.use(express.json());
 // Serve uploaded images from persistent volume first
 app.use('/images/products', express.static(path.join(DATA_DIR, 'images', 'products')));
 app.use('/images/banners', express.static(path.join(DATA_DIR, 'images', 'banners')));
-// Serve lichtap React app (must be before the global static middleware)
-app.get(['/lichtap', '/lichtap/'], (req, res) => res.sendFile(path.join(__dirname, 'lichtap', 'index.html')));
+// Serve lichtap React app — inject Firebase runtime config from Railway env vars
+app.get(['/lichtap', '/lichtap/'], (req, res) => {
+  const indexPath = path.join(__dirname, 'lichtap', 'index.html');
+  const firebaseCfg = JSON.stringify({
+    apiKey:            process.env.VITE_FIREBASE_API_KEY            || '',
+    authDomain:        process.env.VITE_FIREBASE_AUTH_DOMAIN        || '',
+    projectId:         process.env.VITE_FIREBASE_PROJECT_ID         || '',
+    storageBucket:     process.env.VITE_FIREBASE_STORAGE_BUCKET     || '',
+    messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
+    appId:             process.env.VITE_FIREBASE_APP_ID             || '',
+  });
+  let html = fs.readFileSync(indexPath, 'utf8');
+  html = html.replace('<head>', `<head><script>window.__FIREBASE_CONFIG__=${firebaseCfg};</script>`);
+  res.type('html').send(html);
+});
 app.use('/lichtap', express.static(path.join(__dirname, 'lichtap')));
 app.use(express.static(__dirname, { extensions: ['html'] }));
 
