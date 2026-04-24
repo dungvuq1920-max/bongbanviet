@@ -18,7 +18,7 @@ app.use(express.json());
 app.use('/images/products', express.static(path.join(DATA_DIR, 'images', 'products')));
 app.use('/images/banners', express.static(path.join(DATA_DIR, 'images', 'banners')));
 // Serve lichtap React app (must be before the global static middleware)
-app.get('/lichtap', (req, res) => res.sendFile(path.join(__dirname, 'lichtap', 'index.html')));
+app.get('/lichtap', (req, res) => res.redirect(301, '/lichtap/'));
 app.use('/lichtap', express.static(path.join(__dirname, 'lichtap')));
 app.use(express.static(__dirname, { extensions: ['html'] }));
 
