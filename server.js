@@ -17,6 +17,9 @@ app.use(express.json());
 // Serve uploaded images from persistent volume first
 app.use('/images/products', express.static(path.join(DATA_DIR, 'images', 'products')));
 app.use('/images/banners', express.static(path.join(DATA_DIR, 'images', 'banners')));
+// Serve lichtap React app (must be before the global static middleware)
+app.get('/lichtap', (req, res) => res.sendFile(path.join(__dirname, 'lichtap', 'index.html')));
+app.use('/lichtap', express.static(path.join(__dirname, 'lichtap')));
 app.use(express.static(__dirname, { extensions: ['html'] }));
 
 // ─── Image Upload Setup ──────────────────────────────────────────────────────
