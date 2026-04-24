@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hướng Dẫn Mua Hàng | BÓNG BÀN VIỆT</title>
+  <meta name="description" content="Hướng dẫn mua hàng tại BÓNG BÀN VIỆT — quy trình đặt hàng, thanh toán, vận chuyển, bảo hành.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700;1,900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --red:#D62B2B;--coral:#E8503A;--bg:#FAFAF8;--white:#FFFFFF;--dark:#1A1A1A;--mid:#6B6B6B;--line:#E5E5E3;--warm:#F2EDE7; }
+    body { background:#ECEAE7;color:var(--dark);font-family:'Inter',sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased; }
+    .site-container{max-width:1200px;margin:0 auto;background:var(--bg);box-shadow:0 0 60px rgba(0,0,0,.12);min-height:100vh;overflow-x:hidden;}
+    a { text-decoration:none;color:inherit; }
+    img { display:block;width:100%; }
+    .ann { background:var(--dark);color:rgba(255,255,255,.65);text-align:center;padding:11px 24px;font-size:12px;font-weight:500;letter-spacing:.06em; }
+    .ann a { color:var(--coral); } .ann-sep { margin:0 18px;opacity:.25; }
+    .nav { position:sticky;top:0;z-index:100;background:var(--white);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;height:68px;padding:0 40px; }
+    .nav-links { display:flex;align-items:center;gap:26px;list-style:none; }
+    .nav-links a { font-size:16px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--dark);transition:color .2s;white-space:nowrap; }
+    .nav-links a:hover,.nav-links a.active { color:var(--red); }
+    .nav-cta { background:var(--red);color:#fff !important;padding:9px 22px;font-size:11px !important;letter-spacing:.12em !important; }
+    .wrap { max-width:1200px;margin:0 auto;padding:0 48px; }
+    .btn { display:inline-block;padding:12px 28px;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;transition:all .2s;cursor:pointer; }
+    .btn-red { background:var(--red);color:#fff; } .btn-red:hover { background:var(--dark); }
+
+    /* Page Hero */
+    .page-hero { background:var(--dark);padding:72px 0 60px; }
+    .breadcrumb { font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:20px; }
+    .breadcrumb a { color:rgba(255,255,255,.35);transition:color .2s; } .breadcrumb a:hover{color:var(--coral);} .breadcrumb span{margin:0 8px;}
+    .page-hero h1 { font-family:'Playfair Display',serif;font-size:clamp(40px,6vw,80px);font-weight:900;color:#fff;line-height:.95;letter-spacing:-.01em;margin-bottom:20px; }
+    .page-hero h1 i { font-style:italic;color:var(--coral); }
+    .page-hero p { font-size:15px;color:rgba(255,255,255,.5);max-width:520px;line-height:1.75; }
+
+    /* Steps */
+    .steps-section { padding:80px 0; }
+    .steps-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-top:52px; }
+    .step-card { background:var(--white);padding:44px 36px;border:1px solid var(--line);position:relative; }
+    .step-num { font-family:'Playfair Display',serif;font-size:72px;font-weight:900;color:var(--line);line-height:1;margin-bottom:20px; }
+    .step-title { font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--dark);margin-bottom:12px; }
+    .step-body { font-size:14px;color:var(--mid);line-height:1.75; }
+    .step-highlight { display:inline-block;margin-top:16px;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--red); }
+
+    /* FAQ */
+    .faq-section { background:var(--warm);padding:80px 0; }
+    .faq-section h2 { font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,48px);font-weight:800;line-height:1.1;color:var(--dark);margin-bottom:48px; }
+    .faq-section h2 i { font-style:italic;color:var(--coral); }
+    .faq-grid { display:grid;grid-template-columns:1fr 1fr;gap:3px; }
+    .faq-item { background:var(--white);padding:32px 36px; }
+    .faq-q { font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--dark);margin-bottom:12px; }
+    .faq-a { font-size:14px;color:var(--mid);line-height:1.75; }
+
+    /* Payment methods */
+    .payment-section { padding:80px 0;border-top:1px solid var(--line); }
+    .payment-section h2 { font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,48px);font-weight:800;color:var(--dark);margin-bottom:48px; }
+    .payment-section h2 i { font-style:italic;color:var(--coral); }
+    .payment-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:24px; }
+    .payment-card { border:1.5px solid var(--line);padding:32px 28px;background:var(--white); }
+    .payment-icon { font-size:32px;margin-bottom:16px; }
+    .payment-title { font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--dark);margin-bottom:10px; }
+    .payment-desc { font-size:14px;color:var(--mid);line-height:1.7; }
+
+    /* CTA */
+    .cta-bottom { background:var(--red);padding:72px 0;text-align:center; }
+    .cta-bottom h2 { font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,52px);font-weight:900;color:#fff;margin-bottom:20px; }
+    .cta-bottom p { font-size:15px;color:rgba(255,255,255,.7);margin-bottom:36px; }
+    .btn-white { background:#fff;color:var(--red); } .btn-white:hover { background:var(--dark);color:#fff; }
+
+    /* Footer */
+    footer { background:var(--dark); }
+    .footer-grid { max-width:1200px;margin:0 auto;padding:56px 48px 32px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px; }
+    .footer-logo-text { font-weight:700;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:#fff; }
+    .footer-logo-text span { color:var(--red); }
+    .footer-slogan { font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.25);margin-top:4px; }
+    .footer-desc { font-size:13px;color:rgba(255,255,255,.4);line-height:1.7;max-width:240px;margin-top:16px; }
+    .footer-col-title { font-size:10px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:20px; }
+    .footer-links { list-style:none;display:flex;flex-direction:column;gap:10px; }
+    .footer-links a { font-size:13px;color:rgba(255,255,255,.45);transition:color .2s; }
+    .footer-links a:hover { color:#fff; }
+    .footer-bottom { max-width:1200px;margin:0 auto;padding:20px 48px;border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;align-items:center; }
+    .footer-bottom p { font-size:11px;color:rgba(255,255,255,.2); }
+    .s-label { font-size:11px;font-weight:600;letter-spacing:.28em;text-transform:uppercase;color:var(--red);margin-bottom:14px; }
+
+    @media(max-width:900px){.steps-grid,.faq-grid,.payment-grid{grid-template-columns:1fr}}
+    @media(max-width:768px){.nav{padding:0 20px}.nav-links{display:none}.wrap{padding:0 20px}.footer-grid{grid-template-columns:1fr 1fr;padding:40px 20px 24px}.footer-bottom{padding:16px 20px;flex-direction:column;gap:8px;text-align:center}}
+  </style>
+</head>
+<body>
+<div class="site-container">
+
+<div class="ann">Miễn phí tư vấn thiết bị theo trình độ &amp; phong cách chơi<span class="ann-sep">·</span>Hotline / Zalo: <a href="tel:0961269386">096.1269.386</a><span class="ann-sep">·</span>286 Nguyễn Xiển, Thanh Liệt, Hà Nội</div>
+
+<nav class="nav">
+  <a href="index.html"><img src="logo_bongbanviet.png" alt="Bóng Bàn Việt" style="height:56px;width:auto;display:block;"></a>
+  <ul class="nav-links">
+    <li><a href="cot-vot.html">Cốt Vợt</a></li>
+    <li><a href="mat-vot.html">Mặt Vợt</a></li>
+    <li><a href="bong.html">Bóng</a></li>
+    <li><a href="ban.html">Bàn</a></li>
+    <li><a href="do-thi-dau.html">Đồ Thi Đấu</a></li>
+    <li><a href="combo-vot.html">Combo</a></li>
+    <li><a href="do-cu.html">Đồ Cũ</a></li>
+    <li><a href="kien-thuc.html">Kiến Thức</a></li>
+    <li><a href="huong-dan-mua-hang.html" class="active">Hướng Dẫn</a></li>
+    <li><a href="lien-he.html" class="nav-cta">Liên Hệ</a></li>
+  </ul>
+</nav>
+
+<!-- Hero -->
+<section class="page-hero">
+  <div class="wrap">
+    <p class="breadcrumb"><a href="index.html">Trang Chủ</a><span>·</span>Hướng Dẫn Mua Hàng</p>
+    <h1>Hướng Dẫn<br><i>Mua Hàng</i></h1>
+    <p>Quy trình mua hàng đơn giản, minh bạch. Chúng tôi hỗ trợ tư vấn, đặt hàng và giao nhận toàn quốc.</p>
+  </div>
+</section>
+
+<!-- Steps -->
+<section class="steps-section">
+  <div class="wrap">
+    <p class="s-label">Quy Trình</p>
+    <h2 style="font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,48px);font-weight:800;color:var(--dark);">Các Bước <em style="font-style:italic;color:var(--coral);">Đặt Hàng</em></h2>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-num">01</div>
+        <h3 class="step-title">Liên Hệ Tư Vấn</h3>
+        <p class="step-body">Nhắn tin qua Zalo hoặc Facebook để được tư vấn miễn phí. Cho biết trình độ (mới bắt đầu / trung cấp / chuyên nghiệp), phong cách chơi (tấn công / phòng thủ / allround) và ngân sách.</p>
+        <span class="step-highlight">Hotline: 096.1269.386</span>
+      </div>
+      <div class="step-card">
+        <div class="step-num">02</div>
+        <h3 class="step-title">Chọn Sản Phẩm</h3>
+        <p class="step-body">Sau khi tư vấn, bạn chọn sản phẩm phù hợp từ danh mục của chúng tôi. Có thể đặt hàng online qua Zalo/Facebook hoặc đến trực tiếp cửa hàng tại 286 Nguyễn Xiển, Hà Nội.</p>
+        <a href="cot-vot.html" class="step-highlight">Xem Danh Mục →</a>
+      </div>
+      <div class="step-card">
+        <div class="step-num">03</div>
+        <h3 class="step-title">Xác Nhận & Thanh Toán</h3>
+        <p class="step-body">Chúng tôi xác nhận đơn hàng và thông báo tổng tiền. Thanh toán qua chuyển khoản ngân hàng, COD (tiền mặt khi nhận hàng), hoặc trực tiếp tại cửa hàng.</p>
+        <span class="step-highlight">COD toàn quốc</span>
+      </div>
+      <div class="step-card">
+        <div class="step-num">04</div>
+        <h3 class="step-title">Đóng Gói & Giao Hàng</h3>
+        <p class="step-body">Sản phẩm được đóng gói cẩn thận, kèm bill hóa đơn và tem nhãn chính hãng. Giao hàng qua các đơn vị vận chuyển uy tín: GHN, GHTK, Viettel Post.</p>
+        <span class="step-highlight">2–5 ngày làm việc</span>
+      </div>
+      <div class="step-card">
+        <div class="step-num">05</div>
+        <h3 class="step-title">Kiểm Tra Hàng</h3>
+        <p class="step-body">Khi nhận hàng, mở kiện hàng trước mặt shipper để kiểm tra. Nếu có vấn đề về ngoại quan hoặc sản phẩm, từ chối nhận và liên hệ ngay với chúng tôi.</p>
+        <span class="step-highlight">Quay video khi mở hàng</span>
+      </div>
+      <div class="step-card">
+        <div class="step-num">06</div>
+        <h3 class="step-title">Bảo Hành & Hỗ Trợ</h3>
+        <p class="step-body">Sản phẩm được bảo hành theo chính sách nhà sản xuất. Chúng tôi hỗ trợ giải quyết vấn đề bảo hành, đổi trả trong vòng 7 ngày nếu có lỗi từ nhà sản xuất.</p>
+        <span class="step-highlight">Đổi trả trong 7 ngày</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Payment -->
+<section class="payment-section">
+  <div class="wrap">
+    <p class="s-label">Thanh Toán</p>
+    <h2>Hình Thức <i>Thanh Toán</i></h2>
+    <div class="payment-grid">
+      <div class="payment-card">
+        <div class="payment-icon">🏦</div>
+        <h3 class="payment-title">Chuyển Khoản Ngân Hàng</h3>
+        <p class="payment-desc">Chuyển khoản trực tiếp qua ứng dụng ngân hàng hoặc internet banking. Chúng tôi xác nhận đơn ngay sau khi nhận tiền.</p>
+      </div>
+      <div class="payment-card">
+        <div class="payment-icon">📦</div>
+        <h3 class="payment-title">COD — Thanh Toán Khi Nhận</h3>
+        <p class="payment-desc">Nhận hàng, kiểm tra ưng ý rồi mới trả tiền. Áp dụng cho đơn hàng toàn quốc. Có thể áp dụng phụ phí COD theo đơn vị vận chuyển.</p>
+      </div>
+      <div class="payment-card">
+        <div class="payment-icon">🏪</div>
+        <h3 class="payment-title">Trực Tiếp Tại Cửa Hàng</h3>
+        <p class="payment-desc">Đến trực tiếp 286 Nguyễn Xiển, Thanh Liệt, Hà Nội. Thanh toán tiền mặt hoặc chuyển khoản. Được xem và thử sản phẩm trực tiếp.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section">
+  <div class="wrap">
+    <p class="s-label">Câu Hỏi Thường Gặp</p>
+    <h2>Giải Đáp <i>Thắc Mắc</i></h2>
+    <div class="faq-grid">
+      <div class="faq-item">
+        <h3 class="faq-q">Tôi không biết chọn vợt nào phù hợp?</h3>
+        <p class="faq-a">Nhắn tin cho chúng tôi qua Zalo 096.1269.386 hoặc Facebook. Cho biết trình độ và phong cách chơi — chúng tôi sẽ tư vấn miễn phí và gợi ý sản phẩm phù hợp nhất.</p>
+      </div>
+      <div class="faq-item">
+        <h3 class="faq-q">Sản phẩm có đảm bảo chính hãng không?</h3>
+        <p class="faq-a">100% chính hãng — kèm tem nhãn và giấy tờ từ nhà sản xuất hoặc nhà phân phối. Chúng tôi không bán hàng nhái, hàng giả dưới bất kỳ hình thức nào.</p>
+      </div>
+      <div class="faq-item">
+        <h3 class="faq-q">Thời gian giao hàng bao lâu?</h3>
+        <p class="faq-a">Nội thành Hà Nội: 1–2 ngày làm việc. Các tỉnh thành khác: 2–5 ngày làm việc tùy khu vực và đơn vị vận chuyển.</p>
+      </div>
+      <div class="faq-item">
+        <h3 class="faq-q">Có thể đến xem trực tiếp không?</h3>
+        <p class="faq-a">Hoàn toàn được. Cửa hàng mở cửa hàng ngày tại 286 Nguyễn Xiển, Thanh Liệt, Hà Nội. Bạn có thể cầm thử, so sánh trực tiếp trước khi quyết định.</p>
+      </div>
+      <div class="faq-item">
+        <h3 class="faq-q">Có hỗ trợ lắp mặt vợt không?</h3>
+        <p class="faq-a">Có. Nếu mua combo cốt + mặt vợt, chúng tôi lắp miễn phí và tư vấn cách dán, thay thế mặt vợt đúng kỹ thuật.</p>
+      </div>
+      <div class="faq-item">
+        <h3 class="faq-q">Chính sách bảo hành như thế nào?</h3>
+        <p class="faq-a">Bảo hành theo chính sách nhà sản xuất (thường 6–12 tháng). Đổi trả trong 7 ngày nếu sản phẩm có lỗi từ nhà sản xuất. Xem chi tiết tại trang Chính Sách Đổi Trả.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-bottom">
+  <div class="wrap">
+    <h2>Sẵn sàng chọn thiết bị?</h2>
+    <p>Liên hệ ngay để được tư vấn miễn phí — hotline 096.1269.386</p>
+    <a href="lien-he.html" class="btn btn-white">Liên Hệ Tư Vấn</a>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-grid">
+    <div><div class="footer-logo-text">BÓNG BÀN <span>VIỆT</span></div><div class="footer-slogan">Tư Vấn Chuẩn · Hàng Chính Hãng</div><p class="footer-desc">Thiết bị bóng bàn chuyên nghiệp tại 286 Nguyễn Xiển, Hà Nội.</p></div>
+    <div><p class="footer-col-title">Sản Phẩm</p><ul class="footer-links"><li><a href="cot-vot.html">Cốt Vợt</a></li><li><a href="mat-vot.html">Mặt Vợt</a></li><li><a href="bong.html">Bóng</a></li><li><a href="ban.html">Bàn</a></li><li><a href="do-thi-dau.html">Đồ Thi Đấu</a></li></ul></div>
+    <div><p class="footer-col-title">Hỗ Trợ</p><ul class="footer-links"><li><a href="combo-vot.html">Combo Vợt</a></li><li><a href="do-cu.html">Đồ Cũ</a></li><li><a href="huong-dan-mua-hang.html">Hướng Dẫn Mua Hàng</a></li><li><a href="chinh-sach-doi-tra.html">Chính Sách Đổi Trả</a></li></ul></div>
+    <div><p class="footer-col-title">Liên Hệ</p><ul class="footer-links"><li style="color:rgba(255,255,255,.45);font-size:13px;">286 Nguyễn Xiển,<br>Thanh Liệt, Hà Nội</li><li><a href="tel:0961269386">096.1269.386</a></li></ul></div>
+  </div>
+  <div class="footer-bottom"><p>© 2025 BongBanViet.com · Tư Vấn Chuẩn - Hàng Chính Hãng</p><p>Thiết kế bởi Bóng Bàn Việt</p></div>
+</footer>
+</div><!-- /site-container -->
+</body>
+</html>

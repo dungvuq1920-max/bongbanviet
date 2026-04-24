@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chính Sách Đổi Trả & Hoàn Tiền | BÓNG BÀN VIỆT</title>
+  <meta name="description" content="Chính sách đổi trả và hoàn tiền tại BÓNG BÀN VIỆT — rõ ràng, minh bạch và bảo vệ quyền lợi khách hàng.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700;1,900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --red:#D62B2B;--coral:#E8503A;--bg:#FAFAF8;--white:#FFFFFF;--dark:#1A1A1A;--mid:#6B6B6B;--line:#E5E5E3;--warm:#F2EDE7; }
+    body { background:var(--bg);color:var(--dark);font-family:'Inter',sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased; }
+    a { text-decoration:none;color:inherit; }
+    img { display:block;width:100%; }
+    .ann { background:var(--dark);color:rgba(255,255,255,.65);text-align:center;padding:11px 24px;font-size:12px;font-weight:500;letter-spacing:.06em; }
+    .ann a { color:var(--coral); } .ann-sep { margin:0 18px;opacity:.25; }
+    .nav { position:sticky;top:0;z-index:100;background:var(--white);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;height:68px;padding:0 48px; }
+    .nav-links { display:flex;align-items:center;gap:26px;list-style:none; }
+    .nav-links a { font-size:16px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--dark);transition:color .2s;white-space:nowrap; }
+    .nav-links a:hover,.nav-links a.active { color:var(--red); }
+    .nav-cta { background:var(--red);color:#fff !important;padding:9px 22px;font-size:11px !important;letter-spacing:.12em !important; }
+    .wrap { max-width:1200px;margin:0 auto;padding:0 48px; }
+    .s-label { font-size:11px;font-weight:600;letter-spacing:.28em;text-transform:uppercase;color:var(--red);margin-bottom:14px; }
+    .btn { display:inline-block;padding:12px 28px;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;transition:all .2s;cursor:pointer; }
+    .btn-red { background:var(--red);color:#fff; } .btn-red:hover { background:var(--dark); }
+    .btn-white { background:#fff;color:var(--red); } .btn-white:hover { background:var(--dark);color:#fff; }
+
+    /* Hero */
+    .page-hero { background:var(--dark);padding:72px 0 60px; }
+    .breadcrumb { font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:20px; }
+    .breadcrumb a { color:rgba(255,255,255,.35); } .breadcrumb a:hover{color:var(--coral);} .breadcrumb span{margin:0 8px;}
+    .page-hero h1 { font-family:'Playfair Display',serif;font-size:clamp(36px,5.5vw,72px);font-weight:900;color:#fff;line-height:1;letter-spacing:-.01em;margin-bottom:20px; }
+    .page-hero h1 i { font-style:italic;color:var(--coral); }
+    .page-hero p { font-size:15px;color:rgba(255,255,255,.5);max-width:560px;line-height:1.75; }
+
+    /* Policy content */
+    .policy-section { padding:80px 0; }
+    .policy-layout { display:grid;grid-template-columns:280px 1fr;gap:64px;align-items:start; }
+    .policy-nav { position:sticky;top:100px; }
+    .policy-nav-title { font-size:10px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--mid);margin-bottom:20px; }
+    .policy-nav ul { list-style:none;display:flex;flex-direction:column;gap:2px; }
+    .policy-nav a { display:block;padding:10px 14px;font-size:13px;color:var(--mid);border-left:2px solid var(--line);transition:all .2s; }
+    .policy-nav a:hover { color:var(--dark);border-left-color:var(--dark); }
+    .policy-nav a.active { color:var(--red);border-left-color:var(--red);font-weight:600; }
+    .policy-content section { margin-bottom:64px; }
+    .policy-content h2 { font-family:'Playfair Display',serif;font-size:clamp(22px,3vw,36px);font-weight:800;color:var(--dark);margin-bottom:24px;line-height:1.2; }
+    .policy-content h2 i { font-style:italic;color:var(--coral); }
+    .policy-content p { font-size:15px;color:var(--mid);line-height:1.8;margin-bottom:16px; }
+    .policy-content ul { padding-left:0;list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:20px; }
+    .policy-content li { display:flex;gap:12px;font-size:15px;color:var(--mid);line-height:1.7; }
+    .policy-content li::before { content:'—';color:var(--coral);font-weight:700;flex-shrink:0; }
+    .policy-table { width:100%;border-collapse:collapse;margin-bottom:20px; }
+    .policy-table th { background:var(--dark);color:#fff;padding:12px 16px;text-align:left;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase; }
+    .policy-table td { padding:14px 16px;border-bottom:1px solid var(--line);font-size:14px;color:var(--mid);line-height:1.5; }
+    .policy-table tr:last-child td { border-bottom:none; }
+    .policy-table tr:nth-child(even) td { background:var(--warm); }
+    .highlight-box { background:var(--warm);border-left:3px solid var(--red);padding:20px 24px;margin:20px 0; }
+    .highlight-box p { margin:0;font-size:14px;color:var(--dark);line-height:1.7; }
+
+    /* CTA */
+    .cta-bottom { background:var(--red);padding:72px 0;text-align:center; }
+    .cta-bottom h2 { font-family:'Playfair Display',serif;font-size:clamp(24px,4vw,48px);font-weight:900;color:#fff;margin-bottom:16px; }
+    .cta-bottom p { font-size:15px;color:rgba(255,255,255,.7);margin-bottom:32px; }
+
+    /* Footer */
+    footer { background:var(--dark); }
+    .footer-grid { max-width:1200px;margin:0 auto;padding:56px 48px 32px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px; }
+    .footer-logo-text { font-weight:700;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:#fff; }
+    .footer-logo-text span { color:var(--red); }
+    .footer-slogan { font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.25);margin-top:4px; }
+    .footer-desc { font-size:13px;color:rgba(255,255,255,.4);line-height:1.7;max-width:240px;margin-top:16px; }
+    .footer-col-title { font-size:10px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:20px; }
+    .footer-links { list-style:none;display:flex;flex-direction:column;gap:10px; }
+    .footer-links a { font-size:13px;color:rgba(255,255,255,.45);transition:color .2s; }
+    .footer-links a:hover { color:#fff; }
+    .footer-bottom { max-width:1200px;margin:0 auto;padding:20px 48px;border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;align-items:center; }
+    .footer-bottom p { font-size:11px;color:rgba(255,255,255,.2); }
+
+    @media(max-width:900px){.policy-layout{grid-template-columns:1fr}.policy-nav{display:none}}
+    @media(max-width:768px){.nav{padding:0 20px}.nav-links{display:none}.wrap{padding:0 20px}.footer-grid{grid-template-columns:1fr 1fr;padding:40px 20px 24px}.footer-bottom{padding:16px 20px;flex-direction:column;gap:8px;text-align:center}}
+  </style>
+</head>
+<body>
+
+<div class="ann">Miễn phí tư vấn thiết bị theo trình độ &amp; phong cách chơi<span class="ann-sep">·</span>Hotline / Zalo: <a href="tel:0961269386">096.1269.386</a><span class="ann-sep">·</span>286 Nguyễn Xiển, Thanh Liệt, Hà Nội</div>
+
+<nav class="nav">
+  <a href="index.html"><img src="logo_bongbanviet.png" alt="Bóng Bàn Việt" style="height:56px;width:auto;display:block;"></a>
+  <ul class="nav-links">
+    <li><a href="cot-vot.html">Cốt Vợt</a></li>
+    <li><a href="mat-vot.html">Mặt Vợt</a></li>
+    <li><a href="bong.html">Bóng</a></li>
+    <li><a href="ban.html">Bàn</a></li>
+    <li><a href="do-thi-dau.html">Đồ Thi Đấu</a></li>
+    <li><a href="combo-vot.html">Combo</a></li>
+    <li><a href="do-cu.html">Đồ Cũ</a></li>
+    <li><a href="kien-thuc.html">Kiến Thức</a></li>
+    <li><a href="huong-dan-mua-hang.html">Hướng Dẫn</a></li>
+    <li><a href="lien-he.html" class="nav-cta">Liên Hệ</a></li>
+  </ul>
+</nav>
+
+<section class="page-hero">
+  <div class="wrap">
+    <p class="breadcrumb"><a href="index.html">Trang Chủ</a><span>·</span>Chính Sách Đổi Trả &amp; Hoàn Tiền</p>
+    <h1>Chính Sách<br><i>Đổi Trả & Hoàn Tiền</i></h1>
+    <p>Chúng tôi cam kết bảo vệ quyền lợi khách hàng với chính sách đổi trả rõ ràng, minh bạch và được thực hiện nhanh chóng.</p>
+  </div>
+</section>
+
+<section class="policy-section">
+  <div class="wrap">
+    <div class="policy-layout">
+      <!-- Sidebar nav -->
+      <nav class="policy-nav">
+        <p class="policy-nav-title">Nội Dung</p>
+        <ul>
+          <li><a href="#dieu-kien" class="active">Điều Kiện Đổi Trả</a></li>
+          <li><a href="#thoi-han">Thời Hạn</a></li>
+          <li><a href="#quy-trinh">Quy Trình</a></li>
+          <li><a href="#khong-ap-dung">Không Áp Dụng</a></li>
+          <li><a href="#hoan-tien">Hoàn Tiền</a></li>
+          <li><a href="#bao-hanh">Bảo Hành</a></li>
+        </ul>
+      </nav>
+
+      <div class="policy-content">
+        <section id="dieu-kien">
+          <h2>Điều Kiện <i>Đổi Trả</i></h2>
+          <p>BÓNG BÀN VIỆT chấp nhận đổi trả sản phẩm trong các trường hợp sau:</p>
+          <ul>
+            <li>Sản phẩm bị lỗi từ nhà sản xuất (hàng mới, chưa qua sử dụng)</li>
+            <li>Sản phẩm giao không đúng loại, màu sắc, hoặc thông số kỹ thuật so với đơn đặt hàng</li>
+            <li>Sản phẩm bị hư hỏng trong quá trình vận chuyển (cần có bằng chứng: ảnh/video khi nhận hàng)</li>
+            <li>Sản phẩm thiếu phụ kiện đi kèm theo mô tả</li>
+          </ul>
+          <div class="highlight-box">
+            <p><strong>Lưu ý quan trọng:</strong> Vui lòng quay video toàn bộ quá trình mở hàng trước mặt shipper để làm bằng chứng trong trường hợp cần đổi trả do vận chuyển.</p>
+          </div>
+        </section>
+
+        <section id="thoi-han">
+          <h2>Thời Hạn <i>Đổi Trả</i></h2>
+          <table class="policy-table">
+            <tr><th>Tình Huống</th><th>Thời Hạn</th></tr>
+            <tr><td>Lỗi nhà sản xuất (sản phẩm mới)</td><td>7 ngày kể từ ngày nhận hàng</td></tr>
+            <tr><td>Giao sai sản phẩm</td><td>7 ngày kể từ ngày nhận hàng</td></tr>
+            <tr><td>Hư hỏng do vận chuyển</td><td>48 giờ kể từ khi nhận hàng</td></tr>
+            <tr><td>Bảo hành theo nhà sản xuất</td><td>Theo chính sách từng hãng (6–12 tháng)</td></tr>
+          </table>
+        </section>
+
+        <section id="quy-trinh">
+          <h2>Quy Trình <i>Xử Lý</i></h2>
+          <ul>
+            <li>Bước 1: Liên hệ qua Zalo/Facebook và mô tả vấn đề kèm ảnh/video bằng chứng</li>
+            <li>Bước 2: Chúng tôi xác nhận trong vòng 24 giờ làm việc</li>
+            <li>Bước 3: Gửi sản phẩm về địa chỉ 286 Nguyễn Xiển, Thanh Liệt, Hà Nội (chúng tôi hỗ trợ phí ship 1 chiều nếu lỗi từ phía chúng tôi)</li>
+            <li>Bước 4: Kiểm tra sản phẩm trong 1–2 ngày làm việc</li>
+            <li>Bước 5: Gửi sản phẩm thay thế hoặc hoàn tiền trong 3–5 ngày làm việc</li>
+          </ul>
+        </section>
+
+        <section id="khong-ap-dung">
+          <h2>Không Áp Dụng <i>Đổi Trả</i></h2>
+          <p>Chúng tôi không chấp nhận đổi trả trong các trường hợp:</p>
+          <ul>
+            <li>Sản phẩm đã qua sử dụng, có dấu hiệu bị tác động ngoại lực</li>
+            <li>Thay đổi ý định sau khi mua (không thích màu, muốn đổi loại khác)</li>
+            <li>Sản phẩm đồ cũ (second-hand) — đã được thông báo rõ tình trạng trước khi mua</li>
+            <li>Quá thời hạn đổi trả quy định</li>
+            <li>Không còn đủ phụ kiện, hộp đựng và giấy tờ đi kèm</li>
+          </ul>
+        </section>
+
+        <section id="hoan-tien">
+          <h2>Chính Sách <i>Hoàn Tiền</i></h2>
+          <p>Trong trường hợp không có sản phẩm thay thế phù hợp, chúng tôi sẽ hoàn tiền 100% giá trị đơn hàng.</p>
+          <table class="policy-table">
+            <tr><th>Hình Thức Hoàn Tiền</th><th>Thời Gian Xử Lý</th></tr>
+            <tr><td>Chuyển khoản ngân hàng</td><td>1–3 ngày làm việc</td></tr>
+            <tr><td>Tiền mặt tại cửa hàng</td><td>Trong ngày (giờ làm việc)</td></tr>
+          </table>
+          <div class="highlight-box">
+            <p>Phí vận chuyển hoàn hàng được hoàn lại 100% nếu lỗi từ phía BÓNG BÀN VIỆT. Nếu khách hàng đổi trả vì lý do cá nhân, phí vận chuyển do khách hàng chịu.</p>
+          </div>
+        </section>
+
+        <section id="bao-hanh">
+          <h2>Chính Sách <i>Bảo Hành</i></h2>
+          <p>Sản phẩm được bảo hành theo chính sách của từng nhà sản xuất. BÓNG BÀN VIỆT hỗ trợ làm cầu nối giữa khách hàng và nhà sản xuất trong quá trình bảo hành.</p>
+          <table class="policy-table">
+            <tr><th>Thương Hiệu</th><th>Bảo Hành</th></tr>
+            <tr><td>Butterfly</td><td>12 tháng — lỗi nhà sản xuất</td></tr>
+            <tr><td>Tibhar</td><td>12 tháng — lỗi nhà sản xuất</td></tr>
+            <tr><td>Unrex</td><td>6 tháng — lỗi nhà sản xuất</td></tr>
+            <tr><td>Yinhe</td><td>6 tháng — lỗi nhà sản xuất</td></tr>
+            <tr><td>Các hãng khác</td><td>Theo chính sách nhà sản xuất</td></tr>
+          </table>
+          <p>Bảo hành <strong>không bao gồm</strong>: hao mòn tự nhiên của mặt vợt, vỡ do va đập mạnh, ẩm mốc do bảo quản không đúng cách.</p>
+        </section>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="cta-bottom">
+  <div class="wrap">
+    <h2>Cần hỗ trợ thêm?</h2>
+    <p>Liên hệ ngay — chúng tôi giải quyết mọi vấn đề trong vòng 24 giờ làm việc.</p>
+    <a href="lien-he.html" class="btn btn-white">Liên Hệ Ngay</a>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-grid">
+    <div><div class="footer-logo-text">BÓNG BÀN <span>VIỆT</span></div><div class="footer-slogan">Tư Vấn Chuẩn · Hàng Chính Hãng</div><p class="footer-desc">Thiết bị bóng bàn chuyên nghiệp tại 286 Nguyễn Xiển, Hà Nội.</p></div>
+    <div><p class="footer-col-title">Sản Phẩm</p><ul class="footer-links"><li><a href="cot-vot.html">Cốt Vợt</a></li><li><a href="mat-vot.html">Mặt Vợt</a></li><li><a href="bong.html">Bóng</a></li><li><a href="ban.html">Bàn</a></li><li><a href="do-thi-dau.html">Đồ Thi Đấu</a></li></ul></div>
+    <div><p class="footer-col-title">Hỗ Trợ</p><ul class="footer-links"><li><a href="combo-vot.html">Combo Vợt</a></li><li><a href="do-cu.html">Đồ Cũ</a></li><li><a href="huong-dan-mua-hang.html">Hướng Dẫn Mua Hàng</a></li><li><a href="chinh-sach-doi-tra.html">Chính Sách Đổi Trả</a></li></ul></div>
+    <div><p class="footer-col-title">Liên Hệ</p><ul class="footer-links"><li style="color:rgba(255,255,255,.45);font-size:13px;">286 Nguyễn Xiển,<br>Thanh Liệt, Hà Nội</li><li><a href="tel:0961269386">096.1269.386</a></li></ul></div>
+  </div>
+  <div class="footer-bottom"><p>© 2025 BongBanViet.com · Tư Vấn Chuẩn - Hàng Chính Hãng</p><p>Thiết kế bởi Bóng Bàn Việt</p></div>
+</footer>
+</body>
+</html>

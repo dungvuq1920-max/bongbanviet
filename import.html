@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Import Sản Phẩm | BÓNG BÀN VIỆT</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: #ECEAE7; color: #1A1A1A; font-size: 14px; -webkit-font-smoothing: antialiased; }
+    a { text-decoration: none; color: inherit; }
+
+    /* ─── Header ── */
+    .imp-header {
+      background: #1A1A1A; color: #fff; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px; position: sticky; top: 0; z-index: 100;
+    }
+    .imp-header h1 { font-size: 15px; font-weight: 700; letter-spacing: .04em; }
+    .imp-header h1 span { color: #D62B2B; }
+    .header-right { display: flex; align-items: center; gap: 20px; }
+    .header-right a { font-size: 12px; font-weight: 500; color: rgba(255,255,255,.6); transition: color .2s; }
+    .header-right a:hover { color: #fff; }
+    .server-badge { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; padding: 4px 10px; }
+    .badge-ok  { background: #064E3B; color: #6EE7B7; }
+    .badge-err { background: #7F1D1D; color: #FCA5A5; }
+
+    /* ─── Category Tabs ── */
+    .cat-tabs {
+      background: #fff; border-bottom: 2px solid #E5E5E3;
+      display: flex; overflow-x: auto; scrollbar-width: none;
+      padding: 0 32px; gap: 0; position: sticky; top: 56px; z-index: 90;
+    }
+    .cat-tabs::-webkit-scrollbar { display: none; }
+    .cat-tab {
+      padding: 16px 22px; font-size: 12px; font-weight: 600;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: #6B6B6B; border: none; border-bottom: 2px solid transparent;
+      margin-bottom: -2px; cursor: pointer; background: none; white-space: nowrap;
+      transition: color .2s, border-color .2s;
+    }
+    .cat-tab:hover { color: #1A1A1A; }
+    .cat-tab.active { color: #D62B2B; border-bottom-color: #D62B2B; }
+
+    /* ─── Content ── */
+    .imp-content { max-width: 1200px; margin: 0 auto; padding: 32px; }
+
+    /* ─── Sections ── */
+    .cat-section { display: none; }
+    .cat-section.active { display: block; }
+
+    /* ─── Section header ── */
+    .sec-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #E5E5E3;
+    }
+    .sec-title { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+    .count-badge {
+      background: #E5E5E3; color: #6B6B6B; font-size: 11px;
+      font-weight: 600; padding: 2px 8px; border-radius: 99px;
+    }
+    .btn-add {
+      background: #D62B2B; color: #fff; border: none;
+      padding: 10px 20px; font-size: 11px; font-weight: 700;
+      letter-spacing: .1em; text-transform: uppercase; cursor: pointer;
+      transition: background .2s;
+    }
+    .btn-add:hover { background: #1A1A1A; }
+
+    /* ─── Sub-tabs (Đồ Thi Đấu) ── */
+    .sub-tabs {
+      display: flex; gap: 0; margin-bottom: 24px;
+      border-bottom: 2px solid #E5E5E3;
+    }
+    .sub-tab {
+      padding: 12px 24px; font-size: 12px; font-weight: 600;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: #6B6B6B; border: none; border-bottom: 2px solid transparent;
+      margin-bottom: -2px; cursor: pointer; background: none; white-space: nowrap;
+    }
+    .sub-tab.active { color: #D62B2B; border-bottom-color: #D62B2B; }
+    .sub-section { display: none; }
+    .sub-section.active { display: block; }
+
+    /* ─── Product Card ── */
+    .p-card {
+      background: #fff; border: 1.5px solid #E5E5E3;
+      margin-bottom: 14px; display: flex;
+      transition: border-color .2s;
+    }
+    .p-card.new-card { border-color: #D62B2B; }
+    .p-card.saving { opacity: .55; pointer-events: none; }
+
+    /* Image column */
+    .p-img-col {
+      width: 172px; flex-shrink: 0; padding: 20px;
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      border-right: 1px solid #E5E5E3; background: #FAFAF8;
+    }
+    .p-img-wrap {
+      width: 132px; height: 132px; background: #F0EFEC;
+      display: flex; align-items: center; justify-content: center; overflow: hidden;
+    }
+    .p-thumb { width: 132px; height: 132px; object-fit: cover; display: block; }
+    .p-no-img { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .p-no-img svg { opacity: .35; }
+    .p-no-img span { font-size: 10px; color: #bbb; font-weight: 500; }
+    .p-loading { font-size: 11px; color: #6B6B6B; text-align: center; padding: 8px; }
+
+    .btn-img-pick {
+      display: block; text-align: center; width: 132px;
+      padding: 7px 0; font-size: 11px; font-weight: 600;
+      letter-spacing: .06em; text-transform: uppercase;
+      border: 1.5px solid #E5E5E3; cursor: pointer;
+      background: #fff; color: #6B6B6B; transition: all .2s;
+    }
+    .btn-img-pick:hover { border-color: #1A1A1A; color: #1A1A1A; }
+    .btn-img-pick input { display: none; }
+
+    /* Fields column */
+    .p-fields { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+    .p-fields-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .p-row { display: flex; flex-direction: column; gap: 5px; }
+    .p-row label {
+      font-size: 10px; font-weight: 700; letter-spacing: .14em;
+      text-transform: uppercase; color: #6B6B6B;
+    }
+    .hint { font-size: 10px; font-weight: 400; color: #bbb; letter-spacing: 0; text-transform: none; margin-left: 4px; }
+    .p-row input, .p-row select, .p-row textarea {
+      border: 1.5px solid #E5E5E3; padding: 8px 11px;
+      font-family: 'Inter', sans-serif; font-size: 13px; color: #1A1A1A;
+      background: #fff; outline: none; width: 100%; resize: vertical;
+      transition: border-color .2s;
+    }
+    .p-row input:focus, .p-row select:focus, .p-row textarea:focus { border-color: #1A1A1A; }
+    .p-row select { cursor: pointer; }
+
+    .price-row { display: flex; align-items: center; gap: 8px; }
+    .price-row input { flex: 1; }
+    .stock-badge { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 4px 10px; white-space: nowrap; flex-shrink: 0; }
+    .stock-in  { background: #ECFDF5; color: #059669; }
+    .stock-out { background: #FEF3F2; color: #DC2626; }
+
+    /* Actions column */
+    .p-actions {
+      width: 110px; flex-shrink: 0; padding: 20px;
+      display: flex; flex-direction: column; justify-content: flex-end; gap: 8px;
+      border-left: 1px solid #E5E5E3;
+    }
+    .btn-save {
+      background: #1A1A1A; color: #fff; border: none;
+      padding: 10px 0; font-size: 11px; font-weight: 700;
+      letter-spacing: .06em; text-transform: uppercase; cursor: pointer;
+      width: 100%; transition: background .2s;
+    }
+    .btn-save:hover { background: #D62B2B; }
+    .btn-del {
+      background: #fff; color: #DC2626;
+      border: 1.5px solid #DC2626; padding: 10px 0;
+      font-size: 11px; font-weight: 700; letter-spacing: .06em;
+      text-transform: uppercase; cursor: pointer; width: 100%;
+      transition: all .2s;
+    }
+    .btn-del:hover { background: #DC2626; color: #fff; }
+
+    /* States */
+    .loading-state { text-align: center; padding: 48px; color: #6B6B6B; font-size: 13px; }
+    .empty-state  {
+      text-align: center; padding: 48px; color: #9CA3AF;
+      border: 2px dashed #E5E5E3; font-size: 13px;
+    }
+    .empty-state p { margin-top: 6px; font-size: 12px; }
+
+    /* Toast */
+    #toast {
+      position: fixed; bottom: 28px; right: 28px; z-index: 9999;
+      padding: 12px 22px; font-size: 13px; font-weight: 600;
+      transform: translateY(64px); opacity: 0;
+      transition: transform .3s, opacity .3s; pointer-events: none;
+    }
+    #toast.show { transform: translateY(0); opacity: 1; }
+    #toast.t-ok  { background: #1A1A1A; color: #fff; }
+    #toast.t-err { background: #DC2626; color: #fff; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .imp-content { padding: 16px; }
+      .p-card { flex-direction: column; }
+      .p-img-col { width: 100%; flex-direction: row; border-right: none; border-bottom: 1px solid #E5E5E3; }
+      .p-actions { width: 100%; flex-direction: row; border-left: none; border-top: 1px solid #E5E5E3; }
+      .btn-save, .btn-del { flex: 1; }
+      .p-fields-row { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) {
+      .cat-tabs { padding: 0 16px; }
+      .imp-header { padding: 0 16px; }
+    }
+
+    /* ─── Import Modal ── */
+    .xl-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.6);
+      z-index: 1000; display: flex; align-items: center; justify-content: center;
+    }
+    .xl-modal {
+      background: #fff; width: 640px; max-width: calc(100vw - 32px);
+      max-height: 90vh; display: flex; flex-direction: column;
+    }
+    .xl-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 24px; border-bottom: 2px solid #D62B2B;
+    }
+    .xl-head h2 { font-size: 15px; font-weight: 700; }
+    .xl-head button { background: none; border: none; font-size: 20px; cursor: pointer; color: #6B6B6B; line-height: 1; }
+    .xl-body { padding: 24px; overflow-y: auto; flex: 1; }
+    .xl-drop {
+      border: 2px dashed #E5E5E3; padding: 40px 24px; text-align: center;
+      cursor: pointer; transition: border-color .2s; margin-bottom: 16px;
+    }
+    .xl-drop:hover, .xl-drop.over { border-color: #D62B2B; background: #FFF5F5; }
+    .xl-drop .xl-icon { font-size: 36px; margin-bottom: 8px; }
+    .xl-drop p { font-size: 14px; color: #6B6B6B; margin: 4px 0; }
+    .xl-drop strong { font-size: 15px; color: #1A1A1A; }
+    .xl-file-name { font-size: 13px; font-weight: 600; color: #1A1A1A; margin-bottom: 16px; display: none; padding: 8px 12px; background: #F0FFF4; border: 1px solid #86EFAC; }
+    .xl-btn-import {
+      width: 100%; padding: 14px; background: #D62B2B; color: #fff; border: none;
+      font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+      cursor: pointer; transition: background .2s;
+    }
+    .xl-btn-import:hover { background: #1A1A1A; }
+    .xl-btn-import:disabled { background: #ccc; cursor: default; }
+    .xl-progress { text-align: center; padding: 32px; color: #6B6B6B; font-size: 14px; }
+    .xl-summary {
+      display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;
+    }
+    .xl-stat { padding: 10px 16px; font-size: 13px; font-weight: 600; }
+    .xl-stat.ok  { background: #F0FFF4; color: #166534; }
+    .xl-stat.warn { background: #FFFBEB; color: #92400E; }
+    .xl-stat.err { background: #FFF5F5; color: #991B1B; }
+    .xl-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 16px; }
+    .xl-table th { background: #1A1A1A; color: #fff; padding: 8px 12px; text-align: left; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+    .xl-table td { padding: 8px 12px; border-bottom: 1px solid #E5E5E3; }
+    .xl-table tr:nth-child(even) td { background: #FAFAF8; }
+    .xl-badge-new { background: #D1FAE5; color: #065F46; font-size: 10px; font-weight: 700; padding: 2px 8px; letter-spacing: .06em; }
+    .xl-badge-upd { background: #DBEAFE; color: #1E40AF; font-size: 10px; font-weight: 700; padding: 2px 8px; letter-spacing: .06em; }
+    .xl-errors { background: #FFF5F5; padding: 12px 16px; font-size: 12px; color: #991B1B; margin-top: 12px; }
+    .xl-errors ul { margin: 8px 0 0 16px; }
+    .xl-retry { margin-top: 16px; background: none; border: 1.5px solid #D62B2B; color: #D62B2B; padding: 8px 20px; font-size: 12px; font-weight: 700; cursor: pointer; }
+
+    /* ─── Banner / Image Manager ── */
+    .banner-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; }
+    .banner-group-title {
+      font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+      color: #6B6B6B; margin: 28px 0 14px; padding-bottom: 8px;
+      border-bottom: 1.5px solid #E5E5E3; grid-column: 1/-1;
+    }
+    .banner-card {
+      background: #fff; border: 1.5px solid #E5E5E3;
+      display: flex; flex-direction: column; transition: border-color .2s;
+    }
+    .banner-card:hover { border-color: #1A1A1A; }
+    .banner-preview {
+      width: 100%; aspect-ratio: 16/7; background: #ECEAE7;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; position: relative; flex-shrink: 0;
+    }
+    .banner-preview img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .banner-preview-empty {
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      color: #bbb;
+    }
+    .banner-preview-empty svg { opacity: .4; }
+    .banner-preview-empty span { font-size: 11px; font-weight: 500; }
+    .banner-info { padding: 14px 16px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
+    .banner-name { font-size: 13px; font-weight: 700; color: #1A1A1A; }
+    .banner-desc { font-size: 11px; color: #6B6B6B; line-height: 1.5; }
+    .banner-size {
+      display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .06em;
+      background: #1A1A1A; color: #fff; padding: 3px 8px; margin-top: 2px; align-self: flex-start;
+    }
+    .banner-size.size-hero { background: #D62B2B; }
+    .banner-actions {
+      padding: 12px 16px; border-top: 1px solid #E5E5E3;
+      display: flex; gap: 8px; align-items: center;
+    }
+    .btn-banner-upload {
+      flex: 1; padding: 9px 14px; background: #1A1A1A; color: #fff; border: none;
+      font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+      cursor: pointer; transition: background .2s; position: relative; overflow: hidden;
+    }
+    .btn-banner-upload:hover { background: #D62B2B; }
+    .btn-banner-upload input[type=file] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; font-size: 0;
+    }
+    .btn-banner-clear {
+      padding: 9px 12px; background: none; border: 1.5px solid #E5E5E3;
+      font-size: 11px; font-weight: 600; color: #6B6B6B; cursor: pointer;
+      transition: all .2s; white-space: nowrap;
+    }
+    .btn-banner-clear:hover { border-color: #DC2626; color: #DC2626; }
+    .banner-current-path {
+      font-size: 10px; color: #bbb; padding: 0 16px 10px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .banner-uploading { opacity: .55; pointer-events: none; }
+    .banner-uploading .btn-banner-upload::after {
+      content: ''; position: absolute; inset: 0;
+      background: repeating-linear-gradient(90deg,transparent,transparent 20px,rgba(255,255,255,.15) 20px,rgba(255,255,255,.15) 40px);
+      animation: scan .8s linear infinite; background-size: 40px 100%;
+    }
+    @keyframes scan { from { background-position: 0 0; } to { background-position: 40px 0; } }
+    @media (max-width: 768px) { .banner-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="imp-header">
+  <h1>BÓNG BÀN VIỆT <span>·</span> Import Sản Phẩm</h1>
+  <div class="header-right">
+    <span id="serverBadge" class="server-badge badge-err">Chưa kết nối</span>
+    <a href="/api/download-template" download style="background:#1E40AF;color:#fff;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;">⬇ Tải Template</a>
+    <button onclick="openImportModal()" style="background:#D62B2B;color:#fff;border:none;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;">📥 Import Excel</button>
+    <a href="admin.html">Admin Panel</a>
+    <a href="index.html">← Trang chủ</a>
+  </div>
+</header>
+
+<!-- Category Tabs -->
+<div class="cat-tabs" id="catTabs">
+  <button class="cat-tab active" data-cat="cot-vot">Cốt Vợt</button>
+  <button class="cat-tab" data-cat="mat-vot">Mặt Vợt</button>
+  <button class="cat-tab" data-cat="do-thi-dau">Đồ Thi Đấu</button>
+  <button class="cat-tab" data-cat="bong">Bóng</button>
+  <button class="cat-tab" data-cat="ban">Bàn</button>
+  <button class="cat-tab" data-cat="combo-vot">Combo</button>
+  <button class="cat-tab" data-cat="do-cu">Đồ Cũ</button>
+  <button class="cat-tab" data-cat="kien-thuc">Kiến Thức</button>
+  <button class="cat-tab" data-cat="banners" style="color:#D62B2B;font-weight:700;">🖼 Ảnh &amp; Banner</button>
+</div>
+
+<!-- Content -->
+<div class="imp-content">
+
+  <!-- Cốt Vợt -->
+  <div id="section-cot-vot" class="cat-section active">
+    <div class="sec-head">
+      <span class="sec-title">Cốt Vợt <span class="count-badge" id="count-cot-vot">0</span></span>
+      <button class="btn-add" onclick="addCard('cot-vot')">+ Thêm sản phẩm mới</button>
+    </div>
+    <div id="list-cot-vot" class="product-list">
+      <div class="loading-state">Đang kết nối server...</div>
+    </div>
+  </div>
+
+  <!-- Mặt Vợt -->
+  <div id="section-mat-vot" class="cat-section">
+    <div class="sec-head">
+      <span class="sec-title">Mặt Vợt <span class="count-badge" id="count-mat-vot">0</span></span>
+      <button class="btn-add" onclick="addCard('mat-vot')">+ Thêm sản phẩm mới</button>
+    </div>
+    <div id="list-mat-vot" class="product-list"></div>
+  </div>
+
+  <!-- Đồ Thi Đấu (sub-tabs) -->
+  <div id="section-do-thi-dau" class="cat-section">
+    <div class="sub-tabs">
+      <button class="sub-tab active" data-sub="giay" onclick="switchSub(this,'do-thi-dau')">Giày</button>
+      <button class="sub-tab" data-sub="trang-phuc-phu-kien" onclick="switchSub(this,'do-thi-dau')">Trang Phục &amp; Phụ Kiện</button>
+    </div>
+    <div id="sub-giay" class="sub-section active">
+      <div class="sec-head">
+        <span class="sec-title">Giày <span class="count-badge" id="count-giay">0</span></span>
+        <button class="btn-add" onclick="addCard('do-thi-dau','giay')">+ Thêm mới</button>
+      </div>
+      <div id="list-giay" class="product-list"></div>
+    </div>
+    <div id="sub-trang-phuc-phu-kien" class="sub-section">
+      <div class="sec-head">
+        <span class="sec-title">Trang Phục &amp; Phụ Kiện <span class="count-badge" id="count-trang-phuc-phu-kien">0</span></span>
+        <button class="btn-add" onclick="addCard('do-thi-dau','trang-phuc-phu-kien')">+ Thêm mới</button>
+      </div>
+      <div id="list-trang-phuc-phu-kien" class="product-list"></div>
+    </div>
+  </div>
+
+  <!-- Bóng -->
+  <div id="section-bong" class="cat-section">
+    <div class="sec-head">
+      <span class="sec-title">Bóng <span class="count-badge" id="count-bong">0</span></span>
+      <button class="btn-add" onclick="addCard('bong')">+ Thêm sản phẩm mới</button>
+    </div>
+    <div id="list-bong" class="product-list"></div>
+  </div>
+
+  <!-- Bàn -->
+  <div id="section-ban" class="cat-section">
+    <div class="sec-head">
+      <span class="sec-title">Bàn <span class="count-badge" id="count-ban">0</span></span>
+      <button class="btn-add" onclick="addCard('ban')">+ Thêm sản phẩm mới</button>
+    </div>
+    <div id="list-ban" class="product-list"></div>
+  </div>
+
+  <!-- Combo -->
+  <div id="section-combo-vot" class="cat-section">
+    <div class="sec-head">
+      <span class="sec-title">Combo Vợt <span class="count-badge" id="count-combo-vot">0</span></span>
+      <button class="btn-add" onclick="addCard('combo-vot')">+ Thêm combo mới</button>
+    </div>
+    <div id="list-combo-vot" class="product-list"></div>
+  </div>
+
+  <!-- Đồ Cũ -->
+  <div id="section-do-cu" class="cat-section">
+    <div class="sec-head">
+      <span class="sec-title">Đồ Đã Qua Sử Dụng <span class="count-badge" id="count-do-cu">0</span></span>
+      <button class="btn-add" onclick="addCard('do-cu')">+ Thêm sản phẩm mới</button>
+    </div>
+    <div id="list-do-cu" class="product-list"></div>
+  </div>
+
+  <!-- Kiến Thức -->
+  <div id="section-kien-thuc" class="cat-section">
+    <div class="sec-head">
+      <span class="sec-title">Kiến Thức <span class="count-badge" id="count-kien-thuc">0</span></span>
+      <button class="btn-add" onclick="addCard('kien-thuc')">+ Thêm bài viết mới</button>
+    </div>
+    <div id="list-kien-thuc" class="product-list"></div>
+  </div>
+
+  <!-- Ảnh & Banner -->
+  <div id="section-banners" class="cat-section">
+    <div class="sec-head">
+      <span class="sec-title">Ảnh &amp; Banner</span>
+      <span style="font-size:12px;color:#6B6B6B;">Upload ảnh cho từng vị trí — ảnh được lưu và hiển thị tự động trên site</span>
+    </div>
+    <div class="banner-grid" id="bannerGrid">
+      <div class="loading-state">Đang tải cấu hình ảnh...</div>
+    </div>
+  </div>
+
+</div><!-- /imp-content -->
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- Import Excel Modal -->
+<div id="xlModal" class="xl-overlay" style="display:none" onclick="if(event.target===this)closeImportModal()">
+  <div class="xl-modal">
+    <div class="xl-head">
+      <h2>📥 Import từ file Excel</h2>
+      <button onclick="closeImportModal()">✕</button>
+    </div>
+    <div class="xl-body" id="xlBody">
+      <!-- Step 1: chọn file -->
+      <div id="xlStep1">
+        <div class="xl-drop" id="xlDrop" onclick="document.getElementById('xlFileInput').click()">
+          <div class="xl-icon">📊</div>
+          <strong>Click để chọn file .xlsx</strong>
+          <p>Hoặc kéo thả file vào đây</p>
+          <p style="margin-top:8px;font-size:12px;color:#aaa;">File template: template-import-san-pham.xlsx</p>
+        </div>
+        <input type="file" id="xlFileInput" accept=".xlsx" style="display:none" onchange="xlFileChosen(this)">
+        <div class="xl-file-name" id="xlFileName"></div>
+        <button class="xl-btn-import" id="xlBtnImport" onclick="doXlImport()" disabled>
+          Bắt đầu Import →
+        </button>
+        <p style="font-size:11px;color:#999;margin-top:10px;text-align:center;">
+          Sản phẩm đã có (cùng tên + danh mục) sẽ được <strong>cập nhật</strong>. Sản phẩm mới sẽ được <strong>tạo mới</strong>.
+        </p>
+      </div>
+      <!-- Step 2: kết quả -->
+      <div id="xlStep2" style="display:none">
+        <div id="xlResults"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ─── State ─────────────────────────────────────────────────────────────── */
+const loaded = {};
+
+/* ─── Helpers ───────────────────────────────────────────────────────────── */
+function esc(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function specsToText(specs) {
+  if (!specs || typeof specs !== 'object') return '';
+  return Object.entries(specs).map(([k,v]) => `${k}: ${v}`).join('\n');
+}
+function textToSpecs(text) {
+  const s = {};
+  (text || '').split('\n').forEach(line => {
+    const i = line.indexOf(':');
+    if (i > 0) { const k = line.slice(0,i).trim(); const v = line.slice(i+1).trim(); if (k) s[k] = v; }
+  });
+  return s;
+}
+function slugify(str) {
+  return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+}
+
+const BRANDS = { butterfly:'BUTTERFLY', tibhar:'TIBHAR', unrex:'UNREX', yinhe:'YINHE', khac:'Các hãng khác' };
+const LEVELS = { beginner:'Mới bắt đầu', intermediate:'Trung cấp', advanced:'Nâng cao' };
+
+/* ─── Render card HTML ───────────────────────────────────────────────────── */
+function renderCard(p, cat, sub, isNew = false) {
+  const id     = p.id || ('new-' + Date.now() + Math.random().toString(36).slice(2,5));
+  const isCombo   = cat === 'combo-vot';
+  const isArticle = cat === 'kien-thuc';
+  const hasBrand  = ['cot-vot','mat-vot'].includes(cat);
+  const hasSpecs  = ['cot-vot','mat-vot'].includes(cat);
+
+  const imgs    = Array.isArray(p.images) ? p.images : [];
+  const imgPath = imgs[0] || '';
+  const price   = p.price || '';
+  const inStock = price !== '' ? true : (p.in_stock !== false && p.in_stock !== 0);
+  const nameVal = esc(isArticle ? (p.title||'') : (p.name||''));
+  const descVal = esc(isArticle ? (p.excerpt||'') : (p.description||''));
+
+  const imgHtml = imgPath
+    ? `<img class="p-thumb" src="${esc(imgPath)}" alt="">`
+    : `<div class="p-no-img"><svg width="40" height="40" fill="none" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#ccc" stroke-width="1.5"/><circle cx="8.5" cy="9.5" r="1.5" stroke="#ccc" stroke-width="1.5"/><path d="m3 15 5-5 4 4 3-3 6 6" stroke="#ccc" stroke-width="1.5" stroke-linecap="round"/></svg><span>Chưa có ảnh</span></div>`;
+
+  const brandOptions = Object.entries(BRANDS).map(([v,l]) =>
+    `<option value="${v}"${p.brand_slug===v?' selected':''}>${l}</option>`).join('');
+
+  const levelOptions = Object.entries(LEVELS).map(([v,l]) =>
+    `<option value="${v}"${p.level===v?' selected':''}>${l}</option>`).join('');
+
+  return `<div class="p-card${isNew?' new-card':''}" data-id="${id}" data-cat="${cat}"${sub?` data-sub="${sub}"`:''}>${
+''}<div class="p-img-col">
+    <div class="p-img-wrap">${imgHtml}</div>
+    <label class="btn-img-pick"><span>Chọn ảnh</span><input type="file" accept="image/*" onchange="handleImg(this)"></label>
+    <input type="hidden" class="img-path" value="${esc(imgPath)}">
+  </div>
+  <div class="p-fields">
+    ${hasBrand||isCombo ? `<div class="p-fields-row">
+      ${hasBrand ? `<div class="p-row"><label>Hãng</label><select class="f-brand">${brandOptions}</select></div>` : ''}
+      ${isCombo  ? `<div class="p-row"><label>Level</label><select class="f-level">${levelOptions}</select></div>` : ''}
+    </div>` : ''}
+    <div class="p-row">
+      <label>${isArticle?'Tiêu đề':'Tên sản phẩm'}</label>
+      <input type="text" class="f-name" value="${nameVal}" placeholder="${isArticle?'Nhập tiêu đề bài viết...':'Nhập tên sản phẩm...'}">
+    </div>
+    ${!isArticle ? `<div class="p-row"><label>Giá bán</label>
+      <div class="price-row">
+        <input type="text" class="f-price" value="${esc(price)}" placeholder="VD: 2.400.000đ" oninput="updateStock(this)">
+        <span class="stock-badge ${inStock&&price?'stock-in':'stock-out'}">${inStock&&price?'Còn hàng':'Hết hàng'}</span>
+      </div>
+    </div>` : ''}
+    ${hasSpecs ? `<div class="p-row"><label>Thông Số Kỹ Thuật <span class="hint">mỗi dòng: Tên: Giá trị</span></label>
+      <textarea class="f-specs" rows="4" placeholder="Lớp: 5+2 ALC&#10;Tốc độ: OFF+&#10;Control: 8.5">${esc(specsToText(p.specs))}</textarea></div>` : ''}
+    <div class="p-row">
+      <label>${isArticle?'Tóm tắt':'Miêu tả chi tiết'}</label>
+      <textarea class="f-desc" rows="${isArticle?3:5}">${descVal}</textarea>
+    </div>
+    ${isArticle ? `<div class="p-row"><label>Nội dung bài viết <span class="hint">HTML hoặc văn bản</span></label>
+      <textarea class="f-content" rows="10">${esc(p.content||'')}</textarea></div>` : ''}
+  </div>
+  <div class="p-actions">
+    <button class="btn-save" onclick="saveCard(this.closest('.p-card'))">💾 Lưu</button>
+    <button class="btn-del"  onclick="deleteCard(this.closest('.p-card'))">🗑 Xóa</button>
+  </div>
+</div>`;
+}
+
+/* ─── Render list ────────────────────────────────────────────────────────── */
+function renderList(listEl, items, cat, sub) {
+  if (!items.length) {
+    listEl.innerHTML = `<div class="empty-state">Chưa có sản phẩm nào.<p>Nhấn "+ Thêm" để bắt đầu nhập dữ liệu.</p></div>`;
+    return;
+  }
+  listEl.innerHTML = items.map(p => renderCard(p, cat, sub)).join('');
+}
+function setCount(id, n) {
+  const el = document.getElementById('count-' + id);
+  if (el) el.textContent = n;
+}
+
+/* ─── Load sections ──────────────────────────────────────────────────────── */
+async function loadSection(cat) {
+  if (loaded[cat]) return;
+  loaded[cat] = true;
+
+  if (cat === 'banners') { loadBanners(); return; }
+  if (cat === 'combo-vot') return loadCombos();
+  if (cat === 'kien-thuc') return loadArticles();
+  if (cat === 'do-thi-dau') {
+    await Promise.all([loadProducts('do-thi-dau','giay','giay'), loadProducts('do-thi-dau','trang-phuc-phu-kien','trang-phuc-phu-kien')]);
+    return;
+  }
+  return loadProducts(cat, null, cat);
+}
+
+async function loadProducts(cat, sub, listKey) {
+  const listEl = document.getElementById('list-' + listKey);
+  if (!listEl) return;
+  listEl.innerHTML = '<div class="loading-state">Đang tải...</div>';
+  try {
+    let url = `/api/products?category=${cat}&limit=500`;
+    if (sub) url += `&gear_subcategory=${sub}`;
+    const data = await fetch(url).then(r => r.json());
+    setCount(listKey, data.length);
+    renderList(listEl, data, cat, sub);
+  } catch {
+    listEl.innerHTML = '<div class="empty-state">Không thể tải dữ liệu — server chưa chạy?</div>';
+  }
+}
+
+async function loadCombos() {
+  const listEl = document.getElementById('list-combo-vot');
+  listEl.innerHTML = '<div class="loading-state">Đang tải...</div>';
+  try {
+    const data = await fetch('/api/combos?limit=500').then(r => r.json());
+    setCount('combo-vot', data.length);
+    renderList(listEl, data, 'combo-vot', null);
+  } catch {
+    listEl.innerHTML = '<div class="empty-state">Không thể tải dữ liệu.</div>';
+  }
+}
+
+async function loadArticles() {
+  const listEl = document.getElementById('list-kien-thuc');
+  listEl.innerHTML = '<div class="loading-state">Đang tải...</div>';
+  try {
+    const data = await fetch('/api/articles?limit=500').then(r => r.json());
+    setCount('kien-thuc', data.length);
+    renderList(listEl, data, 'kien-thuc', null);
+  } catch {
+    listEl.innerHTML = '<div class="empty-state">Không thể tải dữ liệu.</div>';
+  }
+}
+
+/* ─── Add new card ───────────────────────────────────────────────────────── */
+function addCard(cat, sub) {
+  const listKey = sub || cat;
+  const listEl = document.getElementById('list-' + listKey);
+  if (!listEl) return;
+
+  // Remove empty state
+  const empty = listEl.querySelector('.empty-state');
+  if (empty) empty.remove();
+
+  const blank = { id: 'new-' + Date.now() + Math.random().toString(36).slice(2,5),
+    images:[], price:'', in_stock:1, brand_slug:'butterfly', level:'beginner', specs:{}, name:'', description:'' };
+
+  const div = document.createElement('div');
+  div.innerHTML = renderCard(blank, cat, sub, true);
+  const card = div.firstElementChild;
+
+  listEl.insertBefore(card, listEl.firstChild);
+  card.querySelector('.f-name').focus();
+  // Scroll to card
+  card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+/* ─── Save card ──────────────────────────────────────────────────────────── */
+async function saveCard(card) {
+  const id      = card.dataset.id;
+  const cat     = card.dataset.cat;
+  const sub     = card.dataset.sub || null;
+  const isNew   = id.startsWith('new-');
+  const isCombo   = cat === 'combo-vot';
+  const isArticle = cat === 'kien-thuc';
+  const hasBrand  = ['cot-vot','mat-vot'].includes(cat);
+  const hasSpecs  = ['cot-vot','mat-vot'].includes(cat);
+
+  const name = (card.querySelector('.f-name').value || '').trim();
+  if (!name) { toast('Vui lòng nhập tên sản phẩm', 'err'); card.querySelector('.f-name').focus(); return; }
+
+  const imgPath = card.querySelector('.img-path').value;
+  card.classList.add('saving');
+
+  try {
+    let result;
+
+    if (isArticle) {
+      const payload = {
+        title:       name,
+        excerpt:     card.querySelector('.f-desc').value.trim(),
+        content:     card.querySelector('.f-content').value.trim(),
+        cover_image: imgPath,
+        category:    'kien-thuc',
+      };
+      result = await api(isNew ? '/api/articles' : `/api/articles/${id}`, isNew ? 'POST' : 'PUT', payload);
+
+    } else if (isCombo) {
+      const price = card.querySelector('.f-price').value.trim();
+      const payload = {
+        name,
+        level:       card.querySelector('.f-level')?.value || 'beginner',
+        description: card.querySelector('.f-desc').value.trim(),
+        images:      imgPath ? [imgPath] : [],
+        price,
+        in_stock:    price ? 1 : 0,
+      };
+      if (isNew) payload.slug = slugify(name);
+      result = await api(isNew ? '/api/combos' : `/api/combos/${id}`, isNew ? 'POST' : 'PUT', payload);
+
+    } else {
+      const price = card.querySelector('.f-price').value.trim();
+      const payload = {
+        name,
+        category_slug: cat,
+        description:   card.querySelector('.f-desc').value.trim(),
+        images:        imgPath ? [imgPath] : [],
+        price,
+        in_stock:      price ? 1 : 0,
+      };
+      if (hasBrand) payload.brand_slug = card.querySelector('.f-brand').value;
+      if (hasSpecs) payload.specs = textToSpecs(card.querySelector('.f-specs').value);
+      if (sub)      payload.gear_subcategory = sub;
+      result = await api(isNew ? '/api/products' : `/api/products/${id}`, isNew ? 'POST' : 'PUT', payload);
+    }
+
+    // After successful create, update the card's ID
+    if (isNew && result && result.id) {
+      card.dataset.id = result.id;
+      card.classList.remove('new-card');
+      // Update count
+      const listKey = sub || cat;
+      const listEl = document.getElementById('list-' + listKey);
+      if (listEl) {
+        const countEl = document.getElementById('count-' + listKey);
+        if (countEl) countEl.textContent = String(Number(countEl.textContent || 0) + 1);
+      }
+    }
+
+    toast('Đã lưu thành công!', 'ok');
+  } catch (e) {
+    toast('Lỗi: ' + (e.message || 'Không thể lưu'), 'err');
+  } finally {
+    card.classList.remove('saving');
+  }
+}
+
+/* ─── Delete card ────────────────────────────────────────────────────────── */
+async function deleteCard(card) {
+  const id  = card.dataset.id;
+  const cat = card.dataset.cat;
+  const sub = card.dataset.sub || null;
+
+  if (id.startsWith('new-')) { card.remove(); return; }
+  if (!confirm('Xóa sản phẩm này? Hành động không thể hoàn tác.')) return;
+
+  card.classList.add('saving');
+  try {
+    if (cat === 'kien-thuc')  await api(`/api/articles/${id}`, 'DELETE');
+    else if (cat === 'combo-vot') await api(`/api/combos/${id}`, 'DELETE');
+    else await api(`/api/products/${id}`, 'DELETE');
+
+    // Update count
+    const listKey = sub || cat;
+    const countEl = document.getElementById('count-' + listKey);
+    if (countEl) countEl.textContent = String(Math.max(0, Number(countEl.textContent||0) - 1));
+
+    card.remove();
+    toast('Đã xóa sản phẩm', 'ok');
+  } catch (e) {
+    toast('Lỗi xóa: ' + (e.message||'Thất bại'), 'err');
+    card.classList.remove('saving');
+  }
+}
+
+/* ─── Image upload ───────────────────────────────────────────────────────── */
+async function handleImg(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const card      = input.closest('.p-card');
+  const wrap      = card.querySelector('.p-img-wrap');
+  const pathInput = card.querySelector('.img-path');
+
+  wrap.innerHTML = '<div class="p-loading">⏳ Đang tải ảnh...</div>';
+
+  const fd = new FormData();
+  fd.append('image', file);
+  try {
+    const res  = await fetch('/api/upload', { method: 'POST', body: fd });
+    if (!res.ok) throw new Error('Upload thất bại');
+    const data = await res.json();
+    wrap.innerHTML = `<img class="p-thumb" src="${esc(data.path)}" alt="">`;
+    pathInput.value = data.path;
+    toast('Ảnh đã được tải lên', 'ok');
+  } catch (e) {
+    wrap.innerHTML = `<div class="p-no-img"><svg width="40" height="40" fill="none" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#ccc" stroke-width="1.5"/><circle cx="8.5" cy="9.5" r="1.5" stroke="#ccc" stroke-width="1.5"/><path d="m3 15 5-5 4 4 3-3 6 6" stroke="#ccc" stroke-width="1.5" stroke-linecap="round"/></svg><span>Lỗi tải ảnh</span></div>`;
+    toast('Lỗi tải ảnh: ' + e.message, 'err');
+  }
+}
+
+/* ─── Stock badge live update ────────────────────────────────────────────── */
+function updateStock(input) {
+  const badge = input.closest('.price-row').querySelector('.stock-badge');
+  const has = input.value.trim().length > 0;
+  badge.textContent = has ? 'Còn hàng' : 'Hết hàng';
+  badge.className = 'stock-badge ' + (has ? 'stock-in' : 'stock-out');
+}
+
+/* ─── Sub-tab switch ─────────────────────────────────────────────────────── */
+function switchSub(btn, cat) {
+  const sub = btn.dataset.sub;
+  const section = document.getElementById('section-' + cat);
+  section.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  section.querySelectorAll('.sub-section').forEach(s => s.classList.remove('active'));
+  const subSec = document.getElementById('sub-' + sub);
+  if (subSec) subSec.classList.add('active');
+  // Lazy-load sub if not yet loaded (do-thi-dau loads both at once)
+}
+
+/* ─── API helper ─────────────────────────────────────────────────────────── */
+async function api(path, method = 'GET', body = null) {
+  const opts = { method, headers: {} };
+  if (body) { opts.body = JSON.stringify(body); opts.headers['Content-Type'] = 'application/json'; }
+  const res = await fetch(path, opts);
+  if (method === 'DELETE' && res.ok) return null;
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+}
+
+/* ─── Toast ──────────────────────────────────────────────────────────────── */
+const toastEl = document.getElementById('toast');
+let toastT;
+function toast(msg, type = 'ok') {
+  clearTimeout(toastT);
+  toastEl.textContent = msg;
+  toastEl.className = `show t-${type}`;
+  toastT = setTimeout(() => toastEl.classList.remove('show'), 3200);
+}
+
+/* ─── Server status check ────────────────────────────────────────────────── */
+async function checkServer() {
+  const badge = document.getElementById('serverBadge');
+  try {
+    await fetch('/api/stats');
+    badge.textContent = '● Server đang chạy';
+    badge.className = 'server-badge badge-ok';
+  } catch {
+    badge.textContent = '● Server chưa chạy';
+    badge.className = 'server-badge badge-err';
+  }
+}
+
+/* ─── Tab switching ──────────────────────────────────────────────────────── */
+document.getElementById('catTabs').addEventListener('click', e => {
+  const btn = e.target.closest('.cat-tab');
+  if (!btn) return;
+  const cat = btn.dataset.cat;
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.cat-section').forEach(s => s.classList.remove('active'));
+  const sec = document.getElementById('section-' + cat);
+  if (sec) sec.classList.add('active');
+  loadSection(cat);
+});
+
+/* ─── Init ───────────────────────────────────────────────────────────────── */
+checkServer();
+loadSection('cot-vot');
+
+/* ─── Import Excel Modal ─────────────────────────────────────────────────── */
+let xlFile = null;
+
+function openImportModal() {
+  document.getElementById('xlModal').style.display = 'flex';
+  resetXlModal();
+}
+
+function closeImportModal() {
+  document.getElementById('xlModal').style.display = 'none';
+}
+
+function resetXlModal() {
+  xlFile = null;
+  document.getElementById('xlStep1').style.display = 'block';
+  document.getElementById('xlStep2').style.display = 'none';
+  document.getElementById('xlFileName').style.display = 'none';
+  document.getElementById('xlBtnImport').disabled = true;
+  document.getElementById('xlFileInput').value = '';
+}
+
+function xlFileChosen(input) {
+  if (!input.files[0]) return;
+  xlFile = input.files[0];
+  const el = document.getElementById('xlFileName');
+  el.textContent = '✅ ' + xlFile.name + ' (' + (xlFile.size / 1024).toFixed(0) + ' KB)';
+  el.style.display = 'block';
+  document.getElementById('xlBtnImport').disabled = false;
+}
+
+// Drag & drop
+(function() {
+  const drop = document.getElementById('xlDrop');
+  if (!drop) return;
+  drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+  drop.addEventListener('drop', e => {
+    e.preventDefault(); drop.classList.remove('over');
+    const f = e.dataTransfer.files[0];
+    if (f && f.name.endsWith('.xlsx')) {
+      xlFile = f;
+      const el = document.getElementById('xlFileName');
+      el.textContent = '✅ ' + f.name + ' (' + (f.size / 1024).toFixed(0) + ' KB)';
+      el.style.display = 'block';
+      document.getElementById('xlBtnImport').disabled = false;
+    } else {
+      toast('Chỉ chấp nhận file .xlsx', 'error');
+    }
+  });
+})();
+
+async function doXlImport() {
+  if (!xlFile) return toast('Chưa chọn file', 'error');
+
+  document.getElementById('xlStep1').style.display = 'none';
+  document.getElementById('xlStep2').style.display = 'block';
+  document.getElementById('xlResults').innerHTML = '<div class="xl-progress">⏳ Đang xử lý file và upload ảnh...</div>';
+
+  const fd = new FormData();
+  fd.append('file', xlFile);
+
+  try {
+    const res = await fetch('/api/import-excel', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Lỗi server');
+
+    const created = data.results.filter(r => r.status === 'created').length;
+    const updated = data.results.filter(r => r.status === 'updated').length;
+
+    let html = `<div class="xl-summary">
+      <span class="xl-stat ok">✅ ${data.imported} sản phẩm đã import</span>
+      ${created ? `<span class="xl-stat ok">➕ ${created} tạo mới</span>` : ''}
+      ${updated ? `<span class="xl-stat" style="background:#EFF6FF;color:#1D4ED8;">🔄 ${updated} cập nhật</span>` : ''}
+      ${data.skipped ? `<span class="xl-stat warn">⚠ ${data.skipped} bỏ qua</span>` : ''}
+    </div>`;
+
+    if (data.results.length) {
+      html += `<table class="xl-table">
+        <thead><tr><th>Tên sản phẩm</th><th>Danh mục</th><th>Kết quả</th></tr></thead>
+        <tbody>
+          ${data.results.map(r => `<tr>
+            <td>${r.name}</td>
+            <td>${r.category}</td>
+            <td><span class="${r.status === 'created' ? 'xl-badge-new' : 'xl-badge-upd'}">${r.status === 'created' ? '✚ Tạo mới' : '↺ Cập nhật'}</span></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+    }
+
+    if (data.errors && data.errors.length) {
+      html += `<div class="xl-errors"><strong>⚠ Các dòng bị lỗi:</strong><ul>${data.errors.map(e => `<li>${e}</li>`).join('')}</ul></div>`;
+    }
+
+    html += `<button class="xl-retry" onclick="resetXlModal()">← Import file khác</button>`;
+    document.getElementById('xlResults').innerHTML = html;
+
+    // Reload tab hiện tại
+    const activeTab = document.querySelector('.cat-tab.active');
+    if (activeTab) {
+      loaded[activeTab.dataset.cat] = false;
+      loadSection(activeTab.dataset.cat);
+    }
+    toast(`Import thành công: ${data.imported} sản phẩm`);
+  } catch (e) {
+    document.getElementById('xlResults').innerHTML = `
+      <div class="xl-stat err" style="display:block;padding:16px;margin-bottom:16px;">❌ Lỗi: ${e.message}</div>
+      <button class="xl-retry" onclick="resetXlModal()">← Thử lại</button>`;
+  }
+}
+
+/* ─── Banner / Image Manager ─────────────────────────────────────────────── */
+
+const BANNER_SLOTS = [
+  /* ── Homepage ── */
+  { group: 'TRANG CHỦ (Homepage)',
+    slots: [
+      { key: 'home_hero_image',
+        name: 'Hero — Ảnh phải',
+        desc: 'Ảnh sản phẩm nổi bật hiển thị bên phải section Hero trên trang chủ',
+        size: '900 × 600 px', sizeClass: 'size-hero',
+        tip: 'Ảnh dọc hoặc vuông, nền trắng/sáng. Tỉ lệ 3:2 tối ưu.' },
+      { key: 'home_about_image',
+        name: 'About — Ảnh editorial',
+        desc: 'Ảnh cửa hàng / hành động thi đấu trong section "Về Chúng Tôi" giữa trang',
+        size: '900 × 600 px', sizeClass: '',
+        tip: 'Ảnh phong cảnh, tỉ lệ 3:2. Ảnh tối / dramatic đẹp nhất.' },
+    ]
+  },
+  /* ── Catalog banners ── */
+  { group: 'BANNER CATALOG (đầu mỗi trang danh mục)',
+    slots: [
+      { key: 'banner_cot_vot',    name: 'Cốt Vợt',         desc: 'Banner đầu trang /cot-vot.html', size: '1440 × 400 px', sizeClass: 'size-hero', tip: 'Ảnh ngang, sản phẩm trên nền tối.' },
+      { key: 'banner_mat_vot',    name: 'Mặt Vợt',         desc: 'Banner đầu trang /mat-vot.html', size: '1440 × 400 px', sizeClass: 'size-hero', tip: 'Ảnh ngang, sản phẩm trên nền tối.' },
+      { key: 'banner_bong',       name: 'Bóng',            desc: 'Banner đầu trang /bong.html',    size: '1440 × 400 px', sizeClass: 'size-hero', tip: 'Ảnh ngang, sản phẩm trên nền tối.' },
+      { key: 'banner_ban',        name: 'Bàn',             desc: 'Banner đầu trang /ban.html',     size: '1440 × 400 px', sizeClass: 'size-hero', tip: 'Ảnh ngang, sản phẩm trên nền tối.' },
+      { key: 'banner_do_thi_dau', name: 'Đồ Thi Đấu',     desc: 'Banner đầu trang /do-thi-dau.html', size: '1440 × 400 px', sizeClass: 'size-hero', tip: 'Ảnh ngang, sản phẩm trên nền tối.' },
+      { key: 'banner_combo_vot',  name: 'Combo Vợt',       desc: 'Banner đầu trang /combo-vot.html', size: '1440 × 400 px', sizeClass: 'size-hero', tip: 'Ảnh ngang, sản phẩm trên nền tối.' },
+      { key: 'banner_do_cu',      name: 'Đồ Cũ',          desc: 'Banner đầu trang /do-cu.html',   size: '1440 × 400 px', sizeClass: 'size-hero', tip: 'Ảnh ngang, sản phẩm trên nền tối.' },
+      { key: 'banner_kien_thuc',  name: 'Kiến Thức',       desc: 'Banner đầu trang /kien-thuc.html', size: '1440 × 400 px', sizeClass: 'size-hero', tip: 'Ảnh ngang, sản phẩm trên nền tối.' },
+    ]
+  },
+];
+
+let bannerSettings = {};
+
+async function loadBanners() {
+  try {
+    const r = await fetch('/api/settings');
+    bannerSettings = await r.json();
+  } catch { bannerSettings = {}; }
+  renderBannerGrid();
+}
+
+function renderBannerGrid() {
+  const grid = document.getElementById('bannerGrid');
+  let html = '';
+
+  BANNER_SLOTS.forEach(group => {
+    html += `<div class="banner-group-title">${group.group}</div>`;
+    group.slots.forEach(slot => {
+      const currentImg = bannerSettings[slot.key] || '';
+      const hasImg = !!currentImg;
+      html += `
+      <div class="banner-card" id="bcard-${slot.key}">
+        <div class="banner-preview">
+          ${hasImg
+            ? `<img src="${currentImg}?t=${Date.now()}" alt="${slot.name}" id="bimg-${slot.key}">`
+            : `<div class="banner-preview-empty" id="bimg-${slot.key}">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+                <span>Chưa có ảnh</span>
+              </div>`
+          }
+        </div>
+        <div class="banner-info">
+          <div class="banner-name">${slot.name}</div>
+          <div class="banner-desc">${slot.desc}</div>
+          <span class="banner-size ${slot.sizeClass}">📐 ${slot.size}</span>
+          <div style="font-size:10px;color:#aaa;margin-top:4px;">💡 ${slot.tip}</div>
+        </div>
+        ${currentImg ? `<div class="banner-current-path" id="bpath-${slot.key}">${currentImg}</div>` : ''}
+        <div class="banner-actions">
+          <label class="btn-banner-upload">
+            📤 ${hasImg ? 'Thay ảnh' : 'Upload ảnh'}
+            <input type="file" accept="image/*" onchange="uploadBanner('${slot.key}', this)">
+          </label>
+          ${hasImg ? `<button class="btn-banner-clear" onclick="clearBanner('${slot.key}')">✕ Xoá</button>` : ''}
+        </div>
+      </div>`;
+    });
+  });
+
+  grid.innerHTML = html;
+}
+
+async function uploadBanner(key, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const card = document.getElementById('bcard-' + key);
+  card.classList.add('banner-uploading');
+
+  const fd = new FormData();
+  fd.append('image', file);
+  try {
+    const r = await fetch(`/api/settings/${key}/upload`, { method: 'POST', body: fd });
+    const data = await r.json();
+    if (data.value) {
+      bannerSettings[key] = data.value;
+      toast(`✅ Đã lưu ảnh: ${key}`);
+      renderBannerGrid();
+    } else {
+      toast('❌ Upload thất bại', true);
+    }
+  } catch (e) {
+    toast('❌ Lỗi: ' + e.message, true);
+  } finally {
+    card.classList.remove('banner-uploading');
+  }
+}
+
+async function clearBanner(key) {
+  if (!confirm('Xoá ảnh này?')) return;
+  try {
+    await fetch(`/api/settings/${key}`, { method: 'DELETE' });
+    delete bannerSettings[key];
+    // Xoá file vật lý qua put với value rỗng
+    await fetch(`/api/settings/${key}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ value: '' })
+    });
+    delete bannerSettings[key];
+    toast('Đã xoá ảnh');
+    renderBannerGrid();
+  } catch (e) { toast('❌ Lỗi: ' + e.message, true); }
+}
+
+
+</script>
+</body>
+</html>

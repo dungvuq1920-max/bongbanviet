@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="BÓNG BÀN VIỆT — Tư Vấn Chuẩn, Hàng Chính Hãng. Cốt vợt, mặt vợt, bóng, bàn và đồ thi đấu tại 286 Nguyễn Xiển, Hà Nội.">
+  <title>BÓNG BÀN VIỆT — Tư Vấn Chuẩn, Hàng Chính Hãng</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700;1,900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ─── Reset ───────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    /* ─── Tokens ──────────────────────────────────────────── */
+    :root {
+      --red:   #D62B2B;
+      --coral: #E8503A;
+      --bg:    #FAFAF8;
+      --white: #FFFFFF;
+      --dark:  #1A1A1A;
+      --mid:   #6B6B6B;
+      --line:  #E5E5E3;
+      --warm:  #F2EDE7;
+    }
+
+    /* ─── Base ────────────────────────────────────────────── */
+    body {
+      background: #ECEAE7;
+      color: var(--dark);
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    a { text-decoration: none; color: inherit; }
+    img { display: block; max-width: 100%; }
+
+    /* ─── Site Container (1200px box) ─────────────────────── */
+    .site-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: var(--bg);
+      box-shadow: 0 0 60px rgba(0,0,0,.12);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ─── Announcement Bar ────────────────────────────────── */
+    .ann {
+      background: var(--dark);
+      color: rgba(255,255,255,.65);
+      text-align: center;
+      padding: 10px 20px;
+      font-size: 11.5px;
+      font-weight: 500;
+      letter-spacing: .05em;
+    }
+    .ann a { color: var(--coral); }
+    .ann-sep { margin: 0 14px; opacity: .25; }
+
+    /* ─── Navigation ──────────────────────────────────────── */
+    .nav {
+      position: sticky; top: 0; z-index: 200;
+      background: var(--white);
+      border-bottom: 1px solid var(--line);
+      display: flex; align-items: center;
+      justify-content: space-between;
+      height: 64px; padding: 0 40px;
+      transition: box-shadow .3s;
+    }
+    .nav.scrolled { box-shadow: 0 2px 24px rgba(0,0,0,.08); }
+    .nav-logo { display: flex; align-items: center; flex-shrink: 0; }
+    .nav-links {
+      display: flex; align-items: center;
+      gap: 22px; list-style: none;
+    }
+    .nav-links a {
+      font-size:16px;font-weight:700;letter-spacing:.04em; text-transform: uppercase;
+      color: var(--dark); transition: color .2s; white-space: nowrap;
+    }
+    .nav-links a:hover { color: var(--red); }
+    .nav-cta {
+      background: var(--red); color: #fff !important;
+      padding: 8px 18px; font-size: 10.5px !important;
+      letter-spacing: .1em !important; transition: background .2s !important;
+    }
+    .nav-cta:hover { background: var(--dark) !important; }
+
+    /* Hamburger button */
+    .nav-ham {
+      display: none; flex-direction: column;
+      gap: 5px; cursor: pointer; padding: 8px; background: none; border: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .nav-ham span {
+      display: block; width: 22px; height: 2px;
+      background: var(--dark); border-radius: 2px;
+      transition: all .3s;
+    }
+    .nav-ham.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav-ham.open span:nth-child(2) { opacity: 0; }
+    .nav-ham.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    /* ─── Mobile Nav Drawer ───────────────────────────────── */
+    .mobile-nav {
+      display: none;
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 199;
+      pointer-events: none;
+    }
+    .mobile-nav.open { display: block; pointer-events: all; }
+    .mobile-nav-overlay {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,.5);
+      animation: fadeIn .25s ease;
+    }
+    .mobile-nav-panel {
+      position: absolute; top: 0; right: 0;
+      width: min(320px, 85vw); height: 100%;
+      background: var(--white);
+      display: flex; flex-direction: column;
+      animation: slideIn .3s cubic-bezier(.4,0,.2,1);
+      overflow-y: auto;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+    .mobile-nav-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 24px; border-bottom: 1px solid var(--line);
+      flex-shrink: 0;
+    }
+    .mobile-nav-close {
+      background: none; border: none; cursor: pointer;
+      font-size: 24px; color: var(--dark); padding: 4px;
+      line-height: 1;
+    }
+    .mobile-nav-links { padding: 8px 0; flex: 1; }
+    .mobile-nav-links a {
+      display: flex; align-items: center;
+      padding: 14px 24px; font-size: 13px; font-weight: 600;
+      letter-spacing: .06em; text-transform: uppercase;
+      color: var(--dark); border-bottom: 1px solid var(--line);
+      transition: background .15s;
+    }
+    .mobile-nav-links a:hover { background: var(--bg); }
+    .mobile-nav-links a.m-cta {
+      background: var(--red); color: #fff;
+      margin: 16px 20px; border: none;
+      justify-content: center; letter-spacing: .12em;
+    }
+    .mobile-nav-footer {
+      padding: 20px 24px; border-top: 1px solid var(--line);
+      font-size: 12px; color: var(--mid); flex-shrink: 0;
+    }
+    .mobile-nav-footer a { color: var(--coral); }
+
+    /* ─── Buttons ─────────────────────────────────────────── */
+    .btn {
+      display: inline-block;
+      padding: 13px 30px;
+      font-size: 11.5px; font-weight: 700;
+      letter-spacing: .1em; text-transform: uppercase;
+      transition: all .2s; cursor: pointer;
+    }
+    .btn-red  { background: var(--red);  color: #fff; }
+    .btn-red:hover  { background: var(--coral); }
+    .btn-ghost { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.35); }
+    .btn-ghost:hover { border-color: #fff; background: rgba(255,255,255,.08); }
+    .btn-dark  { background: var(--dark); color: #fff; }
+    .btn-dark:hover  { background: #333; }
+    .btn-outline { background: transparent; color: var(--red); border: 1px solid var(--red); }
+    .btn-outline:hover { background: var(--red); color: #fff; }
+    .btn-white { background: #fff; color: var(--red); }
+    .btn-white:hover { background: var(--dark); color: #fff; }
+
+    /* ─── Hero ────────────────────────────────────────────── */
+    .hero {
+      display: grid;
+      grid-template-columns: 55fr 45fr;
+      min-height: calc(35vh - 35px);
+    }
+    .hero-l {
+      background: var(--dark);
+      padding: 28px 56px;
+      display: flex; flex-direction: column;
+      justify-content: center; position: relative;
+      overflow: hidden;
+    }
+    .hero-l::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 80% 20%, rgba(214,43,43,.12) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .eyebrow {
+      font-size: 15px; font-weight: 600;
+      letter-spacing: .16em; text-transform: uppercase;
+      color: var(--coral); margin-bottom: 24px;
+      position: relative; z-index: 1;
+    }
+    .hero-h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(40px, 5.5vw, 80px);
+      font-weight: 900; line-height: .95;
+      color: #fff; margin-bottom: 20px;
+      position: relative; z-index: 1;
+      letter-spacing: -.01em;
+    }
+    .hero-h1 i { font-style: italic; color: var(--coral); }
+    .hero-p {
+      font-size: 15px; color: rgba(255,255,255,.5);
+      line-height: 1.8; max-width: 360px;
+      margin-bottom: 44px; position: relative; z-index: 1;
+    }
+    .hero-btns {
+      display: flex; gap: 12px;
+      flex-wrap: wrap; position: relative; z-index: 1;
+    }
+    .hero-r {
+      background: #130808;
+      position: relative; overflow: hidden;
+      display: flex; align-items: center;
+      justify-content: center;
+    }
+    .hero-r-bg {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse at 35% 60%, rgba(214,43,43,.32) 0%, transparent 50%),
+        radial-gradient(ellipse at 75% 25%, rgba(232,80,58,.18) 0%, transparent 40%),
+        radial-gradient(ellipse at 60% 90%, rgba(139,0,0,.25) 0%, transparent 45%);
+    }
+    .hero-r::before {
+      content: '';
+      position: absolute; inset: 0; z-index: 1;
+      background-image:
+        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+    .hero-r-word {
+      position: absolute;
+      font-family: 'Playfair Display', serif;
+      font-weight: 900; line-height: .9;
+      color: rgba(255,255,255,.09);
+      letter-spacing: -.02em;
+      white-space: nowrap; user-select: none;
+    }
+    .hero-r-word.w1 { font-size: clamp(80px,13vw,180px); top: 8%; left: -2%; }
+    .hero-r-word.w2 { font-size: clamp(60px,10vw,145px); bottom: 12%; right: -4%; }
+    .hero-center {
+      position: relative; z-index: 2;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 20px;
+    }
+    .hero-orb {
+      width: clamp(120px, 18vw, 220px);
+      aspect-ratio: 1; border-radius: 50%;
+      background: conic-gradient(from 180deg, #8B0000, var(--red), var(--coral), #8B0000);
+      opacity: .22; box-shadow: 0 0 80px rgba(214,43,43,.3);
+      animation: pulse 4s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { transform: scale(1); opacity: .22; }
+      50%      { transform: scale(1.05); opacity: .28; }
+    }
+    .hero-center-label {
+      position: absolute;
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(14px, 2vw, 22px);
+      font-weight: 700; color: rgba(255,255,255,.18);
+      letter-spacing: .12em; text-transform: uppercase;
+      text-align: center; line-height: 1.4;
+    }
+    .hero-brands {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: rgba(255,255,255,.03);
+      border-top: 1px solid rgba(255,255,255,.05);
+      padding: 16px 32px;
+      display: flex; gap: 24px; align-items: center;
+      flex-wrap: wrap;
+    }
+    .hero-brand {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: .22em; text-transform: uppercase;
+      color: rgba(255,255,255,.2);
+    }
+    .hero-brand.hl { color: rgba(255,255,255,.5); }
+    .hero-badge {
+      position: absolute; top: 32px; right: 32px;
+      background: var(--red); color: #fff;
+      padding: 16px 22px; text-align: center; z-index: 3;
+    }
+    .hero-badge .n {
+      font-family: 'Playfair Display', serif;
+      font-size: 36px; font-weight: 900; line-height: 1;
+    }
+    .hero-badge .l {
+      font-size: 8px; letter-spacing: .2em;
+      text-transform: uppercase; opacity: .7; margin-top: 3px;
+    }
+    .hero-stat {
+      position: absolute; z-index: 3;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.1);
+      padding: 12px 18px; backdrop-filter: blur(8px);
+    }
+    .hero-stat-n {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px; font-weight: 900;
+      color: #fff; line-height: 1;
+    }
+    .hero-stat-l {
+      font-size: 8px; font-weight: 600;
+      letter-spacing: .18em; text-transform: uppercase;
+      color: rgba(255,255,255,.4); margin-top: 3px;
+    }
+
+    /* ─── Quick-shop pills ────────────────────────────────── */
+    .qpill {
+      display: inline-block;
+      padding: 8px 18px; border-radius: 100px;
+      border: 1.5px solid var(--line);
+      font-size: 11px; font-weight: 600;
+      letter-spacing: .06em; text-transform: uppercase;
+      color: var(--dark); background: var(--white);
+      transition: all .2s; white-space: nowrap;
+    }
+    .qpill:hover { border-color: var(--dark); background: var(--dark); color: #fff; }
+    .qpill-active { background: var(--red); color: #fff; border-color: var(--red); }
+    .qpill-active:hover { background: var(--dark); border-color: var(--dark); }
+
+    /* ─── Layout Helpers ──────────────────────────────────── */
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 0 40px; }
+    .s-label {
+      font-size: 10.5px; font-weight: 600;
+      letter-spacing: .28em; text-transform: uppercase;
+      color: var(--red); margin-bottom: 12px;
+    }
+    .s-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(28px, 4vw, 52px);
+      font-weight: 800; line-height: 1.08; color: var(--dark);
+    }
+    .s-title i { font-style: italic; color: var(--coral); }
+    .see-all {
+      font-size: 11px; font-weight: 600;
+      letter-spacing: .1em; text-transform: uppercase;
+      border-bottom: 1px solid; padding-bottom: 2px; transition: color .2s;
+    }
+
+    /* ─── Category Grid ───────────────────────────────────── */
+    .cats { padding: 0; }
+    .cats-head { padding: 64px 40px 40px; }
+    .cats-head-row { display: flex; justify-content: space-between; align-items: flex-end; }
+    .cat-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      grid-auto-rows: 299px;
+      gap: 3px;
+    }
+    .cat {
+      position: relative; overflow: hidden;
+      display: flex; align-items: flex-end;
+      cursor: pointer; text-decoration: none;
+    }
+    .cat::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,.78) 0%, rgba(0,0,0,.06) 55%);
+      transition: opacity .35s;
+    }
+    .cat:hover::after { opacity: .55; }
+    .cat-inner { position: relative; z-index: 2; padding: 20px 24px; width: 100%; }
+    .cat-lbl {
+      font-size: 9px; font-weight: 600;
+      letter-spacing: .22em; text-transform: uppercase;
+      color: rgba(255,255,255,.45); margin-bottom: 4px;
+    }
+    .cat-name {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(16px, 2vw, 26px);
+      font-weight: 800; color: #fff; line-height: 1.1;
+    }
+    .cat-arrow {
+      display: inline-block; margin-top: 7px;
+      font-size: 10px; font-weight: 600;
+      letter-spacing: .1em; text-transform: uppercase;
+      color: var(--coral); transition: transform .2s;
+    }
+    .cat:hover .cat-arrow { transform: translateX(4px); }
+    .cat-arrow::after { content: ' →'; }
+    .cat-bg {
+      position: absolute; z-index: 1;
+      font-family: 'Playfair Display', serif;
+      font-weight: 900; line-height: .85;
+      color: rgba(255,255,255,.045);
+      right: -8px; top: 50%; transform: translateY(-50%);
+      white-space: nowrap; pointer-events: none;
+      font-size: clamp(48px, 7.5vw, 110px);
+    }
+    .cat-orb {
+      position: absolute; z-index: 1;
+      border-radius: 50%; background: var(--red);
+      opacity: .12; pointer-events: none;
+    }
+    .cat-cot   { grid-column: span 5; grid-row: span 2; background: linear-gradient(145deg,#0d1b2a,#1a2f4a); }
+    .cat-mat   { grid-column: span 7; background: linear-gradient(135deg,#1a2e1a,#0d1f0d); }
+    .cat-bong  { grid-column: span 4; background: linear-gradient(135deg,#2e0f0f,#8B0000); }
+    .cat-ban   { grid-column: span 3; background: linear-gradient(135deg,#1a1a0f,#2a2810); }
+    .cat-thi   { grid-column: span 5; background: linear-gradient(135deg,#0d1a20,#1a2f38); }
+    .cat-combo { grid-column: span 4; background: var(--red); }
+    .cat-cu    { grid-column: span 3; background: linear-gradient(135deg,#1e1810,#2e2518); }
+
+    /* ─── Brands ──────────────────────────────────────────── */
+    .brands {
+      background: var(--white);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 48px 40px; text-align: center;
+    }
+    .brand-row {
+      display: flex; align-items: center;
+      justify-content: center; gap: 0; flex-wrap: wrap;
+    }
+    .brand-link {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700; color: #ccc; transition: color .25s;
+      padding: 8px 36px; border-right: 1px solid var(--line);
+      cursor: pointer; display: block;
+    }
+    .brand-link:last-child { border-right: none; }
+    .brand-link:hover { color: var(--dark); }
+    .brand-link.b-lg { font-size: 24px; }
+    .brand-link.b-md { font-size: 18px; }
+    .brand-link.b-sm { font-size: 15px; font-style: italic; }
+
+    /* ─── Filter Bar ──────────────────────────────────────── */
+    .filter-bar {
+      display: flex; align-items: center; gap: 12px;
+      flex-wrap: wrap; margin-bottom: 32px;
+      padding-bottom: 24px; border-bottom: 1px solid var(--line);
+    }
+    .filter-group { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 160px; }
+    .filter-label {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: .18em; text-transform: uppercase;
+      color: var(--mid); white-space: nowrap;
+    }
+    .filter-select, .filter-search {
+      padding: 9px 12px; border: 1.5px solid var(--line);
+      font-family: 'Inter', sans-serif; font-size: 13px;
+      color: var(--dark); background: var(--white);
+      cursor: pointer; outline: none; transition: border-color .2s;
+    }
+    .filter-select { flex: 1; }
+    .filter-search { flex: 1; min-width: 180px; }
+    .filter-select:focus, .filter-search:focus { border-color: var(--dark); }
+    .filter-reset {
+      font-size: 11px; font-weight: 600; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--mid); cursor: pointer;
+      border: none; background: none; font-family: 'Inter', sans-serif;
+      padding: 9px 4px; transition: color .2s; white-space: nowrap;
+    }
+    .filter-reset:hover { color: var(--red); }
+    .filter-count { font-size: 12px; color: var(--mid); }
+    .prod-card.hidden { display: none; }
+
+    /* ─── Featured Products ───────────────────────────────── */
+    .prods { background: var(--bg); padding: 80px 0; }
+    .prods-head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 36px; }
+    .prod-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+    .prod-card { cursor: pointer; }
+    .prod-img {
+      aspect-ratio: 1/1; overflow: hidden;
+      margin-bottom: 16px; position: relative;
+    }
+    .prod-img-inner {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform .45s cubic-bezier(.25,.46,.45,.94);
+    }
+    .prod-card:hover .prod-img-inner { transform: scale(1.05); }
+    .prod-wm {
+      font-family: 'Playfair Display', serif;
+      font-weight: 900; text-align: center;
+      line-height: 1.1; padding: 20px;
+      color: rgba(0,0,0,.13);
+      font-size: clamp(24px, 3.5vw, 52px);
+    }
+    .prod-badge {
+      position: absolute; top: 12px; left: 12px;
+      background: var(--dark); color: #fff;
+      font-size: 9px; font-weight: 700;
+      letter-spacing: .15em; text-transform: uppercase;
+      padding: 4px 9px; z-index: 3;
+    }
+    .prod-img::after {
+      content: 'Xem Chi Tiết';
+      position: absolute; inset: 0; z-index: 2;
+      background: rgba(26,26,26,.72); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700;
+      letter-spacing: .18em; text-transform: uppercase;
+      opacity: 0; transition: opacity .3s;
+    }
+    .prod-card:hover .prod-img::after { opacity: 1; }
+    .prod-brand { font-size: 9.5px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: var(--mid); margin-bottom: 5px; }
+    .prod-name  { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; line-height: 1.25; color: var(--dark); margin-bottom: 3px; }
+    .prod-type  { font-size: 12px; color: var(--mid); }
+    .pb-1 { background: #EDE8E0; } .pb-2 { background: #E0EDE0; }
+    .pb-3 { background: #E0E5ED; } .pb-4 { background: #EDE0E0; }
+
+    /* ─── Magazine Quote ──────────────────────────────────── */
+    .quote-strip {
+      background: var(--white);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 64px 40px; text-align: center;
+    }
+    .quote-strip blockquote {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(22px, 3.5vw, 46px);
+      font-weight: 800; line-height: 1.2;
+      color: var(--dark); max-width: 800px; margin: 0 auto 28px;
+    }
+
+    /* ─── Editorial / About ───────────────────────────────── */
+    .editorial { overflow: hidden; }
+    .editorial-grid { display: grid; grid-template-columns: 1fr 1fr; }
+    .editorial-text {
+      background: var(--warm); padding: 80px 60px;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .editorial-q {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(24px, 3.5vw, 46px);
+      font-weight: 800; line-height: 1.2;
+      color: var(--dark); margin: 14px 0 24px;
+    }
+    .editorial-q i { font-style: italic; color: var(--red); }
+    .editorial-body { font-size: 14px; color: var(--mid); line-height: 1.8; max-width: 380px; margin-bottom: 36px; }
+    .editorial-visual {
+      background: #111; min-height: 480px; position: relative;
+      display: flex; align-items: center; justify-content: center; overflow: hidden;
+    }
+    .editorial-visual-bg {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 40% 60%, rgba(214,43,43,.15) 0%, transparent 60%);
+    }
+    .editorial-watermark {
+      position: absolute;
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(100px,16vw,200px);
+      font-weight: 900; color: rgba(255,255,255,.035);
+      line-height: 1; letter-spacing: -.02em; user-select: none;
+    }
+    .editorial-cards { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 2px; width: 80%; }
+    .ed-card { background: rgba(255,255,255,.055); border: 1px solid rgba(255,255,255,.08); padding: 18px 24px; transition: background .2s; }
+    .ed-card:hover { background: rgba(255,255,255,.1); }
+    .ed-card-lbl { font-size: 9px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: rgba(255,255,255,.35); margin-bottom: 5px; }
+    .ed-card-val { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: #fff; line-height: 1.25; }
+
+    /* ─── Combo ───────────────────────────────────────────── */
+    .combo { background: var(--red); padding: 80px 0; }
+    .combo-inner { display: grid; grid-template-columns: 5fr 7fr; align-items: center; gap: 64px; }
+    .combo .s-label { color: rgba(255,255,255,.45); }
+    .combo-h { font-family: 'Playfair Display', serif; font-size: clamp(28px, 4vw, 52px); font-weight: 900; color: #fff; line-height: 1.1; margin: 12px 0 22px; }
+    .combo-h i { font-style: italic; color: rgba(255,255,255,.4); }
+    .combo-p { font-size: 14px; color: rgba(255,255,255,.65); line-height: 1.75; max-width: 340px; margin-bottom: 36px; }
+    .combo-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; }
+    .c-card { background: rgba(0,0,0,.18); border: 1px solid rgba(255,255,255,.1); padding: 24px 22px; transition: background .2s; }
+    .c-card:hover { background: rgba(0,0,0,.3); }
+    .c-lv { font-size: 9px; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; color: rgba(255,255,255,.4); margin-bottom: 8px; }
+    .c-name { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: #fff; line-height: 1.2; margin-bottom: 5px; }
+    .c-desc { font-size: 11px; color: rgba(255,255,255,.45); }
+
+    /* ─── Used Goods ──────────────────────────────────────── */
+    .used { background: var(--white); padding: 80px 0; }
+    .used-inner { margin-top: 40px; }
+    .used-banner { display: grid; grid-template-columns: 5fr 7fr; gap: 3px; }
+    .used-text-col { background: var(--warm); padding: 52px 44px; display: flex; flex-direction: column; justify-content: center; }
+    .used-text-col .s-label { margin-bottom: 18px; }
+    .used-text-col p { font-size: 14px; color: var(--mid); line-height: 1.8; max-width: 290px; margin-bottom: 28px; }
+    .used-visual { background: #0d0d0d; min-height: 320px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+    .used-wm { position: absolute; font-family: 'Playfair Display', serif; font-size: clamp(80px,14vw,180px); font-weight: 900; color: rgba(255,255,255,.03); line-height: 1; user-select: none; }
+    .used-badge { background: var(--red); color: #fff; padding: 28px 44px; text-align: center; position: relative; z-index: 2; }
+    .used-badge .n { font-family: 'Playfair Display', serif; font-size: 56px; font-weight: 900; line-height: 1; }
+    .used-badge .t { font-size: 9px; letter-spacing: .22em; text-transform: uppercase; opacity: .65; margin-top: 4px; }
+
+    /* ─── Knowledge / Blog ────────────────────────────────── */
+    .know { background: var(--bg); padding: 80px 0; }
+    .know-head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 44px; }
+    .art-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+    .art-card { cursor: pointer; }
+    .art-img { aspect-ratio: 16/9; overflow: hidden; margin-bottom: 18px; }
+    .art-img-inner { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; transition: transform .45s cubic-bezier(.25,.46,.45,.94); }
+    .art-card:hover .art-img-inner { transform: scale(1.05); }
+    .art-wm { font-family: 'Playfair Display', serif; font-size: 48px; font-weight: 900; color: rgba(0,0,0,.09); }
+    .art-tag { font-size: 9.5px; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; color: var(--red); margin-bottom: 8px; }
+    .art-title { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; line-height: 1.3; color: var(--dark); margin-bottom: 9px; }
+    .art-exc { font-size: 13px; color: var(--mid); line-height: 1.65; }
+    .art-date { font-size: 10px; color: var(--mid); margin-top: 14px; opacity: .6; }
+    .ab-1 { background: #DDD5C8; } .ab-2 { background: #C8D5C8; } .ab-3 { background: #C8CDD8; }
+
+    /* ─── Contact Strip ───────────────────────────────────── */
+    .contact { background: var(--dark); padding: 60px 0; }
+    .contact-grid { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 0 40px; align-items: center; }
+    .contact-div { width: 1px; height: 56px; background: rgba(255,255,255,.08); }
+    .contact-lbl { font-size: 9.5px; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; color: rgba(255,255,255,.3); margin-bottom: 8px; }
+    .contact-val { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; color: #fff; line-height: 1.35; }
+    .contact-val a { color: #fff; transition: color .2s; }
+    .contact-val a:hover { color: var(--coral); }
+    .social-links { display: flex; gap: 18px; margin-top: 4px; }
+    .social-links a { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.45); transition: color .2s; }
+    .social-links a:hover { color: var(--coral); }
+
+    /* ─── Newsletter ──────────────────────────────────────── */
+    .newsletter { background: var(--warm); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 56px 40px; }
+    .newsletter-inner { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 56px; }
+    .newsletter h3 { font-family: 'Playfair Display', serif; font-size: clamp(22px, 3vw, 36px); font-weight: 800; line-height: 1.15; color: var(--dark); }
+    .newsletter h3 em { font-style: italic; color: var(--coral); }
+    .newsletter-desc { font-size: 13px; color: var(--mid); margin-bottom: 18px; line-height: 1.6; }
+    .newsletter-form { display: flex; gap: 0; }
+    .newsletter-input { flex: 1; padding: 13px 18px; border: 1.5px solid var(--line); border-right: none; font-family: 'Inter', sans-serif; font-size: 13px; background: var(--white); outline: none; color: var(--dark); }
+    .newsletter-btn { padding: 13px 24px; background: var(--dark); color: #fff; border: none; font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; white-space: nowrap; transition: background .2s; }
+    .newsletter-btn:hover { background: var(--red); }
+
+    /* ─── Footer ──────────────────────────────────────────── */
+    footer { background: var(--dark); }
+    .footer-grid { padding: 48px 40px 28px; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; }
+    .footer-logo-text { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: #fff; }
+    .footer-logo-text span { color: var(--red); }
+    .footer-slogan { font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.25); margin-top: 3px; }
+    .footer-desc { font-size: 12px; color: rgba(255,255,255,.4); line-height: 1.7; max-width: 220px; margin-top: 14px; }
+    .footer-social { display: flex; gap: 14px; margin-top: 20px; }
+    .footer-social a { font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.35); transition: color .2s; }
+    .footer-social a:hover { color: var(--coral); }
+    .footer-col-title { font-size: 9.5px; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; color: rgba(255,255,255,.3); margin-bottom: 18px; }
+    .footer-links { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+    .footer-links a { font-size: 12px; color: rgba(255,255,255,.45); transition: color .2s; }
+    .footer-links a:hover { color: #fff; }
+    .footer-bottom { padding: 18px 40px; border-top: 1px solid rgba(255,255,255,.06); display: flex; justify-content: space-between; align-items: center; }
+    .footer-bottom p { font-size: 10px; color: rgba(255,255,255,.2); }
+
+    /* ─── Responsive ──────────────────────────────────────── */
+    @media (max-width: 960px) {
+      .nav-links { gap: 12px; }
+      .nav-links a { font-size: 12px; }
+      .prod-grid { grid-template-columns: repeat(2, 1fr); }
+      .combo-inner { grid-template-columns: 1fr; gap: 40px; }
+      .editorial-grid { grid-template-columns: 1fr; }
+      .editorial-visual { min-height: 320px; }
+      .cat-grid { grid-template-columns: repeat(6,1fr); grid-auto-rows: 220px; }
+      .cat-cot  { grid-column: span 3; grid-row: span 2; }
+      .cat-mat  { grid-column: span 3; }
+      .cat-bong { grid-column: span 2; }
+      .cat-ban  { grid-column: span 1; }
+      .cat-thi  { grid-column: span 2; }
+      .cat-combo{ grid-column: span 2; }
+      .cat-cu   { grid-column: span 2; }
+      .contact-grid { grid-template-columns: 1fr 1fr; gap: 28px; }
+      .contact-div { display: none; }
+      .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
+    }
+
+    @media (max-width: 640px) {
+      .ann { font-size: 10.5px; padding: 9px 16px; }
+      .ann-sep { margin: 0 8px; }
+      .nav { padding: 0 16px; height: 56px; }
+      .nav-links { display: none; }
+      .nav-ham { display: flex; }
+      .wrap { padding: 0 16px; }
+
+      .hero { grid-template-columns: 1fr; min-height: auto; }
+      .hero-l { padding: 48px 20px; min-height: 60vw; }
+      .hero-h1 { font-size: clamp(40px, 11vw, 64px); }
+      .eyebrow { font-size: 12px; }
+      .hero-r { min-height: 52vw; }
+      .hero-badge { top: 16px; right: 16px; padding: 12px 16px; }
+      .hero-badge .n { font-size: 28px; }
+      .hero-stat { display: none; }
+      .hero-brands { padding: 12px 16px; gap: 14px; }
+
+      .cats-head { padding: 40px 16px 28px; }
+      .cats-head-row { flex-direction: column; align-items: flex-start; gap: 12px; }
+      .cat-grid { grid-template-columns: 1fr 1fr; grid-auto-rows: 130px; gap: 2px; }
+      .cat-cot,.cat-mat,.cat-bong,.cat-ban,
+      .cat-thi,.cat-combo,.cat-cu { grid-column: span 1; grid-row: span 1; }
+      .cat-cot { grid-row: span 2; }
+
+      .brands { padding: 36px 16px; }
+      .brand-link { padding: 8px 18px; font-size: 16px !important; border-right: none; border-bottom: 1px solid var(--line); }
+      .brand-link:last-child { border-bottom: none; }
+
+      .prods { padding: 48px 0; }
+      .prods-head { flex-direction: column; align-items: flex-start; gap: 12px; }
+      .prod-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+      .prod-name { font-size: 15px; }
+
+      .filter-bar { gap: 8px; }
+      .filter-group { min-width: 100%; }
+      .filter-search { min-width: 100%; }
+
+      .quote-strip { padding: 40px 20px; }
+
+      .editorial-text { padding: 44px 20px; }
+      .editorial-cards { width: 90%; }
+
+      .combo { padding: 48px 0; }
+      .combo-inner { gap: 32px; }
+      .combo-cards { grid-template-columns: 1fr; }
+
+      .used { padding: 48px 0; }
+      .used-banner { grid-template-columns: 1fr; }
+      .used-text-col { padding: 36px 20px; }
+
+      .know { padding: 48px 0; }
+      .art-grid { grid-template-columns: 1fr; gap: 28px; }
+
+      .contact { padding: 40px 0; }
+      .contact-grid { grid-template-columns: 1fr; gap: 24px; }
+
+      .newsletter { padding: 40px 20px; }
+      .newsletter-inner { grid-template-columns: 1fr; gap: 24px; }
+      .newsletter-form { flex-direction: column; }
+      .newsletter-input { border-right: 1.5px solid var(--line); border-bottom: none; }
+
+      .footer-grid { grid-template-columns: 1fr; gap: 28px; padding: 36px 20px 20px; }
+      .footer-bottom { padding: 14px 20px; flex-direction: column; gap: 6px; text-align: center; }
+    }
+  
+    .prod-img-inner img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  </style>
+</head>
+<body>
+
+<!-- ── Mobile Nav Drawer ─────────────────────────────────── -->
+<div class="mobile-nav" id="mobileNav">
+  <div class="mobile-nav-overlay" id="navOverlay"></div>
+  <div class="mobile-nav-panel">
+    <div class="mobile-nav-header">
+      <img src="logo_bongbanviet.png" alt="Logo" style="height:44px;width:auto;">
+      <button class="mobile-nav-close" id="navClose">✕</button>
+    </div>
+    <div class="mobile-nav-links">
+      <a href="cot-vot.html">Cốt Vợt</a>
+      <a href="mat-vot.html">Mặt Vợt</a>
+      <a href="bong.html">Bóng</a>
+      <a href="ban.html">Bàn</a>
+      <a href="do-thi-dau.html">Đồ Thi Đấu</a>
+      <a href="combo-vot.html">Combo Vợt</a>
+      <a href="do-cu.html">Đồ Cũ</a>
+      <a href="kien-thuc.html">Kiến Thức</a>
+      <a href="huong-dan-mua-hang.html">Hướng Dẫn Mua Hàng</a>
+      <a href="chinh-sach-doi-tra.html">Chính Sách Đổi Trả</a>
+      <a href="lien-he.html" class="m-cta">Liên Hệ Tư Vấn</a>
+    </div>
+    <div class="mobile-nav-footer">
+      Hotline / Zalo: <a href="tel:0961269386">096.1269.386</a><br>
+      286 Nguyễn Xiển, Thanh Liệt, Hà Nội
+    </div>
+  </div>
+</div>
+
+<div class="site-container">
+
+<!-- Announcement Bar -->
+<div class="ann">
+  Miễn phí tư vấn thiết bị theo trình độ &amp; phong cách chơi
+  <span class="ann-sep">·</span>
+  Hotline / Zalo: <a href="tel:0961269386">096.1269.386</a>
+  <span class="ann-sep">·</span>
+  <span class="ann-addr">286 Nguyễn Xiển, Hà Nội</span>
+</div>
+
+<!-- Navigation -->
+<nav class="nav" id="nav">
+  <a href="index.html" class="nav-logo">
+    <img src="logo_bongbanviet.png" alt="Bóng Bàn Việt" style="height:50px;width:auto;">
+  </a>
+  <ul class="nav-links">
+    <li><a href="cot-vot.html">Cốt Vợt</a></li>
+    <li><a href="mat-vot.html">Mặt Vợt</a></li>
+    <li><a href="bong.html">Bóng</a></li>
+    <li><a href="ban.html">Bàn</a></li>
+    <li><a href="do-thi-dau.html">Đồ Thi Đấu</a></li>
+    <li><a href="combo-vot.html">Combo</a></li>
+    <li><a href="do-cu.html">Đồ Cũ</a></li>
+    <li><a href="kien-thuc.html">Kiến Thức</a></li>
+    <li><a href="huong-dan-mua-hang.html">Hướng Dẫn</a></li>
+    <li><a href="lien-he.html" class="nav-cta">Liên Hệ</a></li>
+  </ul>
+  <button class="nav-ham" id="ham" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-l">
+    <p class="eyebrow">Hàng Chính Hãng &nbsp;·&nbsp; Tư Vấn Chuyên Sâu</p>
+    <h1 class="hero-h1">Chơi Đúng.<br><i>Chơi Đẹp.</i></h1>
+    <p class="hero-p">Thiết bị bóng bàn chuyên nghiệp — từ cốt vợt, mặt vợt đến bàn thi đấu. Tư vấn miễn phí theo trình độ và phong cách chơi của bạn.</p>
+    <div class="hero-btns">
+      <a href="#san-pham" class="btn btn-red">Xem Sản Phẩm</a>
+      <a href="lien-he.html" class="btn btn-ghost">Tư Vấn Miễn Phí</a>
+    </div>
+  </div>
+  <div class="hero-r">
+    <div class="hero-r-bg"></div>
+    <span class="hero-r-word w1">BÓNG</span>
+    <span class="hero-r-word w2">BÀN</span>
+    <div class="hero-center">
+      <div class="hero-orb"></div>
+      <div class="hero-center-label">Bóng Bàn<br>Việt</div>
+    </div>
+    <div class="hero-badge">
+      <div class="n">20+</div>
+      <div class="l">Năm Kinh Nghiệm</div>
+    </div>
+    <div class="hero-stat" style="bottom:100px;left:28px;">
+      <div class="hero-stat-n">4+</div>
+      <div class="hero-stat-l">Thương Hiệu</div>
+    </div>
+    <div class="hero-stat" style="top:40%;left:48%;transform:translateY(-50%);">
+      <div class="hero-stat-n">100%</div>
+      <div class="hero-stat-l">Chính Hãng</div>
+    </div>
+    <div class="hero-brands">
+      <span class="hero-brand hl">Butterfly</span>
+      <span class="hero-brand hl">Tibhar</span>
+      <span class="hero-brand">Unrex</span>
+      <span class="hero-brand">Yinhe</span>
+    </div>
+  </div>
+</section>
+
+<!-- Search Bar -->
+<div style="background:var(--bg);border-bottom:1px solid var(--line);padding:14px 40px;">
+  <div style="max-width:560px;margin:0 auto;position:relative;">
+    <svg style="position:absolute;left:16px;top:50%;transform:translateY(-50%);opacity:.4;pointer-events:none;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="heroSearch" placeholder="Tìm kiếm sản phẩm theo tên..."
+      style="width:100%;padding:11px 20px 11px 44px;border:1.5px solid var(--line);background:var(--white);font-size:14px;font-family:'Inter',sans-serif;color:var(--dark);outline:none;transition:border-color .2s;"
+      oninput="doHeroSearch(this.value)"
+      onfocus="this.style.borderColor='var(--dark)'" onblur="this.style.borderColor='var(--line)'">
+  </div>
+</div>
+
+<!-- Categories -->
+<section class="cats" id="san-pham">
+  <div class="cats-head">
+    <p class="s-label">Danh Mục Sản Phẩm</p>
+    <div class="cats-head-row">
+      <h2 class="s-title">Khám Phá<br><i>Danh Mục</i></h2>
+      <a href="cot-vot.html" class="see-all" style="color:var(--dark);">Tất cả sản phẩm</a>
+    </div>
+  </div>
+  <div class="cat-grid">
+    <a href="cot-vot.html" class="cat cat-cot">
+      <span class="cat-bg">Cốt</span>
+      <div class="cat-orb" style="width:80px;height:80px;top:14px;right:18px;"></div>
+      <div class="cat-inner">
+        <p class="cat-lbl">Danh mục chính</p>
+        <h3 class="cat-name">Cốt Vợt</h3>
+        <span class="cat-arrow">Khám phá</span>
+      </div>
+    </a>
+    <a href="mat-vot.html" class="cat cat-mat">
+      <span class="cat-bg">Mặt</span>
+      <div class="cat-inner">
+        <p class="cat-lbl">Danh mục chính</p>
+        <h3 class="cat-name">Mặt Vợt</h3>
+        <span class="cat-arrow">Khám phá</span>
+      </div>
+    </a>
+    <a href="bong.html" class="cat cat-bong">
+      <span class="cat-bg">Bóng</span>
+      <div class="cat-orb" style="width:60px;height:60px;top:18px;right:14px;"></div>
+      <div class="cat-inner">
+        <p class="cat-lbl">Danh mục</p>
+        <h3 class="cat-name">Bóng</h3>
+        <span class="cat-arrow">Khám phá</span>
+      </div>
+    </a>
+    <a href="ban.html" class="cat cat-ban">
+      <span class="cat-bg">Bàn</span>
+      <div class="cat-inner">
+        <p class="cat-lbl">Danh mục</p>
+        <h3 class="cat-name">Bàn</h3>
+        <span class="cat-arrow">Xem</span>
+      </div>
+    </a>
+    <a href="do-thi-dau.html" class="cat cat-thi">
+      <span class="cat-bg">Thi Đấu</span>
+      <div class="cat-inner">
+        <p class="cat-lbl">Giày · Trang Phục · Phụ Kiện</p>
+        <h3 class="cat-name">Đồ Thi Đấu</h3>
+        <span class="cat-arrow">Khám phá</span>
+      </div>
+    </a>
+    <a href="combo-vot.html" class="cat cat-combo">
+      <span class="cat-bg">Combo</span>
+      <div class="cat-orb" style="width:55px;height:55px;top:12px;right:12px;"></div>
+      <div class="cat-inner">
+        <p class="cat-lbl">Khuyên Dùng</p>
+        <h3 class="cat-name">Combo Vợt</h3>
+        <span class="cat-arrow">Khám phá</span>
+      </div>
+    </a>
+    <a href="do-cu.html" class="cat cat-cu">
+      <span class="cat-bg">Cũ</span>
+      <div class="cat-inner">
+        <p class="cat-lbl">Second-hand</p>
+        <h3 class="cat-name">Đồ Cũ</h3>
+        <span class="cat-arrow">Xem</span>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- Brands -->
+<section class="brands">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;">
+    <p class="s-label" style="margin-bottom:0;">Thương Hiệu Phân Phối Chính Hãng</p>
+    <a href="cot-vot.html" class="see-all" style="color:var(--mid);font-size:10px;">Xem theo hãng →</a>
+  </div>
+  <div class="brand-row">
+    <a href="cot-vot.html" class="brand-link b-lg">Butterfly</a>
+    <a href="cot-vot.html" class="brand-link b-lg">Tibhar</a>
+    <a href="cot-vot.html" class="brand-link b-md">Unrex</a>
+    <a href="cot-vot.html" class="brand-link b-md">Yinhe</a>
+    <a href="cot-vot.html" class="brand-link b-sm">&amp; More</a>
+  </div>
+</section>
+
+<!-- Featured Products -->
+<section class="prods">
+  <div class="wrap">
+    <div class="prods-head">
+      <div>
+        <p class="s-label">Sản Phẩm Nổi Bật</p>
+        <h2 class="s-title">Được Lựa Chọn<br><i>Nhiều Nhất</i></h2>
+      </div>
+      <a href="cot-vot.html" class="see-all" style="color:var(--dark);">Xem tất cả →</a>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar" id="filterBar">
+      <div class="filter-group">
+        <span class="filter-label">Hãng</span>
+        <select class="filter-select" id="filterBrand" onchange="applyFilter()">
+          <option value="">Tất cả hãng</option>
+          <option value="butterfly">Butterfly</option>
+          <option value="tibhar">Tibhar</option>
+          <option value="unrex">Unrex</option>
+          <option value="yinhe">Yinhe</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">Danh mục</span>
+        <select class="filter-select" id="filterCat" onchange="applyFilter()">
+          <option value="">Tất cả</option>
+          <option value="cot-vot">Cốt Vợt</option>
+          <option value="mat-vot">Mặt Vợt</option>
+        </select>
+      </div>
+      <input class="filter-search" type="text" id="filterSearch" placeholder="Tìm theo tên sản phẩm..." oninput="applyFilter()">
+      <button class="filter-reset" onclick="resetFilter()">✕ Xoá lọc</button>
+      <span class="filter-count" id="filterCount">4 sản phẩm</span>
+    </div>
+
+    <div class="prod-grid" id="prodGrid"></div>
+  </div>
+</section>
+
+<!-- Magazine Pull Quote -->
+<div class="quote-strip">
+  <div>
+    <p class="s-label" style="margin-bottom:24px;">Triết Lý Của Chúng Tôi</p>
+    <blockquote>
+      &#8220;Một chiếc vợt phù hợp không chỉ cải thiện lối chơi &#8212;
+      <em style="font-style:italic;color:var(--coral);">nó thay đổi cả trải nghiệm trên bàn.&#8221;</em>
+    </blockquote>
+    <div style="display:flex;align-items:center;justify-content:center;gap:16px;">
+      <div style="width:28px;height:1px;background:var(--line);"></div>
+      <p style="font-size:11px;color:var(--mid);letter-spacing:.12em;text-transform:uppercase;">Bóng Bàn Việt &nbsp;·&nbsp; Hà Nội</p>
+      <div style="width:28px;height:1px;background:var(--line);"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Editorial / About -->
+<section class="editorial">
+  <div class="editorial-grid">
+    <div class="editorial-text">
+      <p class="s-label">Về Chúng Tôi</p>
+      <h2 class="editorial-q">Tư Vấn <i>Chuẩn</i>,<br>Hàng <i>Chính Hãng</i>.</h2>
+      <p class="editorial-body">Chúng tôi không chỉ bán vợt — chúng tôi giúp bạn chọn đúng thiết bị cho trình độ và phong cách chơi của mình. Mỗi sản phẩm đều được kiểm định chất lượng và có đầy đủ bảo hành chính hãng.</p>
+      <a href="lien-he.html" class="btn btn-dark" style="align-self:flex-start;">Tìm Hiểu Thêm</a>
+    </div>
+    <div class="editorial-visual">
+      <div class="editorial-visual-bg"></div>
+      <div class="editorial-watermark">BBV</div>
+      <div class="editorial-cards">
+        <div class="ed-card"><p class="ed-card-lbl">Chuyên Môn</p><p class="ed-card-val">20+ Năm Kinh Nghiệm</p></div>
+        <div class="ed-card"><p class="ed-card-lbl">Thương Hiệu</p><p class="ed-card-val">Butterfly · Tibhar · Unrex · Yinhe</p></div>
+        <div class="ed-card"><p class="ed-card-lbl">Dịch Vụ</p><p class="ed-card-val">Tư Vấn Miễn Phí Theo Trình Độ</p></div>
+        <div class="ed-card"><p class="ed-card-lbl">Địa Chỉ</p><p class="ed-card-val">286 Nguyễn Xiển, Hà Nội</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Combo -->
+<section class="combo">
+  <div class="wrap">
+    <div class="combo-inner">
+      <div>
+        <p class="s-label">Dành Cho Mọi Trình Độ</p>
+        <h2 class="combo-h">Combo Vợt<br><i>Khuyên Dùng</i></h2>
+        <p class="combo-p">Không biết bắt đầu từ đâu? Chúng tôi đã lắp sẵn những bộ combo cốt + mặt vợt tối ưu nhất — phù hợp với từng cấp độ.</p>
+        <a href="combo-vot.html" class="btn btn-white">Xem Tất Cả Combo</a>
+      </div>
+      <div class="combo-cards">
+        <div class="c-card"><p class="c-lv">Beginner</p><h4 class="c-name">Combo Khởi Đầu</h4><p class="c-desc">Nhẹ, dễ kiểm soát</p></div>
+        <div class="c-card"><p class="c-lv">Intermediate</p><h4 class="c-name">Combo Phát Triển</h4><p class="c-desc">Cân bằng tốc độ &amp; spin</p></div>
+        <div class="c-card"><p class="c-lv">Advanced</p><h4 class="c-name">Combo Chuyên Sâu</h4><p class="c-desc">Hiệu suất cao, tấn công mạnh</p></div>
+        <div class="c-card"><p class="c-lv">Pro</p><h4 class="c-name">Combo Thi Đấu</h4><p class="c-desc">Cấp độ chuyên nghiệp</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Used Goods -->
+<section class="used">
+  <div class="wrap">
+    <p class="s-label">Second-Hand</p>
+    <h2 class="s-title">Đồ Đã Qua <i>Sử Dụng</i></h2>
+    <div class="used-inner">
+      <div class="used-banner">
+        <div class="used-text-col">
+          <p class="s-label" style="margin-top:0;">Kiểm Định Chất Lượng</p>
+          <p>Sản phẩm đã qua sử dụng được kiểm định kỹ lưỡng — giá tốt hơn, vẫn chơi như mới. Lý tưởng cho người mới hoặc muốn thử nghiệm thiết bị cao cấp.</p>
+          <a href="do-cu.html" class="btn btn-outline" style="align-self:flex-start;">Xem Đồ Cũ</a>
+        </div>
+        <div class="used-visual">
+          <div class="used-wm">Cũ</div>
+          <div class="used-badge">
+            <div class="n">99%</div>
+            <div class="t">Còn Tốt</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Knowledge / Blog -->
+<section class="know">
+  <div class="wrap">
+    <div class="know-head">
+      <div>
+        <p class="s-label">Blog &amp; Hướng Dẫn</p>
+        <h2 class="s-title">Chia Sẻ<br><i>Kiến Thức</i></h2>
+      </div>
+      <a href="kien-thuc.html" class="see-all" style="color:var(--dark);">Xem tất cả →</a>
+    </div>
+    <div class="art-grid">
+      <a href="kien-thuc.html" class="art-card">
+        <div class="art-img ab-1"><div class="art-img-inner"><div class="art-wm">Cốt</div></div></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+          <p class="art-tag" style="margin-bottom:0;">Hướng Dẫn</p>
+          <span style="font-size:9px;color:var(--mid);letter-spacing:.06em;">5 phút đọc</span>
+        </div>
+        <h3 class="art-title">Cách Chọn Cốt Vợt Phù Hợp Với Phong Cách Chơi</h3>
+        <p class="art-exc">Tất tần tật về cốt vợt: chất liệu, tốc độ, độ kiểm soát và cách chọn theo từng trình độ...</p>
+        <p class="art-date">Tháng 4, 2025</p>
+      </a>
+      <a href="kien-thuc.html" class="art-card">
+        <div class="art-img ab-2"><div class="art-img-inner"><div class="art-wm">T05</div></div></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+          <p class="art-tag" style="margin-bottom:0;">Review</p>
+          <span style="font-size:9px;color:var(--mid);letter-spacing:.06em;">8 phút đọc</span>
+        </div>
+        <h3 class="art-title">Review Butterfly Tenergy 05 Sau 6 Tháng Sử Dụng</h3>
+        <p class="art-exc">Tenergy 05 có xứng đáng với mức giá? Trải nghiệm thực tế qua từng buổi tập luyện...</p>
+        <p class="art-date">Tháng 3, 2025</p>
+      </a>
+      <a href="kien-thuc.html" class="art-card">
+        <div class="art-img ab-3"><div class="art-img-inner"><div class="art-wm">vs.</div></div></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+          <p class="art-tag" style="margin-bottom:0;">So Sánh</p>
+          <span style="font-size:9px;color:var(--mid);letter-spacing:.06em;">6 phút đọc</span>
+        </div>
+        <h3 class="art-title">Tibhar vs Butterfly: Thương Hiệu Nào Phù Hợp Với Bạn?</h3>
+        <p class="art-exc">Phân tích chi tiết hai thương hiệu hàng đầu — giá cả, chất lượng và đối tượng phù hợp...</p>
+        <p class="art-date">Tháng 3, 2025</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Contact Strip -->
+<section class="contact" id="lien-he">
+  <div class="wrap">
+    <div class="contact-grid">
+      <div>
+        <p class="contact-lbl">Địa Chỉ</p>
+        <p class="contact-val">286 Nguyễn Xiển,<br>Thanh Liệt, Hà Nội</p>
+      </div>
+      <div class="contact-div"></div>
+      <div>
+        <p class="contact-lbl">Hotline &amp; Zalo</p>
+        <p class="contact-val"><a href="tel:0961269386">096.1269.386</a></p>
+      </div>
+      <div class="contact-div"></div>
+      <div>
+        <p class="contact-lbl">Theo Dõi Chúng Tôi</p>
+        <div class="social-links">
+          <a href="https://facebook.com/bongbanviet.official" target="_blank" rel="noopener">Facebook</a>
+          <a href="https://instagram.com/bongbanviet" target="_blank" rel="noopener">Instagram</a>
+          <a href="https://tiktok.com/@bongbanviet" target="_blank" rel="noopener">TikTok</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Newsletter -->
+<div class="newsletter">
+  <div class="newsletter-inner">
+    <div>
+      <p class="s-label">Bản Tin Bóng Bàn</p>
+      <h3>Cập nhật sản phẩm mới &amp;<br><em>kiến thức chuyên sâu.</em></h3>
+    </div>
+    <div>
+      <p class="newsletter-desc">Đăng ký nhận thông báo sản phẩm mới, bài review và tips chọn thiết bị từ chuyên gia.</p>
+      <div class="newsletter-form">
+        <input class="newsletter-input" type="email" placeholder="Email của bạn">
+        <button class="newsletter-btn">Đăng Ký</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-logo-text">BÓNG BÀN <span>VIỆT</span></div>
+      <div class="footer-slogan">Tư Vấn Chuẩn · Hàng Chính Hãng</div>
+      <p class="footer-desc">Thiết bị bóng bàn chuyên nghiệp tại Hà Nội. Tư vấn miễn phí theo trình độ.</p>
+      <div class="footer-social">
+        <a href="https://facebook.com/bongbanviet.official" target="_blank">FB</a>
+        <a href="https://instagram.com/bongbanviet" target="_blank">IG</a>
+        <a href="https://tiktok.com/@bongbanviet" target="_blank">TK</a>
+      </div>
+    </div>
+    <div>
+      <p class="footer-col-title">Sản Phẩm</p>
+      <ul class="footer-links">
+        <li><a href="cot-vot.html">Cốt Vợt</a></li>
+        <li><a href="mat-vot.html">Mặt Vợt</a></li>
+        <li><a href="bong.html">Bóng</a></li>
+        <li><a href="ban.html">Bàn</a></li>
+        <li><a href="do-thi-dau.html">Đồ Thi Đấu</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="footer-col-title">Hỗ Trợ</p>
+      <ul class="footer-links">
+        <li><a href="combo-vot.html">Combo Vợt</a></li>
+        <li><a href="do-cu.html">Đồ Cũ</a></li>
+        <li><a href="kien-thuc.html">Kiến Thức</a></li>
+        <li><a href="huong-dan-mua-hang.html">Hướng Dẫn Mua Hàng</a></li>
+        <li><a href="chinh-sach-doi-tra.html">Chính Sách Đổi Trả</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="footer-col-title">Liên Hệ</p>
+      <ul class="footer-links">
+        <li style="font-size:12px;color:rgba(255,255,255,.45);line-height:1.5;">286 Nguyễn Xiển,<br>Thanh Liệt, Hà Nội</li>
+        <li><a href="tel:0961269386">096.1269.386</a></li>
+        <li><a href="lien-he.html">Trang Liên Hệ</a></li>
+        <li><a href="admin.html" style="opacity:.35;">Admin ↗</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 BongBanViet.com · Tư Vấn Chuẩn - Hàng Chính Hãng</p>
+    <p>Thiết kế bởi Bóng Bàn Việt</p>
+  </div>
+</footer>
+
+</div><!-- end .site-container -->
+
+<script src="/js/products.js"></script>
+<script>
+/* ── Nav scroll shadow ────────────────────────────────── */
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 10);
+}, { passive: true });
+
+/* ── Mobile nav ────────────────────────────────────────── */
+const ham        = document.getElementById('ham');
+const mobileNav  = document.getElementById('mobileNav');
+const navOverlay = document.getElementById('navOverlay');
+const navClose   = document.getElementById('navClose');
+
+function openNav() {
+  mobileNav.classList.add('open');
+  ham.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeNav() {
+  mobileNav.classList.remove('open');
+  ham.classList.remove('open');
+  document.body.style.overflow = '';
+}
+ham.addEventListener('click', () => mobileNav.classList.contains('open') ? closeNav() : openNav());
+navClose.addEventListener('click', closeNav);
+navOverlay.addEventListener('click', closeNav);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeNav(); });
+
+/* ── Product filter ─────────────────────────────────────── */
+function applyFilter() {
+  const brand = document.getElementById('filterBrand').value;
+  const cat   = document.getElementById('filterCat').value;
+  const q     = document.getElementById('filterSearch').value.toLowerCase().trim();
+  const cards = document.querySelectorAll('#prodGrid .prod-card');
+  let visible = 0;
+  cards.forEach(c => {
+    const ok = (!brand || c.dataset.brand === brand)
+            && (!cat   || c.dataset.cat   === cat)
+            && (!q     || c.dataset.name.includes(q));
+    c.classList.toggle('hidden', !ok);
+    if (ok) visible++;
+  });
+  document.getElementById('filterCount').textContent = visible + ' sản phẩm';
+}
+function resetFilter() {
+  document.getElementById('filterBrand').value = '';
+  document.getElementById('filterCat').value   = '';
+  document.getElementById('filterSearch').value = '';
+  applyFilter();
+}
+
+function doHeroSearch(q) {
+  const fs = document.getElementById('filterSearch');
+  if (fs) { fs.value = q; applyFilter(); }
+  if (q.trim().length > 0) {
+    document.getElementById('san-pham').scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+/* ── Load sản phẩm từ API ──────────────────────────────── */
+loadProdGrid({ limit: 12 }, {
+  gridId: 'prodGrid', countId: 'filterCount',
+  showCat: true,
+  onDone: () => applyFilter()
+});
+</script>
+<script src="/js/banners.js"></script>
+</body>
+</html>

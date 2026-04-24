@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel — BÓNG BÀN VIỆT</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --red:#D62B2B;--dark:#1A1A1A;--mid:#6B6B6B;--line:#E5E5E3;
+  --bg:#F5F5F3;--white:#fff;--green:#22C55E;--orange:#F59E0B;
+  --sidebar:240px;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--dark);display:flex;min-height:100vh}
+a{color:inherit;text-decoration:none}
+input,select,textarea{font-family:inherit;font-size:14px}
+button{font-family:inherit;cursor:pointer}
+
+/* Sidebar */
+.sidebar{width:var(--sidebar);background:var(--dark);color:#fff;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:50}
+.sidebar-brand{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sidebar-brand h1{font-size:16px;font-weight:700;letter-spacing:.05em}
+.sidebar-brand p{font-size:11px;color:rgba(255,255,255,.4);margin-top:4px}
+.sidebar-nav{flex:1;padding:16px 0;overflow-y:auto}
+.nav-label{font-size:10px;font-weight:600;letter-spacing:.1em;color:rgba(255,255,255,.3);padding:8px 20px 4px;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:13px;color:rgba(255,255,255,.65);transition:all .15s;cursor:pointer}
+.nav-item:hover,.nav-item.active{background:rgba(255,255,255,.08);color:#fff}
+.nav-item.active{border-left:3px solid var(--red);padding-left:17px}
+.nav-item svg{width:16px;height:16px;flex-shrink:0}
+.sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.1)}
+.sidebar-footer a{font-size:12px;color:rgba(255,255,255,.4);display:flex;align-items:center;gap:8px}
+.sidebar-footer a:hover{color:#fff}
+
+/* Main */
+.main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:var(--white);border-bottom:1px solid var(--line);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40}
+.topbar h2{font-size:18px;font-weight:700}
+.topbar-actions{display:flex;align-items:center;gap:12px}
+.content{padding:28px;flex:1}
+
+/* Cards */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:28px}
+.stat-card{background:var(--white);border:1px solid var(--line);border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:6px}
+.stat-card .label{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mid)}
+.stat-card .value{font-size:28px;font-weight:800;line-height:1}
+.stat-card .sub{font-size:11px;color:var(--mid)}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;font-size:13px;font-weight:600;border:none;border-radius:4px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-primary{background:var(--red);color:#fff}.btn-primary:hover{background:#b52020}
+.btn-ghost{background:transparent;color:var(--dark);border:1px solid var(--line)}.btn-ghost:hover{background:var(--bg)}
+.btn-danger{background:#FEE2E2;color:#DC2626;border:none}.btn-danger:hover{background:#FECACA}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-icon{padding:6px;border-radius:4px;background:transparent;border:1px solid var(--line);color:var(--mid);cursor:pointer;display:inline-flex;align-items:center}.btn-icon:hover{border-color:var(--dark);color:var(--dark)}
+
+/* Table */
+.table-wrap{background:var(--white);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.table-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line);gap:12px;flex-wrap:wrap}
+.search-input{padding:8px 12px;border:1px solid var(--line);border-radius:4px;font-size:13px;width:220px;outline:none}
+.search-input:focus{border-color:var(--dark)}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--mid);padding:10px 16px;border-bottom:1px solid var(--line);background:var(--bg)}
+td{padding:12px 16px;font-size:13px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#FAFAF8}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-green{background:#DCFCE7;color:#166534}
+.badge-red{background:#FEE2E2;color:#991B1B}
+.badge-gray{background:var(--bg);color:var(--mid)}
+.badge-orange{background:#FEF3C7;color:#92400E}
+.td-actions{display:flex;gap:6px;justify-content:flex-end}
+.prod-thumb{width:40px;height:40px;object-fit:cover;border-radius:4px;background:var(--bg)}
+.prod-thumb-placeholder{width:40px;height:40px;border-radius:4px;background:var(--line);display:flex;align-items:center;justify-content:center;font-size:18px}
+
+/* Modal */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal{background:var(--white);border-radius:8px;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column}
+.modal-header{padding:20px 24px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--white);z-index:2}
+.modal-header h3{font-size:17px;font-weight:700}
+.modal-body{padding:24px;display:flex;flex-direction:column;gap:18px}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px;position:sticky;bottom:0;background:var(--white)}
+
+/* Form */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group label{font-size:12px;font-weight:600;color:var(--mid)}
+.form-group input,.form-group select,.form-group textarea{
+  padding:9px 12px;border:1px solid var(--line);border-radius:4px;font-size:14px;outline:none;background:var(--white);width:100%
+}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--dark)}
+.form-group textarea{resize:vertical;min-height:90px}
+.form-full{grid-column:1/-1}
+.form-check{display:flex;align-items:center;gap:8px;font-size:13px}
+.form-check input[type=checkbox]{width:16px;height:16px;accent-color:var(--red)}
+
+/* Toast */
+.toast-container{position:fixed;bottom:24px;right:24px;z-index:200;display:flex;flex-direction:column;gap:8px}
+.toast{padding:12px 18px;border-radius:6px;font-size:13px;font-weight:500;color:#fff;animation:slideUp .25s ease;max-width:320px;display:flex;align-items:center;gap:8px}
+.toast-success{background:#166534}
+.toast-error{background:#991B1B}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* Tabs */
+.tabs{display:flex;gap:2px;background:var(--line);border-radius:6px;padding:3px;width:fit-content;margin-bottom:20px}
+.tab{padding:7px 16px;border-radius:4px;font-size:13px;font-weight:500;color:var(--mid);cursor:pointer;transition:.15s}
+.tab.active{background:var(--white);color:var(--dark);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+
+/* Empty state */
+.empty{padding:60px 20px;text-align:center;color:var(--mid)}
+.empty p{margin-top:8px;font-size:13px}
+.hidden{display:none!important}
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <h1>BÓNG BÀN VIỆT</h1>
+    <p>Admin Panel</p>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">Tổng quan</div>
+    <div class="nav-item active" data-section="dashboard" onclick="switchSection('dashboard',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-label">Nội dung</div>
+    <div class="nav-item" data-section="products" onclick="switchSection('products',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+      Sản Phẩm
+    </div>
+    <div class="nav-item" data-section="combos" onclick="switchSection('combos',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Combo Vợt
+    </div>
+    <div class="nav-item" data-section="articles" onclick="switchSection('articles',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Bài Viết
+    </div>
+    <div class="nav-label">Website</div>
+    <div class="nav-item" onclick="window.open('index.html','_blank')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
+      Xem Website
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="index.html">← Về trang chủ</a>
+  </div>
+</aside>
+
+<!-- Main -->
+<main class="main">
+  <header class="topbar">
+    <h2 id="pageTitle">Dashboard</h2>
+    <div class="topbar-actions">
+      <span id="serverStatus" class="badge badge-gray">Đang kết nối…</span>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- ── DASHBOARD ── -->
+    <section id="section-dashboard">
+      <div class="stat-grid" id="statGrid">
+        <div class="stat-card"><div class="label">Sản phẩm</div><div class="value" id="s-products">—</div><div class="sub">tổng số</div></div>
+        <div class="stat-card"><div class="label">Nổi bật</div><div class="value" id="s-featured">—</div><div class="sub">featured</div></div>
+        <div class="stat-card"><div class="label">Đồ cũ</div><div class="value" id="s-used">—</div><div class="sub">second-hand</div></div>
+        <div class="stat-card"><div class="label">Combo</div><div class="value" id="s-combos">—</div><div class="sub">bộ combo</div></div>
+        <div class="stat-card"><div class="label">Bài viết</div><div class="value" id="s-articles">—</div><div class="sub">kiến thức</div></div>
+        <div class="stat-card"><div class="label">Danh mục</div><div class="value" id="s-categories">—</div><div class="sub">danh mục</div></div>
+      </div>
+      <div style="background:var(--white);border:1px solid var(--line);border-radius:8px;padding:24px">
+        <h3 style="font-size:15px;margin-bottom:16px">Hướng dẫn sử dụng</h3>
+        <ul style="font-size:13px;color:var(--mid);line-height:2;padding-left:18px">
+          <li>Mở terminal, chạy <strong style="color:var(--dark)">npm install</strong> để cài đặt dependencies</li>
+          <li>Chạy <strong style="color:var(--dark)">node server.js</strong> để khởi động server tại cổng 3000</li>
+          <li>Truy cập <strong style="color:var(--dark)">http://localhost:3000/admin.html</strong> để quản lý</li>
+          <li>Website sẽ tự động lấy dữ liệu từ API khi server đang chạy</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ── PRODUCTS ── -->
+    <section id="section-products" class="hidden">
+      <div class="table-wrap">
+        <div class="table-head">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <input class="search-input" id="productSearch" placeholder="Tìm theo tên…" oninput="filterProducts()">
+            <select id="catFilter" style="padding:8px 10px;border:1px solid var(--line);border-radius:4px;font-size:13px" onchange="filterProducts()">
+              <option value="">Tất cả danh mục</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="openProductModal()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Thêm sản phẩm
+          </button>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr>
+              <th style="width:50px"></th>
+              <th>Tên sản phẩm</th>
+              <th>Danh mục</th>
+              <th>Hãng</th>
+              <th>Tình trạng</th>
+              <th>Nổi bật</th>
+              <th style="width:100px"></th>
+            </tr></thead>
+            <tbody id="productTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── COMBOS ── -->
+    <section id="section-combos" class="hidden">
+      <div class="table-wrap">
+        <div class="table-head">
+          <h3 style="font-size:14px;font-weight:600">Combo Vợt Khuyên Dùng</h3>
+          <button class="btn btn-primary" onclick="openComboModal()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Thêm combo
+          </button>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr>
+              <th>Tên combo</th>
+              <th>Cấp độ</th>
+              <th>Cốt vợt</th>
+              <th>Mặt FH</th>
+              <th>Mặt BH</th>
+              <th style="width:100px"></th>
+            </tr></thead>
+            <tbody id="comboTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── ARTICLES ── -->
+    <section id="section-articles" class="hidden">
+      <div class="table-wrap">
+        <div class="table-head">
+          <input class="search-input" id="articleSearch" placeholder="Tìm bài viết…" oninput="filterArticles()">
+          <button class="btn btn-primary" onclick="openArticleModal()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Thêm bài viết
+          </button>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr>
+              <th>Tiêu đề</th>
+              <th>Slug</th>
+              <th>Ngày đăng</th>
+              <th style="width:100px"></th>
+            </tr></thead>
+            <tbody id="articleTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- Modal: Product -->
+<div class="modal-backdrop hidden" id="productModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="productModalTitle">Thêm sản phẩm</h3>
+      <button class="btn-icon" onclick="closeModal('productModal')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="pId">
+      <div class="form-row">
+        <div class="form-group form-full">
+          <label>Tên sản phẩm *</label>
+          <input id="pName" placeholder="VD: Viscaria ALC">
+        </div>
+        <div class="form-group">
+          <label>Slug (URL)</label>
+          <input id="pSlug" placeholder="viscaria-alc">
+        </div>
+        <div class="form-group">
+          <label>Badge / Nhãn</label>
+          <input id="pBadge" placeholder="Best Seller">
+        </div>
+        <div class="form-group">
+          <label>Danh mục *</label>
+          <select id="pCategory" onchange="updateBrandSelect()">
+            <option value="">— Chọn danh mục —</option>
+            <option value="cot-vot">Cốt Vợt</option>
+            <option value="mat-vot">Mặt Vợt</option>
+            <option value="bong">Bóng</option>
+            <option value="ban">Bàn</option>
+            <option value="do-thi-dau">Đồ Thi Đấu</option>
+            <option value="combo-vot">Combo Vợt</option>
+            <option value="do-cu">Đồ Cũ</option>
+          </select>
+        </div>
+        <div class="form-group" id="brandRow">
+          <label>Hãng sản xuất</label>
+          <select id="pBrand">
+            <option value="">— Không có —</option>
+            <option value="butterfly">Butterfly</option>
+            <option value="tibhar">Tibhar</option>
+            <option value="unrex">Unrex</option>
+            <option value="yinhe">Yinhe</option>
+            <option value="khac">Khác</option>
+          </select>
+        </div>
+        <div class="form-group" id="gearRow" style="display:none">
+          <label>Danh mục con</label>
+          <select id="pGearSub">
+            <option value="">— Chọn —</option>
+            <option value="giay">Giày</option>
+            <option value="trang-phuc-phu-kien">Trang Phục & Phụ Kiện</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tình trạng</label>
+          <select id="pCondition">
+            <option value="new">Mới</option>
+            <option value="used">Đã qua sử dụng</option>
+          </select>
+        </div>
+        <div class="form-group form-full">
+          <label>Mô tả</label>
+          <textarea id="pDescription" placeholder="Mô tả ngắn về sản phẩm…"></textarea>
+        </div>
+        <div class="form-group form-full">
+          <label>Thông số kỹ thuật (mỗi dòng: Tên: Giá trị)</label>
+          <textarea id="pSpecs" placeholder="Lớp: 5+2 ALC&#10;Tốc độ: OFF+&#10;Control: 8.0" style="min-height:100px"></textarea>
+        </div>
+        <div class="form-group form-full">
+          <label>Đường dẫn ảnh (mỗi dòng một ảnh)</label>
+          <textarea id="pImages" placeholder="/images/products/viscaria.jpg" style="min-height:70px"></textarea>
+        </div>
+        <div class="form-group form-full">
+          <label>Màu Sắc / Phiên Bản (Variants)</label>
+          <div id="variantList" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px"></div>
+          <div style="display:grid;grid-template-columns:1fr 80px 1fr auto;gap:8px;align-items:center">
+            <input id="vColor" placeholder="Tên màu (VD: Đỏ, Đen, Trắng)" style="padding:8px 10px;border:1px solid var(--line);border-radius:4px;font-size:13px">
+            <input id="vCode" type="color" value="#D62B2B" title="Chọn màu" style="padding:2px;border:1px solid var(--line);border-radius:4px;height:36px;cursor:pointer;width:100%">
+            <input id="vImage" placeholder="/images/products/sp-do.jpg" style="padding:8px 10px;border:1px solid var(--line);border-radius:4px;font-size:13px">
+            <button type="button" class="btn btn-ghost btn-sm" onclick="addVariant()" style="white-space:nowrap">+ Thêm</button>
+          </div>
+          <small style="color:var(--mid);font-size:11px;margin-top:4px;display:block">Mỗi màu/phiên bản có thể có ảnh riêng. Khách chọn màu → hiển thị ảnh tương ứng.</small>
+        </div>
+        <div class="form-group form-full">
+          <label class="form-check">
+            <input type="checkbox" id="pFeatured">
+            Hiển thị ở trang chủ (Sản phẩm nổi bật)
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('productModal')">Hủy</button>
+      <button class="btn btn-primary" onclick="saveProduct()">Lưu sản phẩm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Combo -->
+<div class="modal-backdrop hidden" id="comboModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="comboModalTitle">Thêm combo vợt</h3>
+      <button class="btn-icon" onclick="closeModal('comboModal')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="cId">
+      <div class="form-row">
+        <div class="form-group form-full">
+          <label>Tên combo *</label>
+          <input id="cName" placeholder="Combo Butterfly Cơ Bản">
+        </div>
+        <div class="form-group">
+          <label>Cấp độ *</label>
+          <select id="cLevel">
+            <option value="beginner">Beginner (Mới bắt đầu)</option>
+            <option value="intermediate">Intermediate (Trung cấp)</option>
+            <option value="advanced">Advanced (Nâng cao)</option>
+            <option value="pro">Pro (Chuyên nghiệp)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Badge</label>
+          <input id="cBadge" placeholder="Khuyên Dùng">
+        </div>
+        <div class="form-group form-full">
+          <label>Cốt vợt</label>
+          <input id="cBlade" placeholder="Viscaria ALC">
+        </div>
+        <div class="form-group">
+          <label>Mặt vợt FH (Thuận tay)</label>
+          <input id="cRubberFh" placeholder="Tenergy 05">
+        </div>
+        <div class="form-group">
+          <label>Mặt vợt BH (Trái tay)</label>
+          <input id="cRubberBh" placeholder="Tenergy 64">
+        </div>
+        <div class="form-group form-full">
+          <label>Mô tả combo</label>
+          <textarea id="cDescription" placeholder="Phù hợp cho người chơi…"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('comboModal')">Hủy</button>
+      <button class="btn btn-primary" onclick="saveCombo()">Lưu combo</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Article -->
+<div class="modal-backdrop hidden" id="articleModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="articleModalTitle">Thêm bài viết</h3>
+      <button class="btn-icon" onclick="closeModal('articleModal')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="aId">
+      <div class="form-row">
+        <div class="form-group form-full">
+          <label>Tiêu đề *</label>
+          <input id="aTitle" placeholder="Hướng dẫn chọn cốt vợt cho người mới">
+        </div>
+        <div class="form-group">
+          <label>Slug</label>
+          <input id="aSlug" placeholder="tu-dong-tao-neu-de-trong">
+        </div>
+        <div class="form-group">
+          <label>Ngày đăng</label>
+          <input id="aDate" type="date">
+        </div>
+        <div class="form-group form-full">
+          <label>Tóm tắt</label>
+          <textarea id="aExcerpt" placeholder="Mô tả ngắn hiển thị trong danh sách bài viết…"></textarea>
+        </div>
+        <div class="form-group form-full">
+          <label>Nội dung (HTML)</label>
+          <textarea id="aContent" style="min-height:160px" placeholder="<p>Nội dung bài viết…</p>"></textarea>
+        </div>
+        <div class="form-group form-full">
+          <label>Ảnh bìa (đường dẫn)</label>
+          <input id="aCover" placeholder="/images/articles/ten-bai.jpg">
+        </div>
+        <div class="form-group form-full">
+          <label>Tags (phân cách bằng dấu phẩy)</label>
+          <input id="aTags" placeholder="cốt vợt, người mới, hướng dẫn">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('articleModal')">Hủy</button>
+      <button class="btn btn-primary" onclick="saveArticle()">Lưu bài viết</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toasts -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const API = 'http://localhost:3000/api';
+let allProducts = [], allArticles = [], allCombos = [];
+
+// ── Section switching ────────────────────────────────────────────────────────
+function switchSection(name, el) {
+  document.querySelectorAll('[data-section]').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('[id^="section-"]').forEach(s => s.classList.add('hidden'));
+  document.getElementById('section-' + name).classList.remove('hidden');
+  const titles = {dashboard:'Dashboard',products:'Sản Phẩm',combos:'Combo Vợt',articles:'Bài Viết'};
+  document.getElementById('pageTitle').textContent = titles[name] || name;
+  if (name === 'products') loadProducts();
+  if (name === 'combos') loadCombos();
+  if (name === 'articles') loadArticles();
+}
+
+// ── API helpers ──────────────────────────────────────────────────────────────
+async function api(path, opts = {}) {
+  const res = await fetch(API + path, { headers: {'Content-Type':'application/json'}, ...opts });
+  if (!res.ok) throw new Error((await res.json()).error || 'Lỗi server');
+  return res.json();
+}
+
+// ── Toast ────────────────────────────────────────────────────────────────────
+function toast(msg, type = 'success') {
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">${type==='success'?'<polyline points="20 6 9 17 4 12"/>':'<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>'}</svg>${msg}`;
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+// ── Stats ────────────────────────────────────────────────────────────────────
+async function loadStats() {
+  try {
+    const s = await api('/stats');
+    document.getElementById('s-products').textContent = s.products;
+    document.getElementById('s-featured').textContent = s.featured;
+    document.getElementById('s-used').textContent = s.used;
+    document.getElementById('s-combos').textContent = s.combos;
+    document.getElementById('s-articles').textContent = s.articles;
+    document.getElementById('s-categories').textContent = s.categories;
+    document.getElementById('serverStatus').textContent = 'Server đang chạy';
+    document.getElementById('serverStatus').className = 'badge badge-green';
+  } catch {
+    document.getElementById('serverStatus').textContent = 'Server chưa chạy';
+    document.getElementById('serverStatus').className = 'badge badge-red';
+  }
+}
+
+// ── Products ─────────────────────────────────────────────────────────────────
+const catLabels = {
+  'cot-vot':'Cốt Vợt','mat-vot':'Mặt Vợt','bong':'Bóng','ban':'Bàn',
+  'do-thi-dau':'Đồ Thi Đấu','combo-vot':'Combo Vợt','do-cu':'Đồ Cũ','kien-thuc':'Kiến Thức'
+};
+
+async function loadProducts() {
+  try {
+    allProducts = await api('/products');
+    renderProducts(allProducts);
+    // populate category filter
+    const sel = document.getElementById('catFilter');
+    if (sel.options.length <= 1) {
+      Object.entries(catLabels).forEach(([k, v]) => {
+        const opt = document.createElement('option'); opt.value = k; opt.textContent = v; sel.appendChild(opt);
+      });
+    }
+  } catch { toast('Không thể tải sản phẩm — server chưa chạy', 'error'); }
+}
+
+function renderProducts(list) {
+  const tbody = document.getElementById('productTable');
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty"><b>Chưa có sản phẩm</b><p>Nhấn "Thêm sản phẩm" để bắt đầu</p></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(p => `
+    <tr>
+      <td><div class="prod-thumb-placeholder">${p.images?.[0] ? `<img class="prod-thumb" src="${p.images[0]}" onerror="this.parentNode.textContent='📦'">` : '📦'}</div></td>
+      <td><strong>${p.name}</strong><br><span style="font-size:11px;color:var(--mid)">${p.slug}</span></td>
+      <td><span class="badge badge-gray">${catLabels[p.category_slug] || p.category_slug}</span></td>
+      <td>${p.brand_slug ? `<span class="badge badge-orange">${p.brand_slug.toUpperCase()}</span>` : '—'}</td>
+      <td><span class="badge ${p.condition==='new'?'badge-green':'badge-orange'}">${p.condition==='new'?'Mới':'Đã dùng'}</span></td>
+      <td>${p.featured ? '⭐' : '—'}</td>
+      <td><div class="td-actions">
+        <button class="btn-icon" title="Sửa" onclick="editProduct('${p.id}')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+        <button class="btn-icon" title="Xóa" onclick="deleteProduct('${p.id}','${p.name.replace(/'/g,'\\'')}')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+        </button>
+      </div></td>
+    </tr>`).join('');
+}
+
+function filterProducts() {
+  const q = document.getElementById('productSearch').value.toLowerCase();
+  const cat = document.getElementById('catFilter').value;
+  renderProducts(allProducts.filter(p =>
+    (!q || p.name.toLowerCase().includes(q) || p.slug.includes(q)) &&
+    (!cat || p.category_slug === cat)
+  ));
+}
+
+let _currentVariants = [];
+
+function openProductModal(p = null) {
+  document.getElementById('productModalTitle').textContent = p ? 'Sửa sản phẩm' : 'Thêm sản phẩm';
+  document.getElementById('pId').value = p?.id || '';
+  document.getElementById('pName').value = p?.name || '';
+  document.getElementById('pSlug').value = p?.slug || '';
+  document.getElementById('pBadge').value = p?.badge || '';
+  document.getElementById('pCategory').value = p?.category_slug || '';
+  document.getElementById('pBrand').value = p?.brand_slug || '';
+  document.getElementById('pGearSub').value = p?.gear_subcategory || '';
+  document.getElementById('pCondition').value = p?.condition || 'new';
+  document.getElementById('pDescription').value = p?.description || '';
+  document.getElementById('pSpecs').value = p?.specs ? Object.entries(p.specs).map(([k,v])=>`${k}: ${v}`).join('\n') : '';
+  document.getElementById('pImages').value = p?.images ? p.images.join('\n') : '';
+  document.getElementById('pFeatured').checked = !!p?.featured;
+  _currentVariants = Array.isArray(p?.variants) ? [...p.variants] : [];
+  renderVariantList();
+  document.getElementById('vColor').value = '';
+  document.getElementById('vCode').value = '#D62B2B';
+  document.getElementById('vImage').value = '';
+  updateBrandSelect();
+  document.getElementById('productModal').classList.remove('hidden');
+}
+
+function renderVariantList() {
+  const el = document.getElementById('variantList');
+  if (!_currentVariants.length) { el.innerHTML = '<p style="font-size:12px;color:var(--mid)">Chưa có phiên bản nào.</p>'; return; }
+  el.innerHTML = _currentVariants.map((v, i) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg);border-radius:4px;font-size:13px;">
+      <span style="display:inline-block;width:18px;height:18px;border-radius:50%;background:${v.color_code||'#ccc'};border:1px solid rgba(0,0,0,.15);flex-shrink:0;"></span>
+      <strong>${v.color}</strong>
+      <span style="color:var(--mid);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${v.image||'—'}</span>
+      <button type="button" class="btn btn-danger btn-sm" onclick="removeVariant(${i})">✕</button>
+    </div>`).join('');
+}
+
+function addVariant() {
+  const color = document.getElementById('vColor').value.trim();
+  const color_code = document.getElementById('vCode').value;
+  const image = document.getElementById('vImage').value.trim();
+  if (!color) { alert('Vui lòng nhập tên màu'); return; }
+  _currentVariants.push({ color, color_code, image });
+  renderVariantList();
+  document.getElementById('vColor').value = '';
+  document.getElementById('vImage').value = '';
+}
+
+function removeVariant(idx) {
+  _currentVariants.splice(idx, 1);
+  renderVariantList();
+}
+
+function editProduct(id) {
+  const p = allProducts.find(x => x.id === id);
+  if (p) openProductModal(p);
+}
+
+function updateBrandSelect() {
+  const cat = document.getElementById('pCategory').value;
+  document.getElementById('brandRow').style.display = ['cot-vot','mat-vot','do-cu'].includes(cat) ? '' : 'none';
+  document.getElementById('gearRow').style.display = cat === 'do-thi-dau' ? '' : 'none';
+}
+
+function specsFromText(text) {
+  const obj = {};
+  text.split('\n').forEach(line => {
+    const idx = line.indexOf(':');
+    if (idx > 0) { obj[line.slice(0,idx).trim()] = line.slice(idx+1).trim(); }
+  });
+  return obj;
+}
+
+async function saveProduct() {
+  const id = document.getElementById('pId').value;
+  const data = {
+    name: document.getElementById('pName').value.trim(),
+    slug: document.getElementById('pSlug').value.trim(),
+    badge: document.getElementById('pBadge').value.trim(),
+    category_slug: document.getElementById('pCategory').value,
+    brand_slug: document.getElementById('pBrand').value || null,
+    gear_subcategory: document.getElementById('pGearSub').value || null,
+    condition: document.getElementById('pCondition').value,
+    description: document.getElementById('pDescription').value.trim(),
+    specs: specsFromText(document.getElementById('pSpecs').value),
+    images: document.getElementById('pImages').value.split('\n').map(s=>s.trim()).filter(Boolean),
+    variants: _currentVariants,
+    featured: document.getElementById('pFeatured').checked,
+  };
+  if (!data.name || !data.category_slug) { toast('Vui lòng điền tên và chọn danh mục', 'error'); return; }
+  try {
+    if (id) await api(`/products/${id}`, { method:'PUT', body: JSON.stringify(data) });
+    else await api('/products', { method:'POST', body: JSON.stringify(data) });
+    toast(id ? 'Đã cập nhật sản phẩm' : 'Đã thêm sản phẩm');
+    closeModal('productModal');
+    loadProducts();
+    loadStats();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function deleteProduct(id, name) {
+  if (!confirm(`Xóa sản phẩm "${name}"?`)) return;
+  try {
+    await api(`/products/${id}`, { method:'DELETE' });
+    toast('Đã xóa sản phẩm');
+    loadProducts();
+    loadStats();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// ── Combos ───────────────────────────────────────────────────────────────────
+const levelLabels = {beginner:'Beginner',intermediate:'Intermediate',advanced:'Advanced',pro:'Pro'};
+
+async function loadCombos() {
+  try {
+    allCombos = await api('/combos');
+    const tbody = document.getElementById('comboTable');
+    if (!allCombos.length) {
+      tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><b>Chưa có combo</b></div></td></tr>'; return;
+    }
+    tbody.innerHTML = allCombos.map(c => `
+      <tr>
+        <td><strong>${c.name}</strong></td>
+        <td><span class="badge badge-orange">${levelLabels[c.level] || c.level}</span></td>
+        <td>${c.blade || '—'}</td>
+        <td>${c.rubber_fh || '—'}</td>
+        <td>${c.rubber_bh || '—'}</td>
+        <td><div class="td-actions">
+          <button class="btn-icon" onclick="editCombo('${c.id}')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="btn-icon" onclick="deleteCombo('${c.id}')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+          </button>
+        </div></td>
+      </tr>`).join('');
+  } catch { toast('Không thể tải combo', 'error'); }
+}
+
+function openComboModal(c = null) {
+  document.getElementById('comboModalTitle').textContent = c ? 'Sửa combo' : 'Thêm combo vợt';
+  document.getElementById('cId').value = c?.id || '';
+  document.getElementById('cName').value = c?.name || '';
+  document.getElementById('cLevel').value = c?.level || 'beginner';
+  document.getElementById('cBadge').value = c?.badge || '';
+  document.getElementById('cBlade').value = c?.blade || '';
+  document.getElementById('cRubberFh').value = c?.rubber_fh || '';
+  document.getElementById('cRubberBh').value = c?.rubber_bh || '';
+  document.getElementById('cDescription').value = c?.description || '';
+  document.getElementById('comboModal').classList.remove('hidden');
+}
+
+function editCombo(id) {
+  const c = allCombos.find(x => x.id === id);
+  if (c) openComboModal(c);
+}
+
+async function saveCombo() {
+  const id = document.getElementById('cId').value;
+  const data = {
+    name: document.getElementById('cName').value.trim(),
+    level: document.getElementById('cLevel').value,
+    badge: document.getElementById('cBadge').value.trim(),
+    blade: document.getElementById('cBlade').value.trim(),
+    rubber_fh: document.getElementById('cRubberFh').value.trim(),
+    rubber_bh: document.getElementById('cRubberBh').value.trim(),
+    description: document.getElementById('cDescription').value.trim(),
+  };
+  if (!data.name) { toast('Vui lòng điền tên combo', 'error'); return; }
+  try {
+    if (id) await api(`/combos/${id}`, { method:'PUT', body: JSON.stringify(data) });
+    else await api('/combos', { method:'POST', body: JSON.stringify(data) });
+    toast(id ? 'Đã cập nhật combo' : 'Đã thêm combo');
+    closeModal('comboModal');
+    loadCombos();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function deleteCombo(id) {
+  if (!confirm('Xóa combo này?')) return;
+  try {
+    await api(`/combos/${id}`, { method:'DELETE' });
+    toast('Đã xóa combo');
+    loadCombos();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// ── Articles ─────────────────────────────────────────────────────────────────
+async function loadArticles() {
+  try {
+    allArticles = await api('/articles');
+    renderArticles(allArticles);
+  } catch { toast('Không thể tải bài viết', 'error'); }
+}
+
+function renderArticles(list) {
+  const tbody = document.getElementById('articleTable');
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="4"><div class="empty"><b>Chưa có bài viết</b></div></td></tr>'; return;
+  }
+  tbody.innerHTML = list.map(a => `
+    <tr>
+      <td><strong>${a.title}</strong><br><span style="font-size:11px;color:var(--mid)">${a.excerpt?.slice(0,60) || ''}…</span></td>
+      <td><code style="font-size:11px;color:var(--mid)">${a.slug}</code></td>
+      <td style="white-space:nowrap">${a.published_at?.slice(0,10) || '—'}</td>
+      <td><div class="td-actions">
+        <button class="btn-icon" onclick="editArticle('${a.id}')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+        <button class="btn-icon" onclick="deleteArticle('${a.id}')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+        </button>
+      </div></td>
+    </tr>`).join('');
+}
+
+function filterArticles() {
+  const q = document.getElementById('articleSearch').value.toLowerCase();
+  renderArticles(allArticles.filter(a => !q || a.title.toLowerCase().includes(q)));
+}
+
+function openArticleModal(a = null) {
+  document.getElementById('articleModalTitle').textContent = a ? 'Sửa bài viết' : 'Thêm bài viết';
+  document.getElementById('aId').value = a?.id || '';
+  document.getElementById('aTitle').value = a?.title || '';
+  document.getElementById('aSlug').value = a?.slug || '';
+  document.getElementById('aDate').value = a?.published_at?.slice(0,10) || new Date().toISOString().slice(0,10);
+  document.getElementById('aExcerpt').value = a?.excerpt || '';
+  document.getElementById('aContent').value = a?.content || '';
+  document.getElementById('aCover').value = a?.cover_image || '';
+  document.getElementById('aTags').value = a?.tags?.join(', ') || '';
+  document.getElementById('articleModal').classList.remove('hidden');
+}
+
+function editArticle(id) {
+  const a = allArticles.find(x => x.id === id);
+  if (a) openArticleModal(a);
+}
+
+async function saveArticle() {
+  const id = document.getElementById('aId').value;
+  const data = {
+    title: document.getElementById('aTitle').value.trim(),
+    slug: document.getElementById('aSlug').value.trim(),
+    published_at: document.getElementById('aDate').value,
+    excerpt: document.getElementById('aExcerpt').value.trim(),
+    content: document.getElementById('aContent').value.trim(),
+    cover_image: document.getElementById('aCover').value.trim(),
+    tags: document.getElementById('aTags').value.split(',').map(s=>s.trim()).filter(Boolean),
+  };
+  if (!data.title) { toast('Vui lòng điền tiêu đề', 'error'); return; }
+  try {
+    if (id) await api(`/articles/${id}`, { method:'PUT', body: JSON.stringify(data) });
+    else await api('/articles', { method:'POST', body: JSON.stringify(data) });
+    toast(id ? 'Đã cập nhật bài viết' : 'Đã thêm bài viết');
+    closeModal('articleModal');
+    loadArticles();
+    loadStats();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function deleteArticle(id) {
+  if (!confirm('Xóa bài viết này?')) return;
+  try {
+    await api(`/articles/${id}`, { method:'DELETE' });
+    toast('Đã xóa bài viết');
+    loadArticles();
+    loadStats();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// ── Modals ───────────────────────────────────────────────────────────────────
+function closeModal(id) {
+  document.getElementById(id).classList.add('hidden');
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-backdrop:not(.hidden)').forEach(m => m.classList.add('hidden'));
+});
+document.querySelectorAll('.modal-backdrop').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.add('hidden'); });
+});
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+loadStats();
+</script>
+</body>
+</html>

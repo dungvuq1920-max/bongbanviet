@@ -1,0 +1,12 @@
+node_modules/
+db/
+*.db
+*.db-shm
+*.db-wal
+images/products/
+images/banners/
+build_temp/
+.env
+.claude/
+GiaVangBac/
+**/desktop.ini

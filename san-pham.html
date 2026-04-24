@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chi Tiết Sản Phẩm | BÓNG BÀN VIỆT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --red:#D62B2B;--coral:#E8503A;--bg:#FAFAF8;--white:#FFFFFF;
+  --dark:#1A1A1A;--mid:#6B6B6B;--line:#E5E5E3;--warm:#F2EDE7;
+  --navy:#1A3A6B;--blue:#2563EB;
+}
+body{font-family:'Inter',sans-serif;background:#ECEAE7;color:var(--dark);overflow-x:hidden}
+a{text-decoration:none;color:inherit}
+img{display:block;max-width:100%}
+.hidden{display:none!important}
+.site-container{max-width:1200px;margin:0 auto;background:var(--bg);box-shadow:0 0 60px rgba(0,0,0,.12);min-height:100vh;overflow-x:hidden}
+
+/* ── Announcement ── */
+.ann{background:var(--dark);color:rgba(255,255,255,.6);text-align:center;padding:9px 24px;font-size:12px;font-weight:500;letter-spacing:.05em}
+.ann a{color:var(--coral)}
+
+/* ── Nav ── */
+nav{background:var(--white);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:90}
+.nav-inner{padding:0 40px;height:64px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.nav-logo{font-family:'Playfair Display',serif;font-size:18px;font-weight:900;letter-spacing:.04em}
+.nav-logo span{color:var(--red)}
+.nav-links{display:flex;align-items:center;gap:24px}
+.nav-links a{font-size:15px;font-weight:700;color:var(--mid);letter-spacing:.04em;text-transform:uppercase;transition:color .15s;white-space:nowrap}
+.nav-links a:hover{color:var(--dark)}
+.nav-cta{background:var(--red);color:#fff!important;padding:8px 18px;font-weight:600!important}
+.nav-cta:hover{background:#b52020!important}
+.nav-ham{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:4px}
+.nav-ham span{display:block;width:22px;height:2px;background:var(--dark);transition:all .3s}
+.nav-ham.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.nav-ham.open span:nth-child(2){opacity:0}
+.nav-ham.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+/* ── Mobile Nav ── */
+.mobile-nav{display:none;position:fixed;inset:0;z-index:199;pointer-events:none}
+.mobile-nav.open{display:block;pointer-events:all}
+.mobile-nav-overlay{position:absolute;inset:0;background:rgba(0,0,0,.5);animation:fadeIn .25s ease}
+.mobile-nav-panel{position:absolute;top:0;right:0;width:min(320px,85vw);height:100%;background:var(--white);animation:slideIn .3s cubic-bezier(.4,0,.2,1);overflow-y:auto;display:flex;flex-direction:column}
+.mobile-nav-header{padding:20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.mobile-nav-header .logo{font-family:'Playfair Display',serif;font-size:16px;font-weight:900}
+.mobile-nav-header .logo span{color:var(--red)}
+.mobile-nav-close{background:none;border:none;cursor:pointer;font-size:22px;color:var(--mid)}
+.mobile-nav-links a{display:block;padding:13px 24px;font-size:14px;font-weight:500;color:var(--dark);border-bottom:1px solid var(--line)}
+.mobile-nav-links a:hover{background:var(--warm)}
+.mobile-nav-links a.m-cta{background:var(--red);color:#fff;margin:16px;text-align:center;border:none}
+.mobile-nav-footer{padding:16px 24px;font-size:12px;color:var(--mid);border-top:1px solid var(--line)}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+
+/* ── Breadcrumb ── */
+.breadcrumb{padding:14px 40px;font-size:12px;color:var(--mid);display:flex;align-items:center;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.breadcrumb a{color:var(--mid)}.breadcrumb a:hover{color:var(--dark)}
+.breadcrumb .sep{opacity:.4}
+.breadcrumb .bc-cur{color:var(--dark);font-weight:500}
+
+/* ── Loading / Error ── */
+.loading{padding:80px 40px;text-align:center;color:var(--mid);font-size:15px}
+.error-state{padding:80px 40px;text-align:center}
+.error-state h2{font-family:'Playfair Display',serif;font-size:32px;margin-bottom:12px}
+.error-state p{color:var(--mid);margin-bottom:24px}
+.back-btn{display:inline-block;padding:12px 24px;border:2px solid var(--dark);font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--dark);transition:all .2s}
+.back-btn:hover{background:var(--dark);color:#fff}
+
+/* ════════════════ PRODUCT SECTION ════════════════ */
+.sp-section{padding:36px 40px 0;background:var(--white)}
+.sp-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start}
+
+/* Gallery */
+.sp-gallery{position:sticky;top:80px}
+.sp-gallery-main{aspect-ratio:1/1;background:#F5F5F3;border:1px solid var(--line);overflow:hidden;display:flex;align-items:center;justify-content:center}
+.sp-gallery-main img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.sp-gallery-main:hover img{transform:scale(1.04)}
+.sp-gallery-ph{font-size:80px;opacity:.1}
+.sp-gallery-thumbs{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.sp-gallery-thumb{width:70px;height:70px;border:2px solid transparent;cursor:pointer;overflow:hidden;background:#F5F5F3}
+.sp-gallery-thumb.active,.sp-gallery-thumb:hover{border-color:var(--dark)}
+.sp-gallery-thumb img{width:100%;height:100%;object-fit:cover}
+
+/* Info panel */
+.sp-info{padding-bottom:40px}
+.sp-meta-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.sp-code{font-size:12px;color:var(--mid);font-weight:500;letter-spacing:.04em}
+.sp-stars{color:#F59E0B;font-size:16px;letter-spacing:3px}
+.sp-name{font-family:'Inter',sans-serif;font-size:clamp(22px,3vw,32px);font-weight:800;line-height:1.18;margin-bottom:18px;letter-spacing:-.02em}
+
+/* Price */
+.sp-price-wrap{margin-bottom:20px}
+.sp-price{display:inline-flex;align-items:center;background:var(--navy);color:#fff;font-size:20px;font-weight:800;padding:10px 22px;border-radius:4px}
+.sp-price-contact{display:inline-flex;align-items:center;background:var(--line);color:var(--mid);font-size:14px;font-weight:600;padding:10px 22px;border-radius:4px}
+
+/* Status */
+.sp-status{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:20px}
+.sp-status.new{background:#DCFCE7;color:#166534}
+.sp-status.used{background:#FEF3C7;color:#92400E}
+
+/* Specs */
+.sp-specs-wrap{margin-bottom:22px}
+.sp-specs-label{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--mid);padding:12px 0 10px;border-top:1px solid var(--line)}
+.sp-specs-table{width:100%;border-collapse:collapse}
+.sp-specs-table tr{border-bottom:1px solid var(--line)}
+.sp-specs-table tr:last-child{border-bottom:none}
+.sp-specs-table td{padding:10px 0;font-size:14px}
+.sp-specs-table td:first-child{color:var(--mid);font-weight:500}
+.sp-specs-table td.sv{font-weight:700;color:var(--dark);text-align:right}
+.sp-specs-table td.sv.score{color:var(--blue)}
+
+/* Variants */
+.sp-variants{margin-bottom:20px}
+.sp-var-label{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--mid);margin-bottom:10px}
+.sp-var-title{font-size:13px;font-weight:600;color:var(--dark);display:inline-block;margin-left:8px}
+.sp-var-btns{display:flex;gap:8px;flex-wrap:wrap}
+.sp-var-btn{display:flex;align-items:center;gap:7px;padding:7px 14px;border:2px solid var(--line);background:var(--white);font-size:13px;font-weight:600;color:var(--dark);cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif}
+.sp-var-btn:hover{border-color:var(--dark)}
+.sp-var-btn.active{border-color:var(--dark);background:var(--dark);color:#fff}
+.sp-var-dot{width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.15);flex-shrink:0}
+
+/* CTA */
+.sp-cta-wrap{border-top:1px solid var(--line);padding-top:22px}
+.sp-cta-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:16px 28px;background:var(--dark);color:#fff;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;border:none;cursor:pointer;transition:background .2s;text-decoration:none;margin-bottom:10px}
+.sp-cta-btn:hover{background:#2a2a2a}
+.sp-cta-note{font-size:11.5px;color:var(--mid);text-align:center;line-height:1.6}
+.sp-cta-note a{color:var(--red);font-weight:600}
+
+/* ════════════════ DETAIL SECTION ════════════════ */
+.sp-detail{padding:48px 40px;border-top:1px solid var(--line);background:var(--white)}
+.sp-detail-hd{display:flex;align-items:center;gap:14px;margin-bottom:32px}
+.sp-detail-hd::before{content:'';display:block;width:4px;height:30px;background:var(--red);flex-shrink:0}
+.sp-detail-hd h2{font-size:18px;font-weight:700}
+.sp-detail-grid{display:grid;grid-template-columns:1fr 320px;gap:48px;align-items:start}
+
+/* Description */
+.sp-desc{font-size:15px;line-height:1.82;color:#333}
+.sp-desc p{margin-bottom:14px}
+.sp-desc p:last-child{margin-bottom:0}
+.sp-feat-hd{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--dark);margin:22px 0 12px;padding-top:16px;border-top:1px solid var(--line)}
+.sp-feat-list{list-style:none;display:flex;flex-direction:column;gap:9px;margin-bottom:14px}
+.sp-feat-list li{font-size:14px;line-height:1.65;color:#333;display:flex;gap:10px;align-items:baseline}
+.sp-feat-list li::before{content:'•';color:var(--red);font-weight:900;flex-shrink:0}
+
+/* Advice cards */
+.adv-card{padding:18px 20px;margin-bottom:14px}
+.adv-card:last-child{margin-bottom:0}
+.adv-card.expert{background:#EFF6FF;border-left:4px solid var(--blue)}
+.adv-card.care{background:#FFF7ED;border-left:4px solid var(--coral)}
+.adv-card h4{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
+.adv-card.expert h4{color:var(--blue)}
+.adv-card.care h4{color:var(--coral)}
+.adv-card p{font-size:13px;line-height:1.72;color:#444}
+
+/* ════════════════ FORM SECTION ════════════════ */
+.sp-form{padding:36px 48px;background:var(--bg);border-top:1px solid var(--line);display:flex;justify-content:center}
+.sp-form-inner{max-width:520px;width:100%;background:var(--white);border:1px solid var(--line);padding:28px 32px}
+.sp-form-title{font-size:16px;font-weight:700;margin-bottom:4px}
+.sp-form-sub{font-size:12px;color:var(--mid);margin-bottom:18px}
+.sp-form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.sp-input,.sp-textarea{width:100%;border:1px solid var(--line);background:var(--bg);padding:10px 13px;font-size:13px;font-family:'Inter',sans-serif;color:var(--dark);outline:none;transition:border-color .2s}
+.sp-input:focus,.sp-textarea:focus{border-color:var(--dark)}
+.sp-textarea{min-height:80px;resize:vertical;display:block;margin-bottom:10px}
+.sp-form-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 22px;background:var(--red);color:#fff;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border:none;cursor:pointer;transition:background .2s}
+.sp-form-btn:hover{background:#b52020}
+.sp-form-ok{display:none;margin-top:12px;padding:11px 16px;background:#DCFCE7;color:#166534;font-size:13px;font-weight:600;border-left:4px solid #166534}
+
+/* ════════════════ RELATED ════════════════ */
+.sp-related{padding:48px 40px;border-top:1px solid var(--line)}
+.sp-rel-label{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--red);margin-bottom:8px}
+.sp-rel-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:800;margin-bottom:28px}
+.sp-rel-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.rel-card{text-decoration:none;color:inherit;display:block}
+.rel-img{aspect-ratio:1/1;background:var(--white);border:1px solid var(--line);overflow:hidden;margin-bottom:12px;position:relative}
+.rel-img img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.rel-card:hover .rel-img img{transform:scale(1.06)}
+.rel-img-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;opacity:.18}
+.rel-cat{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mid);margin-bottom:4px}
+.rel-name{font-size:14px;font-weight:600;line-height:1.35}
+
+/* ════════════════ FOOTER ════════════════ */
+footer{background:var(--dark);color:#fff;padding:48px 40px 28px}
+.ft-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px}
+.ft-logo{font-family:'Playfair Display',serif;font-size:18px;font-weight:900;letter-spacing:.04em}
+.ft-logo span{color:var(--red)}
+.ft-sl{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-top:4px}
+.ft-desc{font-size:13px;color:rgba(255,255,255,.4);line-height:1.7;margin-top:16px}
+.ft-col h4{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.28);margin-bottom:16px}
+.ft-col a{display:block;font-size:13px;color:rgba(255,255,255,.5);margin-bottom:10px;transition:color .15s}
+.ft-col a:hover{color:#fff}
+.ft-bottom{border-top:1px solid rgba(255,255,255,.08);padding-top:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.ft-bottom p{font-size:12px;color:rgba(255,255,255,.22)}
+
+/* ── Responsive ── */
+@media(max-width:1024px){
+  .sp-grid{grid-template-columns:1fr;gap:28px}
+  .sp-gallery{position:static}
+  .sp-gallery-main{max-height:460px}
+  .sp-detail-grid{grid-template-columns:1fr}
+}
+@media(max-width:960px){
+  .nav-links{display:none}.nav-ham{display:flex}
+  .nav-inner,.breadcrumb,.sp-section,.sp-detail,.sp-related{padding-left:24px;padding-right:24px}
+  .sp-form{padding:24px}
+  .nav-inner{padding-top:0;padding-bottom:0}
+  .sp-rel-grid{grid-template-columns:repeat(2,1fr)}
+  .ft-grid{grid-template-columns:1fr 1fr;gap:24px}
+  footer{padding:36px 24px 24px}
+}
+@media(max-width:640px){
+  .sp-form-row{grid-template-columns:1fr}
+  .sp-rel-grid{gap:12px}
+  .ft-grid{grid-template-columns:1fr}
+  .ft-bottom{flex-direction:column;text-align:center}
+}
+</style>
+</head>
+<body>
+
+<div class="mobile-nav" id="mobileNav">
+  <div class="mobile-nav-overlay" id="navOverlay"></div>
+  <div class="mobile-nav-panel">
+    <div class="mobile-nav-header">
+      <span class="logo">BÓNG BÀN <span>VIỆT</span></span>
+      <button class="mobile-nav-close" id="navClose">✕</button>
+    </div>
+    <div class="mobile-nav-links">
+      <a href="cot-vot.html">Cốt Vợt</a><a href="mat-vot.html">Mặt Vợt</a>
+      <a href="bong.html">Bóng</a><a href="ban.html">Bàn</a>
+      <a href="do-thi-dau.html">Đồ Thi Đấu</a><a href="combo-vot.html">Combo Vợt</a>
+      <a href="do-cu.html">Đồ Cũ</a><a href="kien-thuc.html">Kiến Thức</a>
+      <a href="lien-he.html" class="m-cta">Liên Hệ Tư Vấn</a>
+    </div>
+    <div class="mobile-nav-footer">Hotline / Zalo: <strong>096.1269.386</strong></div>
+  </div>
+</div>
+
+<div class="site-container">
+
+<div class="ann">Tư vấn miễn phí — <a href="lien-he.html">Hotline / Zalo: 096.1269.386</a> · 286 Nguyễn Xiển, Hà Nội</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">BÓNG BÀN <span>VIỆT</span></a>
+    <div class="nav-links">
+      <a href="cot-vot.html">Cốt Vợt</a><a href="mat-vot.html">Mặt Vợt</a>
+      <a href="bong.html">Bóng</a><a href="ban.html">Bàn</a>
+      <a href="do-thi-dau.html">Đồ Thi Đấu</a><a href="combo-vot.html">Combo Vợt</a>
+      <a href="do-cu.html">Đồ Cũ</a><a href="kien-thuc.html">Kiến Thức</a>
+      <a href="lien-he.html" class="nav-cta">Liên Hệ</a>
+    </div>
+    <button class="nav-ham" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<div class="breadcrumb">
+  <a href="index.html">Trang chủ</a><span class="sep">›</span>
+  <span id="bcCat">Sản phẩm</span>
+  <span class="sep hidden" id="bcBrandSep">›</span>
+  <span id="bcBrand" class="hidden"></span>
+  <span class="sep">›</span>
+  <span id="bcName" class="bc-cur">…</span>
+</div>
+
+<div class="loading" id="loadingState">Đang tải sản phẩm…</div>
+
+<div class="error-state hidden" id="errorState">
+  <h2>Không Tìm Thấy Sản Phẩm</h2>
+  <p>Sản phẩm này không tồn tại hoặc đã bị xóa.</p>
+  <a href="index.html" class="back-btn">← Về Trang Chủ</a>
+</div>
+
+<div id="productContent" class="hidden">
+
+  <!-- Product Grid -->
+  <div class="sp-section">
+    <div class="sp-grid">
+
+      <div class="sp-gallery">
+        <div class="sp-gallery-main" id="galleryMain"><div class="sp-gallery-ph">📦</div></div>
+        <div class="sp-gallery-thumbs" id="galleryThumbs"></div>
+      </div>
+
+      <div class="sp-info">
+        <h1 class="sp-name" id="spName">—</h1>
+        <div class="sp-price-wrap"><div id="spPrice" class="sp-price-contact">Liên hệ để biết giá</div></div>
+        <div id="spStatus"></div>
+        <div class="sp-variants hidden" id="spVariants">
+          <div class="sp-var-label">Màu Sắc / Phiên Bản <span class="sp-var-title" id="varSelected"></span></div>
+          <div class="sp-var-btns" id="varBtns"></div>
+        </div>
+        <div class="sp-specs-wrap hidden" id="spSpecsWrap">
+          <div class="sp-specs-label">Thông Số Kỹ Thuật</div>
+          <table class="sp-specs-table" id="spSpecsTable"></table>
+        </div>
+        <div class="sp-cta-wrap">
+          <a href="https://zalo.me/0961269386" target="_blank" class="sp-cta-btn" id="spCtaBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.09 1.22 2 2 0 012.07 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.18 6.18l1.27-.89a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+            Tư Vấn Ngay Qua Zalo →
+          </a>
+          <p class="sp-cta-note">Hoặc gọi <a href="tel:0961269386">096.1269.386</a> — Tư vấn miễn phí trong 15 phút</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Detail Section -->
+  <div class="sp-detail">
+    <div class="sp-detail-hd"><h2>Mô tả chi tiết sản phẩm</h2></div>
+    <div class="sp-detail-grid">
+      <div class="sp-desc" id="spDesc"></div>
+      <div>
+        <div class="adv-card expert" id="advExpert">
+          <h4>Lời khuyên chuyên gia</h4>
+          <p>Liên hệ để được tư vấn phù hợp nhất.</p>
+        </div>
+        <div class="adv-card care" id="advCare">
+          <h4>Lưu ý bảo quản</h4>
+          <p>Bảo quản nơi khô ráo, tránh ẩm ướt.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Section -->
+  <div class="sp-form">
+    <div class="sp-form-inner">
+      <h3 class="sp-form-title">Tư Vấn Sản Phẩm</h3>
+      <p class="sp-form-sub">Để lại thông tin, chuyên viên liên hệ lại trong vòng 15 phút.</p>
+      <form id="consultForm" onsubmit="submitForm(event)">
+        <div class="sp-form-row">
+          <input class="sp-input" type="text" id="fName" placeholder="Họ và tên" required>
+          <input class="sp-input" type="text" id="fContact" placeholder="SĐT hoặc Email" required>
+        </div>
+        <textarea class="sp-textarea" id="fMsg" placeholder="Nội dung cần tư vấn…"></textarea>
+        <button class="sp-form-btn" type="submit">Gửi Yêu Cầu →</button>
+      </form>
+      <div class="sp-form-ok" id="formOk">✓ Đã nhận! Chúng tôi sẽ liên hệ sớm nhất có thể.</div>
+    </div>
+  </div>
+
+  <!-- Related Section -->
+  <div class="sp-related">
+    <p class="sp-rel-label">Có Thể Bạn Thích</p>
+    <h2 class="sp-rel-title">Sản Phẩm Liên Quan</h2>
+    <div class="sp-rel-grid" id="relatedGrid"></div>
+  </div>
+
+</div><!-- /productContent -->
+
+<footer>
+  <div class="ft-grid">
+    <div>
+      <div class="ft-logo">BÓNG BÀN <span>VIỆT</span></div>
+      <div class="ft-sl">Tư Vấn Chuẩn · Hàng Chính Hãng</div>
+      <p class="ft-desc">Thiết bị bóng bàn chuyên nghiệp<br>286 Nguyễn Xiển, Thanh Liệt, Hà Nội<br>Hotline / Zalo: 096.1269.386</p>
+    </div>
+    <div class="ft-col">
+      <h4>Sản phẩm</h4>
+      <a href="cot-vot.html">Cốt Vợt</a><a href="mat-vot.html">Mặt Vợt</a>
+      <a href="bong.html">Bóng</a><a href="ban.html">Bàn</a>
+      <a href="combo-vot.html">Combo Vợt</a><a href="do-cu.html">Đồ Cũ</a>
+    </div>
+    <div class="ft-col">
+      <h4>Hỗ trợ</h4>
+      <a href="huong-dan-mua-hang.html">Hướng dẫn mua hàng</a>
+      <a href="chinh-sach-doi-tra.html">Chính sách đổi trả</a>
+      <a href="kien-thuc.html">Kiến Thức Bóng Bàn</a>
+      <a href="lien-he.html">Liên Hệ</a>
+    </div>
+    <div class="ft-col">
+      <h4>Theo dõi</h4>
+      <a href="https://facebook.com/bongbanviet.official" target="_blank">Facebook</a>
+      <a href="https://instagram.com/bongbanviet" target="_blank">Instagram</a>
+      <a href="https://tiktok.com/@bongbanviet" target="_blank">TikTok</a>
+    </div>
+  </div>
+  <div class="ft-bottom">
+    <p>© 2025 Bóng Bàn Việt · 286 Nguyễn Xiển, Hà Nội</p>
+    <p><a href="admin.html" style="color:rgba(255,255,255,.15)">Admin</a></p>
+  </div>
+</footer>
+
+</div><!-- /site-container -->
+
+<script>
+// ── Mobile nav ────────────────────────────────────────────────────────────────
+const mobileNav = document.getElementById('mobileNav');
+const ham = document.getElementById('hamburger');
+const navClose = document.getElementById('navClose');
+const navOverlay = document.getElementById('navOverlay');
+function openNav(){ mobileNav.classList.add('open'); ham.classList.add('open'); document.body.style.overflow='hidden'; }
+function closeNav(){ mobileNav.classList.remove('open'); ham.classList.remove('open'); document.body.style.overflow=''; }
+ham.addEventListener('click', () => mobileNav.classList.contains('open') ? closeNav() : openNav());
+navClose.addEventListener('click', closeNav);
+navOverlay.addEventListener('click', closeNav);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeNav(); });
+
+// ── Data maps ─────────────────────────────────────────────────────────────────
+const catLabels = {
+  'cot-vot':'Cốt Vợt','mat-vot':'Mặt Vợt','bong':'Bóng','ban':'Bàn',
+  'do-thi-dau':'Đồ Thi Đấu','combo-vot':'Combo Vợt','do-cu':'Đồ Cũ','kien-thuc':'Kiến Thức',
+};
+const catPages = {
+  'cot-vot':'cot-vot.html','mat-vot':'mat-vot.html','bong':'bong.html','ban':'ban.html',
+  'do-thi-dau':'do-thi-dau.html','combo-vot':'combo-vot.html','do-cu':'do-cu.html',
+};
+const brandLabels = {
+  butterfly:'Butterfly', tibhar:'Tibhar', unrex:'Unrex', yinhe:'Yinhe', khac:'Các Hãng Khác',
+};
+
+// ── Advice cards per category ─────────────────────────────────────────────────
+const ADVICE = {
+  'cot-vot':{
+    expert:'Phù hợp nhất khi kết hợp với các mặt vợt có độ cứng trung bình đến cao để phát huy tối đa lực đánh. Liên hệ chúng tôi để được tư vấn bộ combo hoàn chỉnh.',
+    care:'Tránh để nơi ẩm ướt hoặc nhiệt độ cao. Nên dùng keo lực chuyên dụng và không tháo mặt vợt thường xuyên khi không cần thiết để bảo vệ bề mặt gỗ.',
+  },
+  'mat-vot':{
+    expert:'Nên kết hợp với cốt vợt OFF hoặc OFF+ để phát huy tối đa khả năng tạo spin và tốc độ. Hỏi chúng tôi để chọn độ dày sponge phù hợp phong cách chơi.',
+    care:'Luôn dán tấm bảo vệ sau mỗi buổi tập. Vệ sinh bằng dung dịch chuyên dụng, tránh ánh nắng trực tiếp để giữ độ bám cao su lâu nhất có thể.',
+  },
+  'combo-vot':{
+    expert:'Combo được lựa chọn và kiểm tra tương thích kỹ càng. Phù hợp từ phong trào đến trung cấp muốn bộ thiết bị hoàn chỉnh ngay, không cần tốn thời gian chọn lẻ.',
+    care:'Dán tấm phim bảo vệ mặt vợt sau mỗi lần sử dụng. Cốt vợt tránh va đập mạnh và môi trường ẩm cao để giữ độ bền cấu trúc gỗ lâu dài.',
+  },
+  'bong':{
+    expert:'Bóng ABS 40mm+ là tiêu chuẩn thi đấu quốc tế hiện nay. Dùng bóng 3 sao cho tập luyện nghiêm túc để làm quen với cảm giác bóng thực chiến.',
+    care:'Bảo quản nơi nhiệt độ bình thường, tránh ánh nắng và nhiệt độ cao làm biến dạng. Không để bóng bị ép dưới vật nặng trong thời gian dài.',
+  },
+  'ban':{
+    expert:'Bàn tiêu chuẩn ITTF đảm bảo chất lượng tập luyện chuyên nghiệp. Nên chọn bàn có khả năng gấp gọn nếu không gian lưu trữ hạn chế.',
+    care:'Vệ sinh mặt bàn bằng khăn ẩm mềm sau mỗi buổi. Không để vật nặng lên mặt bàn và gấp cẩn thận khi không sử dụng để tránh cong vênh.',
+  },
+  'do-thi-dau':{
+    expert:'Trang phục và giày chuyên dụng giúp di chuyển linh hoạt hơn trong các pha bộ chân quan trọng, đồng thời giảm nguy cơ chấn thương khi thi đấu.',
+    care:'Giặt tay hoặc máy chế độ nhẹ với nước lạnh. Giày bảo quản nơi thoáng mát, tránh ánh nắng trực tiếp để giữ độ đàn hồi của đế cao su.',
+  },
+  'do-cu':{
+    expert:'Sản phẩm second-hand được kiểm tra kỹ trước khi bán. Đây là lựa chọn thông minh để trải nghiệm thiết bị cao cấp với ngân sách hợp lý hơn.',
+    care:'Kiểm tra kỹ tình trạng thực tế khi nhận hàng. Bảo quản theo hướng dẫn của từng loại sản phẩm để duy trì chất lượng hiện có.',
+  },
+  'default':{
+    expert:'Liên hệ để được tư vấn cách sử dụng và kết hợp thiết bị phù hợp nhất với phong cách và cấp độ chơi của bạn.',
+    care:'Bảo quản nơi khô ráo, tránh ẩm ướt và ánh nắng trực tiếp. Gọi hotline để được hướng dẫn bảo dưỡng chi tiết.',
+  },
+};
+
+// ── Gallery ───────────────────────────────────────────────────────────────────
+let galleryImages = [];
+function setGalleryImage(src, idx) {
+  const el = document.getElementById('galleryMain');
+  el.innerHTML = src
+    ? `<img src="${src}" alt="Ảnh sản phẩm" style="width:100%;height:100%;object-fit:cover" onerror="this.parentNode.innerHTML='<div class=sp-gallery-ph>📦</div>'">`
+    : '<div class="sp-gallery-ph">📦</div>';
+  document.querySelectorAll('.sp-gallery-thumb').forEach((t,i) => t.classList.toggle('active', i===idx));
+}
+function buildGallery(images) {
+  galleryImages = images || [];
+  if (!galleryImages.length) return;
+  setGalleryImage(galleryImages[0], 0);
+  if (galleryImages.length > 1) {
+    document.getElementById('galleryThumbs').innerHTML = galleryImages.map((src,i) =>
+      `<div class="sp-gallery-thumb${i===0?' active':''}" onclick="setGalleryImage('${src}',${i})">
+        <img src="${src}" alt="" onerror="this.style.display='none'">
+      </div>`
+    ).join('');
+  }
+}
+
+// ── Render description ────────────────────────────────────────────────────────
+function renderDesc(desc) {
+  if (!desc) return '<p>Liên hệ để biết thêm thông tin sản phẩm.</p>';
+  const lines = desc.split('\n').map(l => l.trim()).filter(Boolean);
+  let html = '', inList = false;
+  for (const line of lines) {
+    const isBullet = /^[•\-*]\s/.test(line);
+    if (isBullet) {
+      if (!inList) { html += '<ul class="sp-feat-list">'; inList = true; }
+      html += `<li>${line.replace(/^[•\-*]\s*/, '')}</li>`;
+    } else {
+      if (inList) { html += '</ul>'; inList = false; }
+      const stripped = line.replace(/[^A-Za-zÀ-ỹ\s]/g, '');
+      if (stripped.length > 4 && stripped === stripped.toUpperCase() && /[A-ZĐÁ-Ỹ]{3}/.test(line)) {
+        html += `<p class="sp-feat-hd">${line}</p>`;
+      } else {
+        html += `<p>${line}</p>`;
+      }
+    }
+  }
+  if (inList) html += '</ul>';
+  return html;
+}
+
+// ── Render product ────────────────────────────────────────────────────────────
+function showError() {
+  document.getElementById('loadingState').classList.add('hidden');
+  document.getElementById('errorState').classList.remove('hidden');
+}
+
+function renderProduct(p) {
+  document.title = `${p.name} | BÓNG BÀN VIỆT`;
+
+  const catLabel = catLabels[p.category_slug] || 'Sản Phẩm';
+  const catPage = catPages[p.category_slug];
+  document.getElementById('bcCat').innerHTML = catPage
+    ? `<a href="${catPage}" style="color:var(--mid)">${catLabel}</a>` : catLabel;
+
+  const bLabel = brandLabels[p.brand_slug];
+  if (bLabel) {
+    const bHref = catPage ? `${catPage}?brand=${p.brand_slug}` : null;
+    document.getElementById('bcBrand').innerHTML = bHref
+      ? `<a href="${bHref}" style="color:var(--mid)">${bLabel}</a>` : bLabel;
+    document.getElementById('bcBrand').classList.remove('hidden');
+    document.getElementById('bcBrandSep').classList.remove('hidden');
+  }
+  document.getElementById('bcName').textContent = p.name;
+  document.getElementById('spName').textContent = p.name;
+
+  const priceEl = document.getElementById('spPrice');
+  if (p.price && String(p.price).trim()) {
+    priceEl.className = 'sp-price';
+    priceEl.textContent = p.price;
+  } else {
+    priceEl.className = 'sp-price-contact';
+    priceEl.textContent = 'Liên hệ để biết giá';
+  }
+
+  document.getElementById('spStatus').innerHTML = p.condition === 'used'
+    ? '<span class="sp-status used">⚠ Đã Qua Sử Dụng</span>'
+    : '<span class="sp-status new">✓ Hàng Mới — Chính Hãng</span>';
+
+  const specs = p.specs || {};
+  const entries = Object.entries(specs);
+  if (entries.length) {
+    document.getElementById('spSpecsWrap').classList.remove('hidden');
+    document.getElementById('spSpecsTable').innerHTML = entries.map(([k,v]) => {
+      const isScore = /\d+(\.\d+)?\s*\/\s*\d+/.test(String(v));
+      const label = k.replace(/^-\s*/, '');
+      return `<tr><td>${label}</td><td class="sv${isScore?' score':''}">${v}</td></tr>`;
+    }).join('');
+  }
+
+  const msg = encodeURIComponent(`Tôi muốn hỏi về sản phẩm: ${p.name}`);
+  document.getElementById('spCtaBtn').href = `https://zalo.me/0961269386?text=${msg}`;
+
+  // Variants
+  const variants = p.variants || [];
+  if (variants.length > 0) {
+    document.getElementById('spVariants').classList.remove('hidden');
+    document.getElementById('varSelected').textContent = variants[0].color;
+    document.getElementById('varBtns').innerHTML = variants.map((v, i) =>
+      `<button class="sp-var-btn${i===0?' active':''}" onclick="selectVariant(${i})" data-idx="${i}">
+        ${v.color_code ? `<span class="sp-var-dot" style="background:${v.color_code}"></span>` : ''}
+        ${v.color}
+      </button>`
+    ).join('');
+    window._variants = variants;
+    if (variants[0].image) setGalleryImage(variants[0].image, 0);
+  }
+
+  document.getElementById('spDesc').innerHTML = renderDesc(p.description || '');
+
+  const adv = ADVICE[p.category_slug] || ADVICE.default;
+  document.getElementById('advExpert').innerHTML = `<h4>Lời khuyên chuyên gia</h4><p>${adv.expert}</p>`;
+  document.getElementById('advCare').innerHTML = `<h4>Lưu ý bảo quản</h4><p>${adv.care}</p>`;
+
+  buildGallery(p.images);
+  window._product = p;
+
+  document.getElementById('loadingState').classList.add('hidden');
+  document.getElementById('productContent').classList.remove('hidden');
+}
+
+// ── Variant selector ─────────────────────────────────────────────────────────
+function selectVariant(idx) {
+  const variants = window._variants || [];
+  if (!variants[idx]) return;
+  const v = variants[idx];
+  document.querySelectorAll('.sp-var-btn').forEach((b,i) => b.classList.toggle('active', i===idx));
+  document.getElementById('varSelected').textContent = v.color;
+  if (v.image) setGalleryImage(v.image, -1);
+}
+
+// ── Related products ──────────────────────────────────────────────────────────
+async function loadRelated(category, excludeId) {
+  try {
+    const res = await fetch(`/api/products?category=${category}&limit=8`);
+    if (!res.ok) return;
+    const list = await res.json();
+    const related = list.filter(p => p.id !== excludeId).slice(0, 4);
+    if (!related.length) return;
+    document.getElementById('relatedGrid').innerHTML = related.map(p => `
+      <a href="san-pham.html?id=${p.slug}" class="rel-card">
+        <div class="rel-img">
+          ${p.images?.[0]
+            ? `<img src="${p.images[0]}" alt="${p.name}" loading="lazy" onerror="this.parentNode.innerHTML='<div class=rel-img-ph>📦</div>'">`
+            : '<div class="rel-img-ph">📦</div>'}
+        </div>
+        <div class="rel-cat">${catLabels[p.category_slug] || ''}</div>
+        <div class="rel-name">${p.name}</div>
+      </a>`).join('');
+  } catch {}
+}
+
+// ── Form ──────────────────────────────────────────────────────────────────────
+function submitForm(e) {
+  e.preventDefault();
+  const name = document.getElementById('fName').value.trim();
+  const contact = document.getElementById('fContact').value.trim();
+  const msg = document.getElementById('fMsg').value.trim();
+  const pName = window._product ? window._product.name : '';
+  const text = encodeURIComponent(`Tên: ${name}\nSĐT/Email: ${contact}\nSản phẩm: ${pName}\nNội dung: ${msg || 'Xin tư vấn thêm'}`);
+  window.open(`https://zalo.me/0961269386?text=${text}`, '_blank');
+  document.getElementById('formOk').style.display = 'block';
+  document.getElementById('consultForm').reset();
+}
+
+// ── Static fallback ───────────────────────────────────────────────────────────
+const STATIC_PRODUCTS = {
+  'viscaria-alc':{id:'p001',slug:'viscaria-alc',name:'Viscaria ALC',category_slug:'cot-vot',brand_slug:'butterfly',
+    description:'Cốt vợt huyền thoại được hàng trăm tay vợt chuyên nghiệp tin dùng. Tốc độ cao, cảm giác bóng tuyệt vời với lực tăng tốc cực kỳ ổn định.\n\nĐẶC ĐIỂM CÔNG NGHỆ:\n• Lớp gỗ ngoài Limba cho lực tăng độ bám\n• Sợi Carbon Arylate-Carbon (ALC) siêu bền mang lại tốc độ OFF+\n• Vùng tối ưu hóa (Sweet Spot) mở rộng tối đa',
+    specs:{'Cấu tạo':'5 Gỗ + 2 ALC','Tốc độ':'9.5/10','Kiểm soát':'8.8/10','Độ dày':'5.8 mm','Trọng lượng':'85g ± 5g'},
+    images:[],featured:true,condition:'new',badge:'Best Seller',price:'3.500.000 VNĐ'},
+  'tenergy-05':{id:'p006',slug:'tenergy-05',name:'Tenergy 05',category_slug:'mat-vot',brand_slug:'butterfly',
+    description:'Mặt vợt số 1 thế giới trong nhiều năm liên tiếp. Vòng xoáy cực cao, nảy tốt, là lựa chọn hàng đầu của các tay vợt chuyên nghiệp.',
+    specs:{'Độ nảy':'13.0/10','Vòng xoáy':'10.5/10','Độ cứng':'36°','Độ dày':'2.1mm'},
+    images:[],featured:true,condition:'new',badge:'Top Pick',price:'1.650.000 VNĐ'},
+};
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+async function init() {
+  const id = new URLSearchParams(location.search).get('id');
+  if (!id) { showError(); return; }
+  try {
+    const res = await fetch(`/api/products/${id}`, { signal: AbortSignal.timeout(2500) });
+    if (res.ok) {
+      const p = await res.json();
+      renderProduct(p);
+      loadRelated(p.category_slug, p.id);
+      return;
+    }
+  } catch {}
+  const p = STATIC_PRODUCTS[id];
+  if (!p) { showError(); return; }
+  renderProduct(p);
+}
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chia Sẻ Kiến Thức | BÓNG BÀN VIỆT</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--red:#D62B2B;--coral:#E8503A;--bg:#FAFAF8;--white:#FFFFFF;--dark:#1A1A1A;--mid:#6B6B6B;--line:#E5E5E3;--warm:#F2EDE7}
+    body{font-family:'Inter',sans-serif;background:#ECEAE7;color:var(--dark);overflow-x:hidden}
+    a{text-decoration:none;color:inherit}
+    .site-container{max-width:1200px;margin:0 auto;background:var(--bg);box-shadow:0 0 60px rgba(0,0,0,.12);min-height:100vh;overflow-x:hidden}
+
+    /* ── Announcement ── */
+    .ann{background:var(--dark);color:rgba(255,255,255,.6);text-align:center;padding:9px 24px;font-size:12px;font-weight:500;letter-spacing:.05em}
+    .ann a{color:var(--coral)}
+
+    /* ── Nav ── */
+    nav{background:var(--white);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:90}
+    .nav-inner{padding:0 40px;height:64px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+    .nav-logo{font-family:'Playfair Display',serif;font-size:18px;font-weight:900;letter-spacing:.04em}
+    .nav-logo span{color:var(--red)}
+    .nav-links{display:flex;align-items:center;gap:24px}
+    .nav-links a{font-size:15px;font-weight:700;color:var(--dark);letter-spacing:.04em;text-transform:uppercase;transition:color .15s;white-space:nowrap}
+    .nav-links a:hover,.nav-links a.active{color:var(--dark)}
+    .nav-cta{background:var(--red);color:#fff!important;padding:8px 18px;font-weight:600!important}
+    .nav-cta:hover{background:#b52020!important}
+    .nav-ham{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:4px}
+    .nav-ham span{display:block;width:22px;height:2px;background:var(--dark);transition:all .3s}
+    .nav-ham.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+    .nav-ham.open span:nth-child(2){opacity:0}
+    .nav-ham.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+    /* ── Mobile Nav ── */
+    .mobile-nav{display:none;position:fixed;inset:0;z-index:199;pointer-events:none}
+    .mobile-nav.open{display:block;pointer-events:all}
+    .mobile-nav-overlay{position:absolute;inset:0;background:rgba(0,0,0,.5);animation:mfadeIn .25s ease}
+    .mobile-nav-panel{position:absolute;top:0;right:0;width:min(320px,85vw);height:100%;background:var(--white);animation:mslideIn .3s cubic-bezier(.4,0,.2,1);overflow-y:auto;display:flex;flex-direction:column}
+    .mobile-nav-header{padding:20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+    .mobile-nav-header .logo{font-family:'Playfair Display',serif;font-size:16px;font-weight:900}
+    .mobile-nav-header .logo span{color:var(--red)}
+    .mobile-nav-close{background:none;border:none;cursor:pointer;font-size:22px;color:var(--mid)}
+    .mobile-nav-links a{display:block;padding:13px 24px;font-size:14px;font-weight:500;color:var(--dark);border-bottom:1px solid var(--line)}
+    .mobile-nav-links a:hover{background:var(--warm)}
+    .mobile-nav-links a.m-cta{background:var(--red);color:#fff;margin:16px;text-align:center;border:none}
+    .mobile-nav-footer{padding:16px 24px;font-size:12px;color:var(--mid);border-top:1px solid var(--line)}
+    @keyframes mfadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes mslideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+
+    /* ════════════════ HERO ════════════════ */
+    .kt-hero{padding:64px 48px 48px;background:var(--white);border-bottom:1px solid var(--line)}
+    .kt-hero-label{font-size:11px;font-weight:700;letter-spacing:.28em;text-transform:uppercase;color:var(--red);margin-bottom:16px}
+    .kt-hero-title{font-family:'Inter',sans-serif;font-size:clamp(40px,7vw,80px);font-weight:800;line-height:.95;letter-spacing:-.03em;text-transform:uppercase;margin-bottom:16px;color:var(--dark)}
+    .kt-hero-sub{font-size:15px;color:var(--mid);font-style:italic;line-height:1.6;max-width:520px}
+
+    /* ════════════════ SEARCH ════════════════ */
+    .kt-search-wrap{padding:32px 48px;background:var(--white);border-bottom:1px solid var(--line)}
+    .kt-search-box{position:relative;max-width:100%}
+    .kt-search-icon{position:absolute;left:20px;top:50%;transform:translateY(-50%);color:var(--mid);pointer-events:none}
+    .kt-search-input{width:100%;padding:16px 20px 16px 52px;border:1.5px solid var(--line);border-radius:100px;font-size:15px;font-family:'Inter',sans-serif;color:var(--dark);background:var(--bg);outline:none;transition:border-color .2s,box-shadow .2s}
+    .kt-search-input:focus{border-color:var(--dark);box-shadow:0 0 0 3px rgba(26,26,26,.06)}
+    .kt-search-input::placeholder{color:#ABABAB}
+
+    /* ════════════════ ACCORDION LIST ════════════════ */
+    .kt-body{padding:32px 48px 64px}
+    .kt-count{font-size:13px;color:var(--mid);margin-bottom:24px}
+    .kt-count strong{color:var(--dark)}
+    .kt-list{display:flex;flex-direction:column;gap:10px}
+
+    .kt-item{background:var(--white);border:1.5px solid var(--line);border-radius:16px;overflow:hidden;transition:border-color .2s}
+    .kt-item:hover{border-color:#D0CEC9}
+    .kt-item.open{border-color:var(--dark)}
+
+    .kt-item-header{display:flex;align-items:center;gap:16px;padding:20px 24px;cursor:pointer;user-select:none}
+    .kt-num{flex-shrink:0;width:36px;height:36px;border-radius:50%;background:#F0EFEC;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--mid);letter-spacing:.04em;transition:background .2s,color .2s}
+    .kt-item.open .kt-num{background:var(--dark);color:#fff}
+    .kt-item-q{flex:1;font-size:15px;font-weight:600;color:var(--dark);line-height:1.45}
+    .kt-toggle{flex-shrink:0;width:32px;height:32px;border-radius:50%;background:#F0EFEC;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:300;color:var(--mid);transition:all .25s;line-height:1}
+    .kt-item.open .kt-toggle{background:var(--dark);color:#fff;transform:rotate(45deg)}
+
+    .kt-item-body{display:none;padding:0 24px 22px 76px}
+    .kt-item.open .kt-item-body{display:block}
+    .kt-item-body p{font-size:14px;line-height:1.82;color:#444}
+    .kt-item-body p + p{margin-top:10px}
+
+    /* ════════════════ PAGINATION ════════════════ */
+    .kt-pagination{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:40px}
+    .kt-page-btn{width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:var(--white);font-size:14px;font-weight:600;color:var(--mid);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+    .kt-page-btn:hover{border-color:var(--dark);color:var(--dark)}
+    .kt-page-btn.active{background:var(--dark);border-color:var(--dark);color:#fff}
+    .kt-page-btn.arrow{font-size:16px}
+    .kt-page-btn:disabled{opacity:.3;cursor:default}
+
+    /* No results */
+    .kt-empty{text-align:center;padding:48px 0;color:var(--mid);font-size:15px;display:none}
+
+    /* ════════════════ FOOTER ════════════════ */
+    footer{background:var(--dark);color:#fff;padding:48px 48px 28px}
+    .ft-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;margin-bottom:40px}
+    .ft-logo{font-family:'Playfair Display',serif;font-size:18px;font-weight:900;letter-spacing:.04em}
+    .ft-logo span{color:var(--red)}
+    .ft-sl{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.28);margin-top:4px}
+    .ft-desc{font-size:13px;color:rgba(255,255,255,.4);line-height:1.7;margin-top:16px;max-width:240px}
+    .ft-col h4{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.28);margin-bottom:18px}
+    .ft-col a{display:block;font-size:13px;color:rgba(255,255,255,.48);margin-bottom:10px;transition:color .2s}
+    .ft-col a:hover{color:#fff}
+    .ft-bottom{border-top:1px solid rgba(255,255,255,.07);padding-top:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+    .ft-bottom p{font-size:12px;color:rgba(255,255,255,.2)}
+
+    /* ── Responsive ── */
+    @media(max-width:960px){
+      .nav-links{display:none}.nav-ham{display:flex}
+      .nav-inner{padding:0 24px}
+      .kt-hero,.kt-search-wrap,.kt-body{padding-left:24px;padding-right:24px}
+      .kt-hero{padding-top:40px;padding-bottom:36px}
+      .kt-item-body{padding-left:24px}
+      .ft-grid{grid-template-columns:1fr 1fr;gap:28px;padding:40px 24px 24px}
+      footer{padding:0 0 0}
+      .ft-bottom{padding:16px 24px;flex-direction:column;text-align:center}
+    }
+    @media(max-width:640px){
+      .kt-hero-title{font-size:clamp(32px,10vw,56px)}
+      .kt-item-header{gap:12px;padding:16px 18px}
+      .kt-item-body{padding-left:18px;padding-right:18px}
+      .ft-grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+
+<div class="mobile-nav" id="mobileNav">
+  <div class="mobile-nav-overlay" id="navOverlay"></div>
+  <div class="mobile-nav-panel">
+    <div class="mobile-nav-header">
+      <span class="logo">BÓNG BÀN <span>VIỆT</span></span>
+      <button class="mobile-nav-close" id="navClose">✕</button>
+    </div>
+    <div class="mobile-nav-links">
+      <a href="cot-vot.html">Cốt Vợt</a><a href="mat-vot.html">Mặt Vợt</a>
+      <a href="bong.html">Bóng</a><a href="ban.html">Bàn</a>
+      <a href="do-thi-dau.html">Đồ Thi Đấu</a><a href="combo-vot.html">Combo Vợt</a>
+      <a href="do-cu.html">Đồ Cũ</a><a href="kien-thuc.html">Kiến Thức</a>
+      <a href="lien-he.html" class="m-cta">Liên Hệ Tư Vấn</a>
+    </div>
+    <div class="mobile-nav-footer">Hotline / Zalo: <strong>096.1269.386</strong></div>
+  </div>
+</div>
+
+<div class="site-container">
+
+<div class="ann">Tư vấn miễn phí — <a href="lien-he.html">Hotline / Zalo: 096.1269.386</a> · 286 Nguyễn Xiển, Hà Nội</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">BÓNG BÀN <span>VIỆT</span></a>
+    <div class="nav-links">
+      <a href="cot-vot.html">Cốt Vợt</a><a href="mat-vot.html">Mặt Vợt</a>
+      <a href="bong.html">Bóng</a><a href="ban.html">Bàn</a>
+      <a href="do-thi-dau.html">Đồ Thi Đấu</a><a href="combo-vot.html">Combo Vợt</a>
+      <a href="do-cu.html">Đồ Cũ</a>
+      <a href="kien-thuc.html" class="active">Kiến Thức</a>
+      <a href="lien-he.html" class="nav-cta">Liên Hệ</a>
+    </div>
+    <button class="nav-ham" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<!-- Hero -->
+<div class="kt-hero">
+  <p class="kt-hero-label">Bóng Bàn Việt · Cộng Đồng</p>
+  <h1 class="kt-hero-title">Chia Sẻ<br>Kỹ Thuật</h1>
+  <p class="kt-hero-sub">Tổng hợp các kỹ thuật cốt lõi giúp nâng tầm lối chơi bóng bàn của bạn.</p>
+</div>
+
+<!-- Search -->
+<div class="kt-search-wrap">
+  <div class="kt-search-box">
+    <svg class="kt-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input class="kt-search-input" type="text" id="searchInput" placeholder="Tìm kiếm kỹ thuật hoặc từ khóa (ví dụ: giật bóng, giao bóng...)" oninput="onSearch()">
+  </div>
+</div>
+
+<!-- Body -->
+<div class="kt-body">
+  <p class="kt-count" id="ktCount"><strong id="ktCountNum">40</strong> kỹ thuật &amp; câu hỏi</p>
+  <div class="kt-list" id="ktList"></div>
+  <div class="kt-empty" id="ktEmpty">Không tìm thấy kết quả phù hợp. Thử từ khóa khác.</div>
+  <div class="kt-pagination" id="ktPagination"></div>
+</div>
+
+<footer>
+  <div class="ft-grid">
+    <div>
+      <div class="ft-logo">BÓNG BÀN <span>VIỆT</span></div>
+      <div class="ft-sl">Tư Vấn Chuẩn · Hàng Chính Hãng</div>
+      <p class="ft-desc">Thiết bị bóng bàn chuyên nghiệp tại 286 Nguyễn Xiển, Thanh Liệt, Hà Nội.</p>
+    </div>
+    <div class="ft-col">
+      <h4>Sản Phẩm</h4>
+      <a href="cot-vot.html">Cốt Vợt</a><a href="mat-vot.html">Mặt Vợt</a>
+      <a href="bong.html">Bóng</a><a href="ban.html">Bàn</a>
+      <a href="do-thi-dau.html">Đồ Thi Đấu</a>
+    </div>
+    <div class="ft-col">
+      <h4>Hỗ Trợ</h4>
+      <a href="combo-vot.html">Combo Vợt</a><a href="do-cu.html">Đồ Cũ</a>
+      <a href="huong-dan-mua-hang.html">Hướng Dẫn Mua Hàng</a>
+      <a href="chinh-sach-doi-tra.html">Chính Sách Đổi Trả</a>
+    </div>
+    <div class="ft-col">
+      <h4>Liên Hệ</h4>
+      <a href="tel:0961269386">096.1269.386</a>
+      <a href="https://facebook.com/bongbanviet.official" target="_blank">Facebook</a>
+      <a href="https://instagram.com/bongbanviet" target="_blank">Instagram</a>
+      <a href="https://tiktok.com/@bongbanviet" target="_blank">TikTok</a>
+    </div>
+  </div>
+  <div class="ft-bottom">
+    <p>© 2025 BongBanViet.com · Tư Vấn Chuẩn - Hàng Chính Hãng</p>
+    <p><a href="admin.html" style="color:rgba(255,255,255,.15)">Admin</a></p>
+  </div>
+</footer>
+
+</div><!-- /site-container -->
+
+<script>
+// ── Mobile nav ────────────────────────────────────────────────────────────────
+const mobileNav = document.getElementById('mobileNav');
+const ham = document.getElementById('hamburger');
+const navClose = document.getElementById('navClose');
+const navOverlay = document.getElementById('navOverlay');
+function openNav(){ mobileNav.classList.add('open'); ham.classList.add('open'); document.body.style.overflow='hidden'; }
+function closeNav(){ mobileNav.classList.remove('open'); ham.classList.remove('open'); document.body.style.overflow=''; }
+ham.addEventListener('click', () => mobileNav.classList.contains('open') ? closeNav() : openNav());
+navClose.addEventListener('click', closeNav);
+navOverlay.addEventListener('click', closeNav);
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeNav(); });
+
+// ── FAQ Data ──────────────────────────────────────────────────────────────────
+const FAQ = [
+  // ── KỸ THUẬT ──
+  {
+    q: 'Làm sao để thực hiện cú giật bóng xoáy xuống hiệu quả?',
+    a: 'Khi đối phương đẩy bóng backspin/chop, cần đặt góc vợt "mở" hơn bình thường — nghiêng mặt vợt về phía trước. Tiếp xúc bóng ở phần dưới-giữa và kéo vợt lên nhanh để chuyển hóa backspin thành topspin. Điều quan trọng là lực đánh phải đủ mạnh — nhiều người thất bại vì sợ bóng ra ngoài mà đánh quá nhẹ. Tập bài drill với máy bắn bóng xoáy xuống liên tục để xây dựng phản xạ cơ bắp tự nhiên.'
+  },
+  {
+    q: 'Kỹ thuật \'Chiquita\' là gì và thực hiện như thế nào?',
+    a: 'Chiquita là kỹ thuật phản giao bóng tấn công ngay trong bàn bằng cách cuộn cổ tay sang trái/phải để tạo topspin mạnh. Vị trí tiếp xúc lý tưởng là khi bóng vừa đạt đỉnh hoặc đang trên đà xuống. Cổ tay phải mềm mại và nhanh, di chuyển từ trong ra ngoài và lên trên. Đây là kỹ thuật cực kỳ hiệu quả để kiểm soát thế trận ngay từ quả phản giao bóng đầu tiên.'
+  },
+  {
+    q: 'Cách khống chế giao bóng xoáy ngang hiệu quả nhất?',
+    a: 'Khi nhận bóng sidespin, cần chú ý hướng xoáy từ cổ tay và vai người giao bóng. Nếu bóng xoáy sang phải (từ góc nhìn người nhận), góc vợt cần điều chỉnh sang trái để trung hòa. Phương pháp an toàn nhất cho người mới là chặn bóng (block) chắc chắn thay vì phản công ngay. Tập đọc xoáy bằng cách quan sát kỹ chuyển động của vợt đối phương trong quá trình giao bóng.'
+  },
+  {
+    q: 'Tầm quan trọng của bộ chân (Footwork) trong bóng bàn?',
+    a: 'Footwork là nền tảng của mọi kỹ thuật đánh bóng. Vị trí đứng đúng giúp bạn có thời gian chuẩn bị, tiếp xúc bóng ở vùng lực tốt nhất và phục hồi về vị trí sẵn sàng nhanh chóng. Lỗi phổ biến nhất của người mới là đứng quá gần hoặc quá xa bàn. Tập bài 1-2 step và sidestep cơ bản mỗi ngày 15 phút — footwork tốt sẽ tự động nâng tất cả kỹ thuật còn lại của bạn lên một tầm cao mới.'
+  },
+  {
+    q: 'Làm sao để bạt bóng (Smash) không bị vướng lưới hoặc ra ngoài?',
+    a: 'Smash hiệu quả đòi hỏi góc tiếp xúc đúng và timing chính xác. Tiếp xúc bóng ở điểm cao nhất của bước nảy, vợt gần như song song với mặt bàn và đánh thẳng xuống-ra trước. Lỗi thường gặp: đánh quá muộn khi bóng đã xuống thấp khiến phải "hất" bóng lên để qua lưới, dễ ra ngoài. Nhớ xoay hông và vai để tăng lực, không chỉ dùng cánh tay.'
+  },
+  {
+    q: 'Kỹ thuật \'Block\' bóng nâng cao khác gì so với cơ bản?',
+    a: 'Block cơ bản chỉ hấp thụ lực bóng và trả lại thẳng. Block nâng cao (active block/counter block) cho phép điều hướng bóng chính xác và thậm chí tạo topspin nhẹ. Kỹ thuật là: thay vì thụ động giữ vợt, chủ động đưa vợt về phía trước nhẹ khi tiếp xúc và hơi xoay cổ tay để kiểm soát hướng bóng. Block tốt là vũ khí chiến thuật mạnh để đổi nhịp trận đấu.'
+  },
+  {
+    q: 'Cách giao bóng giấu tay và tạo xoáy ảo cực nặng?',
+    a: 'Giao bóng giấu tay phụ thuộc vào việc che khuất điểm tiếp xúc và sử dụng chuyển động giả của tay. Cổ tay phải linh hoạt — cùng một cử chỉ tay có thể tạo topspin, backspin hoặc sidespin tùy vào góc tiếp xúc thực tế. Quan trọng: tập một quả giao bóng nhưng có thể tạo ít nhất 2-3 loại xoáy khác nhau với cùng hành động. Luật ITTF yêu cầu tay không che bóng lúc tiếp xúc — hãy chú ý để không phạm lỗi kỹ thuật.'
+  },
+  {
+    q: 'Lối đánh \'Cắt bóng\' (Chopping) cần lưu ý gì về cự ly?',
+    a: 'Chopping hiệu quả nhất được thực hiện cách bàn 1.5–3 mét, cho phép bóng xuống thấp đủ để tạo góc cắt. Cần di chuyển nhanh ra sau khi bóng được đánh sang phía mình. Sai lầm phổ biến: cắt quá gần bàn khiến góc vợt bị hạn chế. Lối chơi này đòi hỏi thể lực tốt và kiên nhẫn — chiến thuật là kéo dài rally, đợi đối phương mắc lỗi hoặc bóng ngắn để tấn công.'
+  },
+  {
+    q: 'Làm thế nào để cải thiện phản xạ trong các pha đối công nhanh?',
+    a: 'Phản xạ trong đối công được xây dựng qua tập luyện lặp lại có chủ ý, không phải chỉ chơi nhiều. Tập bài multiball với bóng bắn liên tục và ngắn dần khoảng cách thời gian là hiệu quả nhất. Ngoài ra, tập nhìn vợt và bóng của đối phương thay vì chỉ nhìn bóng — điều này giúp dự đoán hướng bóng sớm hơn 0.2-0.3 giây. Bài tập phản xạ 20 phút mỗi ngày trong 30 ngày sẽ thấy khác biệt rõ rệt.'
+  },
+  {
+    q: 'Tâm lý thi đấu quan trọng như thế nào khi gặp đối thủ mạnh?',
+    a: 'Tâm lý tốt là yếu tố phân biệt người chơi giỏi với người chơi xuất sắc. Khi gặp đối thủ mạnh hơn, hãy tập trung vào từng điểm thay vì lo lắng về tỉ số. Kỹ thuật "reset" giữa các điểm: hít thở sâu, nhìn xuống vợt 3 giây, chủ động phục vụ. Đặt mục tiêu thực tế — "cố gắng giành 40% số điểm" thay vì "phải thắng" — giúp giảm áp lực và thực tế lại chơi tốt hơn.'
+  },
+
+  // ── THIẾT BỊ ──
+  {
+    q: 'Cách chọn cốt vợt phù hợp với phong cách chơi?',
+    a: 'Người mới và phong trào nên bắt đầu với cốt ALL hoặc OFF−, nhiều lớp gỗ, không carbon — giúp xây dựng kỹ thuật cơ bản và cảm giác bóng tốt. Người tấn công trung cấp có thể chuyển sang OFF với carbon nhẹ. Người phòng thủ nên chọn DEF với cốt mềm, kiểm soát cao. Nguyên tắc: nếu bạn hay mắc lỗi bóng ra ngoài, cốt đang quá nhanh — hãy xuống cấp một bậc.'
+  },
+  {
+    q: 'Sự khác nhau giữa mặt vợt Inverted và Pips Out là gì?',
+    a: 'Inverted (mặt nhẵn) là loại phổ biến nhất — gai quay vào trong, mặt cao su nhẵn tiếp xúc bóng, tạo ma sát cao và xoáy mạnh. Pips Out (gai ra ngoài) có gai tiếp xúc trực tiếp với bóng, cho phản lực nhanh nhưng xoáy ít hơn — phù hợp lối chơi phòng thủ hoặc chặn bóng nhanh. Short pips dùng cho tấn công nhanh gần bàn, long pips cho phòng thủ và đảo chiều xoáy.'
+  },
+  {
+    q: 'Khi nào nên nâng cấp thiết bị bóng bàn?',
+    a: 'Nâng cấp khi: kỹ thuật của bạn đã đủ ổn định để tận dụng thiết bị mới, hoặc thiết bị hiện tại đang giới hạn khả năng phát triển rõ ràng. Dấu hiệu cần nâng cấp mặt vợt: cao su đã mất bám, không còn tạo xoáy được nữa. Lưu ý quan trọng: thiết bị tốt không thay thế kỹ thuật — nhiều người mua vợt đắt nhưng kỹ thuật chưa đủ nền tảng, kết quả là tệ hơn với vợt cũ.'
+  },
+  {
+    q: 'Cách dán mặt vợt đúng kỹ thuật tại nhà?',
+    a: 'Vật liệu cần: keo dán mặt vợt chuyên dụng, dao cắt, con lăn. Thoa keo đều lên cả mặt cốt và mặt trong của cao su, để khô 3–5 phút đến khi bóng hơi mờ. Dán từ gốc vợt ra đầu vợt, dùng ngón tay hoặc con lăn ép chặt từ giữa ra ngoài để tránh bong bóng khí. Cắt cao su thừa sát mép cốt bằng dao cắt sắc. Không dùng keo thông thường — sẽ làm hỏng cả cốt vợt lẫn cao su.'
+  },
+  {
+    q: 'Bóng ABS khác gì so với bóng celluloid cũ?',
+    a: 'Bóng ABS 40mm+ (chuẩn từ 2016) làm bằng nhựa Acrylonitrile Butadiene Styrene, thay thế bóng celluloid 38mm cũ. ABS bền hơn, ít nổ hơn và an toàn hơn (không dễ cháy). Về kỹ thuật: bóng ABS nảy thấp hơn, xoáy ít hơn và chậm hơn nhẹ so với celluloid — đòi hỏi lực đánh mạnh hơn để tạo spin. Hầu hết mặt vợt hiện đại đều được tối ưu cho bóng ABS.'
+  },
+  {
+    q: 'Tenergy 05 có phù hợp cho người mới lên tay không?',
+    a: 'Tenergy 05 là mặt vợt tốp đầu thế giới nhưng không phù hợp cho người mới hoặc người chơi phong trào. Độ cứng 36° và tốc độ cao đòi hỏi kỹ thuật tiếp xúc chính xác — người mới sẽ khó kiểm soát. Khuyến nghị: người mới dùng mặt vợt tầm trung 300.000–600.000 VNĐ trước để học kỹ thuật. Khi bạn chơi ổn định và muốn nâng tầm xoáy, lúc đó T05 mới thực sự phát huy tác dụng.'
+  },
+  {
+    q: 'Cách chọn độ dày mặt vợt (1.8mm, 2.0mm, 2.1mm, MAX)?',
+    a: 'Độ dày sponge ảnh hưởng trực tiếp đến tốc độ và cảm giác bóng. Mỏng hơn (1.8mm): kiểm soát tốt hơn, cảm giác bóng rõ, phù hợp người mới và phong thủ. Dày hơn (2.1mm–MAX): tốc độ cao hơn, xoáy nhiều hơn, phù hợp tấn công. MAX (không giới hạn độ dày theo cấu trúc cao su) cho tốc độ tối đa nhưng cảm giác bóng kém hơn. Người mới nên bắt đầu từ 1.8–2.0mm.'
+  },
+  {
+    q: 'Tibhar hay Butterfly — thương hiệu nào phù hợp hơn?',
+    a: 'Cả hai đều là thương hiệu hàng đầu thế giới với ưu điểm riêng. Butterfly nổi tiếng với cảm giác bóng tuyệt vời, xoáy cao (Tenergy, Dignics), phù hợp lối đánh kỹ thuật. Tibhar (Evolution series) có giá hợp lý hơn cho hiệu năng tương đương, phù hợp người không muốn chi quá nhiều. Về cốt vợt: Butterfly thường nhẹ hơn và cảm giác tốt hơn, Tibhar có nhiều lựa chọn về trọng lượng và độ cứng.'
+  },
+  {
+    q: 'Cách vệ sinh và bảo quản mặt vợt đúng cách?',
+    a: 'Sau mỗi buổi tập, vệ sinh mặt vợt bằng dung dịch làm sạch chuyên dụng và miếng bọt biển mềm — lau nhẹ nhàng từ trong ra ngoài. Không dùng nước hoặc khăn thô sẽ làm mòn bề mặt cao su. Sau khi lau, dán tấm phim bảo vệ để tránh bụi và oxy hóa. Bảo quản trong túi/hộp đựng vợt, tránh ánh nắng trực tiếp và nhiệt độ cao. Cao su chất lượng cao nên thay sau 60–80 giờ tập luyện.'
+  },
+  {
+    q: 'Combo vợt nào phù hợp cho người mới bắt đầu?',
+    a: 'Người mới nên chọn combo: cốt gỗ thuần 5 lớp tốc độ ALL/ALL+ kết hợp mặt vợt tầm trung độ cứng 35–38°, độ dày 1.8–2.0mm. Giá tốt trong tầm 1–2 triệu VNĐ cho bộ combo đầy đủ. Tránh carbon và mặt vợt quá nhanh — sẽ khó kiểm soát bóng vào bàn. Bộ combo tốt từ UNREX hoặc YINHE ở tầm giá này cho hiệu năng rất tốt. Liên hệ chúng tôi để được tư vấn combo cụ thể theo ngân sách.'
+  },
+  {
+    q: 'Short pips và long pips khác nhau như thế nào?',
+    a: 'Short pips (gai ngắn): gai cứng, thẳng — cho phản lực nhanh, ít xoáy. Phù hợp lối chơi tấn công nhanh gần bàn, phản công đối công. Long pips (gai dài): gai mềm, dài — có khả năng đảo chiều xoáy độc đáo. Bóng topspin vào sẽ ra backspin, và ngược lại. Rất khó đánh nhưng cực kỳ khó chịu cho đối phương. Phù hợp người chơi phòng thủ muốn tạo sự khó đoán.'
+  },
+  {
+    q: 'Carbon hay gỗ thuần — nên chọn loại cốt nào?',
+    a: 'Cốt gỗ thuần (all-wood): cảm giác bóng tốt hơn, kiểm soát dễ hơn, phù hợp xây dựng kỹ thuật cơ bản. Nhược điểm: tốc độ thấp hơn, đánh mạnh cần nhiều lực hơn. Cốt Carbon: tốc độ cao hơn, điểm nảy rõ (dwell time ngắn hơn), phù hợp lối chơi tấn công nhanh từ xa bàn. Khuyến nghị: chơi ít nhất 1–2 năm với cốt gỗ thuần trước khi chuyển sang carbon để nền kỹ thuật vững chắc.'
+  },
+  {
+    q: 'Độ cứng sponge ảnh hưởng như thế nào đến lối chơi?',
+    a: 'Sponge mềm (30–38°): dễ tạo spin hơn vì có thể "cắn" vào bóng sâu hơn, cảm giác bóng rõ ràng, kiểm soát tốt. Phù hợp người mới và lối chơi kỹ thuật. Sponge cứng (42–50°+): tốc độ cao hơn, power lớn hơn khi có lực đánh tốt, nhưng đòi hỏi kỹ thuật chính xác hơn. Người mới dùng sponge cứng sẽ mắc nhiều lỗi hơn. Xu hướng hiện đại: sponge "turbo" cứng hơn nhưng vẫn tạo spin tốt nhờ công nghệ cao su mới.'
+  },
+  {
+    q: 'Bóng tập nào tốt nhất cho luyện tập hàng ngày?',
+    a: 'Bóng 1–2 sao của các hãng có tên tuổi (Butterfly, Tibhar, DHS, Double Fish) là lựa chọn tốt nhất cho tập luyện hàng ngày — bền hơn bóng 3 sao (ít nổ hơn) và giá hợp lý để mua nhiều. Bóng nhựa ABS 40mm+ là chuẩn hiện đại. Mua theo hộp 100–200 quả nếu tập với máy bắn bóng. Tránh bóng không rõ nguồn gốc — chất lượng không đồng đều ảnh hưởng nghiêm trọng đến cảm giác khi tập.'
+  },
+  {
+    q: 'Cách đọc chỉ số tốc độ và xoáy trên bao bì mặt vợt?',
+    a: 'Các hãng dùng thang đo khác nhau (Butterfly: 1–13, Tibhar: 1–10, ITTF đề xuất 1–100) nên không thể so sánh trực tiếp giữa các thương hiệu. Tốt nhất là đọc review thực tế từ người chơi. Điều thực sự quan trọng: tự thử vợt hoặc hỏi người có kinh nghiệm tại cửa hàng. Chúng tôi cho phép thử vợt tại cửa hàng 286 Nguyễn Xiển trước khi quyết định mua.'
+  },
+  {
+    q: 'Làm sao phân biệt cao su thật và cao su giả/hàng nhái?',
+    a: 'Dấu hiệu cao su thật: logo rõ nét, không mờ hay lệch; mùi cao su tự nhiên không hắc; bề mặt sponge đồng đều, không có bong bóng. Kiểm tra bằng cách áp ngón tay: cao su thật có độ đàn hồi tốt, nhả ngay khi thả. Mua tại đại lý ủy quyền chính thức để có bảo đảm. Cao su nhái giá rẻ hơn 30–50% thường dễ nhận ra qua chất lượng in ấn và cảm giác tay khi cầm.'
+  },
+  {
+    q: 'Trọng lượng và cân bằng cốt vợt ảnh hưởng như thế nào?',
+    a: 'Trọng lượng lý tưởng: 80–92g cho hầu hết người chơi. Vợt nhẹ hơn (dưới 80g): dễ điều khiển, ít mỏi, phù hợp người chơi nhiều giờ. Nặng hơn (trên 92g): power lớn hơn nhưng tốn sức. Cân bằng (balance point): vợt head-heavy cho lực tấn công tốt hơn, handle-heavy cho cảm giác kiểm soát tốt hơn. Cách kiểm tra: đặt vợt lên ngón tay ở vị trí trung điểm, vợt ngả về phía nào thì đó là "head-heavy" hay "handle-heavy".'
+  },
+  {
+    q: 'Cách chọn bàn bóng bàn phù hợp cho gia đình?',
+    a: 'Bàn trong nhà: mặt bàn 19–25mm, khung thép 25–30mm, có thể gấp đôi cho tiết kiệm không gian. Bàn ngoài trời: cần mặt bàn chống thấm, khung chống rỉ. Tiêu chuẩn thi đấu ITTF là 25mm. Diện tích cần: ít nhất 5m x 9m để chơi thoải mái. Thương hiệu đáng tin: JOOLA, Butterfly, Stiga, DHS cho bàn tầm trung đến cao cấp. Bàn giá dưới 3 triệu thường chất lượng bề mặt không đồng đều — hãy xem kỹ trước khi mua.'
+  },
+  {
+    q: 'Bảo quản thiết bị bóng bàn trong mùa hè nóng như thế nào?',
+    a: 'Mùa hè, nhiệt độ cao và độ ẩm là kẻ thù của thiết bị bóng bàn. Cao su: tránh xe hơi đỗ nắng — nhiệt độ trong xe có thể lên 60-70°C làm biến dạng và mất bám hoàn toàn. Cốt vợt: độ ẩm cao làm cong vênh gỗ — bảo quản trong hộp kín với gói hút ẩm. Bóng: nhiệt độ cao làm biến dạng vĩnh viễn. Lý tưởng: bảo quản trong tủ điều hòa nhiệt độ 20-25°C, độ ẩm 50-60%.'
+  },
+  {
+    q: 'Kỹ thuật topspin serve — cách thực hiện đúng từ đầu?',
+    a: 'Giao bóng topspin: tung bóng lên cao tối thiểu 16cm (theo luật ITTF), vợt tiếp xúc bóng ở phần trên-sau với chuyển động từ dưới lên trên và ra trước. Bóng sẽ có topspin, nảy mạnh về phía đối phương khi chạm bàn. Biến thể nâng cao: giao bóng nhanh và thấp qua lưới, đối phương khó nhận do bóng vẫn "leo" về phía họ. Kết hợp với backspin serve để tạo sự đa dạng và khó đoán.'
+  },
+  {
+    q: 'Làm sao cải thiện kỹ thuật phòng thủ với bóng xoáy nhanh?',
+    a: 'Phòng thủ trước bóng topspin mạnh: dùng block chủ động — đưa vợt về phía trước ngay trước khi bóng chạm vợt để giữ bóng vào bàn. Với bóng nhanh hơn, cần "hấp thụ" lực bằng cách lùi cổ tay nhẹ khi tiếp xúc. Phòng thủ tốt đòi hỏi đọc bóng sớm — quan sát vợt đối phương ngay khi họ đánh để dự đoán hướng và tốc độ bóng. Tập bài block liên tục với người tấn công để xây dựng phản xạ.'
+  },
+  {
+    q: 'Cách luyện tập một mình khi không có đối tác?',
+    a: 'Có nhiều phương pháp tập một mình hiệu quả: (1) Máy bắn bóng — đầu tư tốt nhất, tập được footwork, đối công, nhận phục vụ. (2) Đập vào tường — tốt cho reflex và timing, nhưng góc bóng không tự nhiên. (3) Tập shadow — di chuyển và đánh tay không để luyện footwork và kỹ thuật cơ thể. (4) Xem video phân tích kỹ thuật và tập trước gương để sửa lỗi hình thể. Tập 30 phút mỗi ngày đều đặn hiệu quả hơn nhiều so với 3 giờ cuối tuần.'
+  },
+  {
+    q: 'Loop drive khác gì so với giật bóng thông thường?',
+    a: 'Loop drive là biến thể của giật bóng với tốc độ và lực cao hơn, ít xoáy hơn — bóng đi nhanh và thấp. Giật bóng truyền thống tạo nhiều topspin hơn, bóng đi theo đường cong và an toàn hơn. Loop drive hiệu quả nhất khi đối phương đẩy bóng dài, bóng ở độ cao vừa. Trong bóng bàn hiện đại, hai kỹ thuật thường được kết hợp: topspin loop để kiểm soát, loop drive để tấn công dứt điểm.'
+  },
+  {
+    q: 'Làm sao để cú đánh forehand mạnh và ổn định hơn?',
+    a: 'Forehand mạnh đến từ sự phối hợp toàn thân: xoay hông trước, sau đó vai, cánh tay, cổ tay — theo thứ tự đó. Trọng tâm cơ thể chuyển từ chân sau sang chân trước khi đánh. Điểm tiếp xúc lý tưởng: trước-cạnh cơ thể, không quá xa hoặc quá gần người. Lỗi phổ biến: chỉ dùng tay, không xoay hông — lực yếu và dễ chấn thương cổ tay. Tập "shadow swing" 100 lần mỗi ngày để xây dựng cơ bắp trí nhớ (muscle memory).'
+  },
+  {
+    q: 'Kỹ thuật backhand topspin — lỗi phổ biến và cách sửa?',
+    a: 'Lỗi #1: Khuỷu tay quá xa người — giữ khuỷu tay gần thân, khoảng 10-15cm. Lỗi #2: Cổ tay cứng — cổ tay phải "whip" (quật) ở điểm tiếp xúc để tăng tốc và xoáy. Lỗi #3: Đứng quá thẳng — hơi gập gối và ngả người về phía trước. Lỗi #4: Điểm tiếp xúc quá thấp — tiếp xúc bóng ở ngang bụng đến ngực, không để rơi xuống thấp hơn. Cách sửa hiệu quả: quay video buổi tập và phân tích từng cú đánh.'
+  },
+  {
+    q: 'Kiểm soát bóng phục vụ ngắn và dài — làm sao chuẩn?',
+    a: 'Bóng ngắn: tiếp xúc bóng sớm hơn (ngay sau khi nảy), lực nhẹ, góc vợt tinh tế. Bóng dài: tiếp xúc muộn hơn, lực mạnh hơn, cổ tay snap quyết liệt hơn. Để tập kiểm soát độ dài: đặt hộp giấy làm mục tiêu ở cạnh bàn, tập giao bóng chạm vào hộp (bóng ngắn) hoặc qua hộp (bóng dài). Phục vụ ngắn và dài xen kẽ nhau trong trận đấu là chiến thuật cực kỳ hiệu quả để giành thế chủ động.'
+  },
+  {
+    q: 'Cách giảm lỗi unforced error khi thi đấu căng thẳng?',
+    a: 'Unforced error (lỗi tự phạm) thường đến từ hai nguyên nhân: kỹ thuật chưa ổn định hoặc tâm lý không tốt. Về kỹ thuật: đơn giản hóa khi gặp điểm quan trọng — dùng kỹ thuật mình chắc nhất thay vì thử nghiệm. Về tâm lý: sau mỗi điểm thua, nhìn xuống vợt 3 giây rồi mới chuẩn bị điểm tiếp theo (reset routine). Trong training: tập với áp lực nhân tạo — điểm mỗi rally tính điểm để tạo cảm giác thi đấu thực tế.'
+  },
+  {
+    q: 'Chiến thuật nào phù hợp khi đối mặt với người chơi phòng thủ?',
+    a: 'Đối phó người phòng thủ/chopper: đừng nản khi rally kéo dài — đó là bẫy của họ. Chiến thuật hiệu quả: (1) Tấn công điểm giữa bàn (vùng khó di chuyển nhất). (2) Thay đổi tốc độ — đánh chậm rồi đột ngột bạt nhanh. (3) Drop shot kéo đối phương ra gần bàn rồi tấn công sâu. (4) Topspin nhiều xoáy để đối phương khó cắt trả. Kiên nhẫn và kiểm soát bóng — đừng cố đánh dứt điểm từ vị trí không thuận lợi.'
+  },
+  {
+    q: 'Cách xây dựng kế hoạch luyện tập hiệu quả theo tuần?',
+    a: 'Lịch tập lý tưởng cho người nghiêm túc: 4–5 buổi/tuần, mỗi buổi 90–120 phút. Cấu trúc buổi tập: 15 phút khởi động (footwork, shadow), 60 phút tập kỹ thuật có hướng dẫn, 30 phút thi đấu tự do. Phân bổ theo tuần: 2 buổi kỹ thuật cụ thể (ví dụ: forehand), 1 buổi giao bóng và nhận phục vụ, 1 buổi đấu tập, 1 buổi tập thể lực và footwork. Ghi nhật ký sau mỗi buổi để theo dõi tiến bộ.'
+  },
+  {
+    q: 'Tầm quan trọng của việc xem lại video sau trận đấu?',
+    a: 'Phân tích video là phương pháp tiến bộ nhanh nhất mà nhiều người bỏ qua. Những gì cần chú ý: pattern giao bóng của đối phương, lỗi kỹ thuật lặp lại, điểm mạnh/yếu chiến thuật. Cách hiệu quả: quay video từ góc sau (góc 45 độ) để thấy rõ footwork và timing tiếp xúc bóng. Xem với coach hoặc người chơi kinh nghiệm cao hơn để nhận xét khách quan. Chỉ 20 phút xem video hiệu quả hơn 1 giờ tập mù quáng.'
+  },
+  {
+    q: 'Cách chọn giày bóng bàn tốt — cần lưu ý gì?',
+    a: 'Giày bóng bàn chuyên dụng khác giày chạy bộ: đế thấp hơn, rộng hơn để ổn định khi xoay chuyển nhanh, và đế cao su non-marking cho sàn trong nhà. Tính năng cần ưu tiên: chống lật cổ chân (ankle support), đệm lót tốt để giảm chấn (đặc biệt khi tập lâu), và đế ôm sàn tốt. Thương hiệu đáng tin: Butterfly Lezoline, Mizuno, Asics, Victor. Thay giày khi đế mòn — giày mòn tăng nguy cơ trượt ngã và chấn thương đầu gối.'
+  },
+  {
+    q: 'Kỹ thuật đánh bóng với hai mặt vợt khác nhau (combo)?',
+    a: 'Chiến thuật combo (một mặt tấn công, một mặt phòng thủ/pips) rất phức tạp nhưng cực kỳ hiệu quả khi thành thạo. Kỹ thuật cốt lõi: xoay vợt nhanh và kín đáo trước khi đối phương thấy. Luyện tập: 1.000 lần xoay vợt mỗi ngày cho đến khi trở thành phản xạ. Chiến thuật: dùng mặt tấn công cho rally, bất ngờ chuyển sang mặt pips để đảo xoáy ở điểm bóng ngắn hoặc giao bóng. Đây là lối chơi đòi hỏi IQ chiến thuật cao và nhiều giờ tập luyện chuyên sâu.'
+  },
+  {
+    q: 'Hỏi đáp: Những câu hỏi thường gặp khi mua thiết bị lần đầu',
+    a: 'Q: Nên mua combo hay mua lẻ? A: Người mới nên mua combo vì đã được tư vấn tương thích. Q: Ngân sách bao nhiêu là hợp lý? A: 1–2 triệu VNĐ cho bộ vợt đầu tiên là hợp lý. Q: Mua online hay tại cửa hàng? A: Tại cửa hàng — được xem hàng thực tế, thử cầm vợt và được tư vấn trực tiếp. Q: Có cần mua thêm phụ kiện không? A: Tối thiểu cần: túi đựng vợt và dung dịch vệ sinh cao su. Liên hệ Bóng Bàn Việt để được tư vấn miễn phí!'
+  },
+];
+
+const ITEMS_PER_PAGE = 10;
+let currentPage = 1;
+let filteredItems = [...FAQ];
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function renderList() {
+  const list = document.getElementById('ktList');
+  const empty = document.getElementById('ktEmpty');
+  const countEl = document.getElementById('ktCountNum');
+
+  countEl.textContent = filteredItems.length;
+
+  if (!filteredItems.length) {
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    document.getElementById('ktPagination').innerHTML = '';
+    return;
+  }
+  empty.style.display = 'none';
+
+  const start = (currentPage - 1) * ITEMS_PER_PAGE;
+  const pageItems = filteredItems.slice(start, start + ITEMS_PER_PAGE);
+  const globalStart = start;
+
+  list.innerHTML = pageItems.map((item, i) => {
+    const num = String(globalStart + i + 1).padStart(2, '0');
+    return `<div class="kt-item" id="item-${globalStart + i}">
+      <div class="kt-item-header" onclick="toggleItem(${globalStart + i})">
+        <span class="kt-num">${num}</span>
+        <span class="kt-item-q">${item.q}</span>
+        <button class="kt-toggle" aria-label="Mở rộng">+</button>
+      </div>
+      <div class="kt-item-body">
+        <p>${item.a}</p>
+      </div>
+    </div>`;
+  }).join('');
+
+  renderPagination();
+}
+
+function toggleItem(idx) {
+  const el = document.getElementById(`item-${idx}`);
+  if (!el) return;
+  const isOpen = el.classList.contains('open');
+  // Close all
+  document.querySelectorAll('.kt-item.open').forEach(e => e.classList.remove('open'));
+  // Open clicked if it was closed
+  if (!isOpen) el.classList.add('open');
+}
+
+// ── Pagination ────────────────────────────────────────────────────────────────
+function renderPagination() {
+  const total = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
+  if (total <= 1) { document.getElementById('ktPagination').innerHTML = ''; return; }
+
+  let html = `<button class="kt-page-btn arrow" onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>‹</button>`;
+  for (let i = 1; i <= total; i++) {
+    html += `<button class="kt-page-btn${i === currentPage ? ' active' : ''}" onclick="goPage(${i})">${i}</button>`;
+  }
+  html += `<button class="kt-page-btn arrow" onclick="goPage(${currentPage + 1})" ${currentPage === total ? 'disabled' : ''}>›</button>`;
+  document.getElementById('ktPagination').innerHTML = html;
+}
+
+function goPage(page) {
+  const total = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
+  if (page < 1 || page > total) return;
+  currentPage = page;
+  renderList();
+  document.getElementById('ktList').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── Search ────────────────────────────────────────────────────────────────────
+function onSearch() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  if (!q) {
+    filteredItems = [...FAQ];
+  } else {
+    filteredItems = FAQ.filter(item =>
+      item.q.toLowerCase().includes(q) || item.a.toLowerCase().includes(q)
+    );
+  }
+  currentPage = 1;
+  renderList();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+renderList();
+</script>
+<script src="/js/banners.js"></script>
+</body>
+</html>
