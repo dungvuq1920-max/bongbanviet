@@ -48,6 +48,9 @@ db.exec(`
     condition TEXT DEFAULT 'new',
     badge TEXT,
     sort_order INTEGER DEFAULT 0,
+    price TEXT DEFAULT '',
+    in_stock INTEGER DEFAULT 1,
+    variants TEXT DEFAULT '[]',
     created_at TEXT DEFAULT (datetime('now')),
     updated_at TEXT DEFAULT (datetime('now')),
     FOREIGN KEY (category_slug) REFERENCES categories(slug)
@@ -64,7 +67,9 @@ db.exec(`
     description TEXT,
     images TEXT DEFAULT '[]',
     badge TEXT,
-    sort_order INTEGER DEFAULT 0
+    sort_order INTEGER DEFAULT 0,
+    price TEXT DEFAULT '',
+    in_stock INTEGER DEFAULT 1
   );
 
   CREATE TABLE IF NOT EXISTS articles (
