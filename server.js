@@ -17,7 +17,7 @@ app.use(express.json());
 // Serve uploaded images from persistent volume first
 app.use('/images/products', express.static(path.join(DATA_DIR, 'images', 'products')));
 app.use('/images/banners', express.static(path.join(DATA_DIR, 'images', 'banners')));
-app.use(express.static(__dirname));
+app.use(express.static(__dirname, { extensions: ['html'] }));
 
 // ─── Image Upload Setup ──────────────────────────────────────────────────────
 

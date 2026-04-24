@@ -42,6 +42,19 @@
     .nav-ham span { display: block; width: 22px; height: 2px; background: var(--dark); border-radius: 2px; }
     @media(max-width:900px) { .nav-links { display: none; } .nav-ham { display: flex; } .nav { padding: 0 20px; } }
 
+    /* ─── Mobile Nav ─── */
+    .mobile-nav { display: none; position: fixed; inset: 0; z-index: 300; pointer-events: none; }
+    .mobile-nav.open { display: block; pointer-events: all; }
+    .mobile-nav-overlay { position: absolute; inset: 0; background: rgba(0,0,0,.5); }
+    .mobile-nav-panel { position: absolute; top: 0; right: 0; width: min(300px,85vw); height: 100%; background: var(--white); display: flex; flex-direction: column; overflow-y: auto; }
+    .mobile-nav-header { padding: 18px 20px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; }
+    .mobile-nav-header img { height: 40px; width: auto; }
+    .mobile-nav-close { background: none; border: none; cursor: pointer; font-size: 22px; color: var(--mid); }
+    .mobile-nav-links a { display: block; padding: 13px 24px; font-size: 14px; font-weight: 500; color: var(--dark); border-bottom: 1px solid var(--line); }
+    .mobile-nav-links a:hover { background: #f5f5f5; }
+    .mobile-nav-links a.m-cta { background: var(--red); color: #fff; text-align: center; margin: 16px; border: none; }
+    .mobile-nav-footer { padding: 16px 24px; font-size: 12px; color: var(--mid); border-top: 1px solid var(--line); margin-top: auto; }
+
     /* ─── Page Header ─── */
     .page-header { background: var(--dark); padding: 40px 40px 32px; border-bottom: 3px solid var(--red); }
     .page-header .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--coral); margin-bottom: 10px; }
@@ -183,6 +196,29 @@
   </style>
 </head>
 <body>
+
+<!-- Mobile Nav -->
+<div class="mobile-nav" id="mobileNav">
+  <div class="mobile-nav-overlay" id="navOverlay"></div>
+  <div class="mobile-nav-panel">
+    <div class="mobile-nav-header">
+      <img src="logo_bongbanviet.png" alt="Bóng Bàn Việt">
+      <button class="mobile-nav-close" id="navClose">✕</button>
+    </div>
+    <div class="mobile-nav-links">
+      <a href="cot-vot.html">Cốt Vợt</a>
+      <a href="mat-vot.html">Mặt Vợt</a>
+      <a href="bong.html">Bóng</a>
+      <a href="ban.html">Bàn</a>
+      <a href="combo-vot.html">Combo Vợt</a>
+      <a href="do-cu.html">Đồ Cũ</a>
+      <a href="kien-thuc.html">Kiến Thức</a>
+      <a href="lien-he.html" class="m-cta">Liên Hệ Tư Vấn</a>
+    </div>
+    <div class="mobile-nav-footer">Hotline / Zalo: <strong>096.1269.386</strong></div>
+  </div>
+</div>
+
 <div class="site-container">
 
   <!-- Announcement -->
@@ -919,6 +955,11 @@ document.addEventListener('keydown', e => {
   }
 });
 document.getElementById('noteInput').addEventListener('keydown', e => { if (e.key === 'Enter') saveNote(); });
+
+// ─── Mobile Nav ───────────────────────────────────────────────────────────────
+document.getElementById('navHam').addEventListener('click', () => document.getElementById('mobileNav').classList.add('open'));
+document.getElementById('navClose').addEventListener('click', () => document.getElementById('mobileNav').classList.remove('open'));
+document.getElementById('navOverlay').addEventListener('click', () => document.getElementById('mobileNav').classList.remove('open'));
 
 // ─── Start ────────────────────────────────────────────────────────────────────
 init();
