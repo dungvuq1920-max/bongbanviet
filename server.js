@@ -579,6 +579,18 @@ app.post('/api/import-excel', xlsxUpload.single('file'), async (req, res) => {
   }
 });
 
+// ─── Seed default catalog banner images (INSERT OR IGNORE — never overwrites uploads) ────
+const _defBanners = [
+  ['banner_cot_vot',    '/images/banners/banner-cot-vot.jpg'],
+  ['banner_mat_vot',    '/images/banners/banner-mat-vot.jpg'],
+  ['banner_bong',       '/images/banners/banner-bong.jpg'],
+  ['banner_ban',        '/images/banners/banner-ban.jpg'],
+  ['banner_do_thi_dau', '/images/banners/banner-do-thi-dau.jpg'],
+  ['banner_combo_vot',  '/images/banners/banner-combo-vot.jpg'],
+];
+const _bIns = db.prepare(`INSERT OR IGNORE INTO settings (key, value, updated_at) VALUES (?, ?, datetime('now'))`);
+_defBanners.forEach(([k, v]) => _bIns.run(k, v));
+
 // ─── Start ───────────────────────────────────────────────────────────────────
 
 const { execSync } = require('child_process');
