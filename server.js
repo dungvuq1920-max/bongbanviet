@@ -162,14 +162,15 @@ app.post('/api/products', (req, res) => {
 
   db.prepare(`INSERT INTO products
     (id, slug, name, category_slug, brand_slug, gear_subcategory, description,
-     specs, images, variants, featured, condition, badge, price, in_stock)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+     specs, images, variants, featured, condition, badge, price, in_stock, sort_order)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
     .run(id, finalSlug, name, category_slug, brand_slug || null,
       gear_subcategory || null, description || '',
       JSON.stringify(specs || {}), JSON.stringify(images || []),
       JSON.stringify(variants || []),
       featured ? 1 : 0, condition || 'new', badge || null,
-      price || '', in_stock !== undefined ? (in_stock ? 1 : 0) : 1);
+      price || '', in_stock !== undefined ? (in_stock ? 1 : 0) : 1,
+      sort_order !== undefined ? Number(sort_order) : 0);
 
   const created = db.prepare('SELECT * FROM products WHERE id = ?').get(id);
   res.status(201).json(productRow(created));
@@ -177,7 +178,7 @@ app.post('/api/products', (req, res) => {
 
 app.put('/api/products/:id', (req, res) => {
   const { name, category_slug, brand_slug, gear_subcategory, description,
-          specs, images, variants, featured, condition, badge, slug, price, in_stock } = req.body;
+          specs, images, variants, featured, condition, badge, slug, price, in_stock, sort_order } = req.body;
 
   const existing = db.prepare('SELECT * FROM products WHERE id = ? OR slug = ?')
     .get(req.params.id, req.params.id);
@@ -186,7 +187,7 @@ app.put('/api/products/:id', (req, res) => {
   db.prepare(`UPDATE products SET
     name = ?, category_slug = ?, brand_slug = ?, gear_subcategory = ?,
     description = ?, specs = ?, images = ?, variants = ?, featured = ?,
-    condition = ?, badge = ?, slug = ?, price = ?, in_stock = ?,
+    condition = ?, badge = ?, slug = ?, price = ?, in_stock = ?, sort_order = ?,
     updated_at = datetime('now')
     WHERE id = ?`)
     .run(
@@ -204,6 +205,7 @@ app.put('/api/products/:id', (req, res) => {
       slug ?? existing.slug,
       price !== undefined ? price : (existing.price || ''),
       in_stock !== undefined ? (in_stock ? 1 : 0) : existing.in_stock,
+      sort_order !== undefined ? Number(sort_order) : (existing.sort_order || 0),
       existing.id
     );
 
@@ -240,11 +242,12 @@ app.post('/api/combos', (req, res) => {
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
-  db.prepare(`INSERT INTO combos (id, slug, name, level, blade, rubber_fh, rubber_bh, description, images, badge, price, in_stock)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+  db.prepare(`INSERT INTO combos (id, slug, name, level, blade, rubber_fh, rubber_bh, description, images, badge, price, in_stock, sort_order)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
     .run(id, finalSlug, name, level, blade || '', rubber_fh || '', rubber_bh || '',
       description || '', JSON.stringify(images || []), badge || null,
-      price || '', in_stock !== undefined ? (in_stock ? 1 : 0) : 1);
+      price || '', in_stock !== undefined ? (in_stock ? 1 : 0) : 1,
+      sort_order !== undefined ? Number(sort_order) : 0);
 
   res.status(201).json({ id, slug: finalSlug, name, level });
 });
@@ -253,9 +256,9 @@ app.put('/api/combos/:id', (req, res) => {
   const existing = db.prepare('SELECT * FROM combos WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'Không tìm thấy combo' });
 
-  const { name, level, blade, rubber_fh, rubber_bh, description, images, badge, price, in_stock } = req.body;
+  const { name, level, blade, rubber_fh, rubber_bh, description, images, badge, price, in_stock, sort_order } = req.body;
   db.prepare(`UPDATE combos SET name=?, level=?, blade=?, rubber_fh=?, rubber_bh=?,
-    description=?, images=?, badge=?, price=?, in_stock=? WHERE id=?`)
+    description=?, images=?, badge=?, price=?, in_stock=?, sort_order=? WHERE id=?`)
     .run(name ?? existing.name, level ?? existing.level,
       blade ?? existing.blade, rubber_fh ?? existing.rubber_fh,
       rubber_bh ?? existing.rubber_bh, description ?? existing.description,
@@ -263,6 +266,7 @@ app.put('/api/combos/:id', (req, res) => {
       badge ?? existing.badge,
       price !== undefined ? price : (existing.price || ''),
       in_stock !== undefined ? (in_stock ? 1 : 0) : existing.in_stock,
+      sort_order !== undefined ? Number(sort_order) : (existing.sort_order || 0),
       existing.id);
 
   res.json({ success: true });
@@ -341,6 +345,7 @@ app.delete('/api/articles/:id', (req, res) => {
 app.get('/api/stats', (req, res) => {
   res.json({
     products: db.prepare('SELECT COUNT(*) as c FROM products').get().c,
+    products_in_stock: db.prepare('SELECT COUNT(*) as c FROM products WHERE in_stock=1').get().c,
     categories: db.prepare('SELECT COUNT(*) as c FROM categories').get().c,
     combos: db.prepare('SELECT COUNT(*) as c FROM combos').get().c,
     articles: db.prepare('SELECT COUNT(*) as c FROM articles').get().c,
