@@ -46,6 +46,7 @@
       '.mega-brand-card:hover .mega-brand-desc{color:rgba(255,255,255,.45)}' +
       '.mega-brand-arr{display:block;font-size:9px;font-weight:600;letter-spacing:.06em;color:var(--red);margin-top:5px;transition:transform .15s,color .15s}' +
       '.mega-brand-card:hover .mega-brand-arr{transform:translateX(3px);color:var(--coral)}' +
+      '.mega-brand-card:hover img{filter:brightness(0) invert(1)!important;opacity:.75!important;mix-blend-mode:normal!important;}' +
       '.mega-gear-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}' +
       '.mega-gear-card{display:flex;flex-direction:column;padding:18px 15px;gap:5px;border:1px solid var(--line);transition:all .15s;text-decoration:none}' +
       '.mega-gear-card:hover{border-color:var(--dark);background:var(--dark)}' +
@@ -79,11 +80,11 @@
         '<div class="mega-panel mega-brands">' +
           '<div class="mega-head"><span class="mega-head-label">Cốt Vợt theo thương hiệu</span><a href="/cot-vot.html" class="mega-head-all">Xem tất cả →</a></div>' +
           '<div class="mega-brands-grid">' +
-            brandCard('/cot-vot/butterfly.html', 'Butterfly', 'Cao cấp, Nhật Bản') +
-            brandCard('/cot-vot/tibhar.html',    'Tibhar',    'Chuyên nghiệp, Đức') +
-            brandCard('/cot-vot/unrex.html',     'Unrex',     'Đa dạng kiểu chơi') +
-            brandCard('/cot-vot/yinhe.html',     'Yinhe',     'Giá tốt, hiệu quả') +
-            brandCard('/cot-vot/khac.html',      'Khác',      'Thương hiệu khác') +
+            brandCard('/cot-vot.html?brand=butterfly', 'Butterfly', 'Cao cấp, Nhật Bản') +
+            brandCard('/cot-vot.html?brand=tibhar',    'Tibhar',    'Chuyên nghiệp, Đức') +
+            brandCard('/cot-vot.html?brand=unrex',     'Unrex',     'Đa dạng kiểu chơi') +
+            brandCard('/cot-vot.html?brand=yinhe',     'Yinhe',     'Giá tốt, hiệu quả') +
+            brandCard('/cot-vot.html?brand=khac',      'Khác',      'Thương hiệu khác') +
           '</div>' +
         '</div>' +
       '</li>' +
@@ -92,11 +93,11 @@
         '<div class="mega-panel mega-brands">' +
           '<div class="mega-head"><span class="mega-head-label">Mặt Vợt theo thương hiệu</span><a href="/mat-vot.html" class="mega-head-all">Xem tất cả →</a></div>' +
           '<div class="mega-brands-grid">' +
-            brandCard('/mat-vot/butterfly.html', 'Butterfly', 'Cao cấp, Nhật Bản') +
-            brandCard('/mat-vot/tibhar.html',    'Tibhar',    'Chuyên nghiệp, Đức') +
-            brandCard('/mat-vot/unrex.html',     'Unrex',     'Đa dạng kiểu chơi') +
-            brandCard('/mat-vot/yinhe.html',     'Yinhe',     'Giá tốt, hiệu quả') +
-            brandCard('/mat-vot/khac.html',      'Khác',      'Thương hiệu khác') +
+            brandCard('/mat-vot.html?brand=butterfly', 'Butterfly', 'Cao cấp, Nhật Bản') +
+            brandCard('/mat-vot.html?brand=tibhar',    'Tibhar',    'Chuyên nghiệp, Đức') +
+            brandCard('/mat-vot.html?brand=unrex',     'Unrex',     'Đa dạng kiểu chơi') +
+            brandCard('/mat-vot.html?brand=yinhe',     'Yinhe',     'Giá tốt, hiệu quả') +
+            brandCard('/mat-vot.html?brand=khac',      'Khác',      'Thương hiệu khác') +
           '</div>' +
         '</div>' +
       '</li>' +
@@ -107,8 +108,8 @@
         '<div class="mega-panel mega-gear">' +
           '<div class="mega-head"><span class="mega-head-label">Đồ Thi Đấu</span><a href="/do-thi-dau.html" class="mega-head-all">Xem tất cả →</a></div>' +
           '<div class="mega-gear-grid">' +
-            gearCard('/do-thi-dau/giay.html',                  'Giày',                 'Giày chuyên dụng bóng bàn') +
-            gearCard('/do-thi-dau/trang-phuc-phu-kien.html',   'Trang Phục &amp; Phụ Kiện', 'Áo, quần, băng tay, vớ…') +
+            gearCard('/do-thi-dau.html#giay',       'Giày',                 'Giày chuyên dụng bóng bàn') +
+            gearCard('/do-thi-dau.html#trang-phuc', 'Trang Phục &amp; Phụ Kiện', 'Áo, quần, băng tay, vớ…') +
           '</div>' +
         '</div>' +
       '</li>' +
@@ -120,8 +121,20 @@
     );
   }
 
+  var _brandLogos = {
+    'butterfly': '/images/brand/butterfly-logo.png',
+    'tibhar':    '/images/brand/tibhar-logo-white.png',
+    'yinhe':     '/images/brand/yinhe-logo.jpg',
+  };
+
   function brandCard(href, name, desc) {
+    var slug = href.split('brand=')[1] || '';
+    var logoUrl = _brandLogos[slug] || '';
+    var logoHtml = logoUrl
+      ? '<img src="' + logoUrl + '" alt="' + name + '" style="height:18px;width:auto;max-width:80px;object-fit:contain;mix-blend-mode:multiply;opacity:.55;margin-bottom:4px;display:block;">'
+      : '';
     return '<a href="' + href + '" class="mega-brand-card">' +
+      logoHtml +
       '<span class="mega-brand-name">' + name + '</span>' +
       '<span class="mega-brand-desc">' + desc + '</span>' +
       '<span class="mega-brand-arr">Xem →</span>' +
@@ -142,31 +155,31 @@
       '<div class="mobile-nav-overlay" id="navOverlay"></div>' +
       '<div class="mobile-nav-panel">' +
         '<div class="mobile-nav-header">' +
-          '<img src="/logo_bongbanviet.png" alt="Bóng Bàn Việt" style="height:44px;width:auto;">' +
+          '<img src="/logo_bongbanviet.png" alt="Bóng Bàn Việt" style="height:44px;width:auto;border-radius:50%;">' +
           '<button class="mobile-nav-close" id="navClose">✕</button>' +
         '</div>' +
         '<div class="mobile-nav-links">' +
           mGroup('mg-cot', 'Cốt Vợt',
-            '<a href="/cot-vot/butterfly.html">Butterfly</a>' +
-            '<a href="/cot-vot/tibhar.html">Tibhar</a>' +
-            '<a href="/cot-vot/unrex.html">Unrex</a>' +
-            '<a href="/cot-vot/yinhe.html">Yinhe</a>' +
-            '<a href="/cot-vot/khac.html">Các Thương Hiệu Khác</a>' +
+            '<a href="/cot-vot.html?brand=butterfly">Butterfly</a>' +
+            '<a href="/cot-vot.html?brand=tibhar">Tibhar</a>' +
+            '<a href="/cot-vot.html?brand=unrex">Unrex</a>' +
+            '<a href="/cot-vot.html?brand=yinhe">Yinhe</a>' +
+            '<a href="/cot-vot.html?brand=khac">Các Thương Hiệu Khác</a>' +
             '<a href="/cot-vot.html" class="m-group-view-all">Xem Tất Cả Cốt Vợt →</a>'
           ) +
           mGroup('mg-mat', 'Mặt Vợt',
-            '<a href="/mat-vot/butterfly.html">Butterfly</a>' +
-            '<a href="/mat-vot/tibhar.html">Tibhar</a>' +
-            '<a href="/mat-vot/unrex.html">Unrex</a>' +
-            '<a href="/mat-vot/yinhe.html">Yinhe</a>' +
-            '<a href="/mat-vot/khac.html">Các Thương Hiệu Khác</a>' +
+            '<a href="/mat-vot.html?brand=butterfly">Butterfly</a>' +
+            '<a href="/mat-vot.html?brand=tibhar">Tibhar</a>' +
+            '<a href="/mat-vot.html?brand=unrex">Unrex</a>' +
+            '<a href="/mat-vot.html?brand=yinhe">Yinhe</a>' +
+            '<a href="/mat-vot.html?brand=khac">Các Thương Hiệu Khác</a>' +
             '<a href="/mat-vot.html" class="m-group-view-all">Xem Tất Cả Mặt Vợt →</a>'
           ) +
           '<a href="/bong.html">Bóng</a>' +
           '<a href="/ban.html">Bàn</a>' +
           mGroup('mg-thi', 'Đồ Thi Đấu',
-            '<a href="/do-thi-dau/giay.html">Giày</a>' +
-            '<a href="/do-thi-dau/trang-phuc-phu-kien.html">Trang Phục &amp; Phụ Kiện</a>' +
+            '<a href="/do-thi-dau.html#giay">Giày</a>' +
+            '<a href="/do-thi-dau.html#trang-phuc">Trang Phục &amp; Phụ Kiện</a>' +
             '<a href="/do-thi-dau.html" class="m-group-view-all">Xem Tất Cả Đồ Thi Đấu →</a>'
           ) +
           '<a href="/combo-vot.html">Combo Vợt</a>' +

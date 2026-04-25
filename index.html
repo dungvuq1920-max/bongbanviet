@@ -70,7 +70,7 @@
       border-bottom: 1px solid var(--line);
       display: flex; align-items: center;
       justify-content: space-between;
-      height: 64px; padding: 0 40px;
+      height: 76px; padding: 0 40px;
       transition: box-shadow .3s;
     }
     .nav.scrolled { box-shadow: 0 2px 24px rgba(0,0,0,.08); }
@@ -182,11 +182,11 @@
     .hero {
       display: grid;
       grid-template-columns: 55fr 45fr;
-      min-height: calc(35vh - 35px);
+      min-height: clamp(500px, calc(84vh - 76px), 960px);
     }
     .hero-l {
       background: var(--dark);
-      padding: 28px 56px;
+      padding: 72px 56px;
       display: flex; flex-direction: column;
       justify-content: center; position: relative;
       overflow: hidden;
@@ -319,6 +319,62 @@
       letter-spacing: .18em; text-transform: uppercase;
       color: rgba(255,255,255,.4); margin-top: 3px;
     }
+
+    /* ─── Hero brand grid (right panel) ─────────────────── */
+    .hero-brand-grid {
+      position: absolute; inset: 0;
+      display: grid; grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr; gap: 1px;
+      background: rgba(255,255,255,.04);
+      z-index: 1;
+    }
+    .hbg-card {
+      display: flex; flex-direction: column;
+      justify-content: flex-end; padding: 28px 26px;
+      position: relative; overflow: hidden;
+      text-decoration: none; background: #130808;
+      transition: background .3s;
+    }
+    .hbg-card:nth-child(1) { background: #0d1409; }
+    .hbg-card:nth-child(2) { background: #080d1a; }
+    .hbg-card:nth-child(3) { background: #1a0d08; }
+    .hbg-card:nth-child(4) { background: #0a1414; }
+    .hbg-card:hover { filter: brightness(1.15); }
+    .hbg-abbr {
+      position: absolute; right: 12px; top: 12px;
+      font-family: 'Playfair Display', serif;
+      font-weight: 900; font-size: clamp(48px, 6vw, 92px);
+      color: rgba(255,255,255,.05); line-height: 1;
+      user-select: none; transition: transform .4s, color .3s;
+    }
+    .hbg-card:hover .hbg-abbr { transform: scale(1.1); color: rgba(255,255,255,.09); }
+    .hbg-card::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 2px; background: var(--red);
+      transform: scaleX(0); transform-origin: left;
+      transition: transform .35s;
+    }
+    .hbg-card:hover::after { transform: scaleX(1); }
+    .hbg-name {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(20px, 2.4vw, 38px); font-weight: 900;
+      color: #fff; line-height: 1; position: relative; z-index: 1;
+    }
+    .hbg-sub {
+      font-size: 9px; font-weight: 600; letter-spacing: .2em;
+      text-transform: uppercase; color: rgba(255,255,255,.28);
+      margin-top: 7px; position: relative; z-index: 1;
+      transition: color .3s;
+    }
+    .hbg-card:hover .hbg-sub { color: rgba(255,255,255,.5); }
+    .hbg-logo {
+      position: absolute; top: 14px; left: 16px;
+      height: 24px; width: auto; max-width: 100px;
+      mix-blend-mode: screen; opacity: .5;
+      object-fit: contain; transition: opacity .3s;
+    }
+    .hbg-card:hover .hbg-logo { opacity: .8; }
 
     /* ─── Quick-shop pills ────────────────────────────────── */
     .qpill {
@@ -816,6 +872,8 @@
       transition: transform .15s, color .15s;
     }
     .mega-brand-card:hover .mega-brand-arr { transform: translateX(3px); color: var(--coral); }
+    .mega-brand-card .brand-logo { height:16px;width:auto;max-width:70px;object-fit:contain;mix-blend-mode:multiply;opacity:.5;margin-bottom:5px;display:block;transition:filter .15s,opacity .15s; }
+    .mega-brand-card:hover .brand-logo { filter:brightness(0) invert(1)!important;opacity:.7!important;mix-blend-mode:normal!important; }
     .mega-gear-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
     .mega-gear-card {
       display: flex; flex-direction: column;
@@ -890,11 +948,11 @@
           Cốt Vợt <span class="m-group-arrow">▾</span>
         </button>
         <div class="m-group-links">
-          <a href="cot-vot/butterfly.html">Butterfly</a>
-          <a href="cot-vot/tibhar.html">Tibhar</a>
-          <a href="cot-vot/unrex.html">Unrex</a>
-          <a href="cot-vot/yinhe.html">Yinhe</a>
-          <a href="cot-vot/khac.html">Các Thương Hiệu Khác</a>
+          <a href="cot-vot.html?brand=butterfly">Butterfly</a>
+          <a href="cot-vot.html?brand=tibhar">Tibhar</a>
+          <a href="cot-vot.html?brand=unrex">Unrex</a>
+          <a href="cot-vot.html?brand=yinhe">Yinhe</a>
+          <a href="cot-vot.html?brand=khac">Các Thương Hiệu Khác</a>
           <a href="cot-vot.html" class="m-group-view-all">Xem Tất Cả Cốt Vợt →</a>
         </div>
       </div>
@@ -903,11 +961,11 @@
           Mặt Vợt <span class="m-group-arrow">▾</span>
         </button>
         <div class="m-group-links">
-          <a href="mat-vot/butterfly.html">Butterfly</a>
-          <a href="mat-vot/tibhar.html">Tibhar</a>
-          <a href="mat-vot/unrex.html">Unrex</a>
-          <a href="mat-vot/yinhe.html">Yinhe</a>
-          <a href="mat-vot/khac.html">Các Thương Hiệu Khác</a>
+          <a href="mat-vot.html?brand=butterfly">Butterfly</a>
+          <a href="mat-vot.html?brand=tibhar">Tibhar</a>
+          <a href="mat-vot.html?brand=unrex">Unrex</a>
+          <a href="mat-vot.html?brand=yinhe">Yinhe</a>
+          <a href="mat-vot.html?brand=khac">Các Thương Hiệu Khác</a>
           <a href="mat-vot.html" class="m-group-view-all">Xem Tất Cả Mặt Vợt →</a>
         </div>
       </div>
@@ -918,8 +976,8 @@
           Đồ Thi Đấu <span class="m-group-arrow">▾</span>
         </button>
         <div class="m-group-links">
-          <a href="do-thi-dau/giay.html">Giày</a>
-          <a href="do-thi-dau/trang-phuc-phu-kien.html">Trang Phục &amp; Phụ Kiện</a>
+          <a href="do-thi-dau.html#giay">Giày</a>
+          <a href="do-thi-dau.html#trang-phuc">Trang Phục &amp; Phụ Kiện</a>
           <a href="do-thi-dau.html" class="m-group-view-all">Xem Tất Cả Đồ Thi Đấu →</a>
         </div>
       </div>
@@ -951,7 +1009,7 @@
 <!-- Navigation -->
 <nav class="nav" id="nav">
   <a href="index.html" class="nav-logo">
-    <img src="logo_bongbanviet.png" alt="Bóng Bàn Việt" style="height:50px;width:auto;">
+    <img src="logo_bongbanviet.png" alt="Bóng Bàn Việt" style="height:52px;width:auto;border-radius:50%;">
   </a>
   <ul class="nav-links">
     <li class="mega-item">
@@ -962,27 +1020,30 @@
           <a href="cot-vot.html" class="mega-head-all">Xem tất cả →</a>
         </div>
         <div class="mega-brands-grid">
-          <a href="cot-vot/butterfly.html" class="mega-brand-card">
+          <a href="cot-vot.html?brand=butterfly" class="mega-brand-card">
+            <img src="/images/brand/butterfly-logo.png" class="brand-logo" alt="Butterfly">
             <span class="mega-brand-name">Butterfly</span>
             <span class="mega-brand-desc">Cao cấp, Nhật Bản</span>
             <span class="mega-brand-arr">Xem →</span>
           </a>
-          <a href="cot-vot/tibhar.html" class="mega-brand-card">
+          <a href="cot-vot.html?brand=tibhar" class="mega-brand-card">
+            <img src="/images/brand/tibhar-logo-white.png" class="brand-logo" alt="Tibhar">
             <span class="mega-brand-name">Tibhar</span>
             <span class="mega-brand-desc">Chuyên nghiệp, Đức</span>
             <span class="mega-brand-arr">Xem →</span>
           </a>
-          <a href="cot-vot/unrex.html" class="mega-brand-card">
+          <a href="cot-vot.html?brand=unrex" class="mega-brand-card">
             <span class="mega-brand-name">Unrex</span>
             <span class="mega-brand-desc">Đa dạng kiểu chơi</span>
             <span class="mega-brand-arr">Xem →</span>
           </a>
-          <a href="cot-vot/yinhe.html" class="mega-brand-card">
+          <a href="cot-vot.html?brand=yinhe" class="mega-brand-card">
+            <img src="/images/brand/yinhe-logo.jpg" class="brand-logo" alt="Yinhe">
             <span class="mega-brand-name">Yinhe</span>
             <span class="mega-brand-desc">Giá tốt, hiệu quả</span>
             <span class="mega-brand-arr">Xem →</span>
           </a>
-          <a href="cot-vot/khac.html" class="mega-brand-card">
+          <a href="cot-vot.html?brand=khac" class="mega-brand-card">
             <span class="mega-brand-name">Khác</span>
             <span class="mega-brand-desc">Thương hiệu khác</span>
             <span class="mega-brand-arr">Xem →</span>
@@ -998,27 +1059,30 @@
           <a href="mat-vot.html" class="mega-head-all">Xem tất cả →</a>
         </div>
         <div class="mega-brands-grid">
-          <a href="mat-vot/butterfly.html" class="mega-brand-card">
+          <a href="mat-vot.html?brand=butterfly" class="mega-brand-card">
+            <img src="/images/brand/butterfly-logo.png" class="brand-logo" alt="Butterfly">
             <span class="mega-brand-name">Butterfly</span>
             <span class="mega-brand-desc">Cao cấp, Nhật Bản</span>
             <span class="mega-brand-arr">Xem →</span>
           </a>
-          <a href="mat-vot/tibhar.html" class="mega-brand-card">
+          <a href="mat-vot.html?brand=tibhar" class="mega-brand-card">
+            <img src="/images/brand/tibhar-logo-white.png" class="brand-logo" alt="Tibhar">
             <span class="mega-brand-name">Tibhar</span>
             <span class="mega-brand-desc">Chuyên nghiệp, Đức</span>
             <span class="mega-brand-arr">Xem →</span>
           </a>
-          <a href="mat-vot/unrex.html" class="mega-brand-card">
+          <a href="mat-vot.html?brand=unrex" class="mega-brand-card">
             <span class="mega-brand-name">Unrex</span>
             <span class="mega-brand-desc">Đa dạng kiểu chơi</span>
             <span class="mega-brand-arr">Xem →</span>
           </a>
-          <a href="mat-vot/yinhe.html" class="mega-brand-card">
+          <a href="mat-vot.html?brand=yinhe" class="mega-brand-card">
+            <img src="/images/brand/yinhe-logo.jpg" class="brand-logo" alt="Yinhe">
             <span class="mega-brand-name">Yinhe</span>
             <span class="mega-brand-desc">Giá tốt, hiệu quả</span>
             <span class="mega-brand-arr">Xem →</span>
           </a>
-          <a href="mat-vot/khac.html" class="mega-brand-card">
+          <a href="mat-vot.html?brand=khac" class="mega-brand-card">
             <span class="mega-brand-name">Khác</span>
             <span class="mega-brand-desc">Thương hiệu khác</span>
             <span class="mega-brand-arr">Xem →</span>
@@ -1036,12 +1100,12 @@
           <a href="do-thi-dau.html" class="mega-head-all">Xem tất cả →</a>
         </div>
         <div class="mega-gear-grid">
-          <a href="do-thi-dau/giay.html" class="mega-gear-card">
+          <a href="do-thi-dau.html#giay" class="mega-gear-card">
             <span class="mega-gear-name">Giày</span>
             <span class="mega-gear-desc">Giày chuyên dụng bóng bàn</span>
             <span class="mega-gear-arr">Xem →</span>
           </a>
-          <a href="do-thi-dau/trang-phuc-phu-kien.html" class="mega-gear-card">
+          <a href="do-thi-dau.html#trang-phuc" class="mega-gear-card">
             <span class="mega-gear-name">Trang Phục &amp; Phụ Kiện</span>
             <span class="mega-gear-desc">Áo, quần, băng tay, vớ…</span>
             <span class="mega-gear-arr">Xem →</span>
@@ -1073,29 +1137,34 @@
   </div>
   <div class="hero-r">
     <div class="hero-r-bg"></div>
-    <span class="hero-r-word w1">BÓNG</span>
-    <span class="hero-r-word w2">BÀN</span>
-    <div class="hero-center">
-      <div class="hero-orb"></div>
-      <div class="hero-center-label">Bóng Bàn<br>Việt</div>
+    <div class="hero-brand-grid">
+      <a href="cot-vot.html?brand=butterfly" class="hbg-card">
+        <img src="/images/brand/butterfly-logo.png" class="hbg-logo" alt="Butterfly">
+        <span class="hbg-abbr">BF</span>
+        <span class="hbg-name">Butterfly</span>
+        <span class="hbg-sub">Japan · Premium</span>
+      </a>
+      <a href="cot-vot.html?brand=tibhar" class="hbg-card">
+        <img src="/images/brand/tibhar-logo-white.png" class="hbg-logo" alt="Tibhar">
+        <span class="hbg-abbr">TH</span>
+        <span class="hbg-name">Tibhar</span>
+        <span class="hbg-sub">Germany · Pro</span>
+      </a>
+      <a href="cot-vot.html?brand=unrex" class="hbg-card">
+        <span class="hbg-abbr">UX</span>
+        <span class="hbg-name">Unrex</span>
+        <span class="hbg-sub">Đa Dạng · Linh Hoạt</span>
+      </a>
+      <a href="cot-vot.html?brand=yinhe" class="hbg-card">
+        <img src="/images/brand/yinhe-logo.jpg" class="hbg-logo" alt="Yinhe" style="mix-blend-mode:screen;filter:brightness(1.4);">
+        <span class="hbg-abbr">YH</span>
+        <span class="hbg-name">Yinhe</span>
+        <span class="hbg-sub">China · Value</span>
+      </a>
     </div>
-    <div class="hero-badge">
+    <div class="hero-badge" style="z-index:3;position:absolute;">
       <div class="n">20+</div>
       <div class="l">Năm Kinh Nghiệm</div>
-    </div>
-    <div class="hero-stat" style="bottom:100px;left:28px;">
-      <div class="hero-stat-n">4+</div>
-      <div class="hero-stat-l">Thương Hiệu</div>
-    </div>
-    <div class="hero-stat" style="top:40%;left:48%;transform:translateY(-50%);">
-      <div class="hero-stat-n">100%</div>
-      <div class="hero-stat-l">Chính Hãng</div>
-    </div>
-    <div class="hero-brands">
-      <span class="hero-brand hl">Butterfly</span>
-      <span class="hero-brand hl">Tibhar</span>
-      <span class="hero-brand">Unrex</span>
-      <span class="hero-brand">Yinhe</span>
     </div>
   </div>
 </section>

@@ -308,7 +308,13 @@
 
 <script src="/js/products.js"></script>
 <script>
-  let activeBrand = '';
+  let activeBrand = new URLSearchParams(window.location.search).get('brand') || '';
+  if (activeBrand) {
+    document.querySelectorAll('.brand-tab').forEach(t => {
+      const m = (t.getAttribute('onclick') || '').match(/'([^']*)'/);
+      t.classList.toggle('active', m ? m[1] === activeBrand : false);
+    });
+  }
 
   function filterBrand(brand, el) {
     activeBrand = brand;

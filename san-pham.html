@@ -117,10 +117,12 @@ nav{background:var(--white);border-bottom:1px solid var(--line);position:sticky;
 .sp-var-label{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--mid);margin-bottom:10px}
 .sp-var-title{font-size:13px;font-weight:600;color:var(--dark);display:inline-block;margin-left:8px}
 .sp-var-btns{display:flex;gap:8px;flex-wrap:wrap}
-.sp-var-btn{display:flex;align-items:center;gap:7px;padding:7px 14px;border:2px solid var(--line);background:var(--white);font-size:13px;font-weight:600;color:var(--dark);cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif}
+.sp-var-btn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:9px 14px;border:2px solid var(--line);background:var(--white);font-size:13px;font-weight:600;color:var(--dark);cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif}
 .sp-var-btn:hover{border-color:var(--dark)}
 .sp-var-btn.active{border-color:var(--dark);background:var(--dark);color:#fff}
 .sp-var-dot{width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.15);flex-shrink:0}
+.sp-var-price{font-size:11px;font-weight:700;color:var(--red)}
+.sp-var-btn.active .sp-var-price{color:rgba(255,255,255,.75)}
 
 /* CTA */
 .sp-cta-wrap{border-top:1px solid var(--line);padding-top:22px}
@@ -289,7 +291,7 @@ footer{background:var(--dark);color:#fff;padding:48px 40px 28px}
         <div class="sp-price-wrap"><div id="spPrice" class="sp-price-contact">Liên hệ để biết giá</div></div>
         <div id="spStatus"></div>
         <div class="sp-variants hidden" id="spVariants">
-          <div class="sp-var-label">Màu Sắc / Phiên Bản <span class="sp-var-title" id="varSelected"></span></div>
+          <div class="sp-var-label">Lựa Chọn <span class="sp-var-title" id="varSelected"></span></div>
           <div class="sp-var-btns" id="varBtns"></div>
         </div>
         <div class="sp-specs-wrap hidden" id="spSpecsWrap">
@@ -548,18 +550,25 @@ function renderProduct(p) {
   document.getElementById('spCtaBtn').href = `https://zalo.me/0961269386?text=${msg}`;
 
   // Variants
-  const variants = p.variants || [];
+  const variants = (p.variants || []).filter(v => v && (v.name || v.price || v.color));
   if (variants.length > 0) {
     document.getElementById('spVariants').classList.remove('hidden');
-    document.getElementById('varSelected').textContent = variants[0].color;
+    const firstV = variants[0];
+    document.getElementById('varSelected').textContent = firstV.name || firstV.color || '';
     document.getElementById('varBtns').innerHTML = variants.map((v, i) =>
       `<button class="sp-var-btn${i===0?' active':''}" onclick="selectVariant(${i})" data-idx="${i}">
         ${v.color_code ? `<span class="sp-var-dot" style="background:${v.color_code}"></span>` : ''}
-        ${v.color}
+        <span>${v.name || v.color || 'Lựa chọn ' + (i+1)}</span>
+        ${v.price ? `<span class="sp-var-price">${v.price}</span>` : ''}
       </button>`
     ).join('');
     window._variants = variants;
-    if (variants[0].image) setGalleryImage(variants[0].image, 0);
+    // Show first variant's price
+    if (firstV.price) {
+      const pe = document.getElementById('spPrice');
+      pe.className = 'sp-price'; pe.textContent = firstV.price;
+    }
+    if (firstV.image) setGalleryImage(firstV.image, 0);
   }
 
   document.getElementById('spDesc').innerHTML = renderDesc(p.description || '');
@@ -581,7 +590,11 @@ function selectVariant(idx) {
   if (!variants[idx]) return;
   const v = variants[idx];
   document.querySelectorAll('.sp-var-btn').forEach((b,i) => b.classList.toggle('active', i===idx));
-  document.getElementById('varSelected').textContent = v.color;
+  document.getElementById('varSelected').textContent = v.name || v.color || '';
+  if (v.price) {
+    const pe = document.getElementById('spPrice');
+    pe.className = 'sp-price'; pe.textContent = v.price;
+  }
   if (v.image) setGalleryImage(v.image, -1);
 }
 

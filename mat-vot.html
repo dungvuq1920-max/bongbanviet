@@ -202,7 +202,13 @@
 
 <script src="/js/products.js"></script>
 <script>
-  let activeBrand='';
+  let activeBrand = new URLSearchParams(window.location.search).get('brand') || '';
+  if (activeBrand) {
+    document.querySelectorAll('.brand-tab').forEach(t => {
+      const m = (t.getAttribute('onclick') || '').match(/'([^']*)'/);
+      t.classList.toggle('active', m ? m[1] === activeBrand : false);
+    });
+  }
   function filterBrand(brand,el){activeBrand=brand;document.querySelectorAll('.brand-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');applyFilter();}
   function applyFilter(){const q=document.querySelector('.search-input').value.toLowerCase().trim();const cards=document.querySelectorAll('#prodGrid .prod-card');let count=0;cards.forEach(c=>{const m=!activeBrand||c.dataset.brand===activeBrand;const mq=!q||c.querySelector('.prod-name').textContent.toLowerCase().includes(q);const pMin=parseInt(document.getElementById("priceMin")?.value||"")||0;const pMax=parseInt(document.getElementById("priceMax")?.value||"")||0;const cp=parseInt(c.dataset.price||"")||0;const matchPrice=(!pMin&&!pMax)||(cp>0&&(!pMin||cp>=pMin)&&(!pMax||cp<=pMax));const show=m&&mq&&matchPrice;c.classList.toggle('hidden',!show);if(show)count++;});document.getElementById('prodCount').textContent=count+' sản phẩm';}
 

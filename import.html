@@ -198,6 +198,19 @@
       .imp-header { padding: 0 16px; }
     }
 
+    /* ─── Variants ── */
+    .variants-head { display:flex;align-items:center;justify-content:space-between;margin-bottom:8px; }
+    .btn-add-variant { font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#D62B2B;background:none;border:none;cursor:pointer;padding:0;transition:color .2s; }
+    .btn-add-variant:hover { color:#1A1A1A; }
+    .variant-rows { display:flex;flex-direction:column;gap:6px; }
+    .variant-row { display:flex;gap:6px;align-items:center; }
+    .variant-row input { border:1.5px solid #E5E5E3;padding:7px 10px;font-family:'Inter',sans-serif;font-size:12px;color:#1A1A1A;background:#fff;outline:none;transition:border-color .2s; }
+    .variant-row input:focus { border-color:#1A1A1A; }
+    .v-name { flex:1.6; }
+    .v-price { flex:1; }
+    .btn-rm-variant { background:none;border:1.5px solid #E5E5E3;color:#bbb;font-size:13px;padding:6px 9px;cursor:pointer;line-height:1;flex-shrink:0;transition:all .2s; }
+    .btn-rm-variant:hover { border-color:#DC2626;color:#DC2626; }
+
     /* ─── Import Modal ── */
     .xl-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,.6);
@@ -508,6 +521,22 @@ function slugify(str) {
 const BRANDS = { butterfly:'BUTTERFLY', tibhar:'TIBHAR', unrex:'UNREX', yinhe:'YINHE', khac:'Các hãng khác' };
 const LEVELS = { beginner:'Mới bắt đầu', intermediate:'Trung cấp', advanced:'Nâng cao' };
 
+/* ─── Variant helpers ────────────────────────────────────────────────────── */
+function variantRowHtml(name, price) {
+  return `<div class="variant-row">
+    <input type="text" class="v-name" placeholder="Tên lựa chọn (VD: Hộp 10 quả)" value="${esc(name)}">
+    <input type="text" class="v-price" placeholder="Giá (VD: 120.000đ)" value="${esc(price)}">
+    <button type="button" class="btn-rm-variant" onclick="this.closest('.variant-row').remove()" title="Xóa">✕</button>
+  </div>`;
+}
+function addVariantRow(btn) {
+  const rows = btn.closest('.p-row').querySelector('.variant-rows');
+  const div = document.createElement('div');
+  div.innerHTML = variantRowHtml('', '');
+  rows.appendChild(div.firstElementChild);
+  rows.lastElementChild.querySelector('.v-name').focus();
+}
+
 /* ─── Render card HTML ───────────────────────────────────────────────────── */
 function renderCard(p, cat, sub, isNew = false) {
   const id     = p.id || ('new-' + Date.now() + Math.random().toString(36).slice(2,5));
@@ -548,10 +577,19 @@ function renderCard(p, cat, sub, isNew = false) {
       <label>${isArticle?'Tiêu đề':'Tên sản phẩm'}</label>
       <input type="text" class="f-name" value="${nameVal}" placeholder="${isArticle?'Nhập tiêu đề bài viết...':'Nhập tên sản phẩm...'}">
     </div>
-    ${!isArticle ? `<div class="p-row"><label>Giá bán</label>
+    ${!isArticle ? `<div class="p-row"><label>Giá bán <span class="hint">để trống nếu dùng biến thể</span></label>
       <div class="price-row">
         <input type="text" class="f-price" value="${esc(price)}" placeholder="VD: 2.400.000đ" oninput="updateStock(this)">
         <span class="stock-badge ${inStock&&price?'stock-in':'stock-out'}">${inStock&&price?'Còn hàng':'Hết hàng'}</span>
+      </div>
+    </div>
+    <div class="p-row">
+      <div class="variants-head">
+        <label>Lựa chọn / Biến thể <span class="hint">khi có nhiều tuỳ chọn khác giá</span></label>
+        <button type="button" class="btn-add-variant" onclick="addVariantRow(this)">+ Thêm lựa chọn</button>
+      </div>
+      <div class="variant-rows">
+        ${(p.variants||[]).map(v => variantRowHtml(v.name||'', v.price||'')).join('')}
       </div>
     </div>` : ''}
     ${hasSpecs ? `<div class="p-row"><label>Thông Số Kỹ Thuật <span class="hint">mỗi dòng: Tên: Giá trị</span></label>
@@ -705,13 +743,21 @@ async function saveCard(card) {
 
     } else {
       const price = card.querySelector('.f-price').value.trim();
+      const variantEls = card.querySelectorAll('.variant-row');
+      const variants = [];
+      variantEls.forEach(row => {
+        const n = row.querySelector('.v-name').value.trim();
+        const p2 = row.querySelector('.v-price').value.trim();
+        if (n || p2) variants.push({ name: n, price: p2 });
+      });
       const payload = {
         name,
         category_slug: cat,
         description:   card.querySelector('.f-desc').value.trim(),
         images:        imgPath ? [imgPath] : [],
         price,
-        in_stock:      price ? 1 : 0,
+        variants,
+        in_stock:      (price || variants.length) ? 1 : 0,
       };
       if (hasBrand) payload.brand_slug = card.querySelector('.f-brand').value;
       if (hasSpecs) payload.specs = textToSpecs(card.querySelector('.f-specs').value);

@@ -66,9 +66,17 @@ function renderProdCard(p, idx, opts) {
 
   const rawPrice = String(p.price || '');
   const numericPrice = rawPrice.replace(/[^\d]/g, '');
-  const priceHtml = rawPrice
-    ? `<span style="font-size:12px;font-weight:700;color:var(--red);display:block;margin-top:3px;">${_esc(rawPrice)}</span>`
-    : '';
+  const variants = Array.isArray(p.variants) ? p.variants.filter(v => v && (v.name || v.price)) : [];
+  let priceHtml = '';
+  if (rawPrice) {
+    priceHtml = `<span style="font-size:12px;font-weight:700;color:var(--red);display:block;margin-top:3px;">${_esc(rawPrice)}</span>`;
+  } else if (variants.length) {
+    const fp = (variants.find(v => v.price) || {}).price || '';
+    if (fp) priceHtml = `<span style="font-size:12px;font-weight:700;color:var(--red);display:block;margin-top:3px;">từ ${_esc(fp)}</span>`;
+  }
+  if (variants.length > 1) {
+    priceHtml += `<span style="font-size:10px;color:var(--mid,#6B6B6B);font-weight:600;display:block;margin-top:2px;">${variants.length} lựa chọn</span>`;
+  }
 
   return `<a href="${href}" class="prod-card" data-brand="${_esc(p.brand_slug||'')}" data-cat="${_esc(p.category_slug)}" data-name="${_esc(p.name.toLowerCase())}" data-price="${numericPrice}">
   <div class="prod-img ${bg}">
