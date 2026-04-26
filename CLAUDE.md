@@ -1,111 +1,36 @@
 # BongBanViet.com — Claude Project Guide
 
-## Project Overview
-
-**Website:** bongbanviet.com  
-**Tên thương hiệu:** BÓNG BÀN VIỆT  
-**Slogan:** Tư Vấn Chuẩn - Hàng Chính Hãng  
-**Mục đích:** Showcase/giới thiệu dụng cụ bóng bàn — cốt vợt, mặt vợt, bóng, bàn, đồ thi đấu, combo, đồ cũ, kiến thức  
-**Loại:** Static showcase (không có giỏ hàng hay thanh toán)  
-**Ngôn ngữ:** Tiếng Việt  
-
-### Thông tin liên hệ
+## Thông tin thương hiệu
 
 | | |
 |-|-|
+| Website | bongbanviet.com |
+| Tên | BÓNG BÀN VIỆT |
+| Slogan | Tư Vấn Chuẩn - Hàng Chính Hãng |
 | Địa chỉ | 286 Nguyễn Xiển, Thanh Liệt, Hà Nội |
 | Hotline / Zalo | 096.1269.386 |
 | Facebook | facebook.com/bongbanviet.official |
 | Instagram | instagram.com/bongbanviet |
 | TikTok | tiktok.com/@bongbanviet |
 
+**Mục đích:** Showcase dụng cụ bóng bàn — không có giỏ hàng hay thanh toán. Khách xem rồi liên hệ Zalo/điện thoại.
+
 ---
 
-## Tech Stack
+## Tech Stack thực tế
 
 | Layer | Công nghệ |
 |-------|-----------|
-| Framework | Next.js 14+ (App Router) |
-| Styling | Tailwind CSS v3 |
-| Language | TypeScript |
-| Fonts | Inter (body) + Playfair Display (headings) via Google Fonts |
-| Images | `next/image` |
-| Linting | ESLint + Prettier |
+| Runtime | Node.js ≥ 20 |
+| Web server | Express 4 |
+| Database | SQLite qua `better-sqlite3` |
+| Frontend | Vanilla HTML + CSS + JS (không dùng framework) |
+| Upload | Multer (ảnh sản phẩm + banner) |
+| Excel import | ExcelJS |
+| Deploy | Railway (nixpacks, `node server.js`) |
+| Port | `process.env.PORT \|\| 3000` |
 
----
-
-## Design System
-
-### Triết lý thiết kế
-Tối giản, hiện đại, chuyên nghiệp. Lấy cảm hứng từ phong cách editorial — bold typography, generous whitespace, ảnh sản phẩm làm trung tâm. Tham khảo: Fable & Mane website style.
-
-### Màu sắc
-
-```
-Primary (Đỏ bóng bàn):   #D62B2B
-Accent (Coral):            #E8503A
-Background (Off-white):    #FAFAF8
-Surface (White):           #FFFFFF
-Dark (Text chính):         #1A1A1A
-Muted (Text phụ):          #6B6B6B
-Border:                    #E5E5E3
-```
-
-Tailwind config (`tailwind.config.ts`):
-```ts
-colors: {
-  primary: '#D62B2B',
-  accent: '#E8503A',
-  background: '#FAFAF8',
-  dark: '#1A1A1A',
-  muted: '#6B6B6B',
-  border: '#E5E5E3',
-}
-```
-
-### Typography
-
-- **Display / Hero headline:** Playfair Display, bold, 64–96px
-- **Section title:** Playfair Display hoặc Inter, bold, 36–48px
-- **Body text:** Inter, regular, 16px, line-height 1.6
-- **Caption / Label:** Inter, medium, 12–14px, uppercase + letter-spacing
-- **CTA button:** Inter, semibold, 14px
-
-### Spacing & Layout
-
-- Max content width: `1280px`
-- Section padding: `py-20` (80px vertical)
-- Grid gap: `gap-6` hoặc `gap-8`
-- Border radius: `rounded-none` cho block lớn, `rounded-sm` cho badge/tag
-
-### Phong cách component
-
-- Không bo góc lớn — góc vuông hoặc rất nhỏ
-- Hover effects: scale nhẹ (`scale-[1.02]`) hoặc overlay mờ
-- Button: solid fill hoặc outline, không gradient
-- Không dùng shadow lớn — flat design
-
----
-
-## Cấu trúc trang
-
-| Route | Tên trang | Nội dung |
-|-------|-----------|----------|
-| `/` | Trang chủ | Hero + Sản phẩm nổi bật + Danh mục + About snippet + CTA liên hệ |
-| `/cot-vot` | Cốt Vợt | Grid theo brand, filter brand |
-| `/cot-vot/[brand]` | Cốt Vợt theo hãng | butterfly / tibhar / unrex / yinhe / khac |
-| `/mat-vot` | Mặt Vợt | Grid theo brand, filter brand |
-| `/mat-vot/[brand]` | Mặt Vợt theo hãng | butterfly / tibhar / unrex / yinhe / khac |
-| `/bong` | Bóng | Các loại bóng thi đấu và luyện tập |
-| `/ban` | Bàn | Bàn trong nhà, ngoài trời, gấp gọn |
-| `/do-thi-dau` | Đồ Thi Đấu | Grid theo danh mục con |
-| `/do-thi-dau/giay` | Giày | Giày bóng bàn |
-| `/do-thi-dau/trang-phuc-phu-kien` | Trang Phục & Phụ Kiện | Áo, quần, băng tay, vớ... |
-| `/combo-vot` | Combo Vợt Khuyên Dùng | Bộ combo cốt + mặt vợt đã lắp sẵn, tư vấn theo level |
-| `/do-cu` | Đồ Đã Qua Sử Dụng | Sản phẩm second-hand còn tốt |
-| `/kien-thuc` | Chia Sẻ Kiến Thức | Bài viết, hướng dẫn, review sản phẩm |
-| `/kien-thuc/[slug]` | Bài viết chi tiết | Nội dung bài viết |
-| `/lien-he` | Liên Hệ | Địa chỉ, hotline, Zalo, social links, bản đồ |
+> **Không phải Next.js.** Đây là Express server phục vụ static HTML files. Dữ liệu load qua `fetch()` từ REST API.
 
 ---
 
@@ -113,256 +38,267 @@ colors: {
 
 ```
 /
-├── src/
-│   ├── app/                        # Next.js App Router
-│   │   ├── layout.tsx              # Root layout (font, metadata)
-│   │   ├── page.tsx                # Homepage
-│   │   ├── cot-vot/
-│   │   │   ├── page.tsx            # Tất cả cốt vợt
-│   │   │   └── [brand]/
-│   │   │       └── page.tsx        # butterfly | tibhar | unrex | yinhe | khac
-│   │   ├── mat-vot/
-│   │   │   ├── page.tsx
-│   │   │   └── [brand]/
-│   │   │       └── page.tsx
-│   │   ├── bong/
-│   │   │   └── page.tsx
-│   │   ├── ban/
-│   │   │   └── page.tsx
-│   │   ├── do-thi-dau/
-│   │   │   ├── page.tsx
-│   │   │   ├── giay/
-│   │   │   │   └── page.tsx
-│   │   │   └── trang-phuc-phu-kien/
-│   │   │       └── page.tsx
-│   │   ├── combo-vot/
-│   │   │   └── page.tsx
-│   │   ├── do-cu/
-│   │   │   └── page.tsx
-│   │   ├── kien-thuc/
-│   │   │   ├── page.tsx            # Danh sách bài viết
-│   │   │   └── [slug]/
-│   │   │       └── page.tsx        # Chi tiết bài viết
-│   │   └── lien-he/
-│   │       └── page.tsx
-│   │
-│   ├── components/
-│   │   ├── ui/                     # Atomic components
-│   │   │   ├── Button.tsx
-│   │   │   ├── Badge.tsx
-│   │   │   └── SectionTitle.tsx
-│   │   ├── layout/                 # Structural components
-│   │   │   ├── Header.tsx
-│   │   │   ├── Footer.tsx
-│   │   │   └── Navigation.tsx
-│   │   └── sections/               # Page sections
-│   │       ├── Hero.tsx
-│   │       ├── FeaturedProducts.tsx
-│   │       ├── CategoryGrid.tsx
-│   │       ├── ProductGrid.tsx
-│   │       ├── ProductCard.tsx
-│   │       └── AboutSnippet.tsx
-│   │
-│   ├── data/
-│   │   ├── products.ts             # Product data
-│   │   └── categories.ts           # Category data
-│   │
-│   ├── lib/
-│   │   └── utils.ts
-│   │
-│   └── types/
-│       └── index.ts                # TypeScript types
+├── server.js               # Express app + tất cả API routes
+├── db.js                   # SQLite init, migrations, seed
+├── db-seed.json            # Dữ liệu seed ban đầu (categories, brands, products...)
+├── db/
+│   └── bongbanviet.db      # SQLite file (tạo tự động khi chạy)
 │
-├── public/
-│   └── images/
-│       ├── products/
-│       └── brand/
+├── index.html              # Trang chủ
+├── san-pham.html           # Chi tiết sản phẩm (dùng ?id=slug)
+├── cot-vot.html            # Danh mục: Cốt Vợt
+├── mat-vot.html            # Danh mục: Mặt Vợt
+├── bong.html               # Danh mục: Bóng
+├── ban.html                # Danh mục: Bàn
+├── do-thi-dau.html         # Danh mục: Đồ Thi Đấu
+├── combo-vot.html          # Combo Vợt Khuyên Dùng
+├── do-cu.html              # Đồ Đã Qua Sử Dụng
+├── kien-thuc.html          # Chia Sẻ Kiến Thức (danh sách + chi tiết bài)
+├── lien-he.html            # Liên Hệ
+├── huong-dan-mua-hang.html # Hướng Dẫn Mua Hàng
+├── chinh-sach-doi-tra.html # Chính Sách Đổi Trả
+├── admin.html              # Admin panel tại /admin.html (quản lý data)
 │
-├── tailwind.config.ts
-├── next.config.ts
-└── package.json
+├── js/
+│   ├── nav-mega.js         # Mega-menu dùng chung mọi trang
+│   ├── products.js         # loadProdGrid() — load product grid cho trang danh mục
+│   └── banners.js          # Load ảnh banner từ /api/settings lên hero
+│
+├── images/
+│   ├── products/           # Ảnh sản phẩm (jpg/png/webp)
+│   ├── brand/              # Logo hãng (butterfly-logo.png, tibhar-logo-white.png, yinhe-logo.jpg)
+│   └── banners/            # Banner hero mỗi danh mục (banner-{slug}.jpg)
+│
+├── railway.toml            # Deploy config: nixpacks, startCommand = "node server.js"
+├── package.json
+└── .claude/settings.json   # Stop hook: auto git commit + push mỗi khi session kết thúc
 ```
 
 ---
 
-## Data Types
+## Database Schema (SQLite)
 
-```ts
-// src/types/index.ts
-
-export type MainCategory =
-  | 'cot-vot'       // Cốt Vợt
-  | 'mat-vot'       // Mặt Vợt
-  | 'bong'          // Bóng
-  | 'ban'           // Bàn
-  | 'do-thi-dau'    // Đồ Thi Đấu
-  | 'combo-vot'     // Combo Vợt Khuyên Dùng
-  | 'do-cu'         // Đồ Đã Qua Sử Dụng
-  | 'kien-thuc';    // Chia Sẻ Kiến Thức
-
-// Brand subcategories — áp dụng cho Cốt Vợt và Mặt Vợt
-export type Brand =
-  | 'butterfly'
-  | 'tibhar'
-  | 'unrex'
-  | 'yinhe'
-  | 'khac';         // Các Sản Phẩm Khác
-
-// Subcategories cho Đồ Thi Đấu
-export type GearSubcategory =
-  | 'giay'                    // Giày
-  | 'trang-phuc-phu-kien';    // Trang Phục và Phụ Kiện
-
-export interface Product {
-  id: string;
-  slug: string;
-  name: string;
-  category: MainCategory;
-  brand?: Brand;                      // Chỉ dùng cho cot-vot và mat-vot
-  gearSubcategory?: GearSubcategory;  // Chỉ dùng cho do-thi-dau
-  description: string;
-  specs?: Record<string, string>;
-  images: string[];
-  featured?: boolean;
-  condition?: 'new' | 'used';         // used chỉ dùng cho do-cu
-}
-
-export interface Article {
-  id: string;
-  slug: string;
-  title: string;
-  excerpt: string;
-  content: string;
-  coverImage: string;
-  publishedAt: string;
-  tags?: string[];
-}
-
-export interface CategoryMeta {
-  slug: MainCategory;
-  label: string;
-  description: string;
-  image: string;
-}
-
-export interface BrandMeta {
-  slug: Brand;
-  label: string;
-  logo?: string;
-}
+### Bảng `products`
 ```
+id, slug, name, category_slug, brand_slug, gear_subcategory,
+description, specs (JSON obj), images (JSON arr), featured (0/1),
+condition ('new'|'used'), badge, sort_order, price (text),
+in_stock (0/1), variants (JSON arr), created_at, updated_at
+```
+
+**variants** — mảng object `{name, price, color, color_code, image}`. Khi có variants, giá hiển thị theo variant được chọn, định dạng bằng `fmtPrice()` (dấu chấm ngăn cách hàng nghìn, kiểu Việt Nam).
+
+### Bảng `combos`
+```
+id, slug, name, level, blade, rubber_fh, rubber_bh,
+description, images (JSON arr), badge, sort_order, price, in_stock
+```
+
+### Bảng `articles`
+```
+id, slug, title, excerpt, content, cover_image,
+category, tags (JSON arr), published_at, created_at
+```
+
+### Bảng `categories`
+```
+slug, label, description, image, sort_order
+```
+
+### Bảng `brands`
+```
+slug, label, logo, sort_order
+```
+
+### Bảng `settings`
+```
+key, value, updated_at
+```
+Dùng để lưu URL ảnh banner: key = `banner_{category_slug}`.
+
+---
+
+## API Routes (server.js)
+
+| Method | Path | Mô tả |
+|--------|------|-------|
+| GET | `/api/products` | Danh sách sản phẩm (query: `category`, `brand`, `featured`, `limit`, `q`) |
+| GET | `/api/products/:slug` | Chi tiết 1 sản phẩm |
+| POST | `/api/products` | Thêm sản phẩm mới |
+| PUT | `/api/products/:id` | Cập nhật sản phẩm |
+| DELETE | `/api/products/:id` | Xóa sản phẩm |
+| GET | `/api/combos` | Danh sách combo |
+| POST | `/api/combos` | Thêm combo |
+| PUT | `/api/combos/:id` | Cập nhật combo |
+| DELETE | `/api/combos/:id` | Xóa combo |
+| GET | `/api/articles` | Danh sách bài viết |
+| GET | `/api/articles/:slug` | Chi tiết bài viết |
+| POST | `/api/articles` | Thêm bài viết |
+| PUT | `/api/articles/:id` | Cập nhật bài viết |
+| DELETE | `/api/articles/:id` | Xóa bài viết |
+| GET | `/api/categories` | Danh sách categories |
+| GET | `/api/brands` | Danh sách brands |
+| GET | `/api/settings` | Tất cả settings (banner URLs...) |
+| GET | `/api/settings/:key` | 1 setting theo key |
+| PUT | `/api/settings/:key` | Cập nhật setting |
+| DELETE | `/api/settings/:key` | Xóa setting |
+| POST | `/api/settings/:key/upload` | Upload ảnh banner cho key |
+| POST | `/api/upload` | Upload ảnh sản phẩm → trả về URL |
+| GET | `/api/download-template` | Tải file Excel template import |
+| POST | `/api/import-excel` | Import sản phẩm từ file Excel |
+| GET | `/api/stats` | Thống kê (số lượng sản phẩm, combo, bài viết) |
+| GET | `/lichtap` | Redirect tới lichtap/index.html |
+| GET | `/api/lichtap` | Đọc dữ liệu lịch tập |
+| POST | `/api/lichtap` | Ghi dữ liệu lịch tập |
 
 ---
 
 ## Danh mục sản phẩm
 
-### Danh mục chính
+### Categories (slug → label)
+| Slug | Label | Ghi chú |
+|------|-------|---------|
+| `cot-vot` | Cốt Vợt | Có filter brand |
+| `mat-vot` | Mặt Vợt | Có filter brand |
+| `bong` | Bóng | — |
+| `ban` | Bàn | — |
+| `do-thi-dau` | Đồ Thi Đấu | Có subcategory: `giay`, `trang-phuc-phu-kien` |
+| `combo-vot` | Combo Vợt | Lưu trong bảng `combos` riêng |
+| `do-cu` | Đồ Cũ | `condition = 'used'` |
+| `kien-thuc` | Kiến Thức | Lưu trong bảng `articles` riêng |
 
-| Slug | Tên hiển thị | Ghi chú |
-|------|-------------|---------|
-| `cot-vot` | Cốt Vợt | Có danh mục con theo brand |
-| `mat-vot` | Mặt Vợt | Có danh mục con theo brand |
-| `bong` | Bóng | Bóng thi đấu, luyện tập |
-| `ban` | Bàn | Bàn trong nhà, ngoài trời |
-| `do-thi-dau` | Đồ Thi Đấu | Có danh mục con: Giày / Trang Phục & PK |
-| `combo-vot` | Combo Vợt Khuyên Dùng | Bộ cốt + mặt vợt theo level |
-| `do-cu` | Đồ Đã Qua Sử Dụng | Second-hand còn tốt |
-| `kien-thuc` | Chia Sẻ Kiến Thức | Bài viết, review, hướng dẫn |
-
-### Brand (áp dụng cho Cốt Vợt và Mặt Vợt)
-
-| Slug | Tên hiển thị |
-|------|-------------|
+### Brands (áp dụng cho cot-vot và mat-vot)
+| Slug | Label |
+|------|-------|
 | `butterfly` | BUTTERFLY |
 | `tibhar` | TIBHAR |
 | `unrex` | UNREX |
 | `yinhe` | YINHE |
-| `khac` | Các Sản Phẩm Khác |
-
-### Đồ Thi Đấu — danh mục con
-
-| Slug | Tên hiển thị |
-|------|-------------|
-| `giay` | Giày |
-| `trang-phuc-phu-kien` | Trang Phục và Phụ Kiện |
+| `khac` | Các Hãng Khác |
 
 ---
 
-## Key Components
+## Shared JavaScript
 
-### Hero Section
-- Full viewport width, background tối hoặc ảnh action
-- Headline lớn (Playfair Display, trắng/đậm)
-- Subtext ngắn gọn
-- 2 CTA: "Xem sản phẩm" (primary) + "Về chúng tôi" (outline)
-- Không dùng carousel — hero tĩnh, mạnh
+### `js/nav-mega.js`
+Mega-menu dùng chung. Include vào mỗi trang HTML. Tự detect trang hiện tại để highlight active link. Menu có dropdown brand cho Cốt Vợt và Mặt Vợt.
 
-### ProductCard
-- Ảnh 4:3 ratio, object-cover
-- Category badge (uppercase, nhỏ)
-- Tên sản phẩm (Inter bold)
-- Hover: ảnh scale nhẹ
-- Không hiển thị giá (showcase only)
+### `js/products.js`
+Export hàm `loadProdGrid(params, options)`. Dùng cho các trang danh mục để load và render product grid từ API. Hỗ trợ brand filter, search, infinite scroll hoặc load-more.
 
-### Navigation
-- Sticky khi scroll
-- Logo trái, links giữa hoặc phải
-- Hamburger menu trên mobile
-- Transparent khi ở hero, solid khi scroll xuống
-
-### SectionTitle
-- Label nhỏ uppercase (màu primary) phía trên
-- Headline lớn (Playfair Display)
-- Optional: đường kẻ ngang trang trí
+### `js/banners.js`
+Auto-apply banner từ `/api/settings` lên hero section. Dùng bằng:
+```html
+<script src="/js/banners.js" data-banner-key="banner_cot_vot"></script>
+```
+Hoặc gọi: `applyBanner('banner_cot_vot', '#hero-el')`
 
 ---
 
-## Quy tắc code
+## Design System
 
-- Dùng `'` thay vì `"` trong JSX attributes
-- Component files: PascalCase (`ProductCard.tsx`)
-- Data/util files: camelCase (`products.ts`)
-- Tất cả text/nội dung bằng **tiếng Việt**
-- Không dùng `any` trong TypeScript
-- `next/image` cho mọi ảnh — luôn cung cấp `alt` text tiếng Việt
-- Responsive: mobile-first với Tailwind breakpoints (`sm:`, `md:`, `lg:`)
+### Triết lý
+Tối giản, hiện đại, editorial — ảnh sản phẩm làm trung tâm. Bold typography, generous whitespace. Tham khảo style Fable & Mane.
+
+### Màu sắc (CSS variables)
+```css
+--red:    #D62B2B   /* primary — đỏ bóng bàn */
+--navy:   #1E2B3C   /* giá, CTA buttons */
+--dark:   #1A1A1A   /* text chính */
+--mid:    #6B6B6B   /* text phụ, label */
+--bg:     #FAFAF8   /* background off-white */
+--white:  #FFFFFF
+--line:   #E5E5E3   /* border, divider */
+--blue:   #2563EB   /* score/rating */
+```
+
+### Typography
+- **Hero / Display:** bold, lớn, serif hoặc Inter ExtraBold
+- **Section title:** uppercase, letter-spacing rộng
+- **Body:** Inter 15–16px, line-height 1.7
+- **Label / badge:** uppercase, font-size 11px, letter-spacing .14em
+
+### Quy tắc UI
+- Góc vuông hoặc rất nhỏ (`border-radius` ≤ 4px) cho block lớn
+- Không dùng shadow lớn — flat design
+- Hover: `scale(1.02)` nhẹ hoặc overlay mờ
+- Button: solid fill hoặc outline, không gradient
+- Giá hiển thị định dạng `toLocaleString('vi-VN')` → 66.000, 1.200.000
+
+---
+
+## Trang Chi Tiết Sản Phẩm (`san-pham.html`)
+
+URL: `/san-pham.html?id={slug}`
+
+Cấu trúc:
+- Gallery ảnh (main + thumbnails)
+- Tên sản phẩm
+- **Giá** (label "Giá" + pill navy) — định dạng `fmtPrice()`, "Liên hệ để biết giá" nếu không có giá
+- Badge tình trạng (Hàng Mới / Đã Qua Sử Dụng)
+- **Lựa Chọn** (variants) — nút hiển thị tên variant, click cập nhật giá phía trên (không hiện giá trong nút)
+- Thông Số Kỹ Thuật (bảng specs)
+- CTA: Tư Vấn Ngay Qua Zalo (link Zalo kèm tên sản phẩm)
+- Section chi tiết mô tả + lời khuyên chuyên gia
+- Sản phẩm liên quan
+
+---
+
+## Admin Panel (`admin.html`)
+
+URL: `/admin.html`
+
+Tabs:
+- **Sản phẩm** — CRUD từng danh mục, upload ảnh, quản lý variants
+- **Combo Vợt** — CRUD combo (blade + rubber)
+- **Kiến Thức** — CRUD bài viết
+- **Banner** — Upload ảnh banner hero cho từng danh mục (lưu vào `settings`)
+- **Import Excel** — Tải template, import hàng loạt sản phẩm
+
+---
+
+## Deploy & Automation
+
+### Railway
+- File `railway.toml`: builder = nixpacks, startCommand = `node server.js`
+- Push lên GitHub → Railway tự deploy
+- Database SQLite lưu vào `DATA_DIR` (Railway volume) để persist qua deploy
+
+### Auto push GitHub
+`.claude/settings.json` có Stop hook: mỗi khi session Claude kết thúc, tự động:
+1. `git add -A`
+2. Nếu có thay đổi: `git commit -m "Auto-save: {timestamp}"` + `git push origin main`
+
+### Server tự-heal EADDRINUSE
+`server.js` bắt sự kiện `EADDRINUSE` → dùng `netstat + taskkill` kill process cũ → retry sau 500ms. Không cần tắt tay khi restart.
 
 ---
 
 ## Development Commands
 
 ```bash
-npm run dev      # Chạy dev server tại localhost:3000
-npm run build    # Build production
-npm run start    # Chạy production build
-npm run lint     # ESLint check
-npm run typecheck # TypeScript check (tsc --noEmit)
+npm start       # Chạy server tại localhost:3000
+npm run dev     # Như trên
 ```
+
+Sau khi chạy:
+- Website: http://localhost:3000/index.html
+- Admin: http://localhost:3000/admin.html
 
 ---
 
 ## SEO & Metadata
 
-- Mỗi page có `generateMetadata()` riêng
+- Mỗi trang có `<title>` và `<meta description>` riêng
 - Title format: `{Tên trang} | BÓNG BÀN VIỆT`
-- Description tiếng Việt, ~150 ký tự, nhắc slogan "Tư Vấn Chuẩn - Hàng Chính Hãng"
-- OG image cho social sharing
-- Canonical URL: `https://bongbanviet.com`
-
-## Footer
-
-Footer luôn hiển thị đầy đủ thông tin liên hệ:
-- Logo + slogan "Tư Vấn Chuẩn - Hàng Chính Hãng"
-- Địa chỉ: 286 Nguyễn Xiển, Thanh Liệt, Hà Nội
-- Hotline/Zalo: 096.1269.386 (có thể click-to-call và click-to-Zalo)
-- Social links: Facebook · Instagram · TikTok
-- Menu danh mục nhanh
+- Description tiếng Việt ~150 ký tự, có slogan "Tư Vấn Chuẩn - Hàng Chính Hãng"
+- Canonical: `https://bongbanviet.com`
 
 ---
 
 ## Tone & Voice
 
-- Chuyên nghiệp nhưng gần gũi
-- Tập trung vào chất lượng và đam mê bóng bàn
+- Chuyên nghiệp nhưng gần gũi, tập trung vào đam mê bóng bàn
 - Ngắn gọn, súc tích — không dài dòng
 - Dùng "chúng tôi" (không phải "mình" hay "tôi")
+- Toàn bộ nội dung **tiếng Việt**
