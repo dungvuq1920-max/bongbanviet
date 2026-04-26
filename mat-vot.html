@@ -101,11 +101,11 @@
   
     .prod-img-inner img { width: 100%; height: 100%; object-fit: cover; display: block; }
   
-    /* ── Price Filter ── */
-    .price-filter{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
-    .price-input{padding:8px 10px;border:1.5px solid var(--line);font-family:'Inter',sans-serif;font-size:13px;color:var(--dark);background:var(--white);outline:none;width:120px;transition:border-color .2s}
-    .price-input:focus{border-color:var(--dark)}
-    .price-sep{font-size:13px;color:var(--mid);white-space:nowrap}
+    /* ── Brand Sections ── */
+    .section-divider{font-size:11px;font-weight:600;letter-spacing:.28em;text-transform:uppercase;color:var(--red);margin-bottom:28px;padding-top:40px;border-top:1px solid var(--line);display:flex;align-items:center;gap:10px}
+    .brand-count-badge{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:20px;padding:0 6px;background:var(--red);color:#fff;font-size:10px;font-weight:700;letter-spacing:0;border-radius:10px}
+    .brand-section{margin-bottom:8px}
+    .brand-section.empty{display:none}
   </style>
 </head>
 <body>
@@ -162,28 +162,36 @@
 
 <div class="brand-tabs">
   <div class="brand-tabs-inner">
-    <div class="brand-tab active" onclick="filterBrand('',this)">Tất Cả</div>
-    <div class="brand-tab" onclick="filterBrand('butterfly',this)">Butterfly</div>
-    <div class="brand-tab" onclick="filterBrand('tibhar',this)">Tibhar</div>
-    <div class="brand-tab" onclick="filterBrand('unrex',this)">Unrex</div>
-    <div class="brand-tab" onclick="filterBrand('yinhe',this)">Yinhe</div>
-    <div class="brand-tab" onclick="filterBrand('khac',this)">Khác</div>
+    <div class="brand-tab active" data-brand="butterfly" onclick="scrollToBrand('butterfly',this)">Butterfly</div>
+    <div class="brand-tab" data-brand="tibhar" onclick="scrollToBrand('tibhar',this)">Tibhar</div>
+    <div class="brand-tab" data-brand="unrex" onclick="scrollToBrand('unrex',this)">Unrex</div>
+    <div class="brand-tab" data-brand="yinhe" onclick="scrollToBrand('yinhe',this)">Yinhe</div>
+    <div class="brand-tab" data-brand="khac" onclick="scrollToBrand('khac',this)">Các Hãng Khác</div>
   </div>
 </div>
 
 <section class="products-section">
   <div class="wrap">
-    <div class="toolbar">
-      <p class="prod-count" id="prodCount">0 sản phẩm</p>
-      <input class="search-input" type="text" placeholder="Tìm tên sản phẩm..." oninput="applyFilter()">
-      <div class="price-filter">
-        <span class="price-sep">Giá:</span>
-        <input class="price-input" type="number" id="priceMin" placeholder="Từ (VNĐ)" min="0" oninput="applyFilter()">
-        <span class="price-sep">—</span>
-        <input class="price-input" type="number" id="priceMax" placeholder="Đến (VNĐ)" min="0" oninput="applyFilter()">
-      </div>
+    <div class="brand-section" id="sect-butterfly">
+      <p class="section-divider">Butterfly <span class="brand-count-badge" id="count-butterfly"></span></p>
+      <div class="prod-grid" id="grid-butterfly"></div>
     </div>
-    <div class="prod-grid" id="prodGrid"></div>
+    <div class="brand-section" id="sect-tibhar">
+      <p class="section-divider">Tibhar <span class="brand-count-badge" id="count-tibhar"></span></p>
+      <div class="prod-grid" id="grid-tibhar"></div>
+    </div>
+    <div class="brand-section" id="sect-unrex">
+      <p class="section-divider">Unrex <span class="brand-count-badge" id="count-unrex"></span></p>
+      <div class="prod-grid" id="grid-unrex"></div>
+    </div>
+    <div class="brand-section" id="sect-yinhe">
+      <p class="section-divider">Yinhe <span class="brand-count-badge" id="count-yinhe"></span></p>
+      <div class="prod-grid" id="grid-yinhe"></div>
+    </div>
+    <div class="brand-section" id="sect-khac">
+      <p class="section-divider">Các Hãng Khác <span class="brand-count-badge" id="count-khac"></span></p>
+      <div class="prod-grid" id="grid-khac"></div>
+    </div>
   </div>
 </section>
 
@@ -201,21 +209,49 @@
 
 <script src="/js/products.js"></script>
 <script>
-  let activeBrand = new URLSearchParams(window.location.search).get('brand') || '';
-  if (activeBrand) {
-    document.querySelectorAll('.brand-tab').forEach(t => {
-      const m = (t.getAttribute('onclick') || '').match(/'([^']*)'/);
-      t.classList.toggle('active', m ? m[1] === activeBrand : false);
-    });
-  }
-  function filterBrand(brand,el){activeBrand=brand;document.querySelectorAll('.brand-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');applyFilter();}
-  function applyFilter(){const q=document.querySelector('.search-input').value.toLowerCase().trim();const cards=document.querySelectorAll('#prodGrid .prod-card');let count=0;cards.forEach(c=>{const m=!activeBrand||c.dataset.brand===activeBrand;const mq=!q||c.querySelector('.prod-name').textContent.toLowerCase().includes(q);const pMin=parseInt(document.getElementById("priceMin")?.value||"")||0;const pMax=parseInt(document.getElementById("priceMax")?.value||"")||0;const cp=parseInt(c.dataset.price||"")||0;const matchPrice=(!pMin&&!pMax)||(cp>0&&(!pMin||cp>=pMin)&&(!pMax||cp<=pMax));const show=m&&mq&&matchPrice;c.classList.toggle('hidden',!show);if(show)count++;});document.getElementById('prodCount').textContent=count+' sản phẩm';}
+const BRANDS_MV = [
+  {slug:'butterfly',label:'Butterfly'},
+  {slug:'tibhar',label:'Tibhar'},
+  {slug:'unrex',label:'Unrex'},
+  {slug:'yinhe',label:'Yinhe'},
+  {slug:'khac',label:'Các Hãng Khác'},
+];
 
-  // Load từ API
-  loadProdGrid({ category: 'mat-vot' }, {
-    gridId: 'prodGrid', countId: 'prodCount',
-    onDone: () => { if(typeof applyFilter==='function') applyFilter(); }
+function scrollToBrand(slug, el) {
+  document.querySelectorAll('.brand-tab').forEach(t=>t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  const sect = document.getElementById('sect-'+slug);
+  if (sect) { const top = sect.getBoundingClientRect().top + window.scrollY - 100; window.scrollTo({top,behavior:'smooth'}); }
+}
+
+BRANDS_MV.forEach(function(b) {
+  loadProdGrid({ category: 'mat-vot', brand: b.slug }, {
+    gridId: 'grid-'+b.slug,
+    onDone: function(data) {
+      const badge = document.getElementById('count-'+b.slug);
+      if (badge) badge.textContent = data.length;
+      if (!data.length) { const s = document.getElementById('sect-'+b.slug); if(s) s.classList.add('empty'); }
+    }
   });
+});
+
+const initBrand = new URLSearchParams(location.search).get('brand');
+if (initBrand) {
+  const tab = document.querySelector('[data-brand="'+initBrand+'"]');
+  setTimeout(function(){ scrollToBrand(initBrand, tab); }, 700);
+}
+
+const obs = new IntersectionObserver(function(entries) {
+  entries.forEach(function(e) {
+    if (e.isIntersecting) {
+      const slug = e.target.id.replace('sect-','');
+      document.querySelectorAll('.brand-tab').forEach(t=>t.classList.remove('active'));
+      const t = document.querySelector('[data-brand="'+slug+'"]');
+      if (t) t.classList.add('active');
+    }
+  });
+}, { threshold:0.15, rootMargin:'-90px 0px -55% 0px' });
+BRANDS_MV.forEach(function(b){ const el=document.getElementById('sect-'+b.slug); if(el) obs.observe(el); });
 </script>
 </div><!-- /site-container -->
 
