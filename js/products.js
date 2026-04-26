@@ -68,24 +68,39 @@ function renderProdCard(p, idx, opts) {
   const numericPrice = rawPrice.replace(/[^\d]/g, '');
   const variants = Array.isArray(p.variants) ? p.variants.filter(v => v && (v.name || v.price)) : [];
   let priceHtml = '';
+  let priceText = '';
   if (rawPrice) {
+    priceText = rawPrice;
     priceHtml = `<span style="font-size:12px;font-weight:700;color:var(--red);display:block;margin-top:3px;">${_esc(rawPrice)}</span>`;
   } else if (variants.length) {
     const fp = (variants.find(v => v.price) || {}).price || '';
-    if (fp) priceHtml = `<span style="font-size:12px;font-weight:700;color:var(--red);display:block;margin-top:3px;">từ ${_esc(fp)}</span>`;
+    if (fp) { priceText = 'từ ' + fp; priceHtml = `<span style="font-size:12px;font-weight:700;color:var(--red);display:block;margin-top:3px;">từ ${_esc(fp)}</span>`; }
   }
   if (variants.length > 1) {
     priceHtml += `<span style="font-size:10px;color:var(--mid,#6B6B6B);font-weight:600;display:block;margin-top:2px;">${variants.length} lựa chọn</span>`;
   }
 
+  /* Image tags — subcategory pill + brand pill */
+  const subTag = p.gear_subcategory
+    ? `<span class="prod-img-tag pit-sub">${_esc(p.gear_subcategory.toUpperCase())}</span>` : '';
+  const brandTag = (p.brand_slug && p.brand_slug !== 'khac' && brand)
+    ? `<span class="prod-img-tag pit-brand">${_esc(brand.toUpperCase())}</span>` : '';
+  const imageTagsHtml = (subTag || brandTag)
+    ? `<div class="prod-img-tags">${subTag}${brandTag}</div>` : '';
+
   return `<a href="${href}" class="prod-card" data-brand="${_esc(p.brand_slug||'')}" data-cat="${_esc(p.category_slug)}" data-name="${_esc(p.name.toLowerCase())}" data-price="${numericPrice}">
   <div class="prod-img ${bg}">
     <div class="prod-img-inner">${imgHtml}</div>
-    ${badgeHtml}
+    ${badgeHtml}${imageTagsHtml}
   </div>
-  <p class="prod-brand">${_esc(brandLine)}</p>
-  <h3 class="prod-name">${_esc(p.name)}</h3>
-  ${stockHtml}${priceHtml}
+  <div class="prod-card-body">
+    <p class="prod-brand">${_esc(brandLine)}</p>
+    <h3 class="prod-name">${_esc(p.name)}</h3>
+    <div class="prod-card-footer">
+      <span class="prod-origin">Chính hãng</span>
+      <span class="prod-price-inline">${_esc(priceText)}</span>
+    </div>
+  </div>
 </a>`;
 }
 
