@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bong Ban Viet - Professional Table Tennis Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Lexend', sans-serif;
+            background-color: #f8fafc;
+            scroll-behavior: smooth;
+        }
+
+        .container-1200 {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Banner Styling */
+        .hero-banner {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-banner::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -10%;
+            width: 70%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(239, 68, 68, 0.15) 0%, transparent 70%);
+            transform: rotate(-15deg);
+        }
+
+        /* Navigation */
+        .nav-item {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .nav-item::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: #ef4444;
+            transition: width 0.3s ease;
+        }
+        .nav-item:hover::after, .nav-item.active::after {
+            width: 100%;
+        }
+
+        /* Product Cards */
+        .product-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #e2e8f0;
+            background: white;
+        }
+        .product-card:hover {
+            border-color: #ef4444;
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+        .product-card.pinned {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+            z-index: 30;
+        }
+
+        /* Popups */
+        .logic-popup {
+            position: fixed;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            z-index: 100;
+            background: white;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            border: 1px solid #e2e8f0;
+        }
+        .logic-popup.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Connector Lines */
+        .connector-line {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            transition: stroke-dashoffset 0.5s ease-out;
+            pointer-events: none;
+            z-index: 40;
+        }
+        .active-line {
+            stroke-dashoffset: 0;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Sub-menu animation */
+        #sub-menu-container {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+        }
+        #sub-menu-container.show {
+            max-height: 100px;
+            opacity: 1;
+            padding-top: 1rem;
+            padding-bottom: 1.5rem;
+        }
+
+        /* Filter select custom styling */
+        .filter-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1rem;
+        }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+    <!-- Top Bar -->
+    <div class="bg-slate-900 text-white text-[10px] py-2 uppercase tracking-[0.2em] font-bold text-center">
+        Miễn phí vận chuyển cho đơn hàng từ 2.000.000đ • Hotline: 1900 88xx
+    </div>
+
+    <!-- Main Header -->
+    <header class="bg-white sticky top-0 z-[60] shadow-sm">
+        <div class="container-1200 px-4 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="location.reload()">
+                <div class="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center text-white font-black text-xl italic shadow-lg shadow-red-200">BV</div>
+                <h1 class="text-xl font-black text-slate-900 tracking-tighter uppercase italic">BongBan<span class="text-red-600">Viet</span></h1>
+            </div>
+
+            <nav class="hidden lg:flex items-center gap-8">
+                <button class="nav-item active text-xs font-bold uppercase tracking-wider text-slate-900" data-category="blade">Cốt vợt</button>
+                <button class="nav-item text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-red-600" data-category="rubber">Mặt vợt</button>
+                <button class="nav-item text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-red-600" data-category="ball">Bóng</button>
+                <button class="nav-item text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-red-600" data-category="table">Bàn</button>
+                <button class="nav-item text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-red-600" data-category="clothing">Đồ thi đấu</button>
+                <button class="nav-item text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-red-600" data-category="combo">Combo</button>
+                <button class="nav-item text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-red-600" data-category="knowledge">Kiến thức</button>
+            </nav>
+
+            <div class="flex items-center gap-4">
+                <button class="relative p-2 text-slate-600 hover:text-red-600 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                    <span class="absolute top-0 right-0 w-4 h-4 bg-red-600 text-white text-[10px] rounded-full flex items-center justify-center font-bold">0</span>
+                </button>
+                <button class="bg-red-600 text-white px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-red-700 transition-all">Đăng nhập</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Professional Hero Banner -->
+    <section class="hero-banner py-16">
+        <div class="container-1200 px-4 flex flex-col md:flex-row items-center justify-between gap-12">
+            <div class="max-w-xl text-center md:text-left z-10">
+                <span class="inline-block px-4 py-1 bg-red-600 text-white text-[10px] font-bold rounded-full uppercase tracking-[0.2em] mb-6">New Collection 2024</span>
+                <h2 class="text-4xl md:text-6xl font-black text-white leading-tight mb-6">NÂNG TẦM <br/><span class="text-red-500">ĐẲNG CẤP</span> CÚ GIẬT</h2>
+                <p class="text-slate-400 text-sm md:text-lg mb-8 leading-relaxed">Khám phá bộ sưu tập cốt vợt và mặt vợt chuyên nghiệp được tin dùng bởi các tay vợt hàng đầu thế giới.</p>
+                <div class="flex flex-wrap justify-center md:justify-start gap-4">
+                    <button class="px-8 py-4 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all shadow-lg shadow-red-900/20 uppercase text-xs tracking-widest">Mua ngay</button>
+                    <button class="px-8 py-4 bg-white/10 text-white font-bold rounded-xl hover:bg-white/20 transition-all border border-white/10 uppercase text-xs tracking-widest backdrop-blur-sm">Xem Catalog</button>
+                </div>
+            </div>
+            <div class="relative z-10 group cursor-pointer hidden md:block">
+                <div class="absolute inset-0 bg-red-600/20 blur-3xl rounded-full scale-75 group-hover:scale-95 transition-transform"></div>
+                <div class="w-80 h-80 bg-slate-800 rounded-[3rem] border border-white/10 flex items-center justify-center rotate-6 group-hover:rotate-0 transition-transform duration-500 overflow-hidden shadow-2xl">
+                    <span class="text-9xl grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 transition-all">🏓</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Multi-Criteria Search & Filter Line -->
+    <section class="bg-white border-b border-slate-200 py-6 sticky top-20 z-50">
+        <div class="container-1200 px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                <!-- Text Search -->
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Tìm kiếm</label>
+                    <div class="relative">
+                        <input type="text" id="filter-search" placeholder="Tên sản phẩm..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:ring-1 focus:ring-red-500 focus:border-red-500 transition-all">
+                        <svg class="absolute left-3 top-2 text-slate-400" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    </div>
+                </div>
+                <!-- Brand Filter -->
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Thương hiệu</label>
+                    <select id="filter-brand" class="filter-select w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-700 focus:ring-1 focus:ring-red-500 focus:border-red-500 outline-none">
+                        <option value="all">Tất cả thương hiệu</option>
+                        <option value="Butterfly">Butterfly</option>
+                        <option value="DHS">DHS</option>
+                        <option value="Stiga">Stiga</option>
+                        <option value="Yasaka">Yasaka</option>
+                        <option value="Victas">Victas</option>
+                    </select>
+                </div>
+                <!-- Price Filter -->
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Khoảng giá</label>
+                    <select id="filter-price" class="filter-select w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-700 focus:ring-1 focus:ring-red-500 focus:border-red-500 outline-none">
+                        <option value="all">Mọi mức giá</option>
+                        <option value="0-1000">Dưới 1.000.000đ</option>
+                        <option value="1000-3000">1.000.000đ - 3.000.000đ</option>
+                        <option value="3000-plus">Trên 3.000.000đ</option>
+                    </select>
+                </div>
+                <!-- Reset Button -->
+                <div>
+                    <button id="filter-reset" class="w-full py-2 bg-slate-900 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg hover:bg-red-600 transition-all">Làm mới bộ lọc</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <main class="container-1200 px-4 pb-20 mt-8">
+        <!-- Dynamic Sub Menu -->
+        <div id="sub-menu-container" class="flex flex-wrap gap-3 justify-center mb-8"></div>
+
+        <!-- Section Title -->
+        <div class="flex items-end justify-between mb-8 border-l-4 border-red-600 pl-4">
+            <div>
+                <h3 id="current-cat-name" class="text-2xl font-black text-slate-900 uppercase italic">Cốt vợt chuyên nghiệp</h3>
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Khám phá vũ khí chiến thắng của bạn</p>
+            </div>
+        </div>
+
+        <!-- Product Grid -->
+        <div id="product-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8"></div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 pt-20 pb-10 border-t border-slate-800">
+        <div class="container-1200 px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+            <div>
+                <div class="flex items-center gap-2 mb-6">
+                    <div class="w-8 h-8 bg-red-600 rounded flex items-center justify-center text-white font-black italic">BV</div>
+                    <span class="text-white font-black uppercase italic text-lg tracking-tighter">BongBanViet</span>
+                </div>
+                <p class="text-sm leading-relaxed mb-6">Hệ thống phân phối dụng cụ bóng bàn chuyên nghiệp hàng đầu Việt Nam. Đối tác tin cậy của Butterfly, DHS, Stiga.</p>
+                <div class="flex gap-4">
+                    <a href="#" class="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center hover:bg-red-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    </a>
+                </div>
+            </div>
+            <div>
+                <h4 class="text-white font-bold uppercase text-xs tracking-widest mb-6 underline decoration-red-600 decoration-2 underline-offset-8">Liên kết</h4>
+                <ul class="space-y-4 text-sm">
+                    <li><a href="#" class="hover:text-red-500 transition-colors">Về chúng tôi</a></li>
+                    <li><a href="#" class="hover:text-red-500 transition-colors">Tin tức & Sự kiện</a></li>
+                    <li><a href="#" class="hover:text-red-500 transition-colors">Hệ thống cửa hàng</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-white font-bold uppercase text-xs tracking-widest mb-6 underline decoration-red-600 decoration-2 underline-offset-8">Chính sách</h4>
+                <ul class="space-y-4 text-sm">
+                    <li><a href="#" class="hover:text-red-500 transition-colors">Chính sách đổi trả</a></li>
+                    <li><a href="#" class="hover:text-red-500 transition-colors">Chính sách bảo mật</a></li>
+                    <li><a href="#" class="hover:text-red-500 transition-colors">Vận chuyển</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-white font-bold uppercase text-xs tracking-widest mb-6 underline decoration-red-600 decoration-2 underline-offset-8">Liên hệ</h4>
+                <ul class="space-y-4 text-sm">
+                    <li class="flex items-start gap-3">
+                        <svg class="mt-1 text-red-500" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                        <span>123 Đường Láng, Hà Nội</span>
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <svg class="text-red-500" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                        <span>Hotline: 1900 88xx</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="container-1200 px-4 pt-10 border-t border-slate-800 text-center text-[10px] uppercase tracking-widest font-bold">
+            © 2024 BongBanViet.com - All Rights Reserved.
+        </div>
+    </footer>
+
+    <!-- Logic Popups -->
+    <div id="popup-right" class="logic-popup w-72 p-6 rounded-2xl">
+        <span id="p-cat-tag" class="bg-red-600 text-white text-[8px] font-bold px-2 py-0.5 rounded uppercase tracking-widest italic">Hạng mục</span>
+        <h2 id="p-name" class="text-lg font-bold text-slate-900 mt-2 leading-tight">Tên sản phẩm</h2>
+        <div id="p-price" class="text-red-600 font-black text-base mt-1 italic">Giá</div>
+        <div class="mt-4 space-y-3">
+            <h4 class="text-[9px] font-bold text-slate-400 uppercase tracking-widest border-b pb-1">Phân tích thông số</h4>
+            <div id="p-specs" class="space-y-2.5"></div>
+        </div>
+    </div>
+
+    <div id="popup-bottom" class="logic-popup w-80 p-5 rounded-xl border-l-4 border-red-600">
+        <h4 class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6M2 5h6M2 7h4"/></svg>
+            Chi tiết cấu tạo
+        </h4>
+        <p id="p-desc" class="text-[11px] text-slate-600 italic leading-relaxed">Mô tả...</p>
+        <div class="flex gap-2 mt-5">
+            <button class="flex-grow bg-slate-900 text-white font-bold py-2 rounded-lg text-[10px] uppercase hover:bg-red-600 transition-all shadow-md shadow-slate-200">Thêm vào giỏ</button>
+        </div>
+    </div>
+
+    <svg id="svg-overlay" class="fixed top-0 left-0 w-full h-full pointer-events-none z-40 overflow-visible">
+        <defs>
+            <marker id="arrowhead" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto">
+                <polygon points="0 0, 6 2, 0 4" fill="#ef4444" />
+            </marker>
+        </defs>
+        <path id="line-right" class="connector-line" d="" fill="none" stroke="#ef4444" stroke-width="1.5" marker-end="url(#arrowhead)" />
+        <path id="line-bottom" class="connector-line" d="" fill="none" stroke="#ef4444" stroke-width="1.5" marker-end="url(#arrowhead)" />
+    </svg>
+
+    <script>
+        const products = [];
+        const brands = ['Butterfly', 'DHS', 'Stiga', 'Donic', 'Yasaka', 'Victas', 'Xiom', 'Tibhar'];
+        const categories = ['blade', 'rubber', 'ball', 'table', 'clothing', 'combo', 'knowledge'];
+
+        // Mocking Data
+        for (let i = 1; i <= 60; i++) {
+            const cat = categories[i % categories.length];
+            const brand = brands[i % brands.length];
+            let sub = 'Tất cả';
+            let icon = '🏓';
+            let color = 'bg-slate-50';
+
+            if (cat === 'blade') { sub = ['Off+', 'Off', 'All', 'Def', 'Special'][i % 5]; icon = '🏏'; }
+            if (cat === 'rubber') { sub = ['Tension', 'Tacky', 'Long-pips', 'Short-pips', 'Anti'][i % 5]; icon = '🟥'; color = 'bg-red-50'; }
+            if (cat === 'clothing') { sub = ['Giày', 'Trang phục & Phụ kiện'][i % 2]; icon = '👕'; }
+            if (cat === 'ball') icon = '⚪';
+            if (cat === 'table') icon = '⏹️';
+            if (cat === 'combo') icon = '🎁';
+            if (cat === 'knowledge') icon = '📚';
+
+            const priceNum = (400 + (i * 85)); 
+
+            products.push({
+                id: i, 
+                category: cat, 
+                subCategory: sub, 
+                brand: brand,
+                name: `${brand} ${cat.charAt(0).toUpperCase() + cat.slice(1)} Pro ${i}`,
+                price: `${priceNum.toLocaleString('vi-VN')}k`,
+                priceValue: priceNum * 1000,
+                desc: `Sản phẩm ${brand} chuyên nghiệp, tích hợp công nghệ mới nhất giúp tối ưu hóa cảm giác và lực bóng.`,
+                specs: {"Tốc độ": 80+(i%15), "Xoáy/Cảm giác": 75+(i%20), "Kiểm soát": 82+(i%10)},
+                icon: icon, 
+                color: color
+            });
+        }
+
+        const subMenuData = {
+            blade: ['Tất cả', 'Off+', 'Off', 'All', 'Def', 'Special'],
+            rubber: ['Tất cả', 'Tension', 'Tacky', 'Long-pips', 'Short-pips', 'Anti'],
+            clothing: ['Tất cả', 'Giày', 'Trang phục & Phụ kiện'],
+            ball: ['Tất cả', 'Thi đấu', 'Tập luyện'],
+            table: ['Tất cả', 'Trong nhà', 'Ngoài trời'],
+            combo: ['Tất cả', 'Tấn công', 'Toàn diện'],
+            knowledge: ['Tất cả', 'Kỹ thuật', 'Thiết bị']
+        };
+
+        const container = document.getElementById('product-container');
+        const subMenuContainer = document.getElementById('sub-menu-container');
+        const popupRight = document.getElementById('popup-right');
+        const popupBottom = document.getElementById('popup-bottom');
+        const lineRight = document.getElementById('line-right');
+        const lineBottom = document.getElementById('line-bottom');
+        const catTitle = document.getElementById('current-cat-name');
+
+        const filterSearch = document.getElementById('filter-search');
+        const filterBrand = document.getElementById('filter-brand');
+        const filterPrice = document.getElementById('filter-price');
+        const filterReset = document.getElementById('filter-reset');
+
+        let currentCategory = 'blade'; 
+        let currentSubCategory = 'Tất cả';
+        let pinnedProductId = null;
+
+        function renderProducts() {
+            const searchText = filterSearch.value.toLowerCase();
+            const brandVal = filterBrand.value;
+            const priceVal = filterPrice.value;
+
+            const filtered = products.filter(p => {
+                const catMatch = p.category === currentCategory;
+                const subMatch = currentSubCategory === 'Tất cả' || p.subCategory === currentSubCategory;
+                const searchMatch = p.name.toLowerCase().includes(searchText);
+                const brandMatch = brandVal === 'all' || p.brand === brandVal;
+
+                let priceMatch = true;
+                if (priceVal === '0-1000') priceMatch = p.priceValue < 1000000;
+                else if (priceVal === '1000-3000') priceMatch = p.priceValue >= 1000000 && p.priceValue <= 3000000;
+                else if (priceVal === '3000-plus') priceMatch = p.priceValue > 3000000;
+
+                return catMatch && subMatch && searchMatch && brandMatch && priceMatch;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="col-span-full py-20 text-center text-slate-400 font-medium">Không tìm thấy sản phẩm phù hợp.</div>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(p => `
+                <div class="product-item product-card p-6 rounded-[2rem] cursor-pointer group ${pinnedProductId == p.id ? 'pinned' : ''}" 
+                     data-id="${p.id}" onclick="togglePin(this, event)">
+                    <div class="h-44 ${p.color} rounded-2xl mb-5 flex items-center justify-center text-6xl group-hover:rotate-6 transition-all duration-500">
+                        ${p.icon}
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-[9px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded uppercase tracking-widest">${p.subCategory}</span>
+                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">${p.brand}</span>
+                    </div>
+                    <h3 class="font-bold text-slate-800 text-sm mt-3 line-clamp-1 group-hover:text-red-600">${p.name}</h3>
+                    <div class="flex justify-between items-center mt-3">
+                        <span class="text-xs text-slate-400 font-medium italic">Chính hãng</span>
+                        <span class="text-slate-900 font-black text-sm italic">${p.price}</span>
+                    </div>
+                </div>
+            `).join('');
+
+            document.querySelectorAll('.product-item').forEach(item => {
+                item.addEventListener('mouseenter', () => { if (pinnedProductId === null) showPopups(item); });
+                item.addEventListener('mouseleave', () => { if (pinnedProductId === null) hidePopups(); });
+            });
+        }
+
+        function togglePin(element, event) {
+            event.stopPropagation();
+            const id = element.dataset.id;
+            if (pinnedProductId == id) {
+                pinnedProductId = null;
+                element.classList.remove('pinned');
+                hidePopups();
+            } else {
+                document.querySelectorAll('.product-item').forEach(i => i.classList.remove('pinned'));
+                pinnedProductId = id;
+                element.classList.add('pinned');
+                showPopups(element);
+            }
+        }
+
+        document.body.addEventListener('click', () => {
+            if (pinnedProductId !== null) {
+                pinnedProductId = null;
+                document.querySelectorAll('.product-item').forEach(i => i.classList.remove('pinned'));
+                hidePopups();
+            }
+        });
+
+        function showPopups(element) {
+            const p = products.find(prod => prod.id == element.dataset.id);
+            const rect = element.getBoundingClientRect();
+
+            document.getElementById('p-name').textContent = p.name;
+            document.getElementById('p-price').textContent = p.price;
+            document.getElementById('p-desc').textContent = p.desc;
+            document.getElementById('p-cat-tag').textContent = `${p.brand} - ${p.subCategory}`;
+            document.getElementById('p-specs').innerHTML = Object.entries(p.specs).map(([key, value]) => `
+                <div>
+                    <div class="flex justify-between text-[8px] font-bold text-slate-500 mb-1 uppercase">
+                        <span>${key}</span>
+                        <span class="text-red-600">${value}%</span>
+                    </div>
+                    <div class="h-1 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-red-600" style="width: ${value}%"></div></div>
+                </div>
+            `).join('');
+
+            const centerY = rect.top + rect.height / 2;
+            let prX = rect.right + 50;
+            let prY = centerY - 100;
+            if (prX + 288 > window.innerWidth) prX = rect.left - 338;
+            popupRight.style.left = `${prX}px`;
+            popupRight.style.top = `${prY}px`;
+            popupRight.classList.add('visible');
+
+            const centerX = rect.left + rect.width / 2;
+            let pbY = rect.bottom + 50;
+            let pbX = centerX - 160;
+            if (pbY + 200 > window.innerHeight) pbY = rect.top - 250;
+            popupBottom.style.left = `${pbX}px`;
+            popupBottom.style.top = `${pbY}px`;
+            popupBottom.classList.add('visible');
+
+            const startX_R = (prX > rect.right) ? rect.right : rect.left;
+            const endX_R = (prX > rect.right) ? prX - 5 : prX + 288 + 5;
+            drawLine(lineRight, startX_R, centerY, endX_R, centerY);
+
+            const startY_B = (pbY > rect.bottom) ? rect.bottom : rect.top;
+            const endY_B = (pbY > rect.bottom) ? pbY - 5 : pbY + 200 + 5;
+            drawLine(lineBottom, centerX, startY_B, centerX, endY_B);
+        }
+
+        function drawLine(path, x1, y1, x2, y2) {
+            path.setAttribute('d', `M ${x1} ${y1} L ${x2} ${y2}`);
+            path.classList.remove('active-line');
+            void path.offsetWidth;
+            path.classList.add('active-line');
+        }
+
+        function hidePopups() {
+            popupRight.classList.remove('visible');
+            popupBottom.classList.remove('visible');
+            lineRight.classList.remove('active-line');
+            lineBottom.classList.remove('active-line');
+        }
+
+        function renderSubMenu(cat) {
+            if (!subMenuData[cat]) {
+                subMenuContainer.classList.remove('show');
+                return;
+            }
+            subMenuContainer.innerHTML = subMenuData[cat].map(s => `
+                <button class="sub-tab px-5 py-2 border-2 border-slate-200 text-slate-500 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all whitespace-nowrap ${s === currentSubCategory ? 'active bg-red-600 !text-white !border-red-600 shadow-lg shadow-red-200' : 'bg-white hover:border-red-400'}" data-sub="${s}">${s}</button>
+            `).join('');
+            subMenuContainer.classList.add('show');
+            document.querySelectorAll('.sub-tab').forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    currentSubCategory = tab.dataset.sub;
+                    renderSubMenu(currentCategory);
+                    pinnedProductId = null;
+                    hidePopups();
+                    renderProducts();
+                });
+            });
+        }
+
+        document.querySelectorAll('.nav-item').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.querySelectorAll('.nav-item').forEach(t => t.classList.remove('active', 'text-slate-900'));
+                document.querySelectorAll('.nav-item').forEach(t => t.classList.add('text-slate-500'));
+                tab.classList.add('active', 'text-slate-900');
+                tab.classList.remove('text-slate-500');
+                currentCategory = tab.dataset.category;
+                currentSubCategory = 'Tất cả';
+                catTitle.textContent = `${tab.textContent} chuyên nghiệp`;
+                pinnedProductId = null;
+                hidePopups();
+                renderSubMenu(currentCategory);
+                renderProducts();
+            });
+        });
+
+        [filterSearch, filterBrand, filterPrice].forEach(el => {
+            el.addEventListener('input', renderProducts);
+            el.addEventListener('change', renderProducts);
+        });
+
+        filterReset.addEventListener('click', () => {
+            filterSearch.value = '';
+            filterBrand.value = 'all';
+            filterPrice.value = 'all';
+            renderProducts();
+        });
+
+        renderSubMenu(currentCategory);
+        renderProducts();
+    </script>
+</body>
+</html>

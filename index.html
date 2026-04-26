@@ -905,6 +905,164 @@
     .m-group-view-all::before { display: none !important; }
 
     @media (max-width: 960px) { .mega-panel { display: none !important; } }
+
+    /* ─── Product BG extras ──────────────────────────── */
+    .pb-5{background:#EDE8E8;}.pb-6{background:#E8EDE8;}.pb-7{background:#E8E8ED;}.pb-8{background:#EDEDE8;}
+
+    /* ─── Flow Catalog ───────────────────────────────── */
+    .flow-catalog { background: var(--bg); }
+    .flow-sticky {
+      position: sticky; top: 82px; z-index: 100;
+      background: #0d0d0d; border-bottom: 1px solid rgba(255,255,255,.05);
+    }
+    .flow-sticky-inner {
+      max-width: 1200px; margin: 0 auto; padding: 0 40px;
+      display: flex; align-items: stretch; justify-content: space-between; gap: 16px;
+    }
+    .flow-tabs {
+      display: flex; align-items: stretch;
+      overflow-x: auto; scrollbar-width: none; flex-shrink: 0;
+    }
+    .flow-tabs::-webkit-scrollbar { display: none; }
+    .flow-tab {
+      display: inline-flex; align-items: center;
+      padding: 15px 14px; background: none; border: none; cursor: pointer;
+      font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 700;
+      letter-spacing: .11em; text-transform: uppercase;
+      color: rgba(255,255,255,.32); border-bottom: 2px solid transparent;
+      transition: all .2s; white-space: nowrap; text-decoration: none;
+    }
+    .flow-tab:hover { color: rgba(255,255,255,.68); }
+    .flow-tab.active { color: #fff; border-bottom-color: var(--red); }
+    .flow-tab-ext { opacity: .45; }
+    .flow-tab-ext:hover { opacity: .75; }
+    .flow-filters {
+      display: flex; align-items: center; gap: 10px;
+      border-left: 1px solid rgba(255,255,255,.06); padding-left: 20px;
+    }
+    .flow-search-wrap { position: relative; }
+    .flow-search-wrap svg { position:absolute;left:11px;top:50%;transform:translateY(-50%);opacity:.3;pointer-events:none; }
+    #flowSearch {
+      width: 178px; padding: 8px 13px 8px 32px;
+      background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1);
+      color: #fff; font-family:'Inter',sans-serif; font-size:12px;
+      outline:none; transition:border-color .2s;
+    }
+    #flowSearch::placeholder { color: rgba(255,255,255,.28); }
+    #flowSearch:focus { border-color:rgba(255,255,255,.24); }
+    .flow-select {
+      padding: 8px 24px 8px 11px;
+      background: rgba(255,255,255,.07) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='rgba(255,255,255,0.35)'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E") no-repeat right 6px center;
+      background-size: 11px;
+      border: 1px solid rgba(255,255,255,.1);
+      color: rgba(255,255,255,.55); font-family:'Inter',sans-serif; font-size:10px;
+      font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+      outline:none; cursor:pointer; appearance:none; transition:border-color .2s;
+    }
+    .flow-select:focus { border-color:rgba(255,255,255,.24); }
+    .flow-select option { background:#1a1a1a; color:#fff; text-transform:none; }
+    #flowCount {
+      font-size:9px; font-weight:700; letter-spacing:.16em; text-transform:uppercase;
+      color:rgba(255,255,255,.26); white-space:nowrap; padding-left:6px;
+    }
+    .flow-sub-row {
+      max-width:1200px; margin:0 auto; padding:9px 40px;
+      display:flex; gap:7px; flex-wrap:wrap;
+      border-top:1px solid rgba(255,255,255,.04);
+    }
+    .flow-sub-btn {
+      padding:5px 12px; background:none; border:1px solid rgba(255,255,255,.12);
+      color:rgba(255,255,255,.4); font-family:'Inter',sans-serif; font-size:9px;
+      font-weight:700; letter-spacing:.11em; text-transform:uppercase;
+      cursor:pointer; transition:all .2s; white-space:nowrap;
+    }
+    .flow-sub-btn:hover { border-color:rgba(255,255,255,.28); color:rgba(255,255,255,.7); }
+    .flow-sub-btn.active { background:var(--red); border-color:var(--red); color:#fff; }
+    .flow-body {
+      max-width:1200px; margin:0 auto; padding:36px 40px 88px;
+    }
+    .flow-body .prod-grid { grid-template-columns:repeat(4,1fr); gap:22px; }
+    .prod-card.fp-pinned { outline:2px solid var(--red); outline-offset:-2px; }
+
+    /* ─── Flow Popups ─────────────────────────────────── */
+    .flow-popup {
+      position:fixed; z-index:100;
+      pointer-events:none; opacity:0;
+      transition:opacity .22s ease;
+      background:var(--white); border:1px solid var(--line);
+      box-shadow:0 20px 44px -8px rgba(0,0,0,.18);
+    }
+    .flow-popup.visible { opacity:1; pointer-events:auto; }
+    .flow-popup-r { width:252px; padding:20px; }
+    .flow-popup-b { width:268px; padding:16px 18px; border-left:3px solid var(--red); }
+    .fp-tag {
+      display:inline-block; background:var(--dark); color:#fff;
+      font-size:8px; font-weight:700; letter-spacing:.22em; text-transform:uppercase;
+      padding:3px 10px; margin-bottom:10px;
+    }
+    .fp-name {
+      font-family:'Playfair Display',serif; font-size:16px; font-weight:800;
+      line-height:1.2; color:var(--dark); margin-bottom:5px;
+    }
+    .fp-price {
+      font-family:'Playfair Display',serif; font-size:18px; font-weight:900;
+      color:var(--red); margin-bottom:3px;
+    }
+    .fp-stock {
+      font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; margin-bottom:13px;
+    }
+    .fp-sect-label {
+      font-size:8px; font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+      color:var(--mid); margin-bottom:10px;
+      display:flex; align-items:center; gap:6px;
+    }
+    .fp-sect-label::after { content:''; flex:1; height:1px; background:var(--line); }
+    .fp-spec { margin-bottom:8px; }
+    .fp-spec-row {
+      display:flex; justify-content:space-between;
+      font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+      color:var(--mid); margin-bottom:4px;
+    }
+    .fp-spec-row span:last-child { color:var(--red); }
+    .fp-bar { height:3px; background:var(--line); }
+    .fp-fill { height:100%; background:var(--red); transition:width .5s ease; }
+    .fpb-label {
+      font-size:8px; font-weight:700; letter-spacing:.18em; text-transform:uppercase;
+      color:var(--mid); margin-bottom:6px;
+    }
+    .fpb-desc {
+      font-size:11.5px; color:var(--mid); line-height:1.7; font-style:italic;
+      margin-bottom:13px;
+      display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden;
+    }
+    .fpb-actions { display:flex; gap:7px; }
+    .fpb-btn {
+      flex:1; padding:9px 8px; text-align:center;
+      font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+      transition:all .2s; text-decoration:none;
+    }
+    .fpb-btn-dark { background:var(--dark); color:#fff; }
+    .fpb-btn-dark:hover { background:var(--red); }
+    .fpb-btn-red { background:var(--red); color:#fff; }
+    .fpb-btn-red:hover { background:var(--dark); }
+    .flow-line { transition:stroke-dashoffset .38s ease; }
+    .flow-line.active { stroke-dashoffset:0 !important; }
+
+    @media (max-width:960px) {
+      .flow-sticky { top:0; }
+      .flow-sticky-inner { padding:0 20px; }
+      .flow-body { padding:24px 20px 60px; }
+      .flow-body .prod-grid { grid-template-columns:repeat(3,1fr); gap:16px; }
+      .flow-sub-row { padding:9px 20px; }
+    }
+    @media (max-width:640px) {
+      .flow-tab { padding:13px 10px; font-size:9px; }
+      .flow-sticky-inner { flex-direction:column; gap:0; }
+      .flow-filters { border-left:none; border-top:1px solid rgba(255,255,255,.06); padding:10px 0; flex-wrap:wrap; }
+      #flowSearch { width:140px; }
+      .flow-body .prod-grid { grid-template-columns:1fr 1fr; gap:12px; }
+      .flow-popup { display:none !important; }
+    }
   </style>
 </head>
 <body>
@@ -1186,270 +1344,78 @@
   </a>
 </div>
 
-<!-- Search Bar -->
-<div style="background:var(--bg);border-bottom:1px solid var(--line);padding:14px 40px;">
-  <div style="max-width:560px;margin:0 auto;position:relative;">
-    <svg style="position:absolute;left:16px;top:50%;transform:translateY(-50%);opacity:.4;pointer-events:none;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-    <input type="text" id="heroSearch" placeholder="Tìm kiếm sản phẩm theo tên..."
-      style="width:100%;padding:11px 20px 11px 44px;border:1.5px solid var(--line);background:var(--white);font-size:14px;font-family:'Inter',sans-serif;color:var(--dark);outline:none;transition:border-color .2s;"
-      oninput="doHeroSearch(this.value)"
-      onfocus="this.style.borderColor='var(--dark)'" onblur="this.style.borderColor='var(--line)'">
-  </div>
-</div>
+<!-- Flow Catalog -->
+<section class="flow-catalog" id="san-pham">
 
-<!-- Categories -->
-<section class="cats" id="san-pham">
-  <div class="cats-head">
-    <p class="s-label">Danh Mục Sản Phẩm</p>
-    <div class="cats-head-row">
-      <h2 class="s-title">Khám Phá<br><i>Danh Mục</i></h2>
-      <a href="cot-vot.html" class="see-all" style="color:var(--dark);">Tất cả sản phẩm</a>
-    </div>
-  </div>
-  <div class="cat-grid">
-    <a href="cot-vot.html" class="cat cat-cot">
-      <span class="cat-bg">Cốt</span>
-      <div class="cat-orb" style="width:80px;height:80px;top:14px;right:18px;"></div>
-      <div class="cat-inner">
-        <p class="cat-lbl">Danh mục chính</p>
-        <h3 class="cat-name">Cốt Vợt</h3>
-        <span class="cat-arrow">Khám phá</span>
+  <!-- Sticky tab + filter bar -->
+  <div class="flow-sticky" id="flowSticky">
+    <div class="flow-sticky-inner">
+      <div class="flow-tabs">
+        <button class="flow-tab active" data-cat="" data-combo="">Tất Cả</button>
+        <button class="flow-tab" data-cat="cot-vot" data-combo="">Cốt Vợt</button>
+        <button class="flow-tab" data-cat="mat-vot" data-combo="">Mặt Vợt</button>
+        <button class="flow-tab" data-cat="bong" data-combo="">Bóng</button>
+        <button class="flow-tab" data-cat="ban" data-combo="">Bàn</button>
+        <button class="flow-tab" data-cat="do-thi-dau" data-combo="">Đồ Thi Đấu</button>
+        <button class="flow-tab" data-cat="" data-combo="1">Combo Vợt</button>
+        <button class="flow-tab" data-cat="do-cu" data-combo="">Đồ Cũ</button>
+        <a href="kien-thuc.html" class="flow-tab flow-tab-ext">Kiến Thức ↗</a>
       </div>
-    </a>
-    <a href="mat-vot.html" class="cat cat-mat">
-      <span class="cat-bg">Mặt</span>
-      <div class="cat-inner">
-        <p class="cat-lbl">Danh mục chính</p>
-        <h3 class="cat-name">Mặt Vợt</h3>
-        <span class="cat-arrow">Khám phá</span>
-      </div>
-    </a>
-    <a href="bong.html" class="cat cat-bong">
-      <span class="cat-bg">Bóng</span>
-      <div class="cat-orb" style="width:60px;height:60px;top:18px;right:14px;"></div>
-      <div class="cat-inner">
-        <p class="cat-lbl">Danh mục</p>
-        <h3 class="cat-name">Bóng</h3>
-        <span class="cat-arrow">Khám phá</span>
-      </div>
-    </a>
-    <a href="ban.html" class="cat cat-ban">
-      <span class="cat-bg">Bàn</span>
-      <div class="cat-inner">
-        <p class="cat-lbl">Danh mục</p>
-        <h3 class="cat-name">Bàn</h3>
-        <span class="cat-arrow">Xem</span>
-      </div>
-    </a>
-    <a href="do-thi-dau.html" class="cat cat-thi">
-      <span class="cat-bg">Thi Đấu</span>
-      <div class="cat-inner">
-        <p class="cat-lbl">Giày · Trang Phục · Phụ Kiện</p>
-        <h3 class="cat-name">Đồ Thi Đấu</h3>
-        <span class="cat-arrow">Khám phá</span>
-      </div>
-    </a>
-    <a href="combo-vot.html" class="cat cat-combo">
-      <span class="cat-bg">Combo</span>
-      <div class="cat-orb" style="width:55px;height:55px;top:12px;right:12px;"></div>
-      <div class="cat-inner">
-        <p class="cat-lbl">Khuyên Dùng</p>
-        <h3 class="cat-name">Combo Vợt</h3>
-        <span class="cat-arrow">Khám phá</span>
-      </div>
-    </a>
-    <a href="do-cu.html" class="cat cat-cu">
-      <span class="cat-bg">Cũ</span>
-      <div class="cat-inner">
-        <p class="cat-lbl">Second-hand</p>
-        <h3 class="cat-name">Đồ Cũ</h3>
-        <span class="cat-arrow">Xem</span>
-      </div>
-    </a>
-  </div>
-</section>
-
-<!-- Brands -->
-<section class="brands">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;">
-    <p class="s-label" style="margin-bottom:0;">Thương Hiệu Phân Phối Chính Hãng</p>
-    <a href="cot-vot.html" class="see-all" style="color:var(--mid);font-size:10px;">Xem theo hãng →</a>
-  </div>
-  <div class="brand-row">
-    <a href="cot-vot.html" class="brand-link b-lg">Butterfly</a>
-    <a href="cot-vot.html" class="brand-link b-lg">Tibhar</a>
-    <a href="cot-vot.html" class="brand-link b-md">Unrex</a>
-    <a href="cot-vot.html" class="brand-link b-md">Yinhe</a>
-    <a href="cot-vot.html" class="brand-link b-sm">&amp; More</a>
-  </div>
-</section>
-
-<!-- Featured Products -->
-<section class="prods">
-  <div class="wrap">
-    <div class="prods-head">
-      <div>
-        <p class="s-label">Sản Phẩm Nổi Bật</p>
-        <h2 class="s-title">Được Lựa Chọn<br><i>Nhiều Nhất</i></h2>
-      </div>
-      <a href="cot-vot.html" class="see-all" style="color:var(--dark);">Xem tất cả →</a>
-    </div>
-
-    <!-- Filter Bar -->
-    <div class="filter-bar" id="filterBar">
-      <div class="filter-group">
-        <span class="filter-label">Hãng</span>
-        <select class="filter-select" id="filterBrand" onchange="applyFilter()">
+      <div class="flow-filters">
+        <div class="flow-search-wrap">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" id="flowSearch" placeholder="Tìm sản phẩm...">
+        </div>
+        <select id="flowBrand" class="flow-select">
           <option value="">Tất cả hãng</option>
           <option value="butterfly">Butterfly</option>
           <option value="tibhar">Tibhar</option>
           <option value="unrex">Unrex</option>
           <option value="yinhe">Yinhe</option>
+          <option value="khac">Khác</option>
         </select>
+        <span id="flowCount">—</span>
       </div>
-      <div class="filter-group">
-        <span class="filter-label">Danh mục</span>
-        <select class="filter-select" id="filterCat" onchange="applyFilter()">
-          <option value="">Tất cả</option>
-          <option value="cot-vot">Cốt Vợt</option>
-          <option value="mat-vot">Mặt Vợt</option>
-        </select>
-      </div>
-      <input class="filter-search" type="text" id="filterSearch" placeholder="Tìm theo tên sản phẩm..." oninput="applyFilter()">
-      <button class="filter-reset" onclick="resetFilter()">✕ Xoá lọc</button>
-      <span class="filter-count" id="filterCount">4 sản phẩm</span>
     </div>
-
-    <div class="prod-grid" id="prodGrid"></div>
+    <div class="flow-sub-row" id="flowSubRow" style="display:none;"></div>
   </div>
+
+  <!-- Product grid -->
+  <div class="flow-body">
+    <div class="prod-grid" id="flowGrid"></div>
+  </div>
+
 </section>
 
-<!-- Magazine Pull Quote -->
-<div class="quote-strip">
-  <div>
-    <p class="s-label" style="margin-bottom:24px;">Triết Lý Của Chúng Tôi</p>
-    <blockquote>
-      &#8220;Một chiếc vợt phù hợp không chỉ cải thiện lối chơi &#8212;
-      <em style="font-style:italic;color:var(--coral);">nó thay đổi cả trải nghiệm trên bàn.&#8221;</em>
-    </blockquote>
-    <div style="display:flex;align-items:center;justify-content:center;gap:16px;">
-      <div style="width:28px;height:1px;background:var(--line);"></div>
-      <p style="font-size:11px;color:var(--mid);letter-spacing:.12em;text-transform:uppercase;">Bóng Bàn Việt &nbsp;·&nbsp; Hà Nội</p>
-      <div style="width:28px;height:1px;background:var(--line);"></div>
-    </div>
+<!-- Popup: Specs (right of card) -->
+<div class="flow-popup flow-popup-r" id="flowPopupR">
+  <div class="fp-tag" id="fpTag">CỐT VỢT</div>
+  <h2 class="fp-name" id="fpName">Tên sản phẩm</h2>
+  <div class="fp-price" id="fpPrice">2.500.000đ</div>
+  <div class="fp-stock" id="fpStock"></div>
+  <div class="fp-sect-label">Thông Số Kỹ Thuật</div>
+  <div id="fpSpecs"></div>
+</div>
+
+<!-- Popup: Description + CTA (below card) -->
+<div class="flow-popup flow-popup-b" id="flowPopupB">
+  <p class="fpb-label">Mô Tả Sản Phẩm</p>
+  <p class="fpb-desc" id="fpDesc">Mô tả sản phẩm...</p>
+  <div class="fpb-actions">
+    <a class="fpb-btn fpb-btn-dark" id="fpLink" href="#" onclick="event.stopPropagation()">Xem Chi Tiết →</a>
+    <a class="fpb-btn fpb-btn-red" id="fpZalo" href="#" target="_blank" rel="noopener" onclick="event.stopPropagation()">Tư Vấn Zalo</a>
   </div>
 </div>
 
-<!-- Editorial / About -->
-<section class="editorial">
-  <div class="editorial-grid">
-    <div class="editorial-text">
-      <p class="s-label">Về Chúng Tôi</p>
-      <h2 class="editorial-q">Tư Vấn <i>Chuẩn</i>,<br>Hàng <i>Chính Hãng</i>.</h2>
-      <p class="editorial-body">Chúng tôi không chỉ bán vợt — chúng tôi giúp bạn chọn đúng thiết bị cho trình độ và phong cách chơi của mình. Mỗi sản phẩm đều được kiểm định chất lượng và có đầy đủ bảo hành chính hãng.</p>
-      <a href="lien-he.html" class="btn btn-dark" style="align-self:flex-start;">Tìm Hiểu Thêm</a>
-    </div>
-    <div class="editorial-visual">
-      <div class="editorial-visual-bg"></div>
-      <div class="editorial-watermark">BBV</div>
-      <div class="editorial-cards">
-        <div class="ed-card"><p class="ed-card-lbl">Chuyên Môn</p><p class="ed-card-val">20+ Năm Kinh Nghiệm</p></div>
-        <div class="ed-card"><p class="ed-card-lbl">Thương Hiệu</p><p class="ed-card-val">Butterfly · Tibhar · Unrex · Yinhe</p></div>
-        <div class="ed-card"><p class="ed-card-lbl">Dịch Vụ</p><p class="ed-card-val">Tư Vấn Miễn Phí Theo Trình Độ</p></div>
-        <div class="ed-card"><p class="ed-card-lbl">Địa Chỉ</p><p class="ed-card-val">286 Nguyễn Xiển, Hà Nội</p></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Combo -->
-<section class="combo">
-  <div class="wrap">
-    <div class="combo-inner">
-      <div>
-        <p class="s-label">Dành Cho Mọi Trình Độ</p>
-        <h2 class="combo-h">Combo Vợt<br><i>Khuyên Dùng</i></h2>
-        <p class="combo-p">Không biết bắt đầu từ đâu? Chúng tôi đã lắp sẵn những bộ combo cốt + mặt vợt tối ưu nhất — phù hợp với từng cấp độ.</p>
-        <a href="combo-vot.html" class="btn btn-white">Xem Tất Cả Combo</a>
-      </div>
-      <div class="combo-cards">
-        <div class="c-card"><p class="c-lv">Beginner</p><h4 class="c-name">Combo Khởi Đầu</h4><p class="c-desc">Nhẹ, dễ kiểm soát</p></div>
-        <div class="c-card"><p class="c-lv">Intermediate</p><h4 class="c-name">Combo Phát Triển</h4><p class="c-desc">Cân bằng tốc độ &amp; spin</p></div>
-        <div class="c-card"><p class="c-lv">Advanced</p><h4 class="c-name">Combo Chuyên Sâu</h4><p class="c-desc">Hiệu suất cao, tấn công mạnh</p></div>
-        <div class="c-card"><p class="c-lv">Pro</p><h4 class="c-name">Combo Thi Đấu</h4><p class="c-desc">Cấp độ chuyên nghiệp</p></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Used Goods -->
-<section class="used">
-  <div class="wrap">
-    <p class="s-label">Second-Hand</p>
-    <h2 class="s-title">Đồ Đã Qua <i>Sử Dụng</i></h2>
-    <div class="used-inner">
-      <div class="used-banner">
-        <div class="used-text-col">
-          <p class="s-label" style="margin-top:0;">Kiểm Định Chất Lượng</p>
-          <p>Sản phẩm đã qua sử dụng được kiểm định kỹ lưỡng — giá tốt hơn, vẫn chơi như mới. Lý tưởng cho người mới hoặc muốn thử nghiệm thiết bị cao cấp.</p>
-          <a href="do-cu.html" class="btn btn-outline" style="align-self:flex-start;">Xem Đồ Cũ</a>
-        </div>
-        <div class="used-visual">
-          <div class="used-wm">Cũ</div>
-          <div class="used-badge">
-            <div class="n">99%</div>
-            <div class="t">Còn Tốt</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Knowledge / Blog -->
-<section class="know">
-  <div class="wrap">
-    <div class="know-head">
-      <div>
-        <p class="s-label">Blog &amp; Hướng Dẫn</p>
-        <h2 class="s-title">Chia Sẻ<br><i>Kiến Thức</i></h2>
-      </div>
-      <a href="kien-thuc.html" class="see-all" style="color:var(--dark);">Xem tất cả →</a>
-    </div>
-    <div class="art-grid">
-      <a href="kien-thuc.html" class="art-card">
-        <div class="art-img ab-1"><div class="art-img-inner"><div class="art-wm">Cốt</div></div></div>
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-          <p class="art-tag" style="margin-bottom:0;">Hướng Dẫn</p>
-          <span style="font-size:9px;color:var(--mid);letter-spacing:.06em;">5 phút đọc</span>
-        </div>
-        <h3 class="art-title">Cách Chọn Cốt Vợt Phù Hợp Với Phong Cách Chơi</h3>
-        <p class="art-exc">Tất tần tật về cốt vợt: chất liệu, tốc độ, độ kiểm soát và cách chọn theo từng trình độ...</p>
-        <p class="art-date">Tháng 4, 2025</p>
-      </a>
-      <a href="kien-thuc.html" class="art-card">
-        <div class="art-img ab-2"><div class="art-img-inner"><div class="art-wm">T05</div></div></div>
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-          <p class="art-tag" style="margin-bottom:0;">Review</p>
-          <span style="font-size:9px;color:var(--mid);letter-spacing:.06em;">8 phút đọc</span>
-        </div>
-        <h3 class="art-title">Review Butterfly Tenergy 05 Sau 6 Tháng Sử Dụng</h3>
-        <p class="art-exc">Tenergy 05 có xứng đáng với mức giá? Trải nghiệm thực tế qua từng buổi tập luyện...</p>
-        <p class="art-date">Tháng 3, 2025</p>
-      </a>
-      <a href="kien-thuc.html" class="art-card">
-        <div class="art-img ab-3"><div class="art-img-inner"><div class="art-wm">vs.</div></div></div>
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-          <p class="art-tag" style="margin-bottom:0;">So Sánh</p>
-          <span style="font-size:9px;color:var(--mid);letter-spacing:.06em;">6 phút đọc</span>
-        </div>
-        <h3 class="art-title">Tibhar vs Butterfly: Thương Hiệu Nào Phù Hợp Với Bạn?</h3>
-        <p class="art-exc">Phân tích chi tiết hai thương hiệu hàng đầu — giá cả, chất lượng và đối tượng phù hợp...</p>
-        <p class="art-date">Tháng 3, 2025</p>
-      </a>
-    </div>
-  </div>
-</section>
+<!-- SVG connector lines -->
+<svg id="flowSvg" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:90;overflow:visible;">
+  <defs>
+    <marker id="fArrowR" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto"><polygon points="0 0,6 2,0 4" fill="#D62B2B"/></marker>
+    <marker id="fArrowB" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto"><polygon points="0 0,6 2,0 4" fill="#D62B2B"/></marker>
+  </defs>
+  <path id="flowLineR" class="flow-line" fill="none" stroke="#D62B2B" stroke-width="1.5" stroke-dasharray="800" stroke-dashoffset="800" marker-end="url(#fArrowR)" d=""/>
+  <path id="flowLineB" class="flow-line" fill="none" stroke="#D62B2B" stroke-width="1.5" stroke-dasharray="800" stroke-dashoffset="800" marker-end="url(#fArrowB)" d=""/>
+</svg>
 
 <!-- Contact Strip -->
 <section class="contact" id="lien-he">
@@ -1579,37 +1545,6 @@ function toggleMGroup(id) {
   document.getElementById(id).classList.toggle('open');
 }
 
-/* ── Product filter ─────────────────────────────────────── */
-function applyFilter() {
-  const brand = document.getElementById('filterBrand').value;
-  const cat   = document.getElementById('filterCat').value;
-  const q     = document.getElementById('filterSearch').value.toLowerCase().trim();
-  const cards = document.querySelectorAll('#prodGrid .prod-card');
-  let visible = 0;
-  cards.forEach(c => {
-    const ok = (!brand || c.dataset.brand === brand)
-            && (!cat   || c.dataset.cat   === cat)
-            && (!q     || c.dataset.name.includes(q));
-    c.classList.toggle('hidden', !ok);
-    if (ok) visible++;
-  });
-  document.getElementById('filterCount').textContent = visible + ' sản phẩm';
-}
-function resetFilter() {
-  document.getElementById('filterBrand').value = '';
-  document.getElementById('filterCat').value   = '';
-  document.getElementById('filterSearch').value = '';
-  applyFilter();
-}
-
-function doHeroSearch(q) {
-  const fs = document.getElementById('filterSearch');
-  if (fs) { fs.value = q; applyFilter(); }
-  if (q.trim().length > 0) {
-    document.getElementById('san-pham').scrollIntoView({ behavior: 'smooth' });
-  }
-}
-
 /* ── Load hero banner (homepage) ────────────────────── */
 fetch('/api/settings/home_hero_image')
   .then(function(r){ return r.ok ? r.json() : null; })
@@ -1633,12 +1568,239 @@ fetch('/api/stats')
     }
   }).catch(function(){});
 
-/* ── Load sản phẩm từ API ──────────────────────────────── */
-loadProdGrid({ limit: 12 }, {
-  gridId: 'prodGrid', countId: 'filterCount',
-  showCat: true,
-  onDone: () => applyFilter()
-});
+/* ── Flow Catalog ──────────────────────────────────────── */
+(function() {
+  var flowCache = {};
+  var pinnedSlug = null;
+  var currentSubCat = '';
+  var popupR = document.getElementById('flowPopupR');
+  var popupB = document.getElementById('flowPopupB');
+  var lineR  = document.getElementById('flowLineR');
+  var lineB  = document.getElementById('flowLineB');
+
+  var CATS = {
+    'cot-vot':'Cốt Vợt','mat-vot':'Mặt Vợt','bong':'Bóng',
+    'ban':'Bàn','do-thi-dau':'Đồ Thi Đấu','combo-vot':'Combo Vợt','do-cu':'Đồ Cũ'
+  };
+  var BRANDS = {
+    butterfly:'BUTTERFLY',tibhar:'TIBHAR',unrex:'UNREX',
+    yinhe:'YINHE',khac:'Các Hãng Khác'
+  };
+  var SUB_CATS = {
+    'do-thi-dau':[
+      {label:'Tất Cả',val:''},
+      {label:'Giày',val:'giay'},
+      {label:'Trang Phục & Phụ Kiện',val:'trang-phuc-phu-kien'}
+    ]
+  };
+
+  function loadTab(tab) {
+    document.querySelectorAll('.flow-tab').forEach(function(t){ t.classList.remove('active'); });
+    tab.classList.add('active');
+    currentSubCat = '';
+    pinnedSlug = null;
+    hidePopups();
+    renderSubMenu(tab.dataset.cat || '');
+    fetchGrid(tab);
+  }
+
+  function fetchGrid(tab) {
+    var cat = tab.dataset.cat || '';
+    var isCombo = tab.dataset.combo === '1';
+    var brand = document.getElementById('flowBrand').value;
+    var params = { limit: 200 };
+    if (cat) params.category = cat;
+    if (brand) params.brand = brand;
+    if (currentSubCat) params.gear_subcategory = currentSubCat;
+    loadProdGrid(params, {
+      gridId: 'flowGrid', countId: 'flowCount',
+      showCat: !cat, isCombo: isCombo,
+      onDone: function(prods) {
+        flowCache = {};
+        prods.forEach(function(p){ flowCache[p.slug] = p; });
+        initCards();
+        applyFlowSearch();
+      }
+    });
+  }
+
+  function renderSubMenu(cat) {
+    var row = document.getElementById('flowSubRow');
+    var subs = SUB_CATS[cat];
+    if (!subs) { row.style.display = 'none'; return; }
+    row.style.display = 'flex';
+    row.innerHTML = subs.map(function(s) {
+      return '<button class="flow-sub-btn' + (s.val === currentSubCat ? ' active' : '') +
+             '" data-val="' + s.val + '">' + s.label + '</button>';
+    }).join('');
+    row.querySelectorAll('.flow-sub-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        currentSubCat = this.dataset.val;
+        var at = document.querySelector('.flow-tab.active');
+        if (at) { renderSubMenu(at.dataset.cat || ''); fetchGrid(at); }
+      });
+    });
+  }
+
+  function initCards() {
+    document.querySelectorAll('#flowGrid .prod-card').forEach(function(card) {
+      card.addEventListener('mouseenter', function() {
+        if (pinnedSlug !== null) return;
+        var p = flowCache[getSlug(this)];
+        if (p) showPopups(p, this);
+      });
+      card.addEventListener('mouseleave', function() {
+        if (pinnedSlug !== null) return;
+        hidePopups();
+      });
+      card.addEventListener('click', function(e) {
+        e.preventDefault();
+        var slug = getSlug(this);
+        if (pinnedSlug === slug) {
+          pinnedSlug = null;
+          this.classList.remove('fp-pinned');
+          hidePopups();
+        } else {
+          document.querySelectorAll('#flowGrid .prod-card.fp-pinned').forEach(function(c){ c.classList.remove('fp-pinned'); });
+          pinnedSlug = slug;
+          this.classList.add('fp-pinned');
+          var p = flowCache[slug];
+          if (p) showPopups(p, this);
+        }
+      });
+    });
+  }
+
+  function getSlug(card) {
+    return (card.getAttribute('href') || '').replace('san-pham.html?id=', '');
+  }
+
+  function showPopups(p, card) {
+    var catLabel  = CATS[p.category_slug]  || p.category_slug  || 'Sản Phẩm';
+    var brandLabel = BRANDS[p.brand_slug] || p.brand_slug || '';
+    document.getElementById('fpTag').textContent  = brandLabel ? brandLabel + ' · ' + catLabel : catLabel;
+    document.getElementById('fpName').textContent = p.name || '';
+
+    var rawPrice = String(p.price || '');
+    var variants = Array.isArray(p.variants) ? p.variants.filter(function(v){ return v && v.price; }) : [];
+    document.getElementById('fpPrice').textContent = rawPrice || (variants.length ? 'từ ' + variants[0].price : 'Liên hệ báo giá');
+
+    var stockEl = document.getElementById('fpStock');
+    if (p.in_stock === false || p.in_stock === 0) {
+      stockEl.textContent = '● Hết Hàng'; stockEl.style.color = '#D62B2B';
+    } else {
+      stockEl.textContent = '● Còn Hàng'; stockEl.style.color = '#166534';
+    }
+
+    var specsHtml = '';
+    if (p.specs && typeof p.specs === 'object') {
+      Object.entries(p.specs).slice(0, 4).forEach(function(kv) {
+        var k = kv[0], v = kv[1];
+        var pct = (typeof v === 'number' && v > 0 && v <= 100) ? v : null;
+        specsHtml += '<div class="fp-spec"><div class="fp-spec-row"><span>' + k + '</span><span>' + v + (pct ? '%' : '') + '</span></div>';
+        if (pct !== null) specsHtml += '<div class="fp-bar"><div class="fp-fill" style="width:' + pct + '%;"></div></div>';
+        specsHtml += '</div>';
+      });
+    }
+    document.getElementById('fpSpecs').innerHTML = specsHtml;
+
+    var desc = (p.description || '').replace(/<[^>]+>/g, '').trim();
+    document.getElementById('fpDesc').textContent = desc || 'Liên hệ để được tư vấn chi tiết về sản phẩm này.';
+    document.getElementById('fpLink').href = 'san-pham.html?id=' + (p.slug || '');
+    document.getElementById('fpZalo').href = 'https://zalo.me/0961269386?text=' + encodeURIComponent('Tôi muốn hỏi về ' + p.name);
+
+    positionPopups(card);
+  }
+
+  function positionPopups(card) {
+    var rect = card.getBoundingClientRect();
+    var vw = window.innerWidth, vh = window.innerHeight;
+    var prW = 252, pbW = 268;
+
+    var prX = rect.right + 18;
+    var prY = rect.top + rect.height / 2 - 110;
+    if (prX + prW > vw - 8) prX = rect.left - prW - 18;
+    if (prY < 8) prY = 8;
+    if (prY + 320 > vh) prY = vh - 328;
+    popupR.style.left = prX + 'px';
+    popupR.style.top  = prY + 'px';
+    popupR.classList.add('visible');
+
+    var pbX = rect.left + rect.width / 2 - pbW / 2;
+    var pbY = rect.bottom + 14;
+    if (pbX < 8) pbX = 8;
+    if (pbX + pbW > vw - 8) pbX = vw - pbW - 8;
+    if (pbY + 158 > vh) pbY = rect.top - 158 - 14;
+    popupB.style.left = pbX + 'px';
+    popupB.style.top  = pbY + 'px';
+    popupB.classList.add('visible');
+
+    var cY = rect.top + rect.height / 2;
+    var cX = rect.left + rect.width / 2;
+    var lrSX = (prX > rect.right) ? rect.right : rect.left;
+    var lrEX = (prX > rect.right) ? prX - 4 : prX + prW + 4;
+    drawLine(lineR, lrSX, cY, lrEX, cY);
+
+    var lbSY = (pbY > rect.bottom) ? rect.bottom : rect.top;
+    var lbEY = (pbY > rect.bottom) ? pbY - 4 : pbY + 158 + 4;
+    drawLine(lineB, cX, lbSY, cX, lbEY);
+  }
+
+  function drawLine(path, x1, y1, x2, y2) {
+    path.setAttribute('d', 'M ' + x1 + ' ' + y1 + ' L ' + x2 + ' ' + y2);
+    path.classList.remove('active');
+    void path.offsetWidth;
+    path.classList.add('active');
+  }
+
+  function hidePopups() {
+    popupR.classList.remove('visible');
+    popupB.classList.remove('visible');
+    lineR.classList.remove('active');
+    lineB.classList.remove('active');
+  }
+
+  function applyFlowSearch() {
+    var q = (document.getElementById('flowSearch').value || '').toLowerCase().trim();
+    var cards = document.querySelectorAll('#flowGrid .prod-card');
+    var visible = 0;
+    cards.forEach(function(c) {
+      var ok = !q || (c.dataset.name || '').includes(q);
+      c.style.display = ok ? '' : 'none';
+      if (ok) visible++;
+    });
+    var el = document.getElementById('flowCount');
+    if (el) el.textContent = visible + ' sản phẩm';
+  }
+
+  document.querySelectorAll('.flow-tab[data-cat]').forEach(function(tab) {
+    tab.addEventListener('click', function(e) {
+      e.stopPropagation();
+      loadTab(this);
+    });
+  });
+
+  document.getElementById('flowBrand').addEventListener('change', function() {
+    var at = document.querySelector('.flow-tab.active');
+    if (at) fetchGrid(at);
+  });
+
+  document.getElementById('flowSearch').addEventListener('input', applyFlowSearch);
+
+  document.body.addEventListener('click', function() {
+    if (pinnedSlug !== null) {
+      pinnedSlug = null;
+      document.querySelectorAll('#flowGrid .prod-card.fp-pinned').forEach(function(c){ c.classList.remove('fp-pinned'); });
+      hidePopups();
+    }
+  });
+
+  window.addEventListener('scroll', function() { if (!pinnedSlug) hidePopups(); }, { passive: true });
+  window.addEventListener('resize', function() { hidePopups(); pinnedSlug = null; });
+
+  loadTab(document.querySelector('.flow-tab.active'));
+})();
 </script>
 <script src="/js/banners.js"></script>
 </body>
