@@ -988,64 +988,74 @@
     .flow-popup {
       position:fixed; z-index:100;
       pointer-events:none; opacity:0;
-      transition:opacity .22s ease;
-      background:var(--white); border:1px solid var(--line);
-      box-shadow:0 20px 44px -8px rgba(0,0,0,.18);
+      transition:opacity .25s ease, transform .25s ease;
+      transform: scale(.96);
+      background:var(--white); border:1px solid rgba(0,0,0,.07);
+      border-radius:18px;
+      box-shadow:0 24px 60px -10px rgba(0,0,0,.2), 0 4px 12px rgba(0,0,0,.06);
     }
-    .flow-popup.visible { opacity:1; pointer-events:auto; }
-    .flow-popup-r { width:252px; padding:20px; }
-    .flow-popup-b { width:268px; padding:16px 18px; border-left:3px solid var(--red); }
+    .flow-popup.visible { opacity:1; pointer-events:auto; transform:scale(1); }
+    .flow-popup-r { width:268px; padding:22px; }
+    .flow-popup-b { width:276px; padding:18px 20px; border-left:4px solid var(--red); border-radius:0 18px 18px 0; }
     .fp-tag {
-      display:inline-block; background:var(--dark); color:#fff;
-      font-size:8px; font-weight:700; letter-spacing:.22em; text-transform:uppercase;
-      padding:3px 10px; margin-bottom:10px;
+      display:inline-block;
+      background:var(--red); color:#fff;
+      font-size:8px; font-weight:700; letter-spacing:.18em; text-transform:uppercase;
+      padding:4px 12px; margin-bottom:12px; border-radius:100px;
     }
     .fp-name {
-      font-family:'Playfair Display',serif; font-size:16px; font-weight:800;
-      line-height:1.2; color:var(--dark); margin-bottom:5px;
+      font-family:'Playfair Display',serif; font-size:17px; font-weight:800;
+      line-height:1.2; color:var(--dark); margin-bottom:4px;
     }
     .fp-price {
-      font-family:'Playfair Display',serif; font-size:18px; font-weight:900;
-      color:var(--red); margin-bottom:3px;
+      font-family:'Playfair Display',serif; font-size:19px; font-weight:900;
+      font-style:italic; color:var(--red); margin-bottom:3px;
     }
     .fp-stock {
-      font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; margin-bottom:13px;
+      font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; margin-bottom:14px;
     }
     .fp-sect-label {
       font-size:8px; font-weight:700; letter-spacing:.2em; text-transform:uppercase;
-      color:var(--mid); margin-bottom:10px;
+      color:var(--mid); margin-bottom:11px;
       display:flex; align-items:center; gap:6px;
+      padding-bottom:8px; border-bottom:1px solid var(--line);
     }
-    .fp-sect-label::after { content:''; flex:1; height:1px; background:var(--line); }
-    .fp-spec { margin-bottom:8px; }
+    .fp-spec { margin-bottom:9px; }
     .fp-spec-row {
       display:flex; justify-content:space-between;
       font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
       color:var(--mid); margin-bottom:4px;
     }
     .fp-spec-row span:last-child { color:var(--red); }
-    .fp-bar { height:3px; background:var(--line); }
-    .fp-fill { height:100%; background:var(--red); transition:width .5s ease; }
+    .fp-bar { height:4px; background:#f0f0ee; border-radius:2px; overflow:hidden; }
+    .fp-fill { height:100%; background:var(--red); border-radius:2px; transition:width .55s ease; }
     .fpb-label {
-      font-size:8px; font-weight:700; letter-spacing:.18em; text-transform:uppercase;
-      color:var(--mid); margin-bottom:6px;
+      font-size:8.5px; font-weight:700; letter-spacing:.16em; text-transform:uppercase;
+      color:var(--mid); margin-bottom:7px;
+      display:flex; align-items:center; gap:5px;
     }
     .fpb-desc {
-      font-size:11.5px; color:var(--mid); line-height:1.7; font-style:italic;
-      margin-bottom:13px;
+      font-size:11.5px; color:var(--mid); line-height:1.72; font-style:italic;
+      margin-bottom:14px;
       display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden;
     }
-    .fpb-actions { display:flex; gap:7px; }
+    .fpb-actions { display:flex; flex-direction:column; gap:7px; }
     .fpb-btn {
-      flex:1; padding:9px 8px; text-align:center;
-      font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+      display:block; width:100%; padding:10px; text-align:center;
+      font-size:9.5px; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
       transition:all .2s; text-decoration:none;
     }
     .fpb-btn-dark { background:var(--dark); color:#fff; }
     .fpb-btn-dark:hover { background:var(--red); }
     .fpb-btn-red { background:var(--red); color:#fff; }
     .fpb-btn-red:hover { background:var(--dark); }
-    .flow-line { transition:stroke-dashoffset .38s ease; }
+    #flowGrid .prod-card:hover .prod-name,
+    #flowGrid .prod-card.fp-pinned .prod-name { color:var(--red); }
+    .prod-card.fp-pinned {
+      outline:2px solid var(--red); outline-offset:-2px;
+      box-shadow:0 0 0 5px rgba(214,43,43,.08);
+    }
+    .flow-line { transition:stroke-dashoffset .42s ease; }
     .flow-line.active { stroke-dashoffset:0 !important; }
 
     @media (max-width:960px) {
@@ -1393,13 +1403,13 @@
   <h2 class="fp-name" id="fpName">Tên sản phẩm</h2>
   <div class="fp-price" id="fpPrice">2.500.000đ</div>
   <div class="fp-stock" id="fpStock"></div>
-  <div class="fp-sect-label">Thông Số Kỹ Thuật</div>
+  <div class="fp-sect-label">Phân Tích Thông Số</div>
   <div id="fpSpecs"></div>
 </div>
 
 <!-- Popup: Description + CTA (below card) -->
 <div class="flow-popup flow-popup-b" id="flowPopupB">
-  <p class="fpb-label">Mô Tả Sản Phẩm</p>
+  <p class="fpb-label">Chi Tiết Cấu Tạo</p>
   <p class="fpb-desc" id="fpDesc">Mô tả sản phẩm...</p>
   <div class="fpb-actions">
     <a class="fpb-btn fpb-btn-dark" id="fpLink" href="#" onclick="event.stopPropagation()">Xem Chi Tiết →</a>
