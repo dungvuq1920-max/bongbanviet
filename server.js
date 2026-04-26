@@ -617,7 +617,6 @@ function startServer() {
   const server = app.listen(PORT, () => {
     console.log(`\n✅ BongBanViet server chạy tại http://localhost:${PORT}`);
     console.log(`   Admin panel:  http://localhost:${PORT}/admin.html`);
-    console.log(`   Import page:  http://localhost:${PORT}/import.html`);
     console.log(`   Website:      http://localhost:${PORT}/index.html\n`);
   });
   server.on('error', err => {
