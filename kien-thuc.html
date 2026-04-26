@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,19 +13,24 @@
     .site-container{max-width:1200px;margin:0 auto;background:var(--bg);box-shadow:0 0 60px rgba(0,0,0,.12);min-height:100vh;overflow-x:hidden}
 
     /* ── Announcement ── */
-    .ann{background:var(--dark);color:rgba(255,255,255,.6);text-align:center;padding:9px 24px;font-size:12px;font-weight:500;letter-spacing:.05em}
-    .ann a{color:var(--coral)}
+    .ann{background:#111;color:rgba(255,255,255,.85);text-align:center;padding:11px 24px;font-size:12.5px;font-weight:500;letter-spacing:.03em;display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap}.ann a{color:var(--coral);font-weight:600}.ann-item{display:inline-flex;align-items:center;gap:7px}.ann-dot{width:3px;height:3px;border-radius:50%;background:rgba(255,255,255,.22);flex-shrink:0}
+    
 
     /* ── Nav ── */
-    nav{background:var(--white);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:90}
-    .nav-inner{padding:0 40px;height:64px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+    nav{background:var(--white);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:90;transition:box-shadow .3s}
+    nav.scrolled{box-shadow:0 8px 32px rgba(0,0,0,.1)}
+    .nav-inner{padding:0 40px;height:78px;display:flex;align-items:center;justify-content:space-between;gap:20px}
     .nav-logo{font-family:'Playfair Display',serif;font-size:18px;font-weight:900;letter-spacing:.04em}
     .nav-logo span{color:var(--red)}
-    .nav-links{display:flex;align-items:center;gap:24px}
-    .nav-links a{font-size:15px;font-weight:700;color:var(--dark);letter-spacing:.04em;text-transform:uppercase;transition:color .15s;white-space:nowrap}
-    .nav-links a:hover,.nav-links a.active{color:var(--dark)}
-    .nav-cta{background:var(--red);color:#fff!important;padding:8px 18px;font-weight:600!important}
-    .nav-cta:hover{background:#b52020!important}
+    .nav-links{display:flex;align-items:center;gap:26px}
+    .nav-links a{font-size:12px;font-weight:700;color:var(--dark);letter-spacing:.1em;text-transform:uppercase;transition:color .15s;white-space:nowrap;display:block;position:relative}
+    .nav-links a::after{content:'';position:absolute;bottom:-5px;left:0;width:0;height:2px;background:var(--red);transition:width .25s}
+    .nav-links a:hover{color:var(--red)}
+    .nav-links a:hover::after,.nav-links a.active::after{width:100%}
+    .nav-links a.active{color:var(--red)}
+    .nav-cta{background:var(--red);color:#fff!important;padding:10px 22px;font-weight:700!important;letter-spacing:.1em!important}
+    .nav-cta:hover{background:var(--dark)!important}
+    .nav-cta::after{display:none!important}
     .nav-ham{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:4px}
     .nav-ham span{display:block;width:22px;height:2px;background:var(--dark);transition:all .3s}
     .nav-ham.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
@@ -149,11 +154,11 @@
 
 <div class="site-container">
 
-<div class="ann">Tư vấn miễn phí — <a href="lien-he.html">Hotline / Zalo: 096.1269.386</a> · 286 Nguyễn Xiển, Hà Nội</div>
+<div class="ann"><span class="ann-item"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.4;flex-shrink:0"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.09 1.22 2 2 0 012.07 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.18 6.18l1.27-.89a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>Tư vấn miễn phí — <a href="tel:0961269386">096.1269.386</a></span><span class="ann-dot"></span><span class="ann-item"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.4;flex-shrink:0"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>286 Nguyễn Xiển, Hà Nội</span><span class="ann-dot"></span><span class="ann-item">Zalo: <a href="https://zalo.me/0961269386">Nhắn tin ngay →</a></span></div>
 
 <nav>
   <div class="nav-inner">
-    <a href="index.html" class="nav-logo"><img src="logo_bongbanviet.png" alt="Bóng Bàn Việt" style="height:50px;width:auto;"></a>
+    <a href="index.html" class="nav-logo"><img src="logo_bongbanviet.png" alt="Bóng Bàn Việt" style="height:62px;width:auto;"></a>
     <div class="nav-links">
       <a href="cot-vot.html">Cốt Vợt</a><a href="mat-vot.html">Mặt Vợt</a>
       <a href="bong.html">Bóng</a><a href="ban.html">Bàn</a>
@@ -225,6 +230,7 @@
 </div><!-- /site-container -->
 
 <script>
+window.addEventListener('scroll', function(){ document.querySelector('nav').classList.toggle('scrolled', window.scrollY > 10); }, {passive:true});
 // ── Mobile nav ────────────────────────────────────────────────────────────────
 const mobileNav = document.getElementById('mobileNav');
 const ham = document.getElementById('hamburger');

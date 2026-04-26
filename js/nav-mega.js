@@ -68,7 +68,13 @@
       '.m-group-links a:hover{color:var(--red)}' +
       '.m-group-view-all{color:var(--red)!important;font-weight:700!important;font-size:11px!important;letter-spacing:.06em;text-transform:uppercase;border-top:1px solid var(--line);margin-top:4px}' +
       '.m-group-view-all::before{display:none!important}' +
-      '@media(max-width:960px){.mega-panel{display:none!important}}';
+      '@media(max-width:960px){.mega-panel{display:none!important}}' +
+      '.nav.scrolled{box-shadow:0 8px 32px rgba(0,0,0,.1)}' +
+      '.nav-links a{display:block}' +
+      '.nav-links .mega-item>a{display:flex!important}' +
+      '.nav-links a::after{content:\'\';position:absolute;bottom:-6px;left:0;width:0;height:2px;background:var(--red);transition:width .28s}' +
+      '.nav-links a.nav-cta::after{display:none!important}' +
+      '.nav-links a:hover::after,.nav-links a.active::after{width:100%}';
     document.head.appendChild(_s);
   }
 
