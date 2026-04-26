@@ -20,7 +20,7 @@ img{display:block;max-width:100%}
 .site-container{max-width:1200px;margin:0 auto;background:var(--bg);box-shadow:0 0 60px rgba(0,0,0,.12);min-height:100vh;overflow-x:hidden}
 
 /* ── Announcement ── */
-.ann{background:#111;color:rgba(255,255,255,.85);text-align:center;padding:11px 24px;font-size:12.5px;font-weight:500;letter-spacing:.03em;display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap}.ann a{color:var(--coral);font-weight:600}.ann-item{display:inline-flex;align-items:center;gap:7px}.ann-dot{width:3px;height:3px;border-radius:50%;background:rgba(255,255,255,.22);flex-shrink:0}
+.ann{background:#111;color:rgba(255,255,255,.85);text-align:center;padding:11px 24px;font-size:12.5px;font-weight:500;letter-spacing:.03em;display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap}.ann a{color:var(--coral);font-weight:600}.ann-item{display:inline-flex;align-items:center;gap:7px}.ann-dot{width:3px;height:3px;background:rgba(255,255,255,.22);flex-shrink:0}
 
 
 /* ── Nav ── */
@@ -74,32 +74,34 @@ nav.scrolled{box-shadow:0 8px 32px rgba(0,0,0,.1)}
 .back-btn:hover{background:var(--dark);color:#fff}
 
 /* ════════════════ PRODUCT SECTION ════════════════ */
-.sp-section{padding:36px 40px 0;background:var(--white)}
-.sp-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start}
+.sp-section{padding:48px 40px 0;background:var(--white)}
+.sp-grid{display:grid;grid-template-columns:54% 1fr;gap:56px;align-items:start}
 
 /* Gallery */
-.sp-gallery{position:sticky;top:80px}
-.sp-gallery-main{aspect-ratio:1/1;background:#F5F5F3;border:1px solid var(--line);overflow:hidden;display:flex;align-items:center;justify-content:center}
-.sp-gallery-main img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
-.sp-gallery-main:hover img{transform:scale(1.04)}
-.sp-gallery-ph{font-size:80px;opacity:.1}
-.sp-gallery-thumbs{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
-.sp-gallery-thumb{width:70px;height:70px;border:2px solid transparent;cursor:pointer;overflow:hidden;background:#F5F5F3}
+.sp-gallery{position:sticky;top:90px}
+.sp-gallery-main{aspect-ratio:4/3;background:linear-gradient(145deg,#F8F5F0 0%,#EDE8DF 100%);border:1px solid var(--line);overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative}
+.sp-gallery-main img{width:100%;height:100%;object-fit:contain;padding:28px;transition:transform .45s cubic-bezier(.25,.8,.25,1)}
+.sp-gallery-main:hover img{transform:scale(1.05)}
+.sp-gallery-ph{font-size:80px;opacity:.08}
+.sp-gallery-thumbs{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.sp-gallery-thumb{width:72px;height:72px;border:2px solid transparent;cursor:pointer;overflow:hidden;background:linear-gradient(145deg,#F8F5F0,#EDE8DF)}
 .sp-gallery-thumb.active,.sp-gallery-thumb:hover{border-color:var(--dark)}
-.sp-gallery-thumb img{width:100%;height:100%;object-fit:cover}
+.sp-gallery-thumb img{width:100%;height:100%;object-fit:contain;padding:4px}
 
 /* Info panel */
-.sp-info{padding-bottom:40px}
+.sp-info{padding-bottom:48px}
+.sp-cat-pill{display:inline-flex;align-items:center;gap:8px;font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--red);margin-bottom:14px}
+.sp-cat-pill::before{content:'';width:22px;height:2px;background:var(--red);flex-shrink:0}
 .sp-meta-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
 .sp-code{font-size:12px;color:var(--mid);font-weight:500;letter-spacing:.04em}
 .sp-stars{color:#F59E0B;font-size:16px;letter-spacing:3px}
-.sp-name{font-family:'Inter',sans-serif;font-size:clamp(22px,3vw,32px);font-weight:800;line-height:1.18;margin-bottom:18px;letter-spacing:-.02em}
+.sp-name{font-family:'Playfair Display',serif;font-size:clamp(26px,3.5vw,40px);font-weight:800;line-height:1.14;margin-bottom:24px;letter-spacing:-.01em;color:var(--dark)}
 
 /* Price */
-.sp-price-wrap{margin-bottom:20px;display:flex;align-items:center;gap:12px}
-.sp-price-label{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--mid)}
-.sp-price{display:inline-flex;align-items:center;background:var(--navy);color:#fff;font-size:20px;font-weight:800;padding:10px 22px;border-radius:4px}
-.sp-price-contact{display:inline-flex;align-items:center;background:var(--line);color:var(--mid);font-size:14px;font-weight:600;padding:10px 22px;border-radius:4px}
+.sp-price-wrap{margin-bottom:24px;display:flex;align-items:center;gap:16px;padding:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.sp-price-label{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--mid);white-space:nowrap}
+.sp-price{display:inline-flex;align-items:center;font-size:28px;font-weight:800;color:var(--dark);letter-spacing:-.03em}
+.sp-price-contact{display:inline-flex;align-items:center;font-size:15px;font-weight:600;color:var(--mid)}
 
 /* Status */
 .sp-status{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:20px}
@@ -118,21 +120,21 @@ nav.scrolled{box-shadow:0 8px 32px rgba(0,0,0,.1)}
 .sp-specs-table td.sv.score{color:var(--blue)}
 
 /* Variants */
-.sp-variants{margin-bottom:20px}
+.sp-variants{margin-bottom:24px}
 .sp-var-label{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--mid);margin-bottom:10px}
 .sp-var-title{font-size:13px;font-weight:600;color:var(--dark);display:inline-block;margin-left:8px}
 .sp-var-btns{display:flex;gap:8px;flex-wrap:wrap}
 .sp-var-btn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:9px 14px;border:2px solid var(--line);background:var(--white);font-size:13px;font-weight:600;color:var(--dark);cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif}
 .sp-var-btn:hover{border-color:var(--dark)}
 .sp-var-btn.active{border-color:var(--dark);background:var(--dark);color:#fff}
-.sp-var-dot{width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.15);flex-shrink:0}
+.sp-var-dot{width:14px;height:14px;border:1px solid rgba(0,0,0,.15);flex-shrink:0}
 .sp-var-price{font-size:11px;font-weight:700;color:var(--red)}
 .sp-var-btn.active .sp-var-price{color:rgba(255,255,255,.75)}
 
 /* CTA */
-.sp-cta-wrap{border-top:1px solid var(--line);padding-top:22px}
-.sp-cta-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:16px 28px;background:var(--dark);color:#fff;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;border:none;cursor:pointer;transition:background .2s;text-decoration:none;margin-bottom:10px}
-.sp-cta-btn:hover{background:#2a2a2a}
+.sp-cta-wrap{padding-top:24px;border-top:1px solid var(--line)}
+.sp-cta-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:17px 28px;background:var(--dark);color:#fff;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;border:none;cursor:pointer;transition:background .2s,transform .2s;text-decoration:none;margin-bottom:12px}
+.sp-cta-btn:hover{background:var(--red);transform:translateY(-2px)}
 .sp-cta-note{font-size:11.5px;color:var(--mid);text-align:center;line-height:1.6}
 .sp-cta-note a{color:var(--red);font-weight:600}
 
@@ -203,9 +205,9 @@ footer{background:var(--dark);color:#fff;padding:48px 40px 28px}
 
 /* ── Responsive ── */
 @media(max-width:1024px){
-  .sp-grid{grid-template-columns:1fr;gap:28px}
+  .sp-grid{grid-template-columns:1fr;gap:32px}
   .sp-gallery{position:static}
-  .sp-gallery-main{max-height:460px}
+  .sp-gallery-main{aspect-ratio:4/3;max-height:480px}
   .sp-detail-grid{grid-template-columns:1fr}
 }
 @media(max-width:960px){
@@ -292,6 +294,7 @@ footer{background:var(--dark);color:#fff;padding:48px 40px 28px}
       </div>
 
       <div class="sp-info">
+        <div class="sp-cat-pill" id="spCatPill"></div>
         <h1 class="sp-name" id="spName">—</h1>
         <div class="sp-price-wrap"><span class="sp-price-label">Giá</span><div id="spPrice" class="sp-price-contact">Liên hệ để biết giá</div></div>
         <div id="spStatus"></div>
@@ -462,7 +465,7 @@ let galleryImages = [];
 function setGalleryImage(src, idx) {
   const el = document.getElementById('galleryMain');
   el.innerHTML = src
-    ? `<img src="${src}" alt="Ảnh sản phẩm" style="width:100%;height:100%;object-fit:cover" onerror="this.parentNode.innerHTML='<div class=sp-gallery-ph>📦</div>'">`
+    ? `<img src="${src}" alt="Ảnh sản phẩm" onerror="this.parentNode.innerHTML='<div class=sp-gallery-ph>📦</div>'">`
     : '<div class="sp-gallery-ph">📦</div>';
   document.querySelectorAll('.sp-gallery-thumb').forEach((t,i) => t.classList.toggle('active', i===idx));
 }
@@ -527,6 +530,11 @@ function renderProduct(p) {
   }
   document.getElementById('bcName').textContent = p.name;
   document.getElementById('spName').textContent = p.name;
+
+  // Category / brand pill
+  const pillParts = [catLabel];
+  if (bLabel) pillParts.push(bLabel);
+  document.getElementById('spCatPill').textContent = pillParts.join(' · ');
 
   const priceEl = document.getElementById('spPrice');
   if (p.price && String(p.price).trim()) {

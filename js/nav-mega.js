@@ -1,4 +1,4 @@
-/* ── nav-mega.js: shared mega-menu for all sub-pages ── */
+﻿/* ── nav-mega.js: shared mega-menu for all sub-pages ── */
 (function () {
   'use strict';
 
@@ -161,7 +161,7 @@
       '<div class="mobile-nav-overlay" id="navOverlay"></div>' +
       '<div class="mobile-nav-panel">' +
         '<div class="mobile-nav-header">' +
-          '<img src="/logo_bongbanviet.png" alt="Bóng Bàn Việt" style="height:44px;width:auto;border-radius:50%;">' +
+          '<img src="/logo_bongbanviet.png" alt="Bóng Bàn Việt" style="height:44px;width:auto;">' +
           '<button class="mobile-nav-close" id="navClose">✕</button>' +
         '</div>' +
         '<div class="mobile-nav-links">' +
