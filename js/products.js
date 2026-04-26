@@ -40,7 +40,6 @@ function _shortDesc(p) {
 /* Render một thẻ sản phẩm */
 function renderProdCard(p, idx, opts) {
   opts = opts || {};
-  const showCat  = opts.showCat  !== false;  // true = hiện "Brand · Category"
   const bg       = BG_CLASSES[idx % BG_CLASSES.length];
   const brand    = BBV_BRANDS[p.brand_slug] || '';
   const catLabel = BBV_CATS[p.category_slug] || '';
@@ -53,48 +52,32 @@ function renderProdCard(p, idx, opts) {
   const badgeHtml = p.badge
     ? `<span class="prod-badge">${_esc(p.badge)}</span>` : '';
 
-  const stockHtml = p.in_stock === false
-    ? `<span style="font-size:10px;color:#D62B2B;font-weight:700;letter-spacing:.08em;text-transform:uppercase;display:block;margin-top:5px;">● Hết Hàng</span>`
-    : `<span style="font-size:10px;color:#166534;font-weight:700;letter-spacing:.08em;text-transform:uppercase;display:block;margin-top:5px;">● Còn Hàng</span>`;
-
-  let brandLine = '';
-  if (showCat) {
-    brandLine = brand ? `${brand} · ${catLabel}` : catLabel;
-  } else {
-    brandLine = brand;
-  }
-
   const rawPrice = String(p.price || '');
   const numericPrice = rawPrice.replace(/[^\d]/g, '');
   const variants = Array.isArray(p.variants) ? p.variants.filter(v => v && (v.name || v.price)) : [];
-  let priceHtml = '';
   let priceText = '';
   if (rawPrice) {
     priceText = rawPrice;
-    priceHtml = `<span style="font-size:12px;font-weight:700;color:var(--red);display:block;margin-top:3px;">${_esc(rawPrice)}</span>`;
   } else if (variants.length) {
     const fp = (variants.find(v => v.price) || {}).price || '';
-    if (fp) { priceText = 'từ ' + fp; priceHtml = `<span style="font-size:12px;font-weight:700;color:var(--red);display:block;margin-top:3px;">từ ${_esc(fp)}</span>`; }
-  }
-  if (variants.length > 1) {
-    priceHtml += `<span style="font-size:10px;color:var(--mid,#6B6B6B);font-weight:600;display:block;margin-top:2px;">${variants.length} lựa chọn</span>`;
+    if (fp) priceText = 'từ ' + fp;
   }
 
-  /* Image tags — subcategory pill + brand pill */
-  const subTag = p.gear_subcategory
-    ? `<span class="prod-img-tag pit-sub">${_esc(p.gear_subcategory.toUpperCase())}</span>` : '';
-  const brandTag = (p.brand_slug && p.brand_slug !== 'khac' && brand)
-    ? `<span class="prod-img-tag pit-brand">${_esc(brand.toUpperCase())}</span>` : '';
-  const imageTagsHtml = (subTag || brandTag)
-    ? `<div class="prod-img-tags">${subTag}${brandTag}</div>` : '';
+  /* Sub-category tag (left) + brand label (right) */
+  const subTagHtml = p.gear_subcategory
+    ? `<span class="prod-sub-tag">${_esc(p.gear_subcategory.toUpperCase())}</span>`
+    : `<span></span>`;
+  const brandLabelHtml = (p.brand_slug && p.brand_slug !== 'khac' && brand)
+    ? `<span class="prod-brand-label">${_esc(brand.toUpperCase())}</span>`
+    : (catLabel ? `<span class="prod-brand-label">${_esc(catLabel.toUpperCase())}</span>` : `<span></span>`);
 
   return `<a href="${href}" class="prod-card" data-brand="${_esc(p.brand_slug||'')}" data-cat="${_esc(p.category_slug)}" data-name="${_esc(p.name.toLowerCase())}" data-price="${numericPrice}">
   <div class="prod-img ${bg}">
     <div class="prod-img-inner">${imgHtml}</div>
-    ${badgeHtml}${imageTagsHtml}
+    ${badgeHtml}
   </div>
   <div class="prod-card-body">
-    <p class="prod-brand">${_esc(brandLine)}</p>
+    <div class="prod-card-tags">${subTagHtml}${brandLabelHtml}</div>
     <h3 class="prod-name">${_esc(p.name)}</h3>
     <div class="prod-card-footer">
       <span class="prod-origin">Chính hãng</span>

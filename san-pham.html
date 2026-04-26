@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Chi Tiết Sản Phẩm | BÓNG BÀN VIỆT</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -13,7 +13,7 @@
   --dark:#1A1A1A;--mid:#6B6B6B;--line:#E5E5E3;--warm:#F2EDE7;
   --navy:#1A3A6B;--blue:#2563EB;
 }
-body{font-family:'Inter',sans-serif;background:#ECEAE7;color:var(--dark);overflow-x:hidden}
+body{font-family:'Lexend',sans-serif;background:#ECEAE7;color:var(--dark);overflow-x:hidden}
 a{text-decoration:none;color:inherit}
 img{display:block;max-width:100%}
 .hidden{display:none!important}
@@ -27,7 +27,7 @@ img{display:block;max-width:100%}
 nav{background:var(--white);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:90;transition:box-shadow .3s}
 nav.scrolled{box-shadow:0 8px 32px rgba(0,0,0,.1)}
 .nav-inner{padding:0 40px;height:78px;display:flex;align-items:center;justify-content:space-between;gap:20px}
-.nav-logo{font-family:'Playfair Display',serif;font-size:18px;font-weight:900;letter-spacing:.04em}
+.nav-logo{font-family:'Lexend',sans-serif;font-size:18px;font-weight:900;letter-spacing:.04em}
 .nav-logo span{color:var(--red)}
 .nav-links{display:flex;align-items:center;gap:26px}
 .nav-links a{font-size:12px;font-weight:700;color:var(--dark);letter-spacing:.1em;text-transform:uppercase;transition:color .15s;white-space:nowrap;display:block;position:relative}
@@ -49,7 +49,7 @@ nav.scrolled{box-shadow:0 8px 32px rgba(0,0,0,.1)}
 .mobile-nav-overlay{position:absolute;inset:0;background:rgba(0,0,0,.5);animation:fadeIn .25s ease}
 .mobile-nav-panel{position:absolute;top:0;right:0;width:min(320px,85vw);height:100%;background:var(--white);animation:slideIn .3s cubic-bezier(.4,0,.2,1);overflow-y:auto;display:flex;flex-direction:column}
 .mobile-nav-header{padding:20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
-.mobile-nav-header .logo{font-family:'Playfair Display',serif;font-size:16px;font-weight:900}
+.mobile-nav-header .logo{font-family:'Lexend',sans-serif;font-size:16px;font-weight:900}
 .mobile-nav-header .logo span{color:var(--red)}
 .mobile-nav-close{background:none;border:none;cursor:pointer;font-size:22px;color:var(--mid)}
 .mobile-nav-links a{display:block;padding:13px 24px;font-size:14px;font-weight:500;color:var(--dark);border-bottom:1px solid var(--line)}
@@ -68,7 +68,7 @@ nav.scrolled{box-shadow:0 8px 32px rgba(0,0,0,.1)}
 /* ── Loading / Error ── */
 .loading{padding:80px 40px;text-align:center;color:var(--mid);font-size:15px}
 .error-state{padding:80px 40px;text-align:center}
-.error-state h2{font-family:'Playfair Display',serif;font-size:32px;margin-bottom:12px}
+.error-state h2{font-family:'Lexend',sans-serif;font-size:32px;margin-bottom:12px}
 .error-state p{color:var(--mid);margin-bottom:24px}
 .back-btn{display:inline-block;padding:12px 24px;border:2px solid var(--dark);font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--dark);transition:all .2s}
 .back-btn:hover{background:var(--dark);color:#fff}
@@ -95,7 +95,7 @@ nav.scrolled{box-shadow:0 8px 32px rgba(0,0,0,.1)}
 .sp-meta-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
 .sp-code{font-size:12px;color:var(--mid);font-weight:500;letter-spacing:.04em}
 .sp-stars{color:#F59E0B;font-size:16px;letter-spacing:3px}
-.sp-name{font-family:'Playfair Display',serif;font-size:clamp(26px,3.5vw,40px);font-weight:800;line-height:1.14;margin-bottom:24px;letter-spacing:-.01em;color:var(--dark)}
+.sp-name{font-family:'Lexend',sans-serif;font-size:clamp(26px,3.5vw,40px);font-weight:800;line-height:1.14;margin-bottom:24px;letter-spacing:-.01em;color:var(--dark)}
 
 /* Price */
 .sp-price-wrap{margin-bottom:24px;display:flex;align-items:center;gap:16px;padding:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
@@ -124,7 +124,7 @@ nav.scrolled{box-shadow:0 8px 32px rgba(0,0,0,.1)}
 .sp-var-label{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--mid);margin-bottom:10px}
 .sp-var-title{font-size:13px;font-weight:600;color:var(--dark);display:inline-block;margin-left:8px}
 .sp-var-btns{display:flex;gap:8px;flex-wrap:wrap}
-.sp-var-btn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:9px 14px;border:2px solid var(--line);background:var(--white);font-size:13px;font-weight:600;color:var(--dark);cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif}
+.sp-var-btn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:9px 14px;border:2px solid var(--line);background:var(--white);font-size:13px;font-weight:600;color:var(--dark);cursor:pointer;transition:all .15s;font-family:'Lexend',sans-serif}
 .sp-var-btn:hover{border-color:var(--dark)}
 .sp-var-btn.active{border-color:var(--dark);background:var(--dark);color:#fff}
 .sp-var-dot{width:14px;height:14px;border:1px solid rgba(0,0,0,.15);flex-shrink:0}
@@ -170,7 +170,7 @@ nav.scrolled{box-shadow:0 8px 32px rgba(0,0,0,.1)}
 .sp-form-title{font-size:16px;font-weight:700;margin-bottom:4px}
 .sp-form-sub{font-size:12px;color:var(--mid);margin-bottom:18px}
 .sp-form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-.sp-input,.sp-textarea{width:100%;border:1px solid var(--line);background:var(--bg);padding:10px 13px;font-size:13px;font-family:'Inter',sans-serif;color:var(--dark);outline:none;transition:border-color .2s}
+.sp-input,.sp-textarea{width:100%;border:1px solid var(--line);background:var(--bg);padding:10px 13px;font-size:13px;font-family:'Lexend',sans-serif;color:var(--dark);outline:none;transition:border-color .2s}
 .sp-input:focus,.sp-textarea:focus{border-color:var(--dark)}
 .sp-textarea{min-height:80px;resize:vertical;display:block;margin-bottom:10px}
 .sp-form-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 22px;background:var(--red);color:#fff;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border:none;cursor:pointer;transition:background .2s}
@@ -180,7 +180,7 @@ nav.scrolled{box-shadow:0 8px 32px rgba(0,0,0,.1)}
 /* ════════════════ RELATED ════════════════ */
 .sp-related{padding:48px 40px;border-top:1px solid var(--line)}
 .sp-rel-label{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--red);margin-bottom:8px}
-.sp-rel-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:800;margin-bottom:28px}
+.sp-rel-title{font-family:'Lexend',sans-serif;font-size:26px;font-weight:800;margin-bottom:28px}
 .sp-rel-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
 .rel-card{text-decoration:none;color:inherit;display:block}
 .rel-img{aspect-ratio:1/1;background:var(--white);border:1px solid var(--line);overflow:hidden;margin-bottom:12px;position:relative}
@@ -193,7 +193,7 @@ nav.scrolled{box-shadow:0 8px 32px rgba(0,0,0,.1)}
 /* ════════════════ FOOTER ════════════════ */
 footer{background:var(--dark);color:#fff;padding:48px 40px 28px}
 .ft-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px}
-.ft-logo{font-family:'Playfair Display',serif;font-size:18px;font-weight:900;letter-spacing:.04em}
+.ft-logo{font-family:'Lexend',sans-serif;font-size:18px;font-weight:900;letter-spacing:.04em}
 .ft-logo span{color:var(--red)}
 .ft-sl{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-top:4px}
 .ft-desc{font-size:13px;color:rgba(255,255,255,.4);line-height:1.7;margin-top:16px}

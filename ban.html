@@ -4,11 +4,11 @@
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bàn Bóng Bàn | BÓNG BÀN VIỆT</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700;1,900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     :root{--red:#D62B2B;--coral:#E8503A;--bg:#FAFAF8;--white:#FFFFFF;--dark:#1A1A1A;--mid:#6B6B6B;--line:#E5E5E3;--warm:#F2EDE7}
-    body{background:var(--bg);color:var(--dark);font-family:'Inter',sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+    body{background:var(--bg);color:var(--dark);font-family:'Lexend',sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
     a{text-decoration:none;color:inherit} img{display:block;width:100%}
     .ann{background:#111;color:rgba(255,255,255,.85);text-align:center;padding:11px 24px;font-size:12.5px;font-weight:500;letter-spacing:.03em;display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap}.ann a{color:var(--coral);font-weight:600}.ann-item{display:inline-flex;align-items:center;gap:7px}.ann-dot{width:3px;height:3px;background:rgba(255,255,255,.22);flex-shrink:0}
      
@@ -23,7 +23,7 @@
     .page-hero{background:linear-gradient(135deg,#1a1a0f,#2a2810);padding:72px 0 60px}
     .breadcrumb{font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:20px}
     .breadcrumb a{color:rgba(255,255,255,.35)} .breadcrumb span{margin:0 8px}
-    .page-hero h1{font-family:'Playfair Display',serif;font-size:clamp(48px,7vw,96px);font-weight:900;color:#fff;line-height:.95;letter-spacing:-.01em;margin-bottom:20px}
+    .page-hero h1{font-family:'Lexend',sans-serif;font-size:clamp(48px,7vw,96px);font-weight:900;color:#fff;line-height:.95;letter-spacing:-.01em;margin-bottom:20px}
     .page-hero h1 i{font-style:italic;color:var(--coral)}
     .page-hero p{font-size:15px;color:rgba(255,255,255,.5);max-width:480px;line-height:1.75}
     .type-tabs{background:var(--white);border-bottom:1px solid var(--line);padding:0 48px}
@@ -34,21 +34,29 @@
     .toolbar{display:flex;align-items:center;justify-content:space-between;padding:24px 0 20px}
     .prod-count{font-size:13px;color:var(--mid)}
     .prod-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
-    .prod-card{cursor:pointer} .prod-card.hidden{display:none}
-    .prod-img{aspect-ratio:1/1;overflow:hidden;margin-bottom:16px;position:relative}
-    .prod-img-inner{width:100%;height:100%;display:flex;align-items:center;justify-content:center;transition:transform .45s cubic-bezier(.25,.46,.45,.94)}
-    .prod-card:hover .prod-img-inner{transform:scale(1.05)}
-    .prod-wm{font-family:'Playfair Display',serif;font-weight:900;text-align:center;line-height:1.1;padding:24px;color:rgba(0,0,0,.13);font-size:clamp(24px,3vw,44px)}
-    .prod-badge{position:absolute;top:12px;left:12px;background:var(--dark);color:#fff;font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;padding:5px 10px;z-index:3}
-    .prod-img::after{content:'Xem Chi Tiết';position:absolute;inset:0;background:rgba(26,26,26,.72);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;opacity:0;transition:opacity .3s;z-index:2}
-    .prod-card:hover .prod-img::after{opacity:1}
-    .prod-brand{font-size:10px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--mid);margin-bottom:6px}
-    .prod-name{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;line-height:1.25;color:var(--dark);margin-bottom:4px}
-    .prod-type{font-size:13px;color:var(--mid)}
-    .pb-1{background:#EDE8E0} .pb-2{background:#E0EDE0} .pb-3{background:#E0E5ED} .pb-4{background:#EDE0E0} .pb-5{background:#E8E0ED} .pb-6{background:#E0EDE8}
+    .prod-card{border-radius:40px;border:1px solid #e2e8f0;background:var(--white);padding:16px;cursor:pointer;overflow:hidden;text-decoration:none;display:block;color:var(--dark);transition:all .3s cubic-bezier(.4,0,.2,1);}
+    .prod-card:hover{border-color:var(--red);transform:translateY(-5px);box-shadow:0 20px 25px -5px rgba(0,0,0,.06);}
+    .prod-card.hidden{display:none;}
+    .prod-img{border-radius:24px;aspect-ratio:1/1;overflow:hidden;margin-bottom:12px;position:relative;}
+    .prod-img-inner{width:100%;height:100%;display:flex;align-items:center;justify-content:center;transition:transform .45s cubic-bezier(.25,.46,.45,.94);}
+    .prod-card:hover .prod-img-inner{transform:scale(1.05);}
+    .prod-img::after{display:none;}
+    .prod-wm{font-weight:900;text-align:center;line-height:1.1;padding:24px;color:rgba(0,0,0,.13);font-size:clamp(24px,3vw,46px);}
+    .prod-badge{position:absolute;top:10px;left:10px;background:var(--dark);color:#fff;font-size:8px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;padding:4px 9px;border-radius:100px;z-index:3;}
+    .prod-card-body{padding:0;}
+    .prod-card-tags{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+    .prod-sub-tag{font-size:8px;font-weight:700;color:var(--red);background:rgba(214,43,43,.09);padding:2px 8px;border-radius:100px;text-transform:uppercase;letter-spacing:.08em;}
+    .prod-brand-label{font-size:8px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;}
+    .prod-brand{display:none;}
+    .prod-name{font-size:13px;font-weight:700;line-height:1.3;color:var(--dark);margin-bottom:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+    .prod-card:hover .prod-name{color:var(--red);}
+    .prod-card-footer{display:flex;justify-content:space-between;align-items:center;margin-top:8px;}
+    .prod-origin{font-size:11px;color:#94a3b8;font-style:italic;}
+    .prod-price-inline{font-size:13px;font-weight:800;color:var(--dark);font-style:italic;}
+    .pb-1{background:#EDE8E0}.pb-2{background:#E0EDE0}.pb-3{background:#E0E5ED}.pb-4{background:#EDE0E0}.pb-5{background:#E8E0ED}.pb-6{background:#E0EDE8}
     .cta-banner{background:var(--warm);padding:60px 0;border-top:1px solid var(--line)}
     .cta-banner-inner{display:flex;align-items:center;justify-content:space-between;gap:40px}
-    .cta-banner h3{font-family:'Playfair Display',serif;font-size:clamp(24px,3vw,40px);font-weight:800;line-height:1.2;color:var(--dark)}
+    .cta-banner h3{font-family:'Lexend',sans-serif;font-size:clamp(24px,3vw,40px);font-weight:800;line-height:1.2;color:var(--dark)}
     .cta-banner h3 i{font-style:italic;color:var(--coral)}
     .cta-banner p{font-size:14px;color:var(--mid);margin-top:10px}
     footer{background:var(--dark)}
@@ -76,7 +84,7 @@
     .mobile-nav-overlay { position: absolute; inset: 0; background: rgba(0,0,0,.5); animation: mfadeIn .25s ease; }
     .mobile-nav-panel { position: absolute; top: 0; right: 0; width: min(320px,85vw); height: 100%; background: var(--white); animation: mslideIn .3s cubic-bezier(.4,0,.2,1); overflow-y: auto; display: flex; flex-direction: column; }
     .mobile-nav-header { padding: 20px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; }
-    .mobile-nav-header .logo { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 900; }
+    .mobile-nav-header .logo { font-family: 'Lexend', sans-serif; font-size: 16px; font-weight: 900; }
     .mobile-nav-header .logo span { color: var(--red); }
     .mobile-nav-close { background: none; border: none; cursor: pointer; font-size: 22px; color: var(--mid); }
     .mobile-nav-links a { display: block; padding: 13px 24px; font-size: 14px; font-weight: 500; color: var(--dark); text-decoration: none; border-bottom: 1px solid var(--line); }
@@ -92,7 +100,7 @@
   
     /* ── Price Filter ── */
     .price-filter{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
-    .price-input{padding:8px 10px;border:1.5px solid var(--line);font-family:'Inter',sans-serif;font-size:13px;color:var(--dark);background:var(--white);outline:none;width:120px;transition:border-color .2s}
+    .price-input{padding:8px 10px;border:1.5px solid var(--line);font-family:'Lexend',sans-serif;font-size:13px;color:var(--dark);background:var(--white);outline:none;width:120px;transition:border-color .2s}
     .price-input:focus{border-color:var(--dark)}
     .price-sep{font-size:13px;color:var(--mid);white-space:nowrap}
   </style>

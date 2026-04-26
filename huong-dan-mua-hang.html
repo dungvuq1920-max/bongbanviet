@@ -7,11 +7,11 @@
   <meta name="description" content="Hướng dẫn mua hàng tại BÓNG BÀN VIỆT — quy trình đặt hàng, thanh toán, vận chuyển, bảo hành.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700;1,900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root { --red:#D62B2B;--coral:#E8503A;--bg:#FAFAF8;--white:#FFFFFF;--dark:#1A1A1A;--mid:#6B6B6B;--line:#E5E5E3;--warm:#F2EDE7; }
-    body { background:#ECEAE7;color:var(--dark);font-family:'Inter',sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased; }
+    body { background:#ECEAE7;color:var(--dark);font-family:'Lexend',sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased; }
     .site-container{max-width:1200px;margin:0 auto;background:var(--bg);box-shadow:0 0 60px rgba(0,0,0,.12);min-height:100vh;overflow-x:hidden;}
     a { text-decoration:none;color:inherit; }
     img { display:block;width:100%; }
@@ -30,7 +30,7 @@
     .page-hero { background:var(--dark);padding:72px 0 60px; }
     .breadcrumb { font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:20px; }
     .breadcrumb a { color:rgba(255,255,255,.35);transition:color .2s; } .breadcrumb a:hover{color:var(--coral);} .breadcrumb span{margin:0 8px;}
-    .page-hero h1 { font-family:'Playfair Display',serif;font-size:clamp(40px,6vw,80px);font-weight:900;color:#fff;line-height:.95;letter-spacing:-.01em;margin-bottom:20px; }
+    .page-hero h1 { font-family:'Lexend',sans-serif;font-size:clamp(40px,6vw,80px);font-weight:900;color:#fff;line-height:.95;letter-spacing:-.01em;margin-bottom:20px; }
     .page-hero h1 i { font-style:italic;color:var(--coral); }
     .page-hero p { font-size:15px;color:rgba(255,255,255,.5);max-width:520px;line-height:1.75; }
 
@@ -38,33 +38,33 @@
     .steps-section { padding:80px 0; }
     .steps-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-top:52px; }
     .step-card { background:var(--white);padding:44px 36px;border:1px solid var(--line);position:relative; }
-    .step-num { font-family:'Playfair Display',serif;font-size:72px;font-weight:900;color:var(--line);line-height:1;margin-bottom:20px; }
-    .step-title { font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--dark);margin-bottom:12px; }
+    .step-num { font-family:'Lexend',sans-serif;font-size:72px;font-weight:900;color:var(--line);line-height:1;margin-bottom:20px; }
+    .step-title { font-family:'Lexend',sans-serif;font-size:22px;font-weight:700;color:var(--dark);margin-bottom:12px; }
     .step-body { font-size:14px;color:var(--mid);line-height:1.75; }
     .step-highlight { display:inline-block;margin-top:16px;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--red); }
 
     /* FAQ */
     .faq-section { background:var(--warm);padding:80px 0; }
-    .faq-section h2 { font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,48px);font-weight:800;line-height:1.1;color:var(--dark);margin-bottom:48px; }
+    .faq-section h2 { font-family:'Lexend',sans-serif;font-size:clamp(28px,4vw,48px);font-weight:800;line-height:1.1;color:var(--dark);margin-bottom:48px; }
     .faq-section h2 i { font-style:italic;color:var(--coral); }
     .faq-grid { display:grid;grid-template-columns:1fr 1fr;gap:3px; }
     .faq-item { background:var(--white);padding:32px 36px; }
-    .faq-q { font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--dark);margin-bottom:12px; }
+    .faq-q { font-family:'Lexend',sans-serif;font-size:18px;font-weight:700;color:var(--dark);margin-bottom:12px; }
     .faq-a { font-size:14px;color:var(--mid);line-height:1.75; }
 
     /* Payment methods */
     .payment-section { padding:80px 0;border-top:1px solid var(--line); }
-    .payment-section h2 { font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,48px);font-weight:800;color:var(--dark);margin-bottom:48px; }
+    .payment-section h2 { font-family:'Lexend',sans-serif;font-size:clamp(28px,4vw,48px);font-weight:800;color:var(--dark);margin-bottom:48px; }
     .payment-section h2 i { font-style:italic;color:var(--coral); }
     .payment-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:24px; }
     .payment-card { border:1.5px solid var(--line);padding:32px 28px;background:var(--white); }
     .payment-icon { font-size:32px;margin-bottom:16px; }
-    .payment-title { font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--dark);margin-bottom:10px; }
+    .payment-title { font-family:'Lexend',sans-serif;font-size:18px;font-weight:700;color:var(--dark);margin-bottom:10px; }
     .payment-desc { font-size:14px;color:var(--mid);line-height:1.7; }
 
     /* CTA */
     .cta-bottom { background:var(--red);padding:72px 0;text-align:center; }
-    .cta-bottom h2 { font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,52px);font-weight:900;color:#fff;margin-bottom:20px; }
+    .cta-bottom h2 { font-family:'Lexend',sans-serif;font-size:clamp(28px,4vw,52px);font-weight:900;color:#fff;margin-bottom:20px; }
     .cta-bottom p { font-size:15px;color:rgba(255,255,255,.7);margin-bottom:36px; }
     .btn-white { background:#fff;color:var(--red); } .btn-white:hover { background:var(--dark);color:#fff; }
 
@@ -121,7 +121,7 @@
 <section class="steps-section">
   <div class="wrap">
     <p class="s-label">Quy Trình</p>
-    <h2 style="font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,48px);font-weight:800;color:var(--dark);">Các Bước <em style="font-style:italic;color:var(--coral);">Đặt Hàng</em></h2>
+    <h2 style="font-family:'Lexend',sans-serif;font-size:clamp(28px,4vw,48px);font-weight:800;color:var(--dark);">Các Bước <em style="font-style:italic;color:var(--coral);">Đặt Hàng</em></h2>
     <div class="steps-grid">
       <div class="step-card">
         <div class="step-num">01</div>
