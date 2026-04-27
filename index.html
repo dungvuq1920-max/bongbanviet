@@ -1862,8 +1862,7 @@ fetch('/api/settings/home_hero_image')
         prods.forEach(function(p){ flowCache[p.slug] = p; });
         var grid = document.getElementById(s.gridId);
         if (grid) { shuffleDom(grid); initCards(grid); }
-        var cntEl = document.getElementById('count-' + s.cat);
-        if (cntEl) cntEl.textContent = 'KẾT QUẢ LỌC: ' + prods.length + ' SẢN PHẨM';
+        applyFilters();
       }
     });
   });
@@ -2053,8 +2052,8 @@ fetch('/api/settings/home_hero_image')
       block.style.display = '';
 
       var cards = Array.from(grid.querySelectorAll('.prod-card'));
-      var shown = 0;
 
+      /* 1. Filter by brand + price */
       cards.forEach(function(c) {
         var rawP      = c.getAttribute('data-price');
         var priceVal  = rawP ? (parseInt(rawP, 10) || 0) : null;
@@ -2074,14 +2073,12 @@ fetch('/api/settings/home_hero_image')
           else if (activePr === '>5000')      priceOk = priceVal >= 5000000;
         }
 
-        var match = brandOk && priceOk;
-        c.style.display = match ? '' : 'none';
-        if (match) shown++;
+        c.style.display = (brandOk && priceOk) ? '' : 'none';
       });
 
-      /* Sort visible cards */
+      /* 2. Sort visible */
+      var vis = cards.filter(function(c){ return c.style.display !== 'none'; });
       if (activeSort !== 'default') {
-        var vis = cards.filter(function(c){ return c.style.display !== 'none'; });
         vis.sort(function(a, b) {
           var ap = parseInt(a.getAttribute('data-price'),10) || 0;
           var bp = parseInt(b.getAttribute('data-price'),10) || 0;
@@ -2093,6 +2090,10 @@ fetch('/api/settings/home_hero_image')
         });
         vis.forEach(function(c){ grid.appendChild(c); });
       }
+
+      /* 3. Cap at 5 per section */
+      vis.forEach(function(c, i){ if (i >= 5) c.style.display = 'none'; });
+      var shown = Math.min(vis.length, 5);
 
       var cntEl = document.getElementById('count-' + s.cat);
       if (cntEl) cntEl.textContent = 'KẾT QUẢ LỌC: ' + shown + ' SẢN PHẨM';
