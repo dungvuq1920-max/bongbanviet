@@ -1215,7 +1215,7 @@
     @media (max-width:960px) { .all-cats-body { padding:36px 20px 64px; gap:56px; } }
     @media (max-width:640px) { .all-cats-body { padding:28px 16px 48px; gap:44px; } }
 
-    /* ── Catalog Search Bar ──────────────────────────── */
+    /* ── Catalog Filter Bar ─────────────────────────── */
     .cat-search-bar {
       position:sticky; top:82px; z-index:150;
       background:var(--white);
@@ -1223,58 +1223,50 @@
       box-shadow:0 4px 20px rgba(0,0,0,.07);
     }
     .cat-search-inner {
-      max-width:1200px; margin:0 auto; padding:11px 40px;
-      display:flex; align-items:center; gap:18px;
+      max-width:1200px; margin:0 auto; padding:10px 40px;
+      display:flex; flex-direction:column; gap:8px;
     }
-    .cat-search-field {
-      position:relative; flex-shrink:0; width:200px;
+    .cat-filter-row {
+      display:flex; align-items:center; gap:10px;
     }
-    .cat-search-field svg {
-      position:absolute; left:11px; top:50%;
-      transform:translateY(-50%); opacity:.35; pointer-events:none;
+    .cat-filter-label {
+      font-family:'Lexend',sans-serif; font-size:9px;
+      font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+      color:var(--mid); white-space:nowrap; flex-shrink:0; width:76px;
     }
-    #catSearch {
-      width:100%; padding:8px 12px 8px 33px;
-      border:1.5px solid var(--line);
-      font-family:'Lexend',sans-serif; font-size:12px;
-      color:var(--dark); background:var(--bg);
-      outline:none; transition:border-color .2s;
-    }
-    #catSearch:focus { border-color:var(--red); }
-    #catSearch::placeholder { color:var(--mid); opacity:.6; }
     .cat-nav-pills {
       display:flex; align-items:center; gap:6px;
       overflow-x:auto; scrollbar-width:none; flex:1;
     }
     .cat-nav-pills::-webkit-scrollbar { display:none; }
     .cat-nav-pill {
-      display:inline-block; padding:6px 13px;
+      display:inline-block; padding:5px 12px;
       border:1.5px solid var(--line); border-radius:100px;
       font-family:'Lexend',sans-serif; font-size:9.5px;
       font-weight:700; letter-spacing:.08em; text-transform:uppercase;
       color:var(--dark); background:var(--bg);
-      white-space:nowrap; cursor:pointer; transition:all .15s; text-decoration:none;
+      white-space:nowrap; cursor:pointer; transition:all .15s;
+      text-decoration:none; user-select:none;
     }
     .cat-nav-pill:hover { border-color:var(--dark); background:var(--dark); color:#fff; }
     .cat-nav-pill.active { background:var(--red); color:#fff; border-color:var(--red); }
 
     /* ── 5-column grid for homepage catalogs ─────────── */
     .all-cats-wrap .prod-grid { grid-template-columns:repeat(5,1fr); gap:14px; }
-    .cat-block { scroll-margin-top:148px; }
+    .cat-block { scroll-margin-top:160px; }
     @media (max-width:1100px) { .all-cats-wrap .prod-grid { grid-template-columns:repeat(4,1fr); } }
     @media (max-width:768px)  { .all-cats-wrap .prod-grid { grid-template-columns:repeat(3,1fr); } }
     @media (max-width:480px)  { .all-cats-wrap .prod-grid { grid-template-columns:repeat(2,1fr); } }
     @media (max-width:960px) {
       .cat-search-bar { top:0; }
       .cat-search-inner { padding:10px 20px; }
-      .cat-search-field { width:170px; }
     }
     @media (max-width:640px) {
       .cat-search-bar { top:0; }
-      .cat-search-inner { flex-wrap:wrap; gap:8px; padding:10px 16px; }
-      .cat-search-field { width:100%; }
+      .cat-search-inner { padding:10px 16px; gap:6px; }
+      .cat-filter-label { width:62px; font-size:8px; }
       .cat-nav-pills { width:100%; }
-      .cat-block { scroll-margin-top:120px; }
+      .cat-block { scroll-margin-top:130px; }
     }
   </style>
 </head>
@@ -1499,21 +1491,32 @@
 <!-- All Catalogs -->
 <section id="san-pham" class="all-cats-wrap">
 
-  <!-- Search + Category Nav Bar -->
+  <!-- Filter Bar: Danh Mục + Khoảng Giá -->
   <div class="cat-search-bar" id="catSearchBar">
     <div class="cat-search-inner">
-      <div class="cat-search-field">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" id="catSearch" placeholder="Tìm sản phẩm...">
+      <div class="cat-filter-row">
+        <span class="cat-filter-label">Danh Mục</span>
+        <div class="cat-nav-pills" id="catNavPills">
+          <span class="cat-nav-pill active" data-cat="all">Tất Cả</span>
+          <span class="cat-nav-pill" data-cat="cot-vot">Cốt Vợt</span>
+          <span class="cat-nav-pill" data-cat="mat-vot">Mặt Vợt</span>
+          <span class="cat-nav-pill" data-cat="bong">Bóng</span>
+          <span class="cat-nav-pill" data-cat="ban">Bàn</span>
+          <span class="cat-nav-pill" data-cat="do-thi-dau">Đồ Thi Đấu</span>
+          <span class="cat-nav-pill" data-cat="combo-vot">Combo Vợt</span>
+          <span class="cat-nav-pill" data-cat="do-cu">Đồ Cũ</span>
+        </div>
       </div>
-      <div class="cat-nav-pills" id="catNavPills">
-        <a href="#block-cot-vot" class="cat-nav-pill" data-block="block-cot-vot">Cốt Vợt</a>
-        <a href="#block-mat-vot" class="cat-nav-pill" data-block="block-mat-vot">Mặt Vợt</a>
-        <a href="#block-bong" class="cat-nav-pill" data-block="block-bong">Bóng</a>
-        <a href="#block-ban" class="cat-nav-pill" data-block="block-ban">Bàn</a>
-        <a href="#block-do-thi-dau" class="cat-nav-pill" data-block="block-do-thi-dau">Đồ Thi Đấu</a>
-        <a href="#block-combo-vot" class="cat-nav-pill" data-block="block-combo-vot">Combo Vợt</a>
-        <a href="#block-do-cu" class="cat-nav-pill" data-block="block-do-cu">Đồ Cũ</a>
+      <div class="cat-filter-row">
+        <span class="cat-filter-label">Khoảng Giá</span>
+        <div class="cat-nav-pills" id="catPricePills">
+          <span class="cat-nav-pill active" data-price="all">Tất Cả</span>
+          <span class="cat-nav-pill" data-price="<500">Dưới 500k</span>
+          <span class="cat-nav-pill" data-price="500-1500">500k – 1,5tr</span>
+          <span class="cat-nav-pill" data-price="1500-5000">1,5tr – 5tr</span>
+          <span class="cat-nav-pill" data-price=">5000">Trên 5tr</span>
+          <span class="cat-nav-pill" data-price="lien-he">Liên Hệ</span>
+        </div>
       </div>
     </div>
   </div>
@@ -1926,49 +1929,74 @@ fetch('/api/settings/home_hero_image')
   window.addEventListener('scroll', function() { if (!pinnedSlug) hidePopups(); }, { passive: true });
   window.addEventListener('resize', function() { hidePopups(); pinnedSlug = null; });
 
-  /* ── Catalog search ──────────────────────────────── */
-  var catSearchEl = document.getElementById('catSearch');
-  if (catSearchEl) {
-    catSearchEl.addEventListener('input', function() {
-      var q = this.value.trim().toLowerCase();
-      SECTIONS.forEach(function(s) {
-        var grid  = document.getElementById(s.gridId);
-        var block = document.getElementById('block-' + s.cat);
-        if (!grid || !block) return;
-        var cards = Array.from(grid.querySelectorAll('.prod-card'));
-        if (!q) {
-          cards.forEach(function(c, i) { c.style.display = i < 5 ? '' : 'none'; });
-          block.style.display = '';
-        } else {
-          var shown = 0;
-          cards.forEach(function(c) {
-            var nm = (c.querySelector('.prod-name') || {}).textContent || '';
-            if (nm.toLowerCase().indexOf(q) >= 0 && shown < 10) {
-              c.style.display = ''; shown++;
-            } else {
-              c.style.display = 'none';
-            }
-          });
-          block.style.display = shown > 0 ? '' : 'none';
+  /* ── Catalog filters: Danh Mục + Khoảng Giá ────────── */
+  var activeCat = 'all';
+  var activePr  = 'all';
+
+  function applyFilters() {
+    SECTIONS.forEach(function(s) {
+      var grid  = document.getElementById(s.gridId);
+      var block = document.getElementById('block-' + s.cat);
+      if (!grid || !block) return;
+
+      if (activeCat !== 'all' && s.cat !== activeCat) {
+        block.style.display = 'none';
+        return;
+      }
+      block.style.display = '';
+
+      var cards = Array.from(grid.querySelectorAll('.prod-card'));
+      var isDefault = (activeCat === 'all' && activePr === 'all');
+      var shown = 0;
+
+      cards.forEach(function(c, i) {
+        if (isDefault) {
+          c.style.display = i < 5 ? '' : 'none';
+          if (i < 5) shown++;
+          return;
         }
+        var rawP = c.getAttribute('data-price');
+        var priceVal = rawP ? (parseInt(rawP, 10) || 0) : null;
+        var match = false;
+        if (activePr === 'all') {
+          match = true;
+        } else if (activePr === 'lien-he') {
+          match = (priceVal === null || priceVal === 0);
+        } else if (priceVal !== null && priceVal > 0) {
+          if      (activePr === '<500')       match = priceVal < 500000;
+          else if (activePr === '500-1500')   match = priceVal >= 500000  && priceVal < 1500000;
+          else if (activePr === '1500-5000')  match = priceVal >= 1500000 && priceVal < 5000000;
+          else if (activePr === '>5000')      match = priceVal >= 5000000;
+        }
+        c.style.display = match ? '' : 'none';
+        if (match) shown++;
       });
+
+      if (!isDefault && shown === 0) block.style.display = 'none';
     });
   }
 
-  /* ── Active pill on scroll ───────────────────────── */
-  var catPills  = document.querySelectorAll('.cat-nav-pill[data-block]');
-  var catBlocks = Array.from(document.querySelectorAll('.cat-block'));
-  function updateCatPill() {
-    var threshold = window.scrollY + 180;
-    var activeId = null;
-    catBlocks.forEach(function(b) {
-      if (b.getBoundingClientRect().top + window.scrollY <= threshold) activeId = b.id;
+  document.querySelectorAll('#catNavPills .cat-nav-pill').forEach(function(pill) {
+    pill.addEventListener('click', function() {
+      document.querySelectorAll('#catNavPills .cat-nav-pill').forEach(function(p) { p.classList.remove('active'); });
+      this.classList.add('active');
+      activeCat = this.getAttribute('data-cat');
+      applyFilters();
+      if (activeCat !== 'all') {
+        var block = document.getElementById('block-' + activeCat);
+        if (block) setTimeout(function() { block.scrollIntoView({ behavior:'smooth', block:'start' }); }, 50);
+      }
     });
-    catPills.forEach(function(p) {
-      p.classList.toggle('active', p.getAttribute('data-block') === activeId);
+  });
+
+  document.querySelectorAll('#catPricePills .cat-nav-pill').forEach(function(pill) {
+    pill.addEventListener('click', function() {
+      document.querySelectorAll('#catPricePills .cat-nav-pill').forEach(function(p) { p.classList.remove('active'); });
+      this.classList.add('active');
+      activePr = this.getAttribute('data-price');
+      applyFilters();
     });
-  }
-  window.addEventListener('scroll', updateCatPill, { passive: true });
+  });
 })();
 </script>
 <script src="/js/banners.js"></script>
