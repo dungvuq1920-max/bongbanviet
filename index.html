@@ -1001,70 +1001,72 @@
     .flow-popup {
       position:fixed; z-index:100;
       pointer-events:none; opacity:0;
-      transition:opacity .28s ease, transform .28s ease;
-      transform: scale(.95);
-      background:var(--white); border:1px solid #e2e8f0;
-      border-radius:20px;
-      box-shadow:0 32px 64px -16px rgba(0,0,0,.22);
+      transition:opacity .22s ease, transform .22s ease;
+      transform: scale(.97);
+      background:var(--white);
+      border:1px solid #ebebeb;
+      border-radius:14px;
+      box-shadow:0 20px 48px -8px rgba(0,0,0,.16), 0 0 0 1px rgba(0,0,0,.03);
     }
     .flow-popup.visible { opacity:1; pointer-events:auto; transform:scale(1); }
     .flow-popup.pinned-mode { max-height:78vh; overflow-y:auto; }
-    .flow-popup-r { width:272px; padding:22px; }
-    .flow-popup-b { width:300px; padding:18px 22px; border-left:4px solid var(--red); border-radius:4px 20px 20px 4px; }
+    .flow-popup-r { width:288px; padding:20px 22px; }
+    .flow-popup-b { width:320px; padding:20px 22px; border-left:3px solid var(--red); border-radius:4px 14px 14px 4px; }
     .fp-tag {
       display:inline-block;
       background:var(--red); color:#fff;
-      font-size:8px; font-weight:700; letter-spacing:.16em; text-transform:uppercase;
-      padding:3px 10px; margin-bottom:10px; border-radius:100px;
-      font-style: italic;
+      font-size:9px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+      padding:3px 10px; margin-bottom:12px; border-radius:4px;
     }
     .fp-name {
-      font-size:16px; font-weight:700;
-      line-height:1.25; color:var(--dark); margin-bottom:4px;
+      font-size:17px; font-weight:800;
+      line-height:1.25; color:var(--dark); margin-bottom:6px;
     }
     .fp-price {
-      font-size:18px; font-weight:900;
-      font-style:italic; color:var(--red); margin-bottom:3px;
+      font-size:21px; font-weight:900;
+      color:var(--red); margin-bottom:4px; letter-spacing:-.01em;
     }
     .fp-stock {
-      font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; margin-bottom:12px;
+      font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; margin-bottom:14px;
     }
     .fp-sect-label {
-      font-size:8px; font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+      font-size:9px; font-weight:700; letter-spacing:.16em; text-transform:uppercase;
       color:#94a3b8; margin-bottom:10px;
       display:flex; align-items:center; gap:6px;
-      padding-bottom:8px; border-bottom:1px solid #e2e8f0;
+      padding-bottom:9px; border-bottom:1px solid #f0f0f0;
     }
-    .fp-spec { margin-bottom:8px; }
+    .fp-spec { margin-bottom:9px; }
     .fp-spec-row {
-      display:flex; justify-content:space-between;
-      font-size:8px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
-      color:#64748b; margin-bottom:4px;
+      display:flex; justify-content:space-between; align-items:center;
+      font-size:10.5px; font-weight:600;
+      color:#64748b; margin-bottom:5px;
     }
-    .fp-spec-row span:last-child { color:var(--red); }
-    .fp-bar { height:4px; background:#f1f5f9; border-radius:100px; overflow:hidden; }
+    .fp-spec-row span:first-child { color:#64748b; }
+    .fp-spec-row span:last-child { color:var(--dark); font-weight:700; }
+    .fp-bar { height:3px; background:#f0f0f0; border-radius:100px; overflow:hidden; }
     .fp-fill { height:100%; background:var(--red); border-radius:100px; transition:width .55s ease; }
     .fpb-label {
-      font-size:8px; font-weight:700; letter-spacing:.18em; text-transform:uppercase;
-      color:#94a3b8; margin-bottom:8px;
+      font-size:9px; font-weight:700; letter-spacing:.16em; text-transform:uppercase;
+      color:#94a3b8; margin-bottom:10px;
       display:flex; align-items:center; gap:5px;
+      padding-bottom:9px; border-bottom:1px solid #f0f0f0;
     }
     .fpb-desc {
-      font-size:11px; color:#475569; line-height:1.7; font-style:italic;
-      margin-bottom:14px;
-      overflow-y:auto; max-height:220px;
+      font-size:13px; color:#475569; line-height:1.75;
+      margin-bottom:16px;
+      overflow-y:auto; max-height:300px;
     }
-    .fpb-actions { display:flex; flex-direction:column; gap:7px; }
+    .fpb-actions { display:flex; flex-direction:column; gap:8px; }
     .fpb-btn {
-      display:block; width:100%; padding:10px; text-align:center;
-      font-size:9px; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+      display:block; width:100%; padding:11px; text-align:center;
+      font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
       transition:all .2s; text-decoration:none; border-radius:8px;
     }
     .fpb-btn-dark { background:var(--dark); color:#fff; }
     .fpb-btn-dark:hover { background:var(--red); }
     .fpb-btn-red { background:var(--red); color:#fff; }
     .fpb-btn-red:hover { background:var(--dark); }
-    .flow-line { transition:stroke-dashoffset .42s ease; }
+    .flow-line { transition:stroke-dashoffset .38s ease; }
     .flow-line.active { stroke-dashoffset:0 !important; }
 
     @media (max-width:960px) {
@@ -1199,6 +1201,14 @@
     .prod-origin { font-size: 9px; font-weight: 700; color: #94a3b8; letter-spacing: .1em; text-transform: uppercase; }
     .prod-price-inline { font-size: 14px; font-weight: 800; color: var(--dark); font-style: italic; }
     .prod-brand { display: none; }
+
+    /* ─── Catalog card: chỉ hiện tên + hãng ─────────── */
+    .all-cats-wrap .prod-card-tags  { display: none; }
+    .all-cats-wrap .prod-price-inline { display: none; }
+    .all-cats-wrap .prod-card-body  { padding: 11px 13px 13px; }
+    .all-cats-wrap .prod-name       { font-size: 13px; font-weight: 700; line-height: 1.3; }
+    .all-cats-wrap .prod-card-footer{ margin-top: 7px; }
+    .all-cats-wrap .prod-origin     { font-size: 9px; letter-spacing: .12em; color: #94a3b8; }
 
     /* ─── Featured Dashboard ──────────────────────────── */
     .featured-dash { background: #f8fafc; padding: 64px 0; }
@@ -2066,7 +2076,7 @@ fetch('/api/settings/home_hero_image')
 
     var specsHtml = '';
     if (p.specs && typeof p.specs === 'object') {
-      Object.entries(p.specs).slice(0, 4).forEach(function(kv) {
+      Object.entries(p.specs).forEach(function(kv) {
         var k = kv[0], v = kv[1];
         var pct = (typeof v === 'number' && v > 0 && v <= 100) ? v : null;
         specsHtml += '<div class="fp-spec"><div class="fp-spec-row"><span>' + k + '</span><span>' + v + (pct ? '%' : '') + '</span></div>';
@@ -2126,17 +2136,11 @@ fetch('/api/settings/home_hero_image')
     var cX = rect.left + rect.width / 2;
     var cY = rect.top  + rect.height / 2;
 
-    /* Arrow → specs panel (right side) */
-    var rSX = (prX >= rect.right) ? rect.right : rect.left;
-    var rEX = (prX >= rect.right) ? prX         : prX + prW;
-    var rMY = prY + Math.min(140, (popupR.offsetHeight || 280) / 2);
-    drawCurve(lineR, rSX, cY, rEX, rMY);
+    /* Mũi tên phải: hoàn toàn ngang (cùng Y = cY) */
+    drawCurve(lineR, rect.right, cY, prX, cY);
 
-    /* Arrow → desc panel (left side) */
-    var bSX = (pbX + pbW <= rect.left) ? rect.left : rect.right;
-    var bEX = (pbX + pbW <= rect.left) ? pbX + pbW : pbX;
-    var bMY = pbY + Math.min(120, (popupB.offsetHeight || 240) / 2);
-    drawCurve(lineB, bSX, cY, bEX, bMY);
+    /* Mũi tên dưới: hoàn toàn dọc (cùng X = cX) */
+    drawCurve(lineB, cX, rect.bottom, cX, pbY);
   }
 
   function drawCurve(path, x1, y1, x2, y2) {
