@@ -1125,59 +1125,67 @@
     #flowCount { font-size:9px;font-weight:600;letter-spacing:.1em;color:var(--mid);white-space:nowrap;margin-left:auto; }
 
     /* ─── Section Header ──────────────────────────── */
-    .flow-section-head { display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;padding-left:16px;border-left:4px solid var(--red); }
-    .flow-section-title { font-size:18px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--dark);line-height:1.1; }
-    .flow-section-sub { font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--mid);margin-top:4px; }
+    .flow-section-head { display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;padding-left:16px;border-left:4px solid var(--red); }
+    .flow-section-title { font-size:26px;font-weight:800;font-style:italic;text-transform:uppercase;letter-spacing:.02em;color:var(--dark);line-height:1.1; }
+    .flow-section-sub { font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--mid);margin-top:6px; }
     .flow-section-arr { font-size:16px;color:var(--red);opacity:.4;flex-shrink:0;margin-top:4px; }
 
-    /* ─── Global Product Card Style (canvas design) ── */
+    /* ─── Global Product Card Style ─────────────────── */
     .prod-card {
-      border-radius: 40px;
-      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      border: 1px solid #ececec;
       background: var(--white);
-      padding: 16px;
+      padding: 0;
       cursor: pointer;
       text-decoration: none;
       display: block;
       overflow: hidden;
-      transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+      transition: transform .25s, box-shadow .25s, border-color .2s;
       color: var(--dark);
     }
     .prod-card:hover {
-      border-color: var(--red);
-      transform: translateY(-5px);
-      box-shadow: 0 20px 25px -5px rgba(0,0,0,.06);
+      border-color: #ddd;
+      transform: translateY(-4px);
+      box-shadow: 0 12px 28px rgba(0,0,0,.09);
     }
     .prod-card.fp-pinned {
       border-color: var(--red);
-      box-shadow: 0 0 0 4px rgba(214,43,43,.1);
+      box-shadow: 0 0 0 3px rgba(214,43,43,.12);
       transform: none;
     }
     .prod-img {
-      border-radius: 24px;
-      margin-bottom: 12px;
+      border-radius: 0;
+      margin-bottom: 0;
       overflow: hidden;
+      background: #fde8e4;
     }
-    .prod-card-body { padding: 0; }
+    /* Override per-card gradient backgrounds with uniform salmon */
+    .all-cats-wrap .prod-img,
+    .pb-1,.pb-2,.pb-3,.pb-4,.pb-5,.pb-6,.pb-7,.pb-8 { background: #fde8e4 !important; }
+    /* Remove hover overlay text in catalog context */
+    .all-cats-wrap .prod-img::after { content: none; }
+    .prod-card-body { padding: 14px 16px 16px; }
     .prod-card-tags {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
     .prod-sub-tag {
       font-size: 8px; font-weight: 700;
-      color: var(--red); background: rgba(214,43,43,.09);
-      padding: 2px 8px; border-radius: 100px;
+      color: #c0392b; background: rgba(192,57,43,.1);
+      padding: 2px 9px; border-radius: 100px;
       text-transform: uppercase; letter-spacing: .08em;
     }
-    .prod-brand-label {
+    .prod-badge-tag {
       font-size: 8px; font-weight: 700;
-      color: #94a3b8; text-transform: uppercase;
-      letter-spacing: .08em;
+      color: #1E2B3C; background: rgba(30,43,60,.08);
+      padding: 2px 9px; border-radius: 100px;
+      text-transform: uppercase; letter-spacing: .08em;
     }
+    .prod-brand-label { font-size: 8px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .08em; }
     .prod-name {
-      font-size: 13px; font-weight: 700;
+      font-size: 14px; font-weight: 700;
       color: var(--dark); line-height: 1.3;
       margin-bottom: 0;
       display: -webkit-box; -webkit-line-clamp: 2;
@@ -1186,11 +1194,10 @@
     .prod-card:hover .prod-name, .prod-card.fp-pinned .prod-name { color: var(--red); }
     .prod-card-footer {
       display: flex; justify-content: space-between;
-      align-items: center; margin-top: 8px;
+      align-items: center; margin-top: 10px;
     }
-    .prod-origin { font-size: 11px; color: #94a3b8; font-style: italic; }
-    .prod-price-inline { font-size: 13px; font-weight: 800; color: var(--dark); font-style: italic; }
-    /* Legacy compat */
+    .prod-origin { font-size: 9px; font-weight: 700; color: #94a3b8; letter-spacing: .1em; text-transform: uppercase; }
+    .prod-price-inline { font-size: 14px; font-weight: 800; color: var(--dark); font-style: italic; }
     .prod-brand { display: none; }
 
     /* ─── Featured Dashboard ──────────────────────────── */
@@ -1236,45 +1243,56 @@
       position:sticky; top:82px; z-index:150;
       background:var(--white);
       border-bottom:1px solid var(--line);
-      box-shadow:0 4px 20px rgba(0,0,0,.07);
+      box-shadow:0 2px 12px rgba(0,0,0,.06);
     }
     .cat-search-inner {
-      width:100%; padding:0 40px; height:50px;
-      display:flex; align-items:center; gap:0;
+      width:100%; padding:0 40px; height:54px;
+      display:flex; align-items:center; gap:20px;
       box-sizing:border-box;
     }
-    .srch-group {
-      display:flex; align-items:center; gap:10px;
-      flex:1; min-width:0; padding-right:20px;
+    .fltr-label {
+      font-family:'Lexend',sans-serif; font-size:9px; font-weight:800;
+      letter-spacing:.2em; text-transform:uppercase; color:var(--mid);
+      flex-shrink:0; white-space:nowrap;
     }
-    .srch-icon { flex-shrink:0; color:#b0b0aa; }
-    .srch-input {
-      flex:1; border:none; outline:none; background:transparent;
-      font-family:'Lexend',sans-serif; font-size:13px; font-weight:500;
-      color:var(--dark); min-width:0;
+    .fltr-drops { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .fltr-drop { position:relative; }
+    .fltr-drop-btn {
+      display:flex; align-items:center; gap:8px;
+      padding:8px 16px; border:1.5px solid var(--line);
+      border-radius:100px; background:var(--white);
+      font-family:'Lexend',sans-serif; font-size:10px; font-weight:800;
+      letter-spacing:.1em; text-transform:uppercase; color:var(--dark);
+      cursor:pointer; transition:all .15s; white-space:nowrap;
     }
-    .srch-input::placeholder { color:#b0b0aa; font-weight:400; }
-    .srch-divider { width:1px; height:26px; background:var(--line); flex-shrink:0; }
-    .srch-drop-wrap {
-      display:flex; align-items:center; gap:6px;
-      padding:0 20px; position:relative; flex-shrink:0; cursor:pointer;
+    .fltr-drop-btn:hover, .fltr-drop.open .fltr-drop-btn {
+      border-color:var(--dark); background:var(--dark); color:#fff;
     }
-    .srch-select {
-      border:none; outline:none; background:transparent;
-      font-family:'Lexend',sans-serif; font-size:11px; font-weight:800;
-      letter-spacing:.1em; text-transform:uppercase;
-      color:var(--dark); cursor:pointer;
-      -webkit-appearance:none; -moz-appearance:none; appearance:none;
-      padding-right:16px;
+    .fltr-drop.open .fltr-drop-btn svg { transform:rotate(180deg); }
+    .fltr-drop-panel {
+      position:absolute; top:calc(100% + 6px); left:0;
+      min-width:160px; background:var(--white);
+      border:1.5px solid var(--line); border-radius:12px;
+      box-shadow:0 8px 24px rgba(0,0,0,.1);
+      display:none; flex-direction:column; overflow:hidden; z-index:300;
     }
-    .srch-drop-arrow { position:absolute; right:6px; pointer-events:none; color:var(--mid); }
+    .fltr-drop.open .fltr-drop-panel { display:flex; }
+    .fltr-drop-opt {
+      padding:10px 16px; font-family:'Lexend',sans-serif;
+      font-size:10px; font-weight:700; letter-spacing:.08em;
+      text-transform:uppercase; color:var(--dark);
+      cursor:pointer; transition:background .1s; white-space:nowrap;
+    }
+    .fltr-opt-hdr { color:var(--mid); font-size:9px; border-bottom:1px solid var(--line); cursor:default; }
+    .fltr-drop-opt:not(.fltr-opt-hdr):hover { background:var(--bg); }
+    .fltr-drop-opt.active:not(.fltr-opt-hdr) { color:var(--red); }
 
-    /* ── 5-column grid for homepage catalogs ─────────── */
-    .all-cats-wrap .prod-grid { grid-template-columns:repeat(5,1fr); gap:14px; }
+    /* ── 4-column grid for homepage catalogs ─────────── */
+    .all-cats-wrap .prod-grid { grid-template-columns:repeat(4,1fr); gap:16px; }
     .cat-block { scroll-margin-top:160px; }
-    @media (max-width:1100px) { .all-cats-wrap .prod-grid { grid-template-columns:repeat(4,1fr); } }
-    @media (max-width:768px)  { .all-cats-wrap .prod-grid { grid-template-columns:repeat(3,1fr); } }
-    @media (max-width:480px)  { .all-cats-wrap .prod-grid { grid-template-columns:repeat(2,1fr); } }
+    @media (max-width:1100px) { .all-cats-wrap .prod-grid { grid-template-columns:repeat(3,1fr); } }
+    @media (max-width:768px)  { .all-cats-wrap .prod-grid { grid-template-columns:repeat(2,1fr); } }
+    @media (max-width:480px)  { .all-cats-wrap .prod-grid { grid-template-columns:repeat(2,1fr); gap:10px; } }
     @media (max-width:960px) {
       .cat-search-bar { top:0; }
       .cat-search-inner { padding:0 20px; }
@@ -1511,35 +1529,54 @@
   <!-- Filter Bar -->
   <div class="cat-search-bar" id="catSearchBar">
     <div class="cat-search-inner">
-      <div class="srch-group">
-        <svg class="srch-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" id="srchName" class="srch-input" placeholder="Tìm theo tên sản phẩm…">
-      </div>
-      <div class="srch-divider"></div>
-      <div class="srch-drop-wrap">
-        <select id="srchCat" class="srch-select">
-          <option value="all">Danh Mục</option>
-          <option value="cot-vot">Cốt Vợt</option>
-          <option value="mat-vot">Mặt Vợt</option>
-          <option value="bong">Bóng</option>
-          <option value="ban">Bàn</option>
-          <option value="do-thi-dau">Đồ Thi Đấu</option>
-          <option value="combo-vot">Combo Vợt</option>
-          <option value="do-cu">Đồ Cũ</option>
-        </select>
-        <svg class="srch-drop-arrow" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-      </div>
-      <div class="srch-divider"></div>
-      <div class="srch-drop-wrap">
-        <select id="srchPrice" class="srch-select">
-          <option value="all">Khoảng Giá</option>
-          <option value="<500">Dưới 500k</option>
-          <option value="500-1500">500k – 1,5tr</option>
-          <option value="1500-5000">1,5tr – 5tr</option>
-          <option value=">5000">Trên 5tr</option>
-          <option value="lien-he">Liên Hệ</option>
-        </select>
-        <svg class="srch-drop-arrow" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      <span class="fltr-label">Bộ Lọc Nhanh</span>
+      <div class="fltr-drops">
+        <!-- Brand -->
+        <div class="fltr-drop" id="fltrBrand">
+          <button class="fltr-drop-btn">
+            <span id="fltrBrandVal">Thương Hiệu</span>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="fltr-drop-panel">
+            <div class="fltr-drop-opt fltr-opt-hdr">Thương Hiệu</div>
+            <div class="fltr-drop-opt active" data-brand="all">Tất Cả</div>
+            <div class="fltr-drop-opt" data-brand="butterfly">Butterfly</div>
+            <div class="fltr-drop-opt" data-brand="tibhar">Tibhar</div>
+            <div class="fltr-drop-opt" data-brand="unrex">Unrex</div>
+            <div class="fltr-drop-opt" data-brand="yinhe">Yinhe</div>
+            <div class="fltr-drop-opt" data-brand="khac">Các Hãng Khác</div>
+          </div>
+        </div>
+        <!-- Price -->
+        <div class="fltr-drop" id="fltrPrice">
+          <button class="fltr-drop-btn">
+            <span id="fltrPriceVal">Giá Tiền</span>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="fltr-drop-panel">
+            <div class="fltr-drop-opt fltr-opt-hdr">Giá Tiền</div>
+            <div class="fltr-drop-opt active" data-price="all">Tất Cả</div>
+            <div class="fltr-drop-opt" data-price="<500">Dưới 500k</div>
+            <div class="fltr-drop-opt" data-price="500-1500">500k – 1,5tr</div>
+            <div class="fltr-drop-opt" data-price="1500-5000">1,5tr – 5tr</div>
+            <div class="fltr-drop-opt" data-price=">5000">Trên 5tr</div>
+            <div class="fltr-drop-opt" data-price="lien-he">Liên Hệ</div>
+          </div>
+        </div>
+        <!-- Sort -->
+        <div class="fltr-drop" id="fltrSort">
+          <button class="fltr-drop-btn">
+            <span id="fltrSortVal">Sắp Xếp</span>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="fltr-drop-panel">
+            <div class="fltr-drop-opt fltr-opt-hdr">Sắp Xếp</div>
+            <div class="fltr-drop-opt active" data-sort="default">Mặc Định</div>
+            <div class="fltr-drop-opt" data-sort="price-asc">Giá Tăng Dần</div>
+            <div class="fltr-drop-opt" data-sort="price-desc">Giá Giảm Dần</div>
+            <div class="fltr-drop-opt" data-sort="name-asc">Tên A → Z</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -1548,56 +1585,56 @@
 
     <div class="cat-block" id="block-cot-vot">
       <div class="flow-section-head">
-        <div><h2 class="flow-section-title">CỐT VỢT</h2><p class="flow-section-sub">Vũ khí chiến thắng của bạn</p></div>
-        <button class="feat-see-all" data-see-all="cot-vot">Xem tất cả →</button>
+        <div><h2 class="flow-section-title">Cốt Vợt</h2><p class="flow-section-sub" id="count-cot-vot">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
+        <button class="feat-see-all" data-see-all="cot-vot">Xem Tất Cả →</button>
       </div>
       <div class="prod-grid" id="gridCotVot"></div>
     </div>
 
     <div class="cat-block" id="block-mat-vot">
       <div class="flow-section-head">
-        <div><h2 class="flow-section-title">MẶT VỢT</h2><p class="flow-section-sub">Phong cách chơi của bạn</p></div>
-        <button class="feat-see-all" data-see-all="mat-vot">Xem tất cả →</button>
+        <div><h2 class="flow-section-title">Mặt Vợt</h2><p class="flow-section-sub" id="count-mat-vot">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
+        <button class="feat-see-all" data-see-all="mat-vot">Xem Tất Cả →</button>
       </div>
       <div class="prod-grid" id="gridMatVot"></div>
     </div>
 
     <div class="cat-block" id="block-bong">
       <div class="flow-section-head">
-        <div><h2 class="flow-section-title">BÓNG</h2><p class="flow-section-sub">Bóng thi đấu chính hãng</p></div>
-        <button class="feat-see-all" data-see-all="bong">Xem tất cả →</button>
+        <div><h2 class="flow-section-title">Bóng</h2><p class="flow-section-sub" id="count-bong">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
+        <button class="feat-see-all" data-see-all="bong">Xem Tất Cả →</button>
       </div>
       <div class="prod-grid" id="gridBong"></div>
     </div>
 
     <div class="cat-block" id="block-ban">
       <div class="flow-section-head">
-        <div><h2 class="flow-section-title">BÀN BÓNG BÀN</h2><p class="flow-section-sub">Bàn thi đấu &amp; luyện tập</p></div>
-        <button class="feat-see-all" data-see-all="ban">Xem tất cả →</button>
+        <div><h2 class="flow-section-title">Bàn Bóng Bàn</h2><p class="flow-section-sub" id="count-ban">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
+        <button class="feat-see-all" data-see-all="ban">Xem Tất Cả →</button>
       </div>
       <div class="prod-grid" id="gridBan"></div>
     </div>
 
     <div class="cat-block" id="block-do-thi-dau">
       <div class="flow-section-head">
-        <div><h2 class="flow-section-title">ĐỒ THI ĐẤU</h2><p class="flow-section-sub">Giày, trang phục &amp; phụ kiện</p></div>
-        <button class="feat-see-all" data-see-all="do-thi-dau">Xem tất cả →</button>
+        <div><h2 class="flow-section-title">Đồ Thi Đấu</h2><p class="flow-section-sub" id="count-do-thi-dau">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
+        <button class="feat-see-all" data-see-all="do-thi-dau">Xem Tất Cả →</button>
       </div>
       <div class="prod-grid" id="gridDoThiDau"></div>
     </div>
 
     <div class="cat-block" id="block-combo-vot">
       <div class="flow-section-head">
-        <div><h2 class="flow-section-title">COMBO VỢT</h2><p class="flow-section-sub">Bộ vợt hoàn chỉnh theo trình độ</p></div>
-        <button class="feat-see-all" data-see-all="combo-vot">Xem tất cả →</button>
+        <div><h2 class="flow-section-title">Combo Vợt</h2><p class="flow-section-sub" id="count-combo-vot">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
+        <button class="feat-see-all" data-see-all="combo-vot">Xem Tất Cả →</button>
       </div>
       <div class="prod-grid" id="gridComboVot"></div>
     </div>
 
     <div class="cat-block" id="block-do-cu">
       <div class="flow-section-head">
-        <div><h2 class="flow-section-title">ĐỒ CŨ</h2><p class="flow-section-sub">Hàng qua sử dụng, kiểm định kỹ</p></div>
-        <button class="feat-see-all" data-see-all="do-cu">Xem tất cả →</button>
+        <div><h2 class="flow-section-title">Đồ Cũ</h2><p class="flow-section-sub" id="count-do-cu">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
+        <button class="feat-see-all" data-see-all="do-cu">Xem Tất Cả →</button>
       </div>
       <div class="prod-grid" id="gridDoCu"></div>
     </div>
@@ -1825,6 +1862,8 @@ fetch('/api/settings/home_hero_image')
         prods.forEach(function(p){ flowCache[p.slug] = p; });
         var grid = document.getElementById(s.gridId);
         if (grid) { shuffleDom(grid); initCards(grid); }
+        var cntEl = document.getElementById('count-' + s.cat);
+        if (cntEl) cntEl.textContent = 'KẾT QUẢ LỌC: ' + prods.length + ' SẢN PHẨM';
       }
     });
   });
@@ -1995,14 +2034,11 @@ fetch('/api/settings/home_hero_image')
   window.addEventListener('scroll', function() { if (!pinnedSlug) hidePopups(); }, { passive: true });
   window.addEventListener('resize', function() { hidePopups(); pinnedSlug = null; });
 
-  /* ── Catalog filters: Tên + Danh Mục + Khoảng Giá ───── */
-  var activeCat  = 'all';
-  var activePr   = 'all';
-  var activeName = '';
-
-  var srchNameEl  = document.getElementById('srchName');
-  var srchCatEl   = document.getElementById('srchCat');
-  var srchPriceEl = document.getElementById('srchPrice');
+  /* ── Catalog filters: Thương Hiệu + Giá Tiền + Sắp Xếp ─ */
+  var activeCat   = 'all';
+  var activePr    = 'all';
+  var activeBrand = 'all';
+  var activeSort  = 'default';
 
   function applyFilters() {
     SECTIONS.forEach(function(s) {
@@ -2020,11 +2056,11 @@ fetch('/api/settings/home_hero_image')
       var shown = 0;
 
       cards.forEach(function(c) {
-        var rawP     = c.getAttribute('data-price');
-        var priceVal = rawP ? (parseInt(rawP, 10) || 0) : null;
-        var cardName = (c.getAttribute('data-name') || '');
+        var rawP      = c.getAttribute('data-price');
+        var priceVal  = rawP ? (parseInt(rawP, 10) || 0) : null;
+        var cardBrand = (c.getAttribute('data-brand') || '');
 
-        var nameOk = !activeName || cardName.indexOf(activeName) !== -1;
+        var brandOk = activeBrand === 'all' || cardBrand === activeBrand;
 
         var priceOk = false;
         if (activePr === 'all') {
@@ -2038,32 +2074,84 @@ fetch('/api/settings/home_hero_image')
           else if (activePr === '>5000')      priceOk = priceVal >= 5000000;
         }
 
-        var match = nameOk && priceOk;
+        var match = brandOk && priceOk;
         c.style.display = match ? '' : 'none';
         if (match) shown++;
       });
+
+      /* Sort visible cards */
+      if (activeSort !== 'default') {
+        var vis = cards.filter(function(c){ return c.style.display !== 'none'; });
+        vis.sort(function(a, b) {
+          var ap = parseInt(a.getAttribute('data-price'),10) || 0;
+          var bp = parseInt(b.getAttribute('data-price'),10) || 0;
+          if (activeSort === 'price-asc')  return ap - bp;
+          if (activeSort === 'price-desc') return bp - ap;
+          if (activeSort === 'name-asc')
+            return (a.getAttribute('data-name')||'').localeCompare(b.getAttribute('data-name')||'');
+          return 0;
+        });
+        vis.forEach(function(c){ grid.appendChild(c); });
+      }
+
+      var cntEl = document.getElementById('count-' + s.cat);
+      if (cntEl) cntEl.textContent = 'KẾT QUẢ LỌC: ' + shown + ' SẢN PHẨM';
 
       if (shown === 0) block.style.display = 'none';
     });
   }
 
-  if (srchNameEl) srchNameEl.addEventListener('input', function() {
-    activeName = this.value.toLowerCase().trim();
-    applyFilters();
+  /* Custom dropdown toggle */
+  document.querySelectorAll('.fltr-drop-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var drop = this.closest('.fltr-drop');
+      var isOpen = drop.classList.contains('open');
+      document.querySelectorAll('.fltr-drop').forEach(function(d){ d.classList.remove('open'); });
+      if (!isOpen) drop.classList.add('open');
+    });
+  });
+  document.addEventListener('click', function(){
+    document.querySelectorAll('.fltr-drop').forEach(function(d){ d.classList.remove('open'); });
   });
 
-  if (srchCatEl) srchCatEl.addEventListener('change', function() {
-    activeCat = this.value;
-    applyFilters();
-    if (activeCat !== 'all') {
-      var block = document.getElementById('block-' + activeCat);
-      if (block) setTimeout(function() { block.scrollIntoView({ behavior:'smooth', block:'start' }); }, 50);
-    }
+  /* Brand filter */
+  document.querySelectorAll('#fltrBrand .fltr-drop-opt:not(.fltr-opt-hdr)').forEach(function(opt) {
+    opt.addEventListener('click', function() {
+      document.querySelectorAll('#fltrBrand .fltr-drop-opt').forEach(function(o){ o.classList.remove('active'); });
+      this.classList.add('active');
+      activeBrand = this.getAttribute('data-brand');
+      var val = document.getElementById('fltrBrandVal');
+      if (val) val.textContent = activeBrand === 'all' ? 'Thương Hiệu' : this.textContent.trim();
+      document.getElementById('fltrBrand').classList.remove('open');
+      applyFilters();
+    });
   });
 
-  if (srchPriceEl) srchPriceEl.addEventListener('change', function() {
-    activePr = this.value;
-    applyFilters();
+  /* Price filter */
+  document.querySelectorAll('#fltrPrice .fltr-drop-opt:not(.fltr-opt-hdr)').forEach(function(opt) {
+    opt.addEventListener('click', function() {
+      document.querySelectorAll('#fltrPrice .fltr-drop-opt').forEach(function(o){ o.classList.remove('active'); });
+      this.classList.add('active');
+      activePr = this.getAttribute('data-price');
+      var val = document.getElementById('fltrPriceVal');
+      if (val) val.textContent = activePr === 'all' ? 'Giá Tiền' : this.textContent.trim();
+      document.getElementById('fltrPrice').classList.remove('open');
+      applyFilters();
+    });
+  });
+
+  /* Sort */
+  document.querySelectorAll('#fltrSort .fltr-drop-opt:not(.fltr-opt-hdr)').forEach(function(opt) {
+    opt.addEventListener('click', function() {
+      document.querySelectorAll('#fltrSort .fltr-drop-opt').forEach(function(o){ o.classList.remove('active'); });
+      this.classList.add('active');
+      activeSort = this.getAttribute('data-sort');
+      var val = document.getElementById('fltrSortVal');
+      if (val) val.textContent = activeSort === 'default' ? 'Sắp Xếp' : this.textContent.trim();
+      document.getElementById('fltrSort').classList.remove('open');
+      applyFilters();
+    });
   });
 
   /* "Xem tất cả" buttons → filter by category on same page */
@@ -2071,15 +2159,18 @@ fetch('/api/settings/home_hero_image')
     btn.addEventListener('click', function(e) {
       e.stopPropagation();
       var cat = this.getAttribute('data-see-all');
-      activeCat  = cat;
-      activePr   = 'all';
-      activeName = '';
-      if (srchCatEl)   srchCatEl.value   = cat;
-      if (srchPriceEl) srchPriceEl.value = 'all';
-      if (srchNameEl)  srchNameEl.value  = '';
+      activeCat   = cat;
+      activePr    = 'all';
+      activeBrand = 'all';
+      activeSort  = 'default';
+      var bv = document.getElementById('fltrBrandVal'); if (bv) bv.textContent = 'Thương Hiệu';
+      var pv = document.getElementById('fltrPriceVal'); if (pv) pv.textContent = 'Giá Tiền';
+      var sv = document.getElementById('fltrSortVal');  if (sv) sv.textContent = 'Sắp Xếp';
+      document.querySelectorAll('.fltr-drop-opt').forEach(function(o){ o.classList.remove('active'); });
+      document.querySelectorAll('.fltr-drop-opt[data-brand="all"], .fltr-drop-opt[data-price="all"], .fltr-drop-opt[data-sort="default"]').forEach(function(o){ o.classList.add('active'); });
       applyFilters();
       var block = document.getElementById('block-' + cat);
-      if (block) setTimeout(function() { block.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
+      if (block) setTimeout(function(){ block.scrollIntoView({ behavior:'smooth', block:'start' }); }, 50);
     });
   });
 })();

@@ -49,9 +49,6 @@ function renderProdCard(p, idx, opts) {
     ? `<img src="${_esc(p.images[0])}" alt="${_esc(p.name)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;">`
     : `<div class="prod-wm">${_abbr(p.name)}</div>`;
 
-  const badgeHtml = p.badge
-    ? `<span class="prod-badge">${_esc(p.badge)}</span>` : '';
-
   const rawPrice = String(p.price || '');
   const numericPrice = rawPrice.replace(/[^\d]/g, '');
   const variants = Array.isArray(p.variants) ? p.variants.filter(v => v && (v.name || v.price)) : [];
@@ -63,24 +60,26 @@ function renderProdCard(p, idx, opts) {
     if (fp) priceText = 'từ ' + fp;
   }
 
-  /* Sub-category tag (left) + brand label (right) */
+  /* Sub-category tag (left) + badge pill (right) */
   const subTagHtml = p.gear_subcategory
     ? `<span class="prod-sub-tag">${_esc(p.gear_subcategory.toUpperCase())}</span>`
     : `<span></span>`;
-  const brandLabelHtml = (p.brand_slug && p.brand_slug !== 'khac' && brand)
-    ? `<span class="prod-brand-label">${_esc(brand.toUpperCase())}</span>`
-    : (catLabel ? `<span class="prod-brand-label">${_esc(catLabel.toUpperCase())}</span>` : `<span></span>`);
+  const badgeTagHtml = p.badge
+    ? `<span class="prod-badge-tag">${_esc(p.badge)}</span>`
+    : `<span></span>`;
+  const brandFootHtml = (brand && p.brand_slug && p.brand_slug !== 'khac')
+    ? `<span class="prod-origin">${_esc(brand.toUpperCase())}</span>`
+    : (catLabel ? `<span class="prod-origin">${_esc(catLabel.toUpperCase())}</span>` : `<span class="prod-origin">Chính hãng</span>`);
 
   return `<a href="${href}" class="prod-card" data-brand="${_esc(p.brand_slug||'')}" data-cat="${_esc(p.category_slug)}" data-name="${_esc(p.name.toLowerCase())}" data-price="${numericPrice}">
   <div class="prod-img ${bg}">
     <div class="prod-img-inner">${imgHtml}</div>
-    ${badgeHtml}
   </div>
   <div class="prod-card-body">
-    <div class="prod-card-tags">${subTagHtml}${brandLabelHtml}</div>
+    <div class="prod-card-tags">${subTagHtml}${badgeTagHtml}</div>
     <h3 class="prod-name">${_esc(p.name)}</h3>
     <div class="prod-card-footer">
-      <span class="prod-origin">Chính hãng</span>
+      ${brandFootHtml}
       <span class="prod-price-inline">${_esc(priceText)}</span>
     </div>
   </div>
