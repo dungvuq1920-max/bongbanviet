@@ -1211,9 +1211,71 @@
 
     /* ── All-Catalogs wrapper ─────────────────────────── */
     .all-cats-wrap { background: var(--bg); }
-    .all-cats-body { max-width:1200px; margin:0 auto; padding:56px 40px 96px; display:flex; flex-direction:column; gap:88px; }
-    @media (max-width:960px) { .all-cats-body { padding:40px 20px 72px; gap:64px; } }
-    @media (max-width:640px) { .all-cats-body { padding:32px 16px 56px; gap:48px; } }
+    .all-cats-body { max-width:1200px; margin:0 auto; padding:48px 40px 96px; display:flex; flex-direction:column; gap:72px; }
+    @media (max-width:960px) { .all-cats-body { padding:36px 20px 64px; gap:56px; } }
+    @media (max-width:640px) { .all-cats-body { padding:28px 16px 48px; gap:44px; } }
+
+    /* ── Catalog Search Bar ──────────────────────────── */
+    .cat-search-bar {
+      position:sticky; top:82px; z-index:150;
+      background:var(--white);
+      border-bottom:1px solid var(--line);
+      box-shadow:0 4px 20px rgba(0,0,0,.07);
+    }
+    .cat-search-inner {
+      max-width:1200px; margin:0 auto; padding:11px 40px;
+      display:flex; align-items:center; gap:18px;
+    }
+    .cat-search-field {
+      position:relative; flex-shrink:0; width:200px;
+    }
+    .cat-search-field svg {
+      position:absolute; left:11px; top:50%;
+      transform:translateY(-50%); opacity:.35; pointer-events:none;
+    }
+    #catSearch {
+      width:100%; padding:8px 12px 8px 33px;
+      border:1.5px solid var(--line);
+      font-family:'Lexend',sans-serif; font-size:12px;
+      color:var(--dark); background:var(--bg);
+      outline:none; transition:border-color .2s;
+    }
+    #catSearch:focus { border-color:var(--red); }
+    #catSearch::placeholder { color:var(--mid); opacity:.6; }
+    .cat-nav-pills {
+      display:flex; align-items:center; gap:6px;
+      overflow-x:auto; scrollbar-width:none; flex:1;
+    }
+    .cat-nav-pills::-webkit-scrollbar { display:none; }
+    .cat-nav-pill {
+      display:inline-block; padding:6px 13px;
+      border:1.5px solid var(--line); border-radius:100px;
+      font-family:'Lexend',sans-serif; font-size:9.5px;
+      font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+      color:var(--dark); background:var(--bg);
+      white-space:nowrap; cursor:pointer; transition:all .15s; text-decoration:none;
+    }
+    .cat-nav-pill:hover { border-color:var(--dark); background:var(--dark); color:#fff; }
+    .cat-nav-pill.active { background:var(--red); color:#fff; border-color:var(--red); }
+
+    /* ── 5-column grid for homepage catalogs ─────────── */
+    .all-cats-wrap .prod-grid { grid-template-columns:repeat(5,1fr); gap:14px; }
+    .cat-block { scroll-margin-top:148px; }
+    @media (max-width:1100px) { .all-cats-wrap .prod-grid { grid-template-columns:repeat(4,1fr); } }
+    @media (max-width:768px)  { .all-cats-wrap .prod-grid { grid-template-columns:repeat(3,1fr); } }
+    @media (max-width:480px)  { .all-cats-wrap .prod-grid { grid-template-columns:repeat(2,1fr); } }
+    @media (max-width:960px) {
+      .cat-search-bar { top:0; }
+      .cat-search-inner { padding:10px 20px; }
+      .cat-search-field { width:170px; }
+    }
+    @media (max-width:640px) {
+      .cat-search-bar { top:0; }
+      .cat-search-inner { flex-wrap:wrap; gap:8px; padding:10px 16px; }
+      .cat-search-field { width:100%; }
+      .cat-nav-pills { width:100%; }
+      .cat-block { scroll-margin-top:120px; }
+    }
   </style>
 </head>
 <body>
@@ -1253,8 +1315,8 @@
           <a href="mat-vot.html" class="m-group-view-all">Xem Tất Cả Mặt Vợt →</a>
         </div>
       </div>
-      <a href="bong.html">Bóng</a>
-      <a href="ban.html">Bàn</a>
+      <a href="#block-bong">Bóng</a>
+      <a href="#block-ban">Bàn</a>
       <div class="m-group" id="mg-thi">
         <button class="m-group-toggle" onclick="toggleMGroup('mg-thi')">
           Đồ Thi Đấu <span class="m-group-arrow">▾</span>
@@ -1265,8 +1327,8 @@
           <a href="do-thi-dau.html" class="m-group-view-all">Xem Tất Cả Đồ Thi Đấu →</a>
         </div>
       </div>
-      <a href="combo-vot.html">Combo Vợt</a>
-      <a href="do-cu.html">Đồ Cũ</a>
+      <a href="#block-combo-vot">Combo Vợt</a>
+      <a href="#block-do-cu">Đồ Cũ</a>
       <a href="kien-thuc.html">Kiến Thức</a>
       <a href="huong-dan-mua-hang.html">Hướng Dẫn Mua Hàng</a>
       <a href="chinh-sach-doi-tra.html">Chính Sách Đổi Trả</a>
@@ -1294,7 +1356,7 @@
   </a>
   <ul class="nav-links">
     <li class="mega-item">
-      <a href="cot-vot.html">Cốt Vợt</a>
+      <a href="#block-cot-vot">Cốt Vợt</a>
       <div class="mega-panel mega-brands">
         <div class="mega-head">
           <span class="mega-head-label">Cốt Vợt theo thương hiệu</span>
@@ -1333,7 +1395,7 @@
       </div>
     </li>
     <li class="mega-item">
-      <a href="mat-vot.html">Mặt Vợt</a>
+      <a href="#block-mat-vot">Mặt Vợt</a>
       <div class="mega-panel mega-brands">
         <div class="mega-head">
           <span class="mega-head-label">Mặt Vợt theo thương hiệu</span>
@@ -1371,10 +1433,10 @@
         </div>
       </div>
     </li>
-    <li><a href="bong.html">Bóng</a></li>
-    <li><a href="ban.html">Bàn</a></li>
+    <li><a href="#block-bong">Bóng</a></li>
+    <li><a href="#block-ban">Bàn</a></li>
     <li class="mega-item">
-      <a href="do-thi-dau.html">Đồ Thi Đấu</a>
+      <a href="#block-do-thi-dau">Đồ Thi Đấu</a>
       <div class="mega-panel mega-gear">
         <div class="mega-head">
           <span class="mega-head-label">Đồ Thi Đấu</span>
@@ -1394,7 +1456,7 @@
         </div>
       </div>
     </li>
-    <li><a href="combo-vot.html">Combo</a></li>
+    <li><a href="#block-combo-vot">Combo</a></li>
     <li><a href="kien-thuc.html">Kiến Thức</a></li>
   </ul>
   <div class="nav-actions">
@@ -1436,6 +1498,26 @@
 
 <!-- All Catalogs -->
 <section id="san-pham" class="all-cats-wrap">
+
+  <!-- Search + Category Nav Bar -->
+  <div class="cat-search-bar" id="catSearchBar">
+    <div class="cat-search-inner">
+      <div class="cat-search-field">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="catSearch" placeholder="Tìm sản phẩm...">
+      </div>
+      <div class="cat-nav-pills" id="catNavPills">
+        <a href="#block-cot-vot" class="cat-nav-pill" data-block="block-cot-vot">Cốt Vợt</a>
+        <a href="#block-mat-vot" class="cat-nav-pill" data-block="block-mat-vot">Mặt Vợt</a>
+        <a href="#block-bong" class="cat-nav-pill" data-block="block-bong">Bóng</a>
+        <a href="#block-ban" class="cat-nav-pill" data-block="block-ban">Bàn</a>
+        <a href="#block-do-thi-dau" class="cat-nav-pill" data-block="block-do-thi-dau">Đồ Thi Đấu</a>
+        <a href="#block-combo-vot" class="cat-nav-pill" data-block="block-combo-vot">Combo Vợt</a>
+        <a href="#block-do-cu" class="cat-nav-pill" data-block="block-do-cu">Đồ Cũ</a>
+      </div>
+    </div>
+  </div>
+
   <div class="all-cats-body">
 
     <div class="cat-block" id="block-cot-vot">
@@ -1649,6 +1731,9 @@ ham.addEventListener('click', () => mobileNav.classList.contains('open') ? close
 navClose.addEventListener('click', closeNav);
 navOverlay.addEventListener('click', closeNav);
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeNav(); });
+document.querySelectorAll('.mobile-nav-links a[href^="#"]').forEach(function(a) {
+  a.addEventListener('click', closeNav);
+});
 
 /* ── Mobile accordion ──────────────────────────────────── */
 function toggleMGroup(id) {
@@ -1698,7 +1783,7 @@ fetch('/api/settings/home_hero_image')
     cards.sort(function() { return Math.random() - 0.5; });
     cards.forEach(function(c, i) {
       grid.appendChild(c);
-      c.style.display = i < 8 ? '' : 'none';
+      c.style.display = i < 5 ? '' : 'none';
     });
   }
 
@@ -1840,6 +1925,50 @@ fetch('/api/settings/home_hero_image')
 
   window.addEventListener('scroll', function() { if (!pinnedSlug) hidePopups(); }, { passive: true });
   window.addEventListener('resize', function() { hidePopups(); pinnedSlug = null; });
+
+  /* ── Catalog search ──────────────────────────────── */
+  var catSearchEl = document.getElementById('catSearch');
+  if (catSearchEl) {
+    catSearchEl.addEventListener('input', function() {
+      var q = this.value.trim().toLowerCase();
+      SECTIONS.forEach(function(s) {
+        var grid  = document.getElementById(s.gridId);
+        var block = document.getElementById('block-' + s.cat);
+        if (!grid || !block) return;
+        var cards = Array.from(grid.querySelectorAll('.prod-card'));
+        if (!q) {
+          cards.forEach(function(c, i) { c.style.display = i < 5 ? '' : 'none'; });
+          block.style.display = '';
+        } else {
+          var shown = 0;
+          cards.forEach(function(c) {
+            var nm = (c.querySelector('.prod-name') || {}).textContent || '';
+            if (nm.toLowerCase().indexOf(q) >= 0 && shown < 10) {
+              c.style.display = ''; shown++;
+            } else {
+              c.style.display = 'none';
+            }
+          });
+          block.style.display = shown > 0 ? '' : 'none';
+        }
+      });
+    });
+  }
+
+  /* ── Active pill on scroll ───────────────────────── */
+  var catPills  = document.querySelectorAll('.cat-nav-pill[data-block]');
+  var catBlocks = Array.from(document.querySelectorAll('.cat-block'));
+  function updateCatPill() {
+    var threshold = window.scrollY + 180;
+    var activeId = null;
+    catBlocks.forEach(function(b) {
+      if (b.getBoundingClientRect().top + window.scrollY <= threshold) activeId = b.id;
+    });
+    catPills.forEach(function(p) {
+      p.classList.toggle('active', p.getAttribute('data-block') === activeId);
+    });
+  }
+  window.addEventListener('scroll', updateCatPill, { passive: true });
 })();
 </script>
 <script src="/js/banners.js"></script>
