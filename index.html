@@ -985,18 +985,32 @@
     .prod-card.fp-pinned { outline:2px solid var(--red); outline-offset:-2px; }
 
     /* ─── Flow Popups (canvas style) ─────────────────── */
+    /* ─── Flow Overlay ─────────────────────────────── */
+    .flow-overlay {
+      position:fixed; inset:0; z-index:97;
+      background:rgba(0,0,0,0); backdrop-filter:blur(0px);
+      pointer-events:none;
+      transition:background .35s ease, backdrop-filter .35s ease;
+    }
+    .flow-overlay.active {
+      background:rgba(0,0,0,.48);
+      backdrop-filter:blur(4px);
+      pointer-events:auto;
+    }
+
     .flow-popup {
       position:fixed; z-index:100;
       pointer-events:none; opacity:0;
-      transition:opacity .25s ease, transform .25s ease;
-      transform: scale(.96);
+      transition:opacity .28s ease, transform .28s ease;
+      transform: scale(.95);
       background:var(--white); border:1px solid #e2e8f0;
       border-radius:20px;
-      box-shadow:0 25px 50px -12px rgba(0,0,0,.15);
+      box-shadow:0 32px 64px -16px rgba(0,0,0,.22);
     }
     .flow-popup.visible { opacity:1; pointer-events:auto; transform:scale(1); }
+    .flow-popup.pinned-mode { max-height:78vh; overflow-y:auto; }
     .flow-popup-r { width:272px; padding:22px; }
-    .flow-popup-b { width:280px; padding:18px 20px; border-left:4px solid var(--red); border-radius:4px 20px 20px 4px; }
+    .flow-popup-b { width:300px; padding:18px 22px; border-left:4px solid var(--red); border-radius:4px 20px 20px 4px; }
     .fp-tag {
       display:inline-block;
       background:var(--red); color:#fff;
@@ -1038,7 +1052,7 @@
     .fpb-desc {
       font-size:11px; color:#475569; line-height:1.7; font-style:italic;
       margin-bottom:14px;
-      display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden;
+      overflow-y:auto; max-height:220px;
     }
     .fpb-actions { display:flex; flex-direction:column; gap:7px; }
     .fpb-btn {
@@ -1582,6 +1596,9 @@
   </div>
 </section>
 
+<!-- Background overlay (shown when popup is pinned) -->
+<div class="flow-overlay" id="flowOverlay"></div>
+
 <!-- Popup: Specs (right of card) -->
 <div class="flow-popup flow-popup-r" id="flowPopupR">
   <div class="fp-tag" id="fpTag">CỐT VỢT</div>
@@ -1608,8 +1625,8 @@
     <marker id="fArrowR" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto"><polygon points="0 0,6 2,0 4" fill="#D62B2B"/></marker>
     <marker id="fArrowB" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto"><polygon points="0 0,6 2,0 4" fill="#D62B2B"/></marker>
   </defs>
-  <path id="flowLineR" class="flow-line" fill="none" stroke="#D62B2B" stroke-width="1.5" stroke-dasharray="800" stroke-dashoffset="800" marker-end="url(#fArrowR)" d=""/>
-  <path id="flowLineB" class="flow-line" fill="none" stroke="#D62B2B" stroke-width="1.5" stroke-dasharray="800" stroke-dashoffset="800" marker-end="url(#fArrowB)" d=""/>
+  <path id="flowLineR" class="flow-line" fill="none" stroke="#D62B2B" stroke-width="2" stroke-dasharray="2000" stroke-dashoffset="2000" marker-end="url(#fArrowR)" d=""/>
+  <path id="flowLineB" class="flow-line" fill="none" stroke="#D62B2B" stroke-width="2" stroke-dasharray="2000" stroke-dashoffset="2000" marker-end="url(#fArrowB)" d=""/>
 </svg>
 
 <!-- Contact Strip -->
@@ -1871,52 +1888,92 @@ fetch('/api/settings/home_hero_image')
   }
 
   function positionPopups(card) {
+    var isPinned = pinnedSlug !== null;
     var rect = card.getBoundingClientRect();
     var vw = window.innerWidth, vh = window.innerHeight;
-    var prW = 252, pbW = 268;
+    var prW = 272, pbW = 300;
+    var prX, prY, pbX, pbY;
+    var overlay = document.getElementById('flowOverlay');
 
-    var prX = rect.right + 18;
-    var prY = rect.top + rect.height / 2 - 110;
-    if (prX + prW > vw - 8) prX = rect.left - prW - 18;
-    if (prY < 8) prY = 8;
-    if (prY + 320 > vh) prY = vh - 328;
+    if (isPinned) {
+      /* Fixed viewport positions: specs panel right, desc panel left */
+      prX = vw - prW - 32;
+      prY = Math.max(24, vh / 2 - 180);
+      pbX = 32;
+      pbY = Math.max(24, vh / 2 - 160);
+      overlay.classList.add('active');
+      popupR.classList.add('pinned-mode');
+      popupB.classList.add('pinned-mode');
+    } else {
+      prX = rect.right + 18;
+      prY = rect.top + rect.height / 2 - 110;
+      if (prX + prW > vw - 8) prX = rect.left - prW - 18;
+      if (prY < 8) prY = 8;
+      if (prY + 320 > vh) prY = vh - 328;
+      pbX = rect.left + rect.width / 2 - pbW / 2;
+      pbY = rect.bottom + 14;
+      if (pbX < 8) pbX = 8;
+      if (pbX + pbW > vw - 8) pbX = vw - pbW - 8;
+      if (pbY + 220 > vh) pbY = rect.top - 220 - 14;
+      popupR.classList.remove('pinned-mode');
+      popupB.classList.remove('pinned-mode');
+    }
+
     popupR.style.left = prX + 'px';
     popupR.style.top  = prY + 'px';
     popupR.classList.add('visible');
-
-    var pbX = rect.left + rect.width / 2 - pbW / 2;
-    var pbY = rect.bottom + 14;
-    if (pbX < 8) pbX = 8;
-    if (pbX + pbW > vw - 8) pbX = vw - pbW - 8;
-    if (pbY + 158 > vh) pbY = rect.top - 158 - 14;
     popupB.style.left = pbX + 'px';
     popupB.style.top  = pbY + 'px';
     popupB.classList.add('visible');
 
-    var cY = rect.top + rect.height / 2;
     var cX = rect.left + rect.width / 2;
-    var lrSX = (prX > rect.right) ? rect.right : rect.left;
-    var lrEX = (prX > rect.right) ? prX - 4 : prX + prW + 4;
-    drawLine(lineR, lrSX, cY, lrEX, cY);
+    var cY = rect.top  + rect.height / 2;
 
-    var lbSY = (pbY > rect.bottom) ? rect.bottom : rect.top;
-    var lbEY = (pbY > rect.bottom) ? pbY - 4 : pbY + 158 + 4;
-    drawLine(lineB, cX, lbSY, cX, lbEY);
+    /* Arrow → specs panel (right side) */
+    var rSX = (prX >= rect.right) ? rect.right : rect.left;
+    var rEX = (prX >= rect.right) ? prX         : prX + prW;
+    var rMY = prY + Math.min(140, (popupR.offsetHeight || 280) / 2);
+    drawCurve(lineR, rSX, cY, rEX, rMY);
+
+    /* Arrow → desc panel (left side) */
+    var bSX = (pbX + pbW <= rect.left) ? rect.left : rect.right;
+    var bEX = (pbX + pbW <= rect.left) ? pbX + pbW : pbX;
+    var bMY = pbY + Math.min(120, (popupB.offsetHeight || 240) / 2);
+    drawCurve(lineB, bSX, cY, bEX, bMY);
   }
 
-  function drawLine(path, x1, y1, x2, y2) {
-    path.setAttribute('d', 'M ' + x1 + ' ' + y1 + ' L ' + x2 + ' ' + y2);
+  function drawCurve(path, x1, y1, x2, y2) {
+    var dx = x2 - x1, dy = y2 - y1;
+    var cx1 = x1 + dx * 0.55, cy1 = y1;
+    var cx2 = x2 - dx * 0.55, cy2 = y2;
+    var d = 'M ' + x1 + ' ' + y1 + ' C ' + cx1 + ' ' + cy1 + ', ' + cx2 + ' ' + cy2 + ', ' + x2 + ' ' + y2;
+    var len = Math.ceil(Math.sqrt(dx*dx + dy*dy) * 1.6) + 80;
+    path.style.strokeDasharray  = len;
+    path.style.strokeDashoffset = len;
+    path.setAttribute('d', d);
     path.classList.remove('active');
     void path.offsetWidth;
     path.classList.add('active');
   }
 
   function hidePopups() {
-    popupR.classList.remove('visible');
-    popupB.classList.remove('visible');
+    popupR.classList.remove('visible', 'pinned-mode');
+    popupB.classList.remove('visible', 'pinned-mode');
     lineR.classList.remove('active');
     lineB.classList.remove('active');
+    document.getElementById('flowOverlay').classList.remove('active');
   }
+
+  /* Clicks inside popups must not bubble to body/overlay */
+  popupR.addEventListener('click', function(e) { e.stopPropagation(); });
+  popupB.addEventListener('click', function(e) { e.stopPropagation(); });
+
+  /* Clicking overlay or outside dismisses pinned popup */
+  document.getElementById('flowOverlay').addEventListener('click', function() {
+    pinnedSlug = null;
+    document.querySelectorAll('.prod-card.fp-pinned').forEach(function(c){ c.classList.remove('fp-pinned'); });
+    hidePopups();
+  });
 
   document.body.addEventListener('click', function() {
     if (pinnedSlug !== null) {
