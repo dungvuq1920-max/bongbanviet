@@ -1214,6 +1214,8 @@
       letter-spacing: .1em; color: var(--red);
       text-decoration: underline; text-underline-offset: 3px;
       transition: color .2s; white-space: nowrap;
+      background: none; border: none; cursor: pointer;
+      font-family: 'Lexend', sans-serif; padding: 0;
     }
     .feat-see-all:hover { color: var(--dark); }
 
@@ -1246,8 +1248,18 @@
     .cat-filter-label {
       font-family:'Lexend',sans-serif; font-size:9px;
       font-weight:800; letter-spacing:.14em; text-transform:uppercase;
-      color:var(--mid); white-space:nowrap; flex-shrink:0; width:76px;
+      color:var(--mid); flex-shrink:0; width:100px; line-height:1.4;
     }
+    .cat-search-title-row {
+      display:flex; align-items:center; gap:10px;
+      padding-bottom:7px; border-bottom:1px solid var(--line); margin-bottom:2px;
+    }
+    .cat-search-title {
+      font-family:'Lexend',sans-serif; font-size:10px;
+      font-weight:800; letter-spacing:.22em; text-transform:uppercase;
+      color:var(--dark); display:flex; align-items:center; gap:8px;
+    }
+    .cat-search-title svg { color:var(--red); flex-shrink:0; }
     .cat-nav-pills {
       display:flex; align-items:center; gap:6px;
       overflow-x:auto; scrollbar-width:none; flex:1;
@@ -1278,7 +1290,7 @@
     @media (max-width:640px) {
       .cat-search-bar { top:0; }
       .cat-search-inner { padding:10px 16px; gap:6px; }
-      .cat-filter-label { width:62px; font-size:8px; }
+      .cat-filter-label { width:82px; font-size:8px; }
       .cat-nav-pills { width:100%; }
       .cat-block { scroll-margin-top:130px; }
     }
@@ -1505,11 +1517,17 @@
 <!-- All Catalogs -->
 <section id="san-pham" class="all-cats-wrap">
 
-  <!-- Filter Bar: Danh Mục + Khoảng Giá -->
+  <!-- Filter Bar: Tìm Kiếm -->
   <div class="cat-search-bar" id="catSearchBar">
     <div class="cat-search-inner">
+      <div class="cat-search-title-row">
+        <span class="cat-search-title">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Tìm Kiếm Sản Phẩm
+        </span>
+      </div>
       <div class="cat-filter-row">
-        <span class="cat-filter-label">Danh Mục</span>
+        <span class="cat-filter-label">Tìm theo<br>Danh Mục</span>
         <div class="cat-nav-pills" id="catNavPills">
           <span class="cat-nav-pill active" data-cat="all">Tất Cả</span>
           <span class="cat-nav-pill" data-cat="cot-vot">Cốt Vợt</span>
@@ -1540,7 +1558,7 @@
     <div class="cat-block" id="block-cot-vot">
       <div class="flow-section-head">
         <div><h2 class="flow-section-title">CỐT VỢT</h2><p class="flow-section-sub">Vũ khí chiến thắng của bạn</p></div>
-        <a href="cot-vot.html" class="feat-see-all">Xem tất cả →</a>
+        <button class="feat-see-all" data-see-all="cot-vot">Xem tất cả →</button>
       </div>
       <div class="prod-grid" id="gridCotVot"></div>
     </div>
@@ -1548,7 +1566,7 @@
     <div class="cat-block" id="block-mat-vot">
       <div class="flow-section-head">
         <div><h2 class="flow-section-title">MẶT VỢT</h2><p class="flow-section-sub">Phong cách chơi của bạn</p></div>
-        <a href="mat-vot.html" class="feat-see-all">Xem tất cả →</a>
+        <button class="feat-see-all" data-see-all="mat-vot">Xem tất cả →</button>
       </div>
       <div class="prod-grid" id="gridMatVot"></div>
     </div>
@@ -1556,7 +1574,7 @@
     <div class="cat-block" id="block-bong">
       <div class="flow-section-head">
         <div><h2 class="flow-section-title">BÓNG</h2><p class="flow-section-sub">Bóng thi đấu chính hãng</p></div>
-        <a href="bong.html" class="feat-see-all">Xem tất cả →</a>
+        <button class="feat-see-all" data-see-all="bong">Xem tất cả →</button>
       </div>
       <div class="prod-grid" id="gridBong"></div>
     </div>
@@ -1564,7 +1582,7 @@
     <div class="cat-block" id="block-ban">
       <div class="flow-section-head">
         <div><h2 class="flow-section-title">BÀN BÓNG BÀN</h2><p class="flow-section-sub">Bàn thi đấu &amp; luyện tập</p></div>
-        <a href="ban.html" class="feat-see-all">Xem tất cả →</a>
+        <button class="feat-see-all" data-see-all="ban">Xem tất cả →</button>
       </div>
       <div class="prod-grid" id="gridBan"></div>
     </div>
@@ -1572,7 +1590,7 @@
     <div class="cat-block" id="block-do-thi-dau">
       <div class="flow-section-head">
         <div><h2 class="flow-section-title">ĐỒ THI ĐẤU</h2><p class="flow-section-sub">Giày, trang phục &amp; phụ kiện</p></div>
-        <a href="do-thi-dau.html" class="feat-see-all">Xem tất cả →</a>
+        <button class="feat-see-all" data-see-all="do-thi-dau">Xem tất cả →</button>
       </div>
       <div class="prod-grid" id="gridDoThiDau"></div>
     </div>
@@ -1580,7 +1598,7 @@
     <div class="cat-block" id="block-combo-vot">
       <div class="flow-section-head">
         <div><h2 class="flow-section-title">COMBO VỢT</h2><p class="flow-section-sub">Bộ vợt hoàn chỉnh theo trình độ</p></div>
-        <a href="combo-vot.html" class="feat-see-all">Xem tất cả →</a>
+        <button class="feat-see-all" data-see-all="combo-vot">Xem tất cả →</button>
       </div>
       <div class="prod-grid" id="gridComboVot"></div>
     </div>
@@ -1588,7 +1606,7 @@
     <div class="cat-block" id="block-do-cu">
       <div class="flow-section-head">
         <div><h2 class="flow-section-title">ĐỒ CŨ</h2><p class="flow-section-sub">Hàng qua sử dụng, kiểm định kỹ</p></div>
-        <a href="do-cu.html" class="feat-see-all">Xem tất cả →</a>
+        <button class="feat-see-all" data-see-all="do-cu">Xem tất cả →</button>
       </div>
       <div class="prod-grid" id="gridDoCu"></div>
     </div>
@@ -1801,14 +1819,14 @@ fetch('/api/settings/home_hero_image')
   function shuffleDom(grid) {
     var cards = Array.from(grid.querySelectorAll('.prod-card'));
     cards.sort(function() { return Math.random() - 0.5; });
-    cards.forEach(function(c, i) {
+    cards.forEach(function(c) {
       grid.appendChild(c);
-      c.style.display = i < 5 ? '' : 'none';
+      c.style.display = '';
     });
   }
 
   SECTIONS.forEach(function(s) {
-    var params = { limit: 40 };
+    var params = {};
     if (!s.isCombo) params.category = s.cat;
     loadProdGrid(params, {
       gridId: s.gridId, showCat: false, isCombo: s.isCombo,
@@ -2003,15 +2021,9 @@ fetch('/api/settings/home_hero_image')
       block.style.display = '';
 
       var cards = Array.from(grid.querySelectorAll('.prod-card'));
-      var isDefault = (activeCat === 'all' && activePr === 'all');
       var shown = 0;
 
-      cards.forEach(function(c, i) {
-        if (isDefault) {
-          c.style.display = i < 5 ? '' : 'none';
-          if (i < 5) shown++;
-          return;
-        }
+      cards.forEach(function(c) {
         var rawP = c.getAttribute('data-price');
         var priceVal = rawP ? (parseInt(rawP, 10) || 0) : null;
         var match = false;
@@ -2029,7 +2041,7 @@ fetch('/api/settings/home_hero_image')
         if (match) shown++;
       });
 
-      if (!isDefault && shown === 0) block.style.display = 'none';
+      if (shown === 0) block.style.display = 'none';
     });
   }
 
@@ -2052,6 +2064,26 @@ fetch('/api/settings/home_hero_image')
       this.classList.add('active');
       activePr = this.getAttribute('data-price');
       applyFilters();
+    });
+  });
+
+  /* "Xem tất cả" buttons → filter by that category on same page */
+  document.querySelectorAll('[data-see-all]').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var cat = this.getAttribute('data-see-all');
+      document.querySelectorAll('#catNavPills .cat-nav-pill').forEach(function(p) { p.classList.remove('active'); });
+      var pill = document.querySelector('#catNavPills [data-cat="' + cat + '"]');
+      if (pill) pill.classList.add('active');
+      activeCat = cat;
+      /* Also reset price filter to show all */
+      document.querySelectorAll('#catPricePills .cat-nav-pill').forEach(function(p) { p.classList.remove('active'); });
+      var prAll = document.querySelector('#catPricePills [data-price="all"]');
+      if (prAll) prAll.classList.add('active');
+      activePr = 'all';
+      applyFilters();
+      var block = document.getElementById('block-' + cat);
+      if (block) setTimeout(function() { block.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
     });
   });
 })();
