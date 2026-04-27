@@ -1239,31 +1239,35 @@
       box-shadow:0 4px 20px rgba(0,0,0,.07);
     }
     .cat-search-inner {
-      max-width:1200px; margin:0 auto; padding:9px 40px;
-      display:flex; flex-direction:row; align-items:center; gap:12px;
-      overflow-x:auto; scrollbar-width:none;
+      width:100%; padding:0 40px; height:50px;
+      display:flex; align-items:center; gap:0;
+      box-sizing:border-box;
     }
-    .cat-search-inner::-webkit-scrollbar { display:none; }
-    .cat-filter-label {
-      font-family:'Lexend',sans-serif; font-size:9px;
-      font-weight:800; letter-spacing:.14em; text-transform:uppercase;
-      color:var(--mid); flex-shrink:0; white-space:nowrap;
+    .srch-group {
+      display:flex; align-items:center; gap:10px;
+      flex:1; min-width:0; padding-right:20px;
     }
-    .cat-filter-sep { width:1px; height:18px; background:var(--line); flex-shrink:0; margin:0 2px; }
-    .cat-nav-pills {
-      display:flex; align-items:center; gap:6px; flex-shrink:0;
+    .srch-icon { flex-shrink:0; color:#b0b0aa; }
+    .srch-input {
+      flex:1; border:none; outline:none; background:transparent;
+      font-family:'Lexend',sans-serif; font-size:13px; font-weight:500;
+      color:var(--dark); min-width:0;
     }
-    .cat-nav-pill {
-      display:inline-block; padding:5px 12px;
-      border:1.5px solid var(--line); border-radius:100px;
-      font-family:'Lexend',sans-serif; font-size:9.5px;
-      font-weight:700; letter-spacing:.08em; text-transform:uppercase;
-      color:var(--dark); background:var(--bg);
-      white-space:nowrap; cursor:pointer; transition:all .15s;
-      text-decoration:none; user-select:none;
+    .srch-input::placeholder { color:#b0b0aa; font-weight:400; }
+    .srch-divider { width:1px; height:26px; background:var(--line); flex-shrink:0; }
+    .srch-drop-wrap {
+      display:flex; align-items:center; gap:6px;
+      padding:0 20px; position:relative; flex-shrink:0; cursor:pointer;
     }
-    .cat-nav-pill:hover { border-color:var(--dark); background:var(--dark); color:#fff; }
-    .cat-nav-pill.active { background:var(--red); color:#fff; border-color:var(--red); }
+    .srch-select {
+      border:none; outline:none; background:transparent;
+      font-family:'Lexend',sans-serif; font-size:11px; font-weight:800;
+      letter-spacing:.1em; text-transform:uppercase;
+      color:var(--dark); cursor:pointer;
+      -webkit-appearance:none; -moz-appearance:none; appearance:none;
+      padding-right:16px;
+    }
+    .srch-drop-arrow { position:absolute; right:6px; pointer-events:none; color:var(--mid); }
 
     /* ── 5-column grid for homepage catalogs ─────────── */
     .all-cats-wrap .prod-grid { grid-template-columns:repeat(5,1fr); gap:14px; }
@@ -1273,12 +1277,12 @@
     @media (max-width:480px)  { .all-cats-wrap .prod-grid { grid-template-columns:repeat(2,1fr); } }
     @media (max-width:960px) {
       .cat-search-bar { top:0; }
-      .cat-search-inner { padding:9px 20px; }
+      .cat-search-inner { padding:0 20px; }
     }
     @media (max-width:640px) {
       .cat-search-bar { top:0; }
-      .cat-search-inner { padding:8px 16px; gap:10px; }
-      .cat-filter-label { font-size:8px; }
+      .cat-search-inner { padding:0 12px; height:44px; }
+      .srch-drop-wrap { padding:0 10px; }
       .cat-block { scroll-margin-top:80px; }
     }
   </style>
@@ -1299,12 +1303,12 @@
           Cốt Vợt <span class="m-group-arrow">▾</span>
         </button>
         <div class="m-group-links">
-          <a href="cot-vot.html?brand=butterfly">Butterfly</a>
-          <a href="cot-vot.html?brand=tibhar">Tibhar</a>
-          <a href="cot-vot.html?brand=unrex">Unrex</a>
-          <a href="cot-vot.html?brand=yinhe">Yinhe</a>
-          <a href="cot-vot.html?brand=khac">Các Thương Hiệu Khác</a>
-          <a href="cot-vot.html" class="m-group-view-all">Xem Tất Cả Cốt Vợt →</a>
+          <a href="#block-cot-vot">Butterfly</a>
+          <a href="#block-cot-vot">Tibhar</a>
+          <a href="#block-cot-vot">Unrex</a>
+          <a href="#block-cot-vot">Yinhe</a>
+          <a href="#block-cot-vot">Các Thương Hiệu Khác</a>
+          <a href="#block-cot-vot" class="m-group-view-all">Xem Tất Cả Cốt Vợt →</a>
         </div>
       </div>
       <div class="m-group" id="mg-mat">
@@ -1312,12 +1316,12 @@
           Mặt Vợt <span class="m-group-arrow">▾</span>
         </button>
         <div class="m-group-links">
-          <a href="mat-vot.html?brand=butterfly">Butterfly</a>
-          <a href="mat-vot.html?brand=tibhar">Tibhar</a>
-          <a href="mat-vot.html?brand=unrex">Unrex</a>
-          <a href="mat-vot.html?brand=yinhe">Yinhe</a>
-          <a href="mat-vot.html?brand=khac">Các Thương Hiệu Khác</a>
-          <a href="mat-vot.html" class="m-group-view-all">Xem Tất Cả Mặt Vợt →</a>
+          <a href="#block-mat-vot">Butterfly</a>
+          <a href="#block-mat-vot">Tibhar</a>
+          <a href="#block-mat-vot">Unrex</a>
+          <a href="#block-mat-vot">Yinhe</a>
+          <a href="#block-mat-vot">Các Thương Hiệu Khác</a>
+          <a href="#block-mat-vot" class="m-group-view-all">Xem Tất Cả Mặt Vợt →</a>
         </div>
       </div>
       <a href="#block-bong">Bóng</a>
@@ -1327,9 +1331,9 @@
           Đồ Thi Đấu <span class="m-group-arrow">▾</span>
         </button>
         <div class="m-group-links">
-          <a href="do-thi-dau.html#giay">Giày</a>
-          <a href="do-thi-dau.html#trang-phuc">Trang Phục &amp; Phụ Kiện</a>
-          <a href="do-thi-dau.html" class="m-group-view-all">Xem Tất Cả Đồ Thi Đấu →</a>
+          <a href="#block-do-thi-dau">Giày</a>
+          <a href="#block-do-thi-dau">Trang Phục &amp; Phụ Kiện</a>
+          <a href="#block-do-thi-dau" class="m-group-view-all">Xem Tất Cả Đồ Thi Đấu →</a>
         </div>
       </div>
       <a href="#block-combo-vot">Combo Vợt</a>
@@ -1365,33 +1369,33 @@
       <div class="mega-panel mega-brands">
         <div class="mega-head">
           <span class="mega-head-label">Cốt Vợt theo thương hiệu</span>
-          <a href="cot-vot.html" class="mega-head-all">Xem tất cả →</a>
+          <a href="#block-cot-vot" class="mega-head-all">Xem tất cả →</a>
         </div>
         <div class="mega-brands-grid">
-          <a href="cot-vot.html?brand=butterfly" class="mega-brand-card">
+          <a href="#block-cot-vot" class="mega-brand-card">
             <img src="/images/brand/butterfly-logo.png" class="brand-logo" alt="Butterfly">
             <span class="mega-brand-name">Butterfly</span>
             <span class="mega-brand-desc">Cao cấp, Nhật Bản</span>
             <span class="mega-brand-arr">Xem →</span>
           </a>
-          <a href="cot-vot.html?brand=tibhar" class="mega-brand-card">
+          <a href="#block-cot-vot" class="mega-brand-card">
             <img src="/images/brand/tibhar-logo-white.png" class="brand-logo" alt="Tibhar">
             <span class="mega-brand-name">Tibhar</span>
             <span class="mega-brand-desc">Chuyên nghiệp, Đức</span>
             <span class="mega-brand-arr">Xem →</span>
           </a>
-          <a href="cot-vot.html?brand=unrex" class="mega-brand-card">
+          <a href="#block-cot-vot" class="mega-brand-card">
             <span class="mega-brand-name">Unrex</span>
             <span class="mega-brand-desc">Đa dạng kiểu chơi</span>
             <span class="mega-brand-arr">Xem →</span>
           </a>
-          <a href="cot-vot.html?brand=yinhe" class="mega-brand-card">
+          <a href="#block-cot-vot" class="mega-brand-card">
             <img src="/images/brand/yinhe-logo.jpg" class="brand-logo" alt="Yinhe">
             <span class="mega-brand-name">Yinhe</span>
             <span class="mega-brand-desc">Giá tốt, hiệu quả</span>
             <span class="mega-brand-arr">Xem →</span>
           </a>
-          <a href="cot-vot.html?brand=khac" class="mega-brand-card">
+          <a href="#block-cot-vot" class="mega-brand-card">
             <span class="mega-brand-name">Khác</span>
             <span class="mega-brand-desc">Thương hiệu khác</span>
             <span class="mega-brand-arr">Xem →</span>
@@ -1404,33 +1408,33 @@
       <div class="mega-panel mega-brands">
         <div class="mega-head">
           <span class="mega-head-label">Mặt Vợt theo thương hiệu</span>
-          <a href="mat-vot.html" class="mega-head-all">Xem tất cả →</a>
+          <a href="#block-mat-vot" class="mega-head-all">Xem tất cả →</a>
         </div>
         <div class="mega-brands-grid">
-          <a href="mat-vot.html?brand=butterfly" class="mega-brand-card">
+          <a href="#block-mat-vot" class="mega-brand-card">
             <img src="/images/brand/butterfly-logo.png" class="brand-logo" alt="Butterfly">
             <span class="mega-brand-name">Butterfly</span>
             <span class="mega-brand-desc">Cao cấp, Nhật Bản</span>
             <span class="mega-brand-arr">Xem →</span>
           </a>
-          <a href="mat-vot.html?brand=tibhar" class="mega-brand-card">
+          <a href="#block-mat-vot" class="mega-brand-card">
             <img src="/images/brand/tibhar-logo-white.png" class="brand-logo" alt="Tibhar">
             <span class="mega-brand-name">Tibhar</span>
             <span class="mega-brand-desc">Chuyên nghiệp, Đức</span>
             <span class="mega-brand-arr">Xem →</span>
           </a>
-          <a href="mat-vot.html?brand=unrex" class="mega-brand-card">
+          <a href="#block-mat-vot" class="mega-brand-card">
             <span class="mega-brand-name">Unrex</span>
             <span class="mega-brand-desc">Đa dạng kiểu chơi</span>
             <span class="mega-brand-arr">Xem →</span>
           </a>
-          <a href="mat-vot.html?brand=yinhe" class="mega-brand-card">
+          <a href="#block-mat-vot" class="mega-brand-card">
             <img src="/images/brand/yinhe-logo.jpg" class="brand-logo" alt="Yinhe">
             <span class="mega-brand-name">Yinhe</span>
             <span class="mega-brand-desc">Giá tốt, hiệu quả</span>
             <span class="mega-brand-arr">Xem →</span>
           </a>
-          <a href="mat-vot.html?brand=khac" class="mega-brand-card">
+          <a href="#block-mat-vot" class="mega-brand-card">
             <span class="mega-brand-name">Khác</span>
             <span class="mega-brand-desc">Thương hiệu khác</span>
             <span class="mega-brand-arr">Xem →</span>
@@ -1445,15 +1449,15 @@
       <div class="mega-panel mega-gear">
         <div class="mega-head">
           <span class="mega-head-label">Đồ Thi Đấu</span>
-          <a href="do-thi-dau.html" class="mega-head-all">Xem tất cả →</a>
+          <a href="#block-do-thi-dau" class="mega-head-all">Xem tất cả →</a>
         </div>
         <div class="mega-gear-grid">
-          <a href="do-thi-dau.html#giay" class="mega-gear-card">
+          <a href="#block-do-thi-dau" class="mega-gear-card">
             <span class="mega-gear-name">Giày</span>
             <span class="mega-gear-desc">Giày chuyên dụng bóng bàn</span>
             <span class="mega-gear-arr">Xem →</span>
           </a>
-          <a href="do-thi-dau.html#trang-phuc" class="mega-gear-card">
+          <a href="#block-do-thi-dau" class="mega-gear-card">
             <span class="mega-gear-name">Trang Phục &amp; Phụ Kiện</span>
             <span class="mega-gear-desc">Áo, quần, băng tay, vớ…</span>
             <span class="mega-gear-arr">Xem →</span>
@@ -1507,26 +1511,35 @@
   <!-- Filter Bar -->
   <div class="cat-search-bar" id="catSearchBar">
     <div class="cat-search-inner">
-      <span class="cat-filter-label">Danh Mục</span>
-      <div class="cat-nav-pills" id="catNavPills">
-        <span class="cat-nav-pill active" data-cat="all">Tất Cả</span>
-        <span class="cat-nav-pill" data-cat="cot-vot">Cốt Vợt</span>
-        <span class="cat-nav-pill" data-cat="mat-vot">Mặt Vợt</span>
-        <span class="cat-nav-pill" data-cat="bong">Bóng</span>
-        <span class="cat-nav-pill" data-cat="ban">Bàn</span>
-        <span class="cat-nav-pill" data-cat="do-thi-dau">Đồ Thi Đấu</span>
-        <span class="cat-nav-pill" data-cat="combo-vot">Combo Vợt</span>
-        <span class="cat-nav-pill" data-cat="do-cu">Đồ Cũ</span>
+      <div class="srch-group">
+        <svg class="srch-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="srchName" class="srch-input" placeholder="Tìm theo tên sản phẩm…">
       </div>
-      <div class="cat-filter-sep"></div>
-      <span class="cat-filter-label">Khoảng Giá</span>
-      <div class="cat-nav-pills" id="catPricePills">
-        <span class="cat-nav-pill active" data-price="all">Tất Cả</span>
-        <span class="cat-nav-pill" data-price="<500">Dưới 500k</span>
-        <span class="cat-nav-pill" data-price="500-1500">500k – 1,5tr</span>
-        <span class="cat-nav-pill" data-price="1500-5000">1,5tr – 5tr</span>
-        <span class="cat-nav-pill" data-price=">5000">Trên 5tr</span>
-        <span class="cat-nav-pill" data-price="lien-he">Liên Hệ</span>
+      <div class="srch-divider"></div>
+      <div class="srch-drop-wrap">
+        <select id="srchCat" class="srch-select">
+          <option value="all">Danh Mục</option>
+          <option value="cot-vot">Cốt Vợt</option>
+          <option value="mat-vot">Mặt Vợt</option>
+          <option value="bong">Bóng</option>
+          <option value="ban">Bàn</option>
+          <option value="do-thi-dau">Đồ Thi Đấu</option>
+          <option value="combo-vot">Combo Vợt</option>
+          <option value="do-cu">Đồ Cũ</option>
+        </select>
+        <svg class="srch-drop-arrow" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="srch-divider"></div>
+      <div class="srch-drop-wrap">
+        <select id="srchPrice" class="srch-select">
+          <option value="all">Khoảng Giá</option>
+          <option value="<500">Dưới 500k</option>
+          <option value="500-1500">500k – 1,5tr</option>
+          <option value="1500-5000">1,5tr – 5tr</option>
+          <option value=">5000">Trên 5tr</option>
+          <option value="lien-he">Liên Hệ</option>
+        </select>
+        <svg class="srch-drop-arrow" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
     </div>
   </div>
@@ -1982,9 +1995,14 @@ fetch('/api/settings/home_hero_image')
   window.addEventListener('scroll', function() { if (!pinnedSlug) hidePopups(); }, { passive: true });
   window.addEventListener('resize', function() { hidePopups(); pinnedSlug = null; });
 
-  /* ── Catalog filters: Danh Mục + Khoảng Giá ────────── */
-  var activeCat = 'all';
-  var activePr  = 'all';
+  /* ── Catalog filters: Tên + Danh Mục + Khoảng Giá ───── */
+  var activeCat  = 'all';
+  var activePr   = 'all';
+  var activeName = '';
+
+  var srchNameEl  = document.getElementById('srchName');
+  var srchCatEl   = document.getElementById('srchCat');
+  var srchPriceEl = document.getElementById('srchPrice');
 
   function applyFilters() {
     SECTIONS.forEach(function(s) {
@@ -2002,19 +2020,25 @@ fetch('/api/settings/home_hero_image')
       var shown = 0;
 
       cards.forEach(function(c) {
-        var rawP = c.getAttribute('data-price');
+        var rawP     = c.getAttribute('data-price');
         var priceVal = rawP ? (parseInt(rawP, 10) || 0) : null;
-        var match = false;
+        var cardName = (c.getAttribute('data-name') || '');
+
+        var nameOk = !activeName || cardName.indexOf(activeName) !== -1;
+
+        var priceOk = false;
         if (activePr === 'all') {
-          match = true;
+          priceOk = true;
         } else if (activePr === 'lien-he') {
-          match = (priceVal === null || priceVal === 0);
+          priceOk = (priceVal === null || priceVal === 0);
         } else if (priceVal !== null && priceVal > 0) {
-          if      (activePr === '<500')       match = priceVal < 500000;
-          else if (activePr === '500-1500')   match = priceVal >= 500000  && priceVal < 1500000;
-          else if (activePr === '1500-5000')  match = priceVal >= 1500000 && priceVal < 5000000;
-          else if (activePr === '>5000')      match = priceVal >= 5000000;
+          if      (activePr === '<500')       priceOk = priceVal < 500000;
+          else if (activePr === '500-1500')   priceOk = priceVal >= 500000  && priceVal < 1500000;
+          else if (activePr === '1500-5000')  priceOk = priceVal >= 1500000 && priceVal < 5000000;
+          else if (activePr === '>5000')      priceOk = priceVal >= 5000000;
         }
+
+        var match = nameOk && priceOk;
         c.style.display = match ? '' : 'none';
         if (match) shown++;
       });
@@ -2023,42 +2047,36 @@ fetch('/api/settings/home_hero_image')
     });
   }
 
-  document.querySelectorAll('#catNavPills .cat-nav-pill').forEach(function(pill) {
-    pill.addEventListener('click', function() {
-      document.querySelectorAll('#catNavPills .cat-nav-pill').forEach(function(p) { p.classList.remove('active'); });
-      this.classList.add('active');
-      activeCat = this.getAttribute('data-cat');
-      applyFilters();
-      if (activeCat !== 'all') {
-        var block = document.getElementById('block-' + activeCat);
-        if (block) setTimeout(function() { block.scrollIntoView({ behavior:'smooth', block:'start' }); }, 50);
-      }
-    });
+  if (srchNameEl) srchNameEl.addEventListener('input', function() {
+    activeName = this.value.toLowerCase().trim();
+    applyFilters();
   });
 
-  document.querySelectorAll('#catPricePills .cat-nav-pill').forEach(function(pill) {
-    pill.addEventListener('click', function() {
-      document.querySelectorAll('#catPricePills .cat-nav-pill').forEach(function(p) { p.classList.remove('active'); });
-      this.classList.add('active');
-      activePr = this.getAttribute('data-price');
-      applyFilters();
-    });
+  if (srchCatEl) srchCatEl.addEventListener('change', function() {
+    activeCat = this.value;
+    applyFilters();
+    if (activeCat !== 'all') {
+      var block = document.getElementById('block-' + activeCat);
+      if (block) setTimeout(function() { block.scrollIntoView({ behavior:'smooth', block:'start' }); }, 50);
+    }
   });
 
-  /* "Xem tất cả" buttons → filter by that category on same page */
+  if (srchPriceEl) srchPriceEl.addEventListener('change', function() {
+    activePr = this.value;
+    applyFilters();
+  });
+
+  /* "Xem tất cả" buttons → filter by category on same page */
   document.querySelectorAll('[data-see-all]').forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.stopPropagation();
       var cat = this.getAttribute('data-see-all');
-      document.querySelectorAll('#catNavPills .cat-nav-pill').forEach(function(p) { p.classList.remove('active'); });
-      var pill = document.querySelector('#catNavPills [data-cat="' + cat + '"]');
-      if (pill) pill.classList.add('active');
-      activeCat = cat;
-      /* Also reset price filter to show all */
-      document.querySelectorAll('#catPricePills .cat-nav-pill').forEach(function(p) { p.classList.remove('active'); });
-      var prAll = document.querySelector('#catPricePills [data-price="all"]');
-      if (prAll) prAll.classList.add('active');
-      activePr = 'all';
+      activeCat  = cat;
+      activePr   = 'all';
+      activeName = '';
+      if (srchCatEl)   srchCatEl.value   = cat;
+      if (srchPriceEl) srchPriceEl.value = 'all';
+      if (srchNameEl)  srchNameEl.value  = '';
       applyFilters();
       var block = document.getElementById('block-' + cat);
       if (block) setTimeout(function() { block.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
