@@ -173,11 +173,11 @@
     .hero {
       display: grid;
       grid-template-columns: 58fr 42fr;
-      min-height: clamp(520px, calc(90vh - 82px), 960px);
+      min-height: clamp(260px, calc(45vh - 41px), 480px);
     }
     .hero-l {
       background: #0c0c0c;
-      padding: 84px 64px 72px;
+      padding: 44px 64px 36px;
       display: flex; flex-direction: column;
       justify-content: center; position: relative;
       overflow: hidden;
@@ -210,9 +210,9 @@
     }
     .hero-h1 {
       font-family: 'Lexend', sans-serif;
-      font-size: clamp(56px, 9vw, 128px);
+      font-size: clamp(36px, 5vw, 72px);
       font-weight: 900; line-height: .92;
-      color: #fff; margin-bottom: 28px;
+      color: #fff; margin-bottom: 16px;
       position: relative; z-index: 1;
       letter-spacing: -.02em;
     }
@@ -220,14 +220,14 @@
     .hero-p {
       font-size: 14px; color: rgba(255,255,255,.4);
       line-height: 1.85; max-width: 340px;
-      margin-bottom: 28px; position: relative; z-index: 1;
+      margin-bottom: 16px; position: relative; z-index: 1;
       padding-left: 16px;
       border-left: 2px solid rgba(255,255,255,.1);
     }
     .hero-kpi {
-      display: flex; gap: 32px;
-      margin-bottom: 36px;
-      padding: 22px 0;
+      display: none;
+      margin-bottom: 0;
+      padding: 0;
       border-top: 1px solid rgba(255,255,255,.08);
       border-bottom: 1px solid rgba(255,255,255,.08);
       position: relative; z-index: 1;
@@ -1208,6 +1208,12 @@
 
     @media (max-width:960px) { .flow-filter-bar{padding:16px 20px;} .flow-pills-bar{padding:11px 20px;} .nav-logo-text{font-size:12px;} }
     @media (max-width:640px) { .flow-filter-bar{padding:14px 16px;} .flow-filter-inner{flex-wrap:wrap;gap:8px;} .flow-pills-bar{padding:10px 16px;} .nav-logo-text{display:none;} .nav-login{padding:8px 14px;font-size:10px;} .hero-r-frame{width:85%;border-radius:20px;} }
+
+    /* ── All-Catalogs wrapper ─────────────────────────── */
+    .all-cats-wrap { background: var(--bg); }
+    .all-cats-body { max-width:1200px; margin:0 auto; padding:56px 40px 96px; display:flex; flex-direction:column; gap:88px; }
+    @media (max-width:960px) { .all-cats-body { padding:40px 20px 72px; gap:64px; } }
+    @media (max-width:640px) { .all-cats-body { padding:32px 16px 56px; gap:48px; } }
   </style>
 </head>
 <body>
@@ -1411,7 +1417,7 @@
     <h1 class="hero-h1">VŨ KHÍ<br><span class="red">CHIẾN THẮNG</span></h1>
     <p class="hero-p">Hệ thống phân phối dụng cụ bóng bàn hàng đầu. Mọi thứ bạn cần để nâng tầm kỹ thuật.</p>
     <div class="hero-btns">
-      <a href="#featured" class="btn btn-red">Khám Phá Ngay</a>
+      <a href="#san-pham" class="btn btn-red">Khám Phá Ngay</a>
       <a href="#san-pham" class="btn btn-dark">Xem Tất Cả</a>
     </div>
   </div>
@@ -1428,117 +1434,67 @@
   </div>
 </section>
 
-<!-- Featured Dashboard -->
-<section class="featured-dash" id="featured">
-  <div class="featured-dash-body">
+<!-- All Catalogs -->
+<section id="san-pham" class="all-cats-wrap">
+  <div class="all-cats-body">
 
-    <div class="feat-section">
-      <div class="feat-section-head">
-        <div>
-          <h4 class="feat-section-title">Cốt Vợt Nổi Bật</h4>
-          <p class="feat-section-sub">Sản phẩm khuyên dùng</p>
-        </div>
+    <div class="cat-block" id="block-cot-vot">
+      <div class="flow-section-head">
+        <div><h2 class="flow-section-title">CỐT VỢT</h2><p class="flow-section-sub">Vũ khí chiến thắng của bạn</p></div>
         <a href="cot-vot.html" class="feat-see-all">Xem tất cả →</a>
       </div>
-      <div class="prod-grid" id="featCotVot"></div>
+      <div class="prod-grid" id="gridCotVot"></div>
     </div>
 
-    <div class="feat-section">
-      <div class="feat-section-head">
-        <div>
-          <h4 class="feat-section-title">Mặt Vợt Nổi Bật</h4>
-          <p class="feat-section-sub">Sản phẩm khuyên dùng</p>
-        </div>
+    <div class="cat-block" id="block-mat-vot">
+      <div class="flow-section-head">
+        <div><h2 class="flow-section-title">MẶT VỢT</h2><p class="flow-section-sub">Phong cách chơi của bạn</p></div>
         <a href="mat-vot.html" class="feat-see-all">Xem tất cả →</a>
       </div>
-      <div class="prod-grid" id="featMatVot"></div>
+      <div class="prod-grid" id="gridMatVot"></div>
     </div>
 
-    <div class="feat-section">
-      <div class="feat-section-head">
-        <div>
-          <h4 class="feat-section-title">Bàn Bóng Bàn</h4>
-          <p class="feat-section-sub">Sản phẩm khuyên dùng</p>
-        </div>
+    <div class="cat-block" id="block-bong">
+      <div class="flow-section-head">
+        <div><h2 class="flow-section-title">BÓNG</h2><p class="flow-section-sub">Bóng thi đấu chính hãng</p></div>
+        <a href="bong.html" class="feat-see-all">Xem tất cả →</a>
+      </div>
+      <div class="prod-grid" id="gridBong"></div>
+    </div>
+
+    <div class="cat-block" id="block-ban">
+      <div class="flow-section-head">
+        <div><h2 class="flow-section-title">BÀN BÓNG BÀN</h2><p class="flow-section-sub">Bàn thi đấu &amp; luyện tập</p></div>
         <a href="ban.html" class="feat-see-all">Xem tất cả →</a>
       </div>
-      <div class="prod-grid" id="featBan"></div>
+      <div class="prod-grid" id="gridBan"></div>
+    </div>
+
+    <div class="cat-block" id="block-do-thi-dau">
+      <div class="flow-section-head">
+        <div><h2 class="flow-section-title">ĐỒ THI ĐẤU</h2><p class="flow-section-sub">Giày, trang phục &amp; phụ kiện</p></div>
+        <a href="do-thi-dau.html" class="feat-see-all">Xem tất cả →</a>
+      </div>
+      <div class="prod-grid" id="gridDoThiDau"></div>
+    </div>
+
+    <div class="cat-block" id="block-combo-vot">
+      <div class="flow-section-head">
+        <div><h2 class="flow-section-title">COMBO VỢT</h2><p class="flow-section-sub">Bộ vợt hoàn chỉnh theo trình độ</p></div>
+        <a href="combo-vot.html" class="feat-see-all">Xem tất cả →</a>
+      </div>
+      <div class="prod-grid" id="gridComboVot"></div>
+    </div>
+
+    <div class="cat-block" id="block-do-cu">
+      <div class="flow-section-head">
+        <div><h2 class="flow-section-title">ĐỒ CŨ</h2><p class="flow-section-sub">Hàng qua sử dụng, kiểm định kỹ</p></div>
+        <a href="do-cu.html" class="feat-see-all">Xem tất cả →</a>
+      </div>
+      <div class="prod-grid" id="gridDoCu"></div>
     </div>
 
   </div>
-</section>
-
-<!-- Flow Catalog -->
-<section class="flow-catalog" id="san-pham">
-
-  <!-- White Filter Bar -->
-  <div class="flow-filter-bar">
-    <div class="flow-filter-inner">
-      <div class="flow-filter-group">
-        <label class="flow-filter-label">Tìm Kiếm</label>
-        <div style="position:relative;">
-          <svg style="position:absolute;left:11px;top:50%;transform:translateY(-50%);opacity:.3;pointer-events:none;" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input type="text" id="flowSearch" class="flow-filter-input" placeholder="Tên sản phẩm..." style="padding-left:32px;">
-        </div>
-      </div>
-      <div class="flow-filter-group">
-        <label class="flow-filter-label">Thương Hiệu</label>
-        <select id="flowBrand" class="flow-filter-select">
-          <option value="">Tất cả thương hiệu</option>
-          <option value="butterfly">Butterfly</option>
-          <option value="tibhar">Tibhar</option>
-          <option value="unrex">Unrex</option>
-          <option value="yinhe">Yinhe</option>
-          <option value="khac">Khác</option>
-        </select>
-      </div>
-      <div class="flow-filter-group">
-        <label class="flow-filter-label">Khoảng Giá</label>
-        <select id="flowPrice" class="flow-filter-select">
-          <option value="">Mọi mức giá</option>
-          <option value="0-500000">Dưới 500k</option>
-          <option value="500000-1000000">500k – 1 triệu</option>
-          <option value="1000000-2000000">1 – 2 triệu</option>
-          <option value="2000000-">Trên 2 triệu</option>
-        </select>
-      </div>
-      <button class="flow-filter-reset-btn" id="flowReset">Làm Mới Bộ Lọc</button>
-    </div>
-  </div>
-
-  <!-- Category Pills -->
-  <div class="flow-pills-bar">
-    <div class="flow-pills-inner">
-      <button class="flow-pill active" data-cat="" data-combo="">Tất Cả</button>
-      <button class="flow-pill" data-cat="cot-vot" data-combo="">Cốt Vợt</button>
-      <button class="flow-pill" data-cat="mat-vot" data-combo="">Mặt Vợt</button>
-      <button class="flow-pill" data-cat="bong" data-combo="">Bóng</button>
-      <button class="flow-pill" data-cat="ban" data-combo="">Bàn</button>
-      <button class="flow-pill" data-cat="do-thi-dau" data-combo="">Đồ Thi Đấu</button>
-      <button class="flow-pill" data-cat="" data-combo="1">Combo Vợt</button>
-      <button class="flow-pill" data-cat="do-cu" data-combo="">Đồ Cũ</button>
-      <a href="kien-thuc.html" class="flow-pill flow-pill-ext">Kiến Thức ↗</a>
-      <span id="flowCount" style="margin-left:auto;">—</span>
-    </div>
-  </div>
-
-  <!-- Sub-category pills (for do-thi-dau etc.) -->
-  <div id="flowSubRow" style="display:none;" class="flow-pills-bar" data-sub="1">
-    <div class="flow-pills-inner" id="flowSubInner"></div>
-  </div>
-
-  <!-- Product grid -->
-  <div class="flow-body">
-    <div class="flow-section-head" id="flowSectionHead">
-      <div>
-        <h2 class="flow-section-title" id="flowSectionTitle">TẤT CẢ SẢN PHẨM</h2>
-        <p class="flow-section-sub" id="flowSectionSub">Khám phá toàn bộ bộ sưu tập bóng bàn chính hãng</p>
-      </div>
-      <span class="flow-section-arr">→</span>
-    </div>
-    <div class="prod-grid" id="flowGrid"></div>
-  </div>
-
 </section>
 
 <!-- Popup: Specs (right of card) -->
@@ -1709,25 +1665,10 @@ fetch('/api/settings/home_hero_image')
     }
   }).catch(function(){});
 
-/* ── Featured Dashboard ──────────────────────────────── */
-(function() {
-  var FEATURED = [
-    { cat: 'cot-vot', gridId: 'featCotVot' },
-    { cat: 'mat-vot', gridId: 'featMatVot' },
-    { cat: 'ban',     gridId: 'featBan' }
-  ];
-  FEATURED.forEach(function(s) {
-    loadProdGrid({ category: s.cat, limit: 4 }, {
-      gridId: s.gridId, showCat: false
-    });
-  });
-})();
-
-/* ── Flow Catalog ──────────────────────────────────────── */
+/* ── All Catalogs (7 × 8 random) ────────────────────── */
 (function() {
   var flowCache = {};
   var pinnedSlug = null;
-  var currentSubCat = '';
   var popupR = document.getElementById('flowPopupR');
   var popupB = document.getElementById('flowPopupB');
   var lineR  = document.getElementById('flowLineR');
@@ -1741,108 +1682,41 @@ fetch('/api/settings/home_hero_image')
     butterfly:'BUTTERFLY',tibhar:'TIBHAR',unrex:'UNREX',
     yinhe:'YINHE',khac:'Các Hãng Khác'
   };
-  var SUB_CATS = {
-    'do-thi-dau':[
-      {label:'Tất Cả',val:''},
-      {label:'Giày',val:'giay'},
-      {label:'Trang Phục & Phụ Kiện',val:'trang-phuc-phu-kien'}
-    ]
-  };
-  var SECTION_INFO = {
-    '':          { title:'TẤT CẢ SẢN PHẨM',           sub:'Khám phá toàn bộ bộ sưu tập bóng bàn chính hãng' },
-    'cot-vot':   { title:'CỐT VỢT CHUYÊN NGHIỆP',      sub:'Khám phá vũ khí chiến thắng của bạn' },
-    'mat-vot':   { title:'MẶT VỢT CHUYÊN DỤNG',        sub:'Mặt vợt cho mọi phong cách chơi' },
-    'bong':      { title:'BÓNG THI ĐẤU',                sub:'Bóng chính hãng tiêu chuẩn quốc tế' },
-    'ban':       { title:'BÀN BÓNG BÀN',                sub:'Bàn thi đấu và luyện tập chuyên nghiệp' },
-    'do-thi-dau':{ title:'ĐỒ THI ĐẤU',                 sub:'Giày, trang phục và phụ kiện chuyên dụng' },
-    'combo-vot': { title:'COMBO VỢT KHUYÊN DÙNG',       sub:'Bộ vợt hoàn chỉnh phù hợp theo trình độ' },
-    'do-cu':     { title:'ĐỒ ĐÃ QUA SỬ DỤNG',          sub:'Hàng cũ chính hãng, kiểm định kỹ lưỡng' }
-  };
 
-  function loadTab(tab) {
-    document.querySelectorAll('.flow-pill').forEach(function(t){ t.classList.remove('active'); });
-    tab.classList.add('active');
-    currentSubCat = '';
-    pinnedSlug = null;
-    hidePopups();
-    var cat = tab.dataset.cat || '';
-    var isCombo = tab.dataset.combo === '1';
-    renderSubMenu(cat);
-    updateSectionHead(cat, isCombo);
-    fetchGrid(tab);
+  var SECTIONS = [
+    { cat:'cot-vot',    gridId:'gridCotVot',   isCombo:false },
+    { cat:'mat-vot',    gridId:'gridMatVot',    isCombo:false },
+    { cat:'bong',       gridId:'gridBong',      isCombo:false },
+    { cat:'ban',        gridId:'gridBan',       isCombo:false },
+    { cat:'do-thi-dau', gridId:'gridDoThiDau',  isCombo:false },
+    { cat:'combo-vot',  gridId:'gridComboVot',  isCombo:true  },
+    { cat:'do-cu',      gridId:'gridDoCu',      isCombo:false }
+  ];
+
+  function shuffleDom(grid) {
+    var cards = Array.from(grid.querySelectorAll('.prod-card'));
+    cards.sort(function() { return Math.random() - 0.5; });
+    cards.forEach(function(c, i) {
+      grid.appendChild(c);
+      c.style.display = i < 8 ? '' : 'none';
+    });
   }
 
-  function updateSectionHead(cat, isCombo) {
-    var key = isCombo ? 'combo-vot' : (cat || '');
-    var info = SECTION_INFO[key] || SECTION_INFO[''];
-    var t = document.getElementById('flowSectionTitle');
-    var s = document.getElementById('flowSectionSub');
-    if (t) t.textContent = info.title;
-    if (s) s.textContent = info.sub;
-  }
-
-  function fetchGrid(tab) {
-    var cat = tab.dataset.cat || '';
-    var isCombo = tab.dataset.combo === '1';
-    var brand = document.getElementById('flowBrand').value;
-    var params = { limit: 200 };
-    if (cat) params.category = cat;
-    if (brand) params.brand = brand;
-    if (currentSubCat) params.gear_subcategory = currentSubCat;
+  SECTIONS.forEach(function(s) {
+    var params = { limit: 40 };
+    if (!s.isCombo) params.category = s.cat;
     loadProdGrid(params, {
-      gridId: 'flowGrid', countId: 'flowCount',
-      showCat: !cat, isCombo: isCombo,
+      gridId: s.gridId, showCat: false, isCombo: s.isCombo,
       onDone: function(prods) {
-        flowCache = {};
         prods.forEach(function(p){ flowCache[p.slug] = p; });
-        initCards();
-        applyFlowSearch();
-        var pr = document.getElementById('flowPrice');
-        if (pr && pr.value) applyPriceFilter(pr.value);
+        var grid = document.getElementById(s.gridId);
+        if (grid) { shuffleDom(grid); initCards(grid); }
       }
     });
-  }
+  });
 
-  function applyPriceFilter(range) {
-    var parts = range.split('-');
-    var minP = parseInt(parts[0]) || 0;
-    var maxP = parts[1] !== undefined ? (parseInt(parts[1]) || Infinity) : Infinity;
-    var visible = 0;
-    document.querySelectorAll('#flowGrid .prod-card').forEach(function(c) {
-      if (c.style.display === 'none') return;
-      var price = parseInt(c.dataset.price) || 0;
-      var ok = price >= minP && price < maxP;
-      c.style.display = ok ? '' : 'none';
-      if (ok) visible++;
-    });
-    var el = document.getElementById('flowCount');
-    if (el) el.textContent = visible + ' sản phẩm';
-  }
-
-  function renderSubMenu(cat) {
-    var row = document.getElementById('flowSubRow');
-    var inner = document.getElementById('flowSubInner');
-    var subs = SUB_CATS[cat];
-    if (!subs || !inner) { if(row) row.style.display = 'none'; return; }
-    row.style.display = 'block';
-    inner.innerHTML = subs.map(function(s) {
-      return '<button class="flow-pill' + (s.val === currentSubCat ? ' active' : '') +
-             '" data-val="' + s.val + '">' + s.label + '</button>';
-    }).join('');
-    inner.querySelectorAll('.flow-pill').forEach(function(btn) {
-      btn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        currentSubCat = this.dataset.val;
-        inner.querySelectorAll('.flow-pill').forEach(function(b){ b.classList.remove('active'); });
-        this.classList.add('active');
-        var at = document.querySelector('.flow-pills-bar:not([data-sub]) .flow-pill.active');
-        if (at) fetchGrid(at);
-      });
-    });
-  }
-
-  function initCards() {
-    document.querySelectorAll('#flowGrid .prod-card').forEach(function(card) {
+  function initCards(grid) {
+    grid.querySelectorAll('.prod-card').forEach(function(card) {
       card.addEventListener('mouseenter', function() {
         if (pinnedSlug !== null) return;
         var p = flowCache[getSlug(this)];
@@ -1856,13 +1730,10 @@ fetch('/api/settings/home_hero_image')
         e.preventDefault();
         var slug = getSlug(this);
         if (pinnedSlug === slug) {
-          pinnedSlug = null;
-          this.classList.remove('fp-pinned');
-          hidePopups();
+          pinnedSlug = null; this.classList.remove('fp-pinned'); hidePopups();
         } else {
-          document.querySelectorAll('#flowGrid .prod-card.fp-pinned').forEach(function(c){ c.classList.remove('fp-pinned'); });
-          pinnedSlug = slug;
-          this.classList.add('fp-pinned');
+          document.querySelectorAll('.prod-card.fp-pinned').forEach(function(c){ c.classList.remove('fp-pinned'); });
+          pinnedSlug = slug; this.classList.add('fp-pinned');
           var p = flowCache[slug];
           if (p) showPopups(p, this);
         }
@@ -1875,8 +1746,8 @@ fetch('/api/settings/home_hero_image')
   }
 
   function showPopups(p, card) {
-    var catLabel  = CATS[p.category_slug]  || p.category_slug  || 'Sản Phẩm';
-    var brandLabel = BRANDS[p.brand_slug] || p.brand_slug || '';
+    var catLabel   = CATS[p.category_slug] || p.category_slug || 'Sản Phẩm';
+    var brandLabel = BRANDS[p.brand_slug]  || p.brand_slug    || '';
     document.getElementById('fpTag').textContent  = brandLabel ? brandLabel + ' · ' + catLabel : catLabel;
     document.getElementById('fpName').textContent = p.name || '';
 
@@ -1959,58 +1830,16 @@ fetch('/api/settings/home_hero_image')
     lineB.classList.remove('active');
   }
 
-  function applyFlowSearch() {
-    var q = (document.getElementById('flowSearch').value || '').toLowerCase().trim();
-    var cards = document.querySelectorAll('#flowGrid .prod-card');
-    var visible = 0;
-    cards.forEach(function(c) {
-      var ok = !q || (c.dataset.name || '').includes(q);
-      c.style.display = ok ? '' : 'none';
-      if (ok) visible++;
-    });
-    var el = document.getElementById('flowCount');
-    if (el) el.textContent = visible + ' sản phẩm';
-  }
-
-  document.querySelectorAll('.flow-pills-bar:not([data-sub]) .flow-pill[data-cat]').forEach(function(tab) {
-    tab.addEventListener('click', function(e) {
-      e.stopPropagation();
-      loadTab(this);
-    });
-  });
-
-  document.getElementById('flowBrand').addEventListener('change', function() {
-    var at = document.querySelector('.flow-pills-bar:not([data-sub]) .flow-pill.active');
-    if (at) fetchGrid(at);
-  });
-
-  document.getElementById('flowPrice').addEventListener('change', function() {
-    var at = document.querySelector('.flow-pills-bar:not([data-sub]) .flow-pill.active');
-    if (at) fetchGrid(at);
-  });
-
-  document.getElementById('flowSearch').addEventListener('input', applyFlowSearch);
-
-  document.getElementById('flowReset').addEventListener('click', function() {
-    document.getElementById('flowSearch').value = '';
-    document.getElementById('flowBrand').value = '';
-    document.getElementById('flowPrice').value = '';
-    var allPill = document.querySelector('.flow-pill[data-cat=""][data-combo=""]');
-    if (allPill) loadTab(allPill);
-  });
-
   document.body.addEventListener('click', function() {
     if (pinnedSlug !== null) {
       pinnedSlug = null;
-      document.querySelectorAll('#flowGrid .prod-card.fp-pinned').forEach(function(c){ c.classList.remove('fp-pinned'); });
+      document.querySelectorAll('.prod-card.fp-pinned').forEach(function(c){ c.classList.remove('fp-pinned'); });
       hidePopups();
     }
   });
 
   window.addEventListener('scroll', function() { if (!pinnedSlug) hidePopups(); }, { passive: true });
   window.addEventListener('resize', function() { hidePopups(); pinnedSlug = null; });
-
-  loadTab(document.querySelector('.flow-pills-bar:not([data-sub]) .flow-pill.active'));
 })();
 </script>
 <script src="/js/banners.js"></script>
