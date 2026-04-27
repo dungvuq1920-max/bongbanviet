@@ -1287,12 +1287,12 @@
     .fltr-drop-opt:not(.fltr-opt-hdr):hover { background:var(--bg); }
     .fltr-drop-opt.active:not(.fltr-opt-hdr) { color:var(--red); }
 
-    /* ── 4-column grid for homepage catalogs ─────────── */
-    .all-cats-wrap .prod-grid { grid-template-columns:repeat(4,1fr); gap:16px; }
+    /* ── 5-column grid for homepage catalogs ─────────── */
+    .all-cats-wrap .prod-grid { grid-template-columns:repeat(5,1fr); gap:14px; }
     .cat-block { scroll-margin-top:160px; }
-    @media (max-width:1100px) { .all-cats-wrap .prod-grid { grid-template-columns:repeat(3,1fr); } }
-    @media (max-width:768px)  { .all-cats-wrap .prod-grid { grid-template-columns:repeat(2,1fr); } }
-    @media (max-width:480px)  { .all-cats-wrap .prod-grid { grid-template-columns:repeat(2,1fr); gap:10px; } }
+    @media (max-width:1200px) { .all-cats-wrap .prod-grid { grid-template-columns:repeat(4,1fr); } }
+    @media (max-width:900px)  { .all-cats-wrap .prod-grid { grid-template-columns:repeat(3,1fr); } }
+    @media (max-width:640px)  { .all-cats-wrap .prod-grid { grid-template-columns:repeat(2,1fr); gap:10px; } }
     @media (max-width:960px) {
       .cat-search-bar { top:0; }
       .cat-search-inner { padding:0 20px; }
@@ -1303,6 +1303,120 @@
       .srch-drop-wrap { padding:0 10px; }
       .cat-block { scroll-margin-top:80px; }
     }
+
+    /* ── Product Detail Drawer ──────────────────────── */
+    .prod-drawer-overlay {
+      position:fixed; inset:0; z-index:200;
+      background:rgba(0,0,0,0); backdrop-filter:blur(0px);
+      pointer-events:none;
+      transition:background .3s, backdrop-filter .3s;
+    }
+    .prod-drawer-overlay.active {
+      background:rgba(0,0,0,.55); backdrop-filter:blur(6px);
+      pointer-events:auto;
+    }
+    .prod-drawer {
+      position:fixed; top:0; right:0; bottom:0; width:460px; z-index:201;
+      background:var(--white); display:flex; flex-direction:column;
+      transform:translateX(100%);
+      transition:transform .35s cubic-bezier(.4,0,.2,1);
+      overflow-y:auto; box-shadow:-12px 0 48px rgba(0,0,0,.14);
+    }
+    .prod-drawer.open { transform:translateX(0); }
+    .pd-close {
+      position:absolute; top:14px; right:14px; z-index:1;
+      width:34px; height:34px; border-radius:50%;
+      border:1.5px solid var(--line); background:var(--white);
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer; font-size:15px; color:var(--dark);
+      transition:background .15s; flex-shrink:0;
+    }
+    .pd-close:hover { background:var(--bg); }
+    .pd-img-wrap {
+      width:100%; aspect-ratio:4/3; flex-shrink:0;
+      background:#fde8e4; overflow:hidden; position:relative;
+    }
+    .pd-img-wrap img { width:100%; height:100%; object-fit:cover; display:block; }
+    .pd-img-placeholder {
+      width:100%; height:100%; display:flex; align-items:center;
+      justify-content:center; font-size:48px; color:#c8b0ab;
+    }
+    .pd-content { padding:22px 24px 32px; }
+    .pd-tag-row { display:flex; align-items:center; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+    .pd-cat-tag { font-size:9px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; background:var(--red); color:#fff; padding:3px 10px; border-radius:100px; }
+    .pd-badge-pill { font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; background:rgba(30,43,60,.08); color:#1E2B3C; padding:3px 10px; border-radius:100px; }
+    .pd-name { font-size:21px; font-weight:800; color:var(--dark); line-height:1.25; margin-bottom:14px; }
+    .pd-price-row { display:flex; align-items:center; gap:14px; margin-bottom:14px; }
+    .pd-price { font-size:20px; font-weight:800; color:#1E2B3C; font-style:italic; }
+    .pd-stock { font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; }
+    .pd-variants { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+    .pd-variant-btn {
+      padding:7px 14px; border:1.5px solid var(--line); border-radius:8px;
+      font-family:'Lexend',sans-serif; font-size:10px; font-weight:700;
+      letter-spacing:.06em; cursor:pointer; background:var(--white);
+      color:var(--dark); transition:all .15s;
+    }
+    .pd-variant-btn.active { border-color:var(--dark); background:var(--dark); color:#fff; }
+    .pd-divider { border:none; border-top:1px solid var(--line); margin:18px 0; }
+    .pd-sect-lbl { font-size:8px; font-weight:800; letter-spacing:.18em; text-transform:uppercase; color:var(--mid); margin-bottom:10px; }
+    .pd-spec-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #f0f0f0; }
+    .pd-spec-row span:first-child { font-size:12px; color:var(--mid); font-weight:600; }
+    .pd-spec-row span:last-child { font-size:12px; color:var(--dark); font-weight:700; }
+    .pd-desc { font-size:13px; line-height:1.75; color:#555; margin-bottom:24px; }
+    .pd-actions { display:flex; flex-direction:column; gap:10px; }
+    .pd-btn {
+      display:block; padding:14px 20px; border-radius:8px;
+      text-align:center; font-family:'Lexend',sans-serif;
+      font-size:11px; font-weight:800; letter-spacing:.1em;
+      text-transform:uppercase; text-decoration:none; transition:all .2s;
+    }
+    .pd-btn-zalo { background:var(--red); color:#fff; }
+    .pd-btn-zalo:hover { background:#b82020; }
+    .pd-btn-detail { background:var(--dark); color:#fff; }
+    .pd-btn-detail:hover { background:#333; }
+    @media (max-width:640px) { .prod-drawer { width:100%; } }
+
+    /* ── All Products Modal ─────────────────────────── */
+    .all-prods-overlay {
+      position:fixed; inset:0; z-index:300;
+      background:rgba(0,0,0,0); backdrop-filter:blur(0px);
+      pointer-events:none;
+      transition:background .3s, backdrop-filter .3s;
+    }
+    .all-prods-overlay.active {
+      background:rgba(0,0,0,.6); backdrop-filter:blur(8px);
+      pointer-events:auto;
+    }
+    .all-prods-modal {
+      position:fixed; left:50%; top:50%; z-index:301;
+      width:min(96vw,1100px); max-height:88vh;
+      background:var(--white); border-radius:20px;
+      display:flex; flex-direction:column;
+      transform:translate(-50%,-48%) scale(.95);
+      opacity:0; pointer-events:none;
+      transition:transform .32s cubic-bezier(.4,0,.2,1), opacity .32s;
+      overflow:hidden;
+    }
+    .all-prods-modal.open {
+      transform:translate(-50%,-50%) scale(1);
+      opacity:1; pointer-events:auto;
+    }
+    .all-prods-header {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:18px 28px; border-bottom:1px solid var(--line); flex-shrink:0;
+    }
+    .all-prods-title { font-size:17px; font-weight:800; font-style:italic; text-transform:uppercase; color:var(--dark); }
+    .ap-close {
+      width:34px; height:34px; border-radius:50%;
+      border:1.5px solid var(--line); background:var(--white);
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer; font-size:15px; color:var(--dark);
+      transition:background .15s; flex-shrink:0;
+    }
+    .ap-close:hover { background:var(--bg); }
+    .all-prods-body { padding:22px 28px 28px; overflow-y:auto; flex:1; }
+    .all-prods-body .prod-grid { grid-template-columns:repeat(4,1fr); gap:14px; }
+    @media (max-width:768px) { .all-prods-body .prod-grid { grid-template-columns:repeat(2,1fr); } }
   </style>
 </head>
 <body>
@@ -1585,56 +1699,56 @@
 
     <div class="cat-block" id="block-cot-vot">
       <div class="flow-section-head">
-        <div><h2 class="flow-section-title">Cốt Vợt</h2><p class="flow-section-sub" id="count-cot-vot">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
-        <button class="feat-see-all" data-see-all="cot-vot">Xem Tất Cả →</button>
+        <div><h2 class="flow-section-title">Cốt Vợt Tiêu Biểu</h2><p class="flow-section-sub" id="count-cot-vot">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
+        <button class="feat-see-all" data-see-all="cot-vot">Xem Tất Cả ›</button>
       </div>
       <div class="prod-grid" id="gridCotVot"></div>
     </div>
 
     <div class="cat-block" id="block-mat-vot">
       <div class="flow-section-head">
-        <div><h2 class="flow-section-title">Mặt Vợt</h2><p class="flow-section-sub" id="count-mat-vot">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
-        <button class="feat-see-all" data-see-all="mat-vot">Xem Tất Cả →</button>
+        <div><h2 class="flow-section-title">Mặt Vợt Tiêu Biểu</h2><p class="flow-section-sub" id="count-mat-vot">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
+        <button class="feat-see-all" data-see-all="mat-vot">Xem Tất Cả ›</button>
       </div>
       <div class="prod-grid" id="gridMatVot"></div>
     </div>
 
     <div class="cat-block" id="block-bong">
       <div class="flow-section-head">
-        <div><h2 class="flow-section-title">Bóng</h2><p class="flow-section-sub" id="count-bong">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
-        <button class="feat-see-all" data-see-all="bong">Xem Tất Cả →</button>
+        <div><h2 class="flow-section-title">Bóng Tiêu Biểu</h2><p class="flow-section-sub" id="count-bong">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
+        <button class="feat-see-all" data-see-all="bong">Xem Tất Cả ›</button>
       </div>
       <div class="prod-grid" id="gridBong"></div>
     </div>
 
     <div class="cat-block" id="block-ban">
       <div class="flow-section-head">
-        <div><h2 class="flow-section-title">Bàn Bóng Bàn</h2><p class="flow-section-sub" id="count-ban">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
-        <button class="feat-see-all" data-see-all="ban">Xem Tất Cả →</button>
+        <div><h2 class="flow-section-title">Bàn Bóng Bàn Tiêu Biểu</h2><p class="flow-section-sub" id="count-ban">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
+        <button class="feat-see-all" data-see-all="ban">Xem Tất Cả ›</button>
       </div>
       <div class="prod-grid" id="gridBan"></div>
     </div>
 
     <div class="cat-block" id="block-do-thi-dau">
       <div class="flow-section-head">
-        <div><h2 class="flow-section-title">Đồ Thi Đấu</h2><p class="flow-section-sub" id="count-do-thi-dau">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
-        <button class="feat-see-all" data-see-all="do-thi-dau">Xem Tất Cả →</button>
+        <div><h2 class="flow-section-title">Đồ Thi Đấu Tiêu Biểu</h2><p class="flow-section-sub" id="count-do-thi-dau">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
+        <button class="feat-see-all" data-see-all="do-thi-dau">Xem Tất Cả ›</button>
       </div>
       <div class="prod-grid" id="gridDoThiDau"></div>
     </div>
 
     <div class="cat-block" id="block-combo-vot">
       <div class="flow-section-head">
-        <div><h2 class="flow-section-title">Combo Vợt</h2><p class="flow-section-sub" id="count-combo-vot">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
-        <button class="feat-see-all" data-see-all="combo-vot">Xem Tất Cả →</button>
+        <div><h2 class="flow-section-title">Combo Vợt Tiêu Biểu</h2><p class="flow-section-sub" id="count-combo-vot">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
+        <button class="feat-see-all" data-see-all="combo-vot">Xem Tất Cả ›</button>
       </div>
       <div class="prod-grid" id="gridComboVot"></div>
     </div>
 
     <div class="cat-block" id="block-do-cu">
       <div class="flow-section-head">
-        <div><h2 class="flow-section-title">Đồ Cũ</h2><p class="flow-section-sub" id="count-do-cu">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
-        <button class="feat-see-all" data-see-all="do-cu">Xem Tất Cả →</button>
+        <div><h2 class="flow-section-title">Đồ Cũ Tiêu Biểu</h2><p class="flow-section-sub" id="count-do-cu">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
+        <button class="feat-see-all" data-see-all="do-cu">Xem Tất Cả ›</button>
       </div>
       <div class="prod-grid" id="gridDoCu"></div>
     </div>
@@ -1880,15 +1994,10 @@ fetch('/api/settings/home_hero_image')
       });
       card.addEventListener('click', function(e) {
         e.preventDefault();
+        hidePopups();
         var slug = getSlug(this);
-        if (pinnedSlug === slug) {
-          pinnedSlug = null; this.classList.remove('fp-pinned'); hidePopups();
-        } else {
-          document.querySelectorAll('.prod-card.fp-pinned').forEach(function(c){ c.classList.remove('fp-pinned'); });
-          pinnedSlug = slug; this.classList.add('fp-pinned');
-          var p = flowCache[slug];
-          if (p) showPopups(p, this);
-        }
+        var p = flowCache[slug];
+        if (p) showDrawer(p);
       });
     });
   }
@@ -1991,10 +2100,8 @@ fetch('/api/settings/home_hero_image')
 
   function drawCurve(path, x1, y1, x2, y2) {
     var dx = x2 - x1, dy = y2 - y1;
-    var cx1 = x1 + dx * 0.55, cy1 = y1;
-    var cx2 = x2 - dx * 0.55, cy2 = y2;
-    var d = 'M ' + x1 + ' ' + y1 + ' C ' + cx1 + ' ' + cy1 + ', ' + cx2 + ' ' + cy2 + ', ' + x2 + ' ' + y2;
-    var len = Math.ceil(Math.sqrt(dx*dx + dy*dy) * 1.6) + 80;
+    var d = 'M ' + x1 + ' ' + y1 + ' L ' + x2 + ' ' + y2;
+    var len = Math.ceil(Math.sqrt(dx*dx + dy*dy)) + 20;
     path.style.strokeDasharray  = len;
     path.style.strokeDashoffset = len;
     path.setAttribute('d', d);
@@ -2008,30 +2115,97 @@ fetch('/api/settings/home_hero_image')
     popupB.classList.remove('visible', 'pinned-mode');
     lineR.classList.remove('active');
     lineB.classList.remove('active');
-    document.getElementById('flowOverlay').classList.remove('active');
   }
 
-  /* Clicks inside popups must not bubble to body/overlay */
+  /* Clicks inside popups must not bubble */
   popupR.addEventListener('click', function(e) { e.stopPropagation(); });
   popupB.addEventListener('click', function(e) { e.stopPropagation(); });
 
-  /* Clicking overlay or outside dismisses pinned popup */
-  document.getElementById('flowOverlay').addEventListener('click', function() {
-    pinnedSlug = null;
-    document.querySelectorAll('.prod-card.fp-pinned').forEach(function(c){ c.classList.remove('fp-pinned'); });
-    hidePopups();
-  });
+  window.addEventListener('scroll', function() { hidePopups(); }, { passive: true });
+  window.addEventListener('resize', function() { hidePopups(); });
 
-  document.body.addEventListener('click', function() {
-    if (pinnedSlug !== null) {
-      pinnedSlug = null;
-      document.querySelectorAll('.prod-card.fp-pinned').forEach(function(c){ c.classList.remove('fp-pinned'); });
-      hidePopups();
+  /* ── Product Detail Drawer ──────────────────────── */
+  function showDrawer(p) {
+    var drawer  = document.getElementById('prodDrawer');
+    var overlay = document.getElementById('prodDrawerOverlay');
+
+    /* Image */
+    var imgWrap = document.getElementById('pdImgWrap');
+    if (p.images && p.images.length) {
+      imgWrap.innerHTML = '<img src="' + p.images[0] + '" alt="' + (p.name || '') + '" loading="lazy">';
+    } else {
+      imgWrap.innerHTML = '<div class="pd-img-placeholder">📷</div>';
     }
-  });
 
-  window.addEventListener('scroll', function() { if (!pinnedSlug) hidePopups(); }, { passive: true });
-  window.addEventListener('resize', function() { hidePopups(); pinnedSlug = null; });
+    /* Tag + badge */
+    var catLabel   = CATS[p.category_slug] || (p.level ? 'COMBO VỢT' : 'SẢN PHẨM');
+    var brandLabel = BRANDS[p.brand_slug]  || '';
+    document.getElementById('pdCatTag').textContent = brandLabel ? brandLabel + ' · ' + catLabel : catLabel;
+    var badgeEl = document.getElementById('pdBadgePill');
+    if (p.badge) { badgeEl.textContent = p.badge; badgeEl.style.display = ''; }
+    else { badgeEl.style.display = 'none'; }
+
+    /* Name */
+    document.getElementById('pdName').textContent = p.name || '';
+
+    /* Price + stock */
+    var rawPrice = String(p.price || '');
+    var variants = Array.isArray(p.variants) ? p.variants.filter(function(v){ return v && v.price; }) : [];
+    document.getElementById('pdPrice').textContent = rawPrice || (variants.length ? 'Từ ' + variants[0].price : 'Liên hệ báo giá');
+    var stockEl = document.getElementById('pdStock');
+    if (p.in_stock === false || p.in_stock === 0) {
+      stockEl.textContent = '● Hết Hàng'; stockEl.style.color = '#D62B2B';
+    } else {
+      stockEl.textContent = '● Còn Hàng'; stockEl.style.color = '#166534';
+    }
+
+    /* Variants */
+    var variantsEl = document.getElementById('pdVariants');
+    if (variants.length) {
+      variantsEl.innerHTML = variants.map(function(v, i) {
+        return '<button class="pd-variant-btn' + (i === 0 ? ' active' : '') + '" data-price="' + v.price + '">' + v.name + '</button>';
+      }).join('');
+      variantsEl.querySelectorAll('.pd-variant-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          variantsEl.querySelectorAll('.pd-variant-btn').forEach(function(b){ b.classList.remove('active'); });
+          this.classList.add('active');
+          document.getElementById('pdPrice').textContent = this.getAttribute('data-price');
+        });
+      });
+    } else {
+      variantsEl.innerHTML = '';
+    }
+
+    /* Specs — tất cả */
+    var specsHtml = '';
+    if (p.specs && typeof p.specs === 'object') {
+      Object.entries(p.specs).forEach(function(kv) {
+        specsHtml += '<div class="pd-spec-row"><span>' + kv[0] + '</span><span>' + kv[1] + '</span></div>';
+      });
+    }
+    document.getElementById('pdSpecs').innerHTML = specsHtml || '<p style="color:var(--mid);font-size:12px;margin:0">Liên hệ để biết thêm thông số.</p>';
+
+    /* Description */
+    var desc = (p.description || '').replace(/<[^>]+>/g, '').trim();
+    document.getElementById('pdDesc').textContent = desc || 'Liên hệ để được tư vấn chi tiết về sản phẩm này.';
+
+    /* CTAs */
+    document.getElementById('pdZalo').href   = 'https://zalo.me/0961269386?text=' + encodeURIComponent('Tôi muốn hỏi về ' + (p.name || ''));
+    document.getElementById('pdDetail').href = 'san-pham.html?id=' + (p.slug || '');
+
+    drawer.scrollTop = 0;
+    overlay.classList.add('active');
+    drawer.classList.add('open');
+  }
+
+  function closeDrawer() {
+    document.getElementById('prodDrawer').classList.remove('open');
+    document.getElementById('prodDrawerOverlay').classList.remove('active');
+  }
+
+  document.getElementById('pdClose').addEventListener('click', closeDrawer);
+  document.getElementById('prodDrawerOverlay').addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeDrawer(); closeAllProdsModal(); } });
 
   /* ── Catalog filters: Thương Hiệu + Giá Tiền + Sắp Xếp ─ */
   var activeCat   = 'all';
@@ -2155,27 +2329,87 @@ fetch('/api/settings/home_hero_image')
     });
   });
 
-  /* "Xem tất cả" buttons → filter by category on same page */
+  /* "Xem Tất Cả" → mở modal danh sách đầy đủ */
+  var CAT_TITLES = {
+    'cot-vot':'Cốt Vợt Tiêu Biểu', 'mat-vot':'Mặt Vợt Tiêu Biểu',
+    'bong':'Bóng Tiêu Biểu', 'ban':'Bàn Bóng Bàn Tiêu Biểu',
+    'do-thi-dau':'Đồ Thi Đấu Tiêu Biểu', 'combo-vot':'Combo Vợt Tiêu Biểu',
+    'do-cu':'Đồ Cũ Tiêu Biểu'
+  };
+
+  function closeAllProdsModal() {
+    document.getElementById('allProdsModal').classList.remove('open');
+    document.getElementById('allProdsOverlay').classList.remove('active');
+  }
+
   document.querySelectorAll('[data-see-all]').forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.stopPropagation();
       var cat = this.getAttribute('data-see-all');
-      activeCat   = cat;
-      activePr    = 'all';
-      activeBrand = 'all';
-      activeSort  = 'default';
-      var bv = document.getElementById('fltrBrandVal'); if (bv) bv.textContent = 'Thương Hiệu';
-      var pv = document.getElementById('fltrPriceVal'); if (pv) pv.textContent = 'Giá Tiền';
-      var sv = document.getElementById('fltrSortVal');  if (sv) sv.textContent = 'Sắp Xếp';
-      document.querySelectorAll('.fltr-drop-opt').forEach(function(o){ o.classList.remove('active'); });
-      document.querySelectorAll('.fltr-drop-opt[data-brand="all"], .fltr-drop-opt[data-price="all"], .fltr-drop-opt[data-sort="default"]').forEach(function(o){ o.classList.add('active'); });
-      applyFilters();
-      var block = document.getElementById('block-' + cat);
-      if (block) setTimeout(function(){ block.scrollIntoView({ behavior:'smooth', block:'start' }); }, 50);
+      var s = SECTIONS.filter(function(x){ return x.cat === cat; })[0];
+      if (!s) return;
+
+      document.getElementById('allProdsTitle').textContent = (CAT_TITLES[cat] || cat).toUpperCase() + ' — TẤT CẢ SẢN PHẨM';
+
+      var sourceGrid = document.getElementById(s.gridId);
+      var modalGrid  = document.getElementById('allProdsGrid');
+      modalGrid.innerHTML = '';
+      Array.from(sourceGrid.querySelectorAll('.prod-card')).forEach(function(c) {
+        var clone = c.cloneNode(true);
+        clone.style.display = '';
+        modalGrid.appendChild(clone);
+      });
+
+      document.getElementById('allProdsOverlay').classList.add('active');
+      document.getElementById('allProdsModal').classList.add('open');
     });
   });
+
+  document.getElementById('allProdsClose').addEventListener('click', closeAllProdsModal);
+  document.getElementById('allProdsOverlay').addEventListener('click', closeAllProdsModal);
 })();
 </script>
 <script src="/js/banners.js"></script>
+
+<!-- Product Detail Drawer -->
+<div class="prod-drawer-overlay" id="prodDrawerOverlay"></div>
+<div class="prod-drawer" id="prodDrawer">
+  <button class="pd-close" id="pdClose">✕</button>
+  <div class="pd-img-wrap" id="pdImgWrap"></div>
+  <div class="pd-content">
+    <div class="pd-tag-row">
+      <span class="pd-cat-tag" id="pdCatTag"></span>
+      <span class="pd-badge-pill" id="pdBadgePill" style="display:none"></span>
+    </div>
+    <h2 class="pd-name" id="pdName"></h2>
+    <div class="pd-price-row">
+      <span class="pd-price" id="pdPrice"></span>
+      <span class="pd-stock" id="pdStock"></span>
+    </div>
+    <div class="pd-variants" id="pdVariants"></div>
+    <hr class="pd-divider">
+    <div class="pd-sect-lbl">Thông Số Kỹ Thuật</div>
+    <div id="pdSpecs"></div>
+    <hr class="pd-divider">
+    <div class="pd-sect-lbl">Mô Tả Sản Phẩm</div>
+    <p class="pd-desc" id="pdDesc"></p>
+    <div class="pd-actions">
+      <a class="pd-btn pd-btn-zalo" id="pdZalo" href="#" target="_blank" rel="noopener">Tư Vấn Ngay Qua Zalo</a>
+      <a class="pd-btn pd-btn-detail" id="pdDetail" href="#">Xem Chi Tiết Đầy Đủ ›</a>
+    </div>
+  </div>
+</div>
+
+<!-- All Products Modal -->
+<div class="all-prods-overlay" id="allProdsOverlay"></div>
+<div class="all-prods-modal" id="allProdsModal">
+  <div class="all-prods-header">
+    <span class="all-prods-title" id="allProdsTitle"></span>
+    <button class="ap-close" id="allProdsClose">✕</button>
+  </div>
+  <div class="all-prods-body">
+    <div class="prod-grid" id="allProdsGrid"></div>
+  </div>
+</div>
 </body>
 </html>
