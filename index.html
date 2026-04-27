@@ -1239,32 +1239,20 @@
       box-shadow:0 4px 20px rgba(0,0,0,.07);
     }
     .cat-search-inner {
-      max-width:1200px; margin:0 auto; padding:10px 40px;
-      display:flex; flex-direction:column; gap:8px;
+      max-width:1200px; margin:0 auto; padding:9px 40px;
+      display:flex; flex-direction:row; align-items:center; gap:12px;
+      overflow-x:auto; scrollbar-width:none;
     }
-    .cat-filter-row {
-      display:flex; align-items:center; gap:10px;
-    }
+    .cat-search-inner::-webkit-scrollbar { display:none; }
     .cat-filter-label {
       font-family:'Lexend',sans-serif; font-size:9px;
       font-weight:800; letter-spacing:.14em; text-transform:uppercase;
-      color:var(--mid); flex-shrink:0; width:100px; line-height:1.4;
+      color:var(--mid); flex-shrink:0; white-space:nowrap;
     }
-    .cat-search-title-row {
-      display:flex; align-items:center; gap:10px;
-      padding-bottom:7px; border-bottom:1px solid var(--line); margin-bottom:2px;
-    }
-    .cat-search-title {
-      font-family:'Lexend',sans-serif; font-size:10px;
-      font-weight:800; letter-spacing:.22em; text-transform:uppercase;
-      color:var(--dark); display:flex; align-items:center; gap:8px;
-    }
-    .cat-search-title svg { color:var(--red); flex-shrink:0; }
+    .cat-filter-sep { width:1px; height:18px; background:var(--line); flex-shrink:0; margin:0 2px; }
     .cat-nav-pills {
-      display:flex; align-items:center; gap:6px;
-      overflow-x:auto; scrollbar-width:none; flex:1;
+      display:flex; align-items:center; gap:6px; flex-shrink:0;
     }
-    .cat-nav-pills::-webkit-scrollbar { display:none; }
     .cat-nav-pill {
       display:inline-block; padding:5px 12px;
       border:1.5px solid var(--line); border-radius:100px;
@@ -1285,14 +1273,13 @@
     @media (max-width:480px)  { .all-cats-wrap .prod-grid { grid-template-columns:repeat(2,1fr); } }
     @media (max-width:960px) {
       .cat-search-bar { top:0; }
-      .cat-search-inner { padding:10px 20px; }
+      .cat-search-inner { padding:9px 20px; }
     }
     @media (max-width:640px) {
       .cat-search-bar { top:0; }
-      .cat-search-inner { padding:10px 16px; gap:6px; }
-      .cat-filter-label { width:82px; font-size:8px; }
-      .cat-nav-pills { width:100%; }
-      .cat-block { scroll-margin-top:130px; }
+      .cat-search-inner { padding:8px 16px; gap:10px; }
+      .cat-filter-label { font-size:8px; }
+      .cat-block { scroll-margin-top:80px; }
     }
   </style>
 </head>
@@ -1517,38 +1504,29 @@
 <!-- All Catalogs -->
 <section id="san-pham" class="all-cats-wrap">
 
-  <!-- Filter Bar: Tìm Kiếm -->
+  <!-- Filter Bar -->
   <div class="cat-search-bar" id="catSearchBar">
     <div class="cat-search-inner">
-      <div class="cat-search-title-row">
-        <span class="cat-search-title">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          Tìm Kiếm Sản Phẩm
-        </span>
+      <span class="cat-filter-label">Danh Mục</span>
+      <div class="cat-nav-pills" id="catNavPills">
+        <span class="cat-nav-pill active" data-cat="all">Tất Cả</span>
+        <span class="cat-nav-pill" data-cat="cot-vot">Cốt Vợt</span>
+        <span class="cat-nav-pill" data-cat="mat-vot">Mặt Vợt</span>
+        <span class="cat-nav-pill" data-cat="bong">Bóng</span>
+        <span class="cat-nav-pill" data-cat="ban">Bàn</span>
+        <span class="cat-nav-pill" data-cat="do-thi-dau">Đồ Thi Đấu</span>
+        <span class="cat-nav-pill" data-cat="combo-vot">Combo Vợt</span>
+        <span class="cat-nav-pill" data-cat="do-cu">Đồ Cũ</span>
       </div>
-      <div class="cat-filter-row">
-        <span class="cat-filter-label">Tìm theo<br>Danh Mục</span>
-        <div class="cat-nav-pills" id="catNavPills">
-          <span class="cat-nav-pill active" data-cat="all">Tất Cả</span>
-          <span class="cat-nav-pill" data-cat="cot-vot">Cốt Vợt</span>
-          <span class="cat-nav-pill" data-cat="mat-vot">Mặt Vợt</span>
-          <span class="cat-nav-pill" data-cat="bong">Bóng</span>
-          <span class="cat-nav-pill" data-cat="ban">Bàn</span>
-          <span class="cat-nav-pill" data-cat="do-thi-dau">Đồ Thi Đấu</span>
-          <span class="cat-nav-pill" data-cat="combo-vot">Combo Vợt</span>
-          <span class="cat-nav-pill" data-cat="do-cu">Đồ Cũ</span>
-        </div>
-      </div>
-      <div class="cat-filter-row">
-        <span class="cat-filter-label">Khoảng Giá</span>
-        <div class="cat-nav-pills" id="catPricePills">
-          <span class="cat-nav-pill active" data-price="all">Tất Cả</span>
-          <span class="cat-nav-pill" data-price="<500">Dưới 500k</span>
-          <span class="cat-nav-pill" data-price="500-1500">500k – 1,5tr</span>
-          <span class="cat-nav-pill" data-price="1500-5000">1,5tr – 5tr</span>
-          <span class="cat-nav-pill" data-price=">5000">Trên 5tr</span>
-          <span class="cat-nav-pill" data-price="lien-he">Liên Hệ</span>
-        </div>
+      <div class="cat-filter-sep"></div>
+      <span class="cat-filter-label">Khoảng Giá</span>
+      <div class="cat-nav-pills" id="catPricePills">
+        <span class="cat-nav-pill active" data-price="all">Tất Cả</span>
+        <span class="cat-nav-pill" data-price="<500">Dưới 500k</span>
+        <span class="cat-nav-pill" data-price="500-1500">500k – 1,5tr</span>
+        <span class="cat-nav-pill" data-price="1500-5000">1,5tr – 5tr</span>
+        <span class="cat-nav-pill" data-price=">5000">Trên 5tr</span>
+        <span class="cat-nav-pill" data-price="lien-he">Liên Hệ</span>
       </div>
     </div>
   </div>
