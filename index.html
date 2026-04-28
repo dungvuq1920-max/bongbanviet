@@ -2084,10 +2084,12 @@ fetch('/api/settings/home_hero_image')
     _fpInit();
     grid.querySelectorAll('.prod-card').forEach(function(card) {
       card.addEventListener('mouseenter', function() {
+        if (window.innerWidth <= 960) return;
         var p = flowCache[getSlug(this)];
         if (p) showPopups(this, p);
       });
       card.addEventListener('mouseleave', function(e) {
+        if (window.innerWidth <= 960) return;
         if (popupSpecs && popupDesc && e.relatedTarget && (popupSpecs.contains(e.relatedTarget) || popupDesc.contains(e.relatedTarget))) return;
         hidePopups();
       });
