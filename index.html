@@ -982,33 +982,60 @@
       max-width:1200px; margin:0 auto; padding:36px 40px 88px;
     }
     .flow-body .prod-grid { grid-template-columns:repeat(4,1fr); gap:22px; }
-    /* ─── Card info overlay (hover-in-place) ─────────── */
-    .all-cats-wrap .prod-img { position:relative; overflow:hidden; }
-    .card-info-ov {
-      position:absolute; inset:0;
-      background:linear-gradient(to top, rgba(10,10,18,.97) 0%, rgba(20,33,54,.88) 55%, rgba(0,0,0,.28) 100%);
-      color:#fff; padding:12px;
-      display:flex; flex-direction:column; justify-content:flex-end;
-      opacity:0; pointer-events:none;
-      transition:opacity .22s ease;
+    /* ─── Row-expansion info panel ─────────────────── */
+    #catInfoPanel {
+      grid-column: 1 / -1;
+      background: var(--white);
+      border: 1.5px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+      transition: max-height .32s cubic-bezier(.4,0,.2,1), opacity .22s ease, margin .22s;
+      position: relative;
+      margin: 0;
+      box-shadow: 0 6px 24px rgba(0,0,0,.07);
+      pointer-events: none;
     }
-    .card-info-ov.show { opacity:1; pointer-events:auto; }
-    .cio-price {
-      font-size:16px; font-weight:900; line-height:1; margin-bottom:7px;
-      letter-spacing:-.02em;
+    #catInfoPanel.visible {
+      max-height: 200px;
+      opacity: 1;
+      margin: 6px 0 10px;
+      pointer-events: auto;
     }
-    .cio-price.contact { font-size:11px; font-weight:700; color:rgba(255,255,255,.7); }
-    .cio-specs { display:flex; flex-direction:column; gap:3px; margin-bottom:7px; }
-    .cio-spec {
-      font-size:9px; color:rgba(255,255,255,.68);
-      display:flex; justify-content:space-between; align-items:baseline; gap:4px;
+    /* Mũi tên chỉ lên card đang hover */
+    #catInfoPanel::before {
+      content:''; position:absolute; top:-9px;
+      left:var(--arrow-left,50%); transform:translateX(-50%);
+      border:9px solid transparent; border-bottom-color:var(--line);
     }
-    .cio-spec span:last-child { color:#fff; font-weight:700; text-align:right; }
-    .cio-divider { border:none; border-top:1px solid rgba(255,255,255,.12); margin:6px 0; }
-    .cio-cta {
-      font-size:8px; font-weight:800; letter-spacing:.16em; text-transform:uppercase;
-      color:var(--red);
+    #catInfoPanel::after {
+      content:''; position:absolute; top:-7px;
+      left:var(--arrow-left,50%); transform:translateX(-50%);
+      border:8px solid transparent; border-bottom-color:var(--white);
     }
+    .cip-inner {
+      padding:14px 20px; display:flex; gap:16px; align-items:center;
+    }
+    .cip-price-col { flex-shrink:0; min-width:120px; }
+    .cip-price {
+      font-size:20px; font-weight:900; color:var(--navy);
+      letter-spacing:-.03em; line-height:1.1;
+    }
+    .cip-price.contact { font-size:12px; font-weight:700; color:var(--mid); }
+    .cip-stock-ok { font-size:8px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#166534;margin-top:4px;display:block; }
+    .cip-stock-no { font-size:8px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--red);margin-top:4px;display:block; }
+    .cip-divider { width:1px; background:var(--line); align-self:stretch; flex-shrink:0; }
+    .cip-specs { display:flex; flex-wrap:wrap; gap:5px 18px; flex:1; }
+    .cip-spec { font-size:11px; color:var(--mid); white-space:nowrap; }
+    .cip-spec strong { color:var(--dark); font-weight:700; }
+    .cip-cta {
+      flex-shrink:0; padding:10px 18px; background:var(--navy); color:#fff;
+      border:none; border-radius:8px; font-family:'Lexend',sans-serif;
+      font-size:9px; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+      cursor:pointer; transition:background .2s; white-space:nowrap;
+    }
+    .cip-cta:hover { background:var(--dark); }
 
     @media (max-width:960px) {
       .flow-sticky { top:0; }
@@ -1943,53 +1970,90 @@ fetch('/api/settings/home_hero_image')
     });
   });
 
+  /* Panel dùng chung — di chuyển vào grid tương ứng khi cần */
+  var catInfoPanel = (function() {
+    var el = document.createElement('div');
+    el.id = 'catInfoPanel';
+    return el;
+  }());
+
   function initCards(grid) {
     grid.querySelectorAll('.prod-card').forEach(function(card) {
-      /* inject overlay into image area once */
-      if (!card.querySelector('.card-info-ov')) {
-        var imgWrap = card.querySelector('.prod-img');
-        if (imgWrap) {
-          var ov = document.createElement('div');
-          ov.className = 'card-info-ov';
-          imgWrap.appendChild(ov);
-        }
-      }
       card.addEventListener('mouseenter', function() {
-        var p = flowCache[getSlug(this)];
+        var self = this;
+        var p = flowCache[getSlug(self)];
         if (!p) return;
-        var ov = this.querySelector('.card-info-ov');
-        if (!ov) return;
+
+        /* --- Điền nội dung panel --- */
         var rawPrice = String(p.price || '');
         var variants = Array.isArray(p.variants) ? p.variants.filter(function(v){ return v && v.price; }) : [];
         var priceText = rawPrice || (variants.length ? 'từ ' + variants[0].price : '');
-        var priceClass = priceText ? 'cio-price' : 'cio-price contact';
+        var priceClass = priceText ? 'cip-price' : 'cip-price contact';
         var priceDisplay = priceText || 'Liên hệ báo giá';
+
         var specsHtml = '';
         if (p.specs && typeof p.specs === 'object') {
-          Object.entries(p.specs).slice(0, 4).forEach(function(kv) {
-            specsHtml += '<div class="cio-spec"><span>' + kv[0] + '</span><span>' + kv[1] + '</span></div>';
+          Object.entries(p.specs).slice(0, 5).forEach(function(kv) {
+            specsHtml += '<span class="cip-spec"><strong>' + kv[0] + '</strong>: ' + kv[1] + '</span>';
           });
         }
-        var stock = (p.in_stock === false || p.in_stock === 0)
-          ? '<span style="color:#ef4444;font-size:8px;font-weight:700;letter-spacing:.1em;">● HẾT HÀNG</span>'
-          : '<span style="color:#4ade80;font-size:8px;font-weight:700;letter-spacing:.1em;">● CÒN HÀNG</span>';
-        ov.innerHTML =
-          '<div class="' + priceClass + '">' + priceDisplay + '</div>'
-          + stock
-          + (specsHtml ? '<hr class="cio-divider"><div class="cio-specs">' + specsHtml + '</div>' : '')
-          + '<div class="cio-cta">Nhấn để xem chi tiết →</div>';
-        ov.classList.add('show');
+        var stockHtml = (p.in_stock === false || p.in_stock === 0)
+          ? '<span class="cip-stock-no">● Hết Hàng</span>'
+          : '<span class="cip-stock-ok">● Còn Hàng</span>';
+
+        catInfoPanel.innerHTML =
+          '<div class="cip-inner">'
+          + '<div class="cip-price-col"><div class="' + priceClass + '">' + priceDisplay + '</div>' + stockHtml + '</div>'
+          + '<div class="cip-divider"></div>'
+          + '<div class="cip-specs">' + specsHtml + '</div>'
+          + '<button class="cip-cta">Xem Chi Tiết ↗</button>'
+          + '</div>';
+
+        catInfoPanel.querySelector('.cip-cta').addEventListener('click', function(e) {
+          e.stopPropagation();
+          showDrawer(p);
+        });
+
+        /* --- Tìm card cuối cùng trong cùng hàng --- */
+        var cardTop = self.offsetTop;
+        var allCards = Array.from(grid.querySelectorAll('.prod-card'));
+        var rowCards = allCards.filter(function(c) {
+          return Math.abs(c.offsetTop - cardTop) < 8;
+        });
+        var lastInRow = rowCards[rowCards.length - 1] || self;
+
+        /* --- Chèn panel sau card cuối hàng --- */
+        if (lastInRow.nextSibling) {
+          grid.insertBefore(catInfoPanel, lastInRow.nextSibling);
+        } else {
+          grid.appendChild(catInfoPanel);
+        }
+
+        /* --- Định vị mũi tên --- */
+        var gridRect = grid.getBoundingClientRect();
+        var cardRect = self.getBoundingClientRect();
+        var arrowLeft = cardRect.left - gridRect.left + cardRect.width / 2;
+        catInfoPanel.style.setProperty('--arrow-left', arrowLeft + 'px');
+
+        catInfoPanel.classList.add('visible');
       });
-      card.addEventListener('mouseleave', function() {
-        var ov = this.querySelector('.card-info-ov');
-        if (ov) ov.classList.remove('show');
+
+      card.addEventListener('mouseleave', function(e) {
+        if (e.relatedTarget && catInfoPanel.contains(e.relatedTarget)) return;
+        catInfoPanel.classList.remove('visible');
       });
+
       card.addEventListener('click', function(e) {
         e.preventDefault();
-        var slug = getSlug(this);
-        var p = flowCache[slug];
+        var p = flowCache[getSlug(this)];
         if (p) showDrawer(p);
       });
+    });
+
+    /* Ẩn panel khi rời khỏi panel (không vào card khác) */
+    catInfoPanel.addEventListener('mouseleave', function(e) {
+      if (e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('.prod-card')) return;
+      this.classList.remove('visible');
     });
   }
 
