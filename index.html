@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -1968,12 +1968,26 @@ fetch('/api/settings/home_hero_image')
   /* ── Dual floating popup system ────────────────────── */
   var popupSpecs = null, popupDesc = null, fpSvg = null, fpLH = null, fpLV = null;
   var FP_SW = 280, FP_DW = 288;
+  var fpInitialized = false;
   function _fpInit() {
-    if (!popupSpecs) popupSpecs = document.getElementById('popupSpecs');
-    if (!popupDesc)  popupDesc  = document.getElementById('popupDesc');
-    if (!fpSvg)      fpSvg      = document.getElementById('fp-svg');
-    if (!fpLH)       fpLH       = document.getElementById('fp-lh');
-    if (!fpLV)       fpLV       = document.getElementById('fp-lv');
+    if (fpInitialized) return;
+    popupSpecs = document.getElementById('popupSpecs');
+    if (!popupSpecs) return;
+    popupDesc  = document.getElementById('popupDesc');
+    fpSvg      = document.getElementById('fp-svg');
+    fpLH       = document.getElementById('fp-lh');
+    fpLV       = document.getElementById('fp-lv');
+    fpInitialized = true;
+
+    [popupSpecs, popupDesc].forEach(function(popup) {
+      if (!popup) return;
+      popup.addEventListener('mouseleave', function(e) {
+        if (!e.relatedTarget) { hidePopups(); return; }
+        if (e.relatedTarget.closest && e.relatedTarget.closest('.prod-card')) return;
+        if (popupSpecs.contains(e.relatedTarget) || popupDesc.contains(e.relatedTarget)) return;
+        hidePopups();
+      });
+    });
   }
 
   function fillSpecs(p) {
@@ -2064,27 +2078,20 @@ fetch('/api/settings/home_hero_image')
   }
 
   function initCards(grid) {
+    _fpInit();
     grid.querySelectorAll('.prod-card').forEach(function(card) {
       card.addEventListener('mouseenter', function() {
         var p = flowCache[getSlug(this)];
         if (p) showPopups(this, p);
       });
       card.addEventListener('mouseleave', function(e) {
-        if (e.relatedTarget && (popupSpecs.contains(e.relatedTarget) || popupDesc.contains(e.relatedTarget))) return;
+        if (popupSpecs && popupDesc && e.relatedTarget && (popupSpecs.contains(e.relatedTarget) || popupDesc.contains(e.relatedTarget))) return;
         hidePopups();
       });
       card.addEventListener('click', function(e) {
         e.preventDefault();
         var p = flowCache[getSlug(this)];
         if (p) { hidePopups(); showDrawer(p); }
-      });
-    });
-    [popupSpecs, popupDesc].forEach(function(popup) {
-      popup.addEventListener('mouseleave', function(e) {
-        if (!e.relatedTarget) { hidePopups(); return; }
-        if (e.relatedTarget.closest && e.relatedTarget.closest('.prod-card')) return;
-        if (popupSpecs.contains(e.relatedTarget) || popupDesc.contains(e.relatedTarget)) return;
-        hidePopups();
       });
     });
   }
