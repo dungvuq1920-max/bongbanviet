@@ -768,112 +768,8 @@
   
     .prod-img-inner img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-    /* ─── Mega-menu ─────────────────────────────────────── */
+    /* ─── Nav links ─────────────────────────────────────── */
     .nav-links li { position: relative; }
-    .nav-links .mega-item > a {
-      display: flex; align-items: center; gap: 3px;
-    }
-    .nav-links .mega-item > a::after {
-      content: '▾'; font-size: 8px; opacity: .45;
-      transition: transform .2s;
-    }
-    .nav-links .mega-item:hover > a::after { transform: rotate(180deg); opacity: .7; }
-
-    .mega-panel {
-      position: absolute; top: calc(100% + 1px); left: 0;
-      background: var(--white);
-      border-top: 2px solid var(--red);
-      border: 1px solid var(--line);
-      border-top: 2px solid var(--red);
-      box-shadow: 0 20px 50px rgba(0,0,0,.1);
-      padding: 22px 24px;
-      opacity: 0; visibility: hidden;
-      transform: translateY(8px);
-      transition: opacity .2s, transform .2s, visibility .2s;
-      z-index: 300; pointer-events: none;
-    }
-    .mega-item:hover .mega-panel,
-    .mega-item:focus-within .mega-panel {
-      opacity: 1; visibility: visible;
-      transform: translateY(0); pointer-events: all;
-    }
-    .mega-brands { min-width: 560px; }
-    .mega-gear {
-      left: 50%;
-      transform: translateX(-50%) translateY(8px);
-      min-width: 340px;
-    }
-    .mega-item:hover .mega-gear,
-    .mega-item:focus-within .mega-gear {
-      transform: translateX(-50%) translateY(0);
-    }
-    .mega-head {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 16px; padding-bottom: 12px;
-      border-bottom: 1px solid var(--line);
-    }
-    .mega-head-label {
-      font-size: 9px; font-weight: 600;
-      letter-spacing: .24em; text-transform: uppercase; color: var(--mid);
-    }
-    .mega-head-all {
-      font-size: 10px; font-weight: 600;
-      letter-spacing: .08em; text-transform: uppercase;
-      color: var(--red); transition: color .15s;
-    }
-    .mega-head-all:hover { color: var(--dark); }
-    .mega-brands-grid {
-      display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
-    }
-    .mega-brand-card {
-      display: flex; flex-direction: column;
-      padding: 13px 11px; gap: 3px;
-      border: 1px solid var(--line);
-      transition: all .15s; text-decoration: none;
-    }
-    .mega-brand-card:hover { border-color: var(--dark); background: var(--dark); }
-    .mega-brand-name {
-      font-family: 'Lexend', sans-serif;
-      font-size: 15px; font-weight: 700;
-      color: var(--dark); line-height: 1.1; transition: color .15s;
-    }
-    .mega-brand-card:hover .mega-brand-name { color: #fff; }
-    .mega-brand-desc {
-      font-size: 9.5px; color: var(--mid); line-height: 1.35; transition: color .15s;
-    }
-    .mega-brand-card:hover .mega-brand-desc { color: rgba(255,255,255,.45); }
-    .mega-brand-arr {
-      display: block; font-size: 9px; font-weight: 600;
-      letter-spacing: .06em; color: var(--red); margin-top: 5px;
-      transition: transform .15s, color .15s;
-    }
-    .mega-brand-card:hover .mega-brand-arr { transform: translateX(3px); color: var(--coral); }
-    .mega-brand-card .brand-logo { height:16px;width:auto;max-width:70px;object-fit:contain;mix-blend-mode:multiply;opacity:.5;margin-bottom:5px;display:block;transition:filter .15s,opacity .15s; }
-    .mega-brand-card:hover .brand-logo { filter:brightness(0) invert(1)!important;opacity:.7!important;mix-blend-mode:normal!important; }
-    .mega-gear-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-    .mega-gear-card {
-      display: flex; flex-direction: column;
-      padding: 18px 15px; gap: 5px;
-      border: 1px solid var(--line);
-      transition: all .15s; text-decoration: none;
-    }
-    .mega-gear-card:hover { border-color: var(--dark); background: var(--dark); }
-    .mega-gear-name {
-      font-family: 'Lexend', sans-serif;
-      font-size: 17px; font-weight: 700;
-      color: var(--dark); line-height: 1.15; transition: color .15s;
-    }
-    .mega-gear-card:hover .mega-gear-name { color: #fff; }
-    .mega-gear-desc {
-      font-size: 10.5px; color: var(--mid); line-height: 1.45; transition: color .15s;
-    }
-    .mega-gear-card:hover .mega-gear-desc { color: rgba(255,255,255,.5); }
-    .mega-gear-arr {
-      display: block; font-size: 9px; font-weight: 600;
-      letter-spacing: .06em; color: var(--red); margin-top: 4px;
-      transition: transform .15s, color .15s;
-    }
-    .mega-gear-card:hover .mega-gear-arr { transform: translateX(3px); color: var(--coral); }
 
     /* ─── Mobile accordion groups ───────────────────────── */
     .m-group { border-bottom: 1px solid var(--line); }
@@ -997,7 +893,7 @@
     .fp-name {
       font-size:13px; font-weight:800; color:var(--dark);
       padding:12px 14px 5px; line-height:1.3;
-      display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+      display:-webkit-box; -webkit-line-clamp:2; line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
     }
     .fp-price-row {
       display:flex; align-items:center; justify-content:space-between;
@@ -1022,7 +918,7 @@
     /* Desc popup */
     .fp-desc-text {
       padding:0 14px 10px; font-size:11px; color:var(--mid); line-height:1.6;
-      display:-webkit-box; -webkit-line-clamp:15; -webkit-box-orient:vertical; overflow:hidden;
+      display:-webkit-box; -webkit-line-clamp:15; line-clamp:15; -webkit-box-orient:vertical; overflow:hidden;
     }
     .fp-buy-btn {
       display:block; width:calc(100% - 28px); margin:0 14px 12px;
@@ -1154,7 +1050,7 @@
       font-size: 14px; font-weight: 700;
       color: var(--dark); line-height: 1.3;
       margin-bottom: 0;
-      display: -webkit-box; -webkit-line-clamp: 2;
+      display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2;
       -webkit-box-orient: vertical; overflow: hidden;
     }
     .prod-card:hover .prod-name { color: var(--red); }
@@ -1177,7 +1073,7 @@
     /* ─── Featured Dashboard ──────────────────────────── */
     .featured-dash { background: #f8fafc; padding: 64px 0; }
     .featured-dash-body { max-width:1200px; margin:0 auto; padding:0 40px; display:flex; flex-direction:column; gap:80px; }
-    .feat-section {}
+    .feat-section { display: block; }
     .feat-section-head {
       display: flex; align-items: flex-end; justify-content: space-between;
       margin-bottom: 32px; padding-left: 16px; border-left: 4px solid var(--red);
@@ -1495,107 +1391,11 @@
     <img src="/logo_bongbanviet.png" alt="Bóng Bàn Việt" class="nav-logo-img">
   </a>
   <ul class="nav-links">
-    <li class="mega-item">
-      <a href="#block-cot-vot">Cốt Vợt</a>
-      <div class="mega-panel mega-brands">
-        <div class="mega-head">
-          <span class="mega-head-label">Cốt Vợt theo thương hiệu</span>
-          <a href="#block-cot-vot" class="mega-head-all">Xem tất cả →</a>
-        </div>
-        <div class="mega-brands-grid">
-          <a href="#block-cot-vot" class="mega-brand-card">
-            <img src="/images/brand/butterfly-logo.png" class="brand-logo" alt="Butterfly">
-            <span class="mega-brand-name">Butterfly</span>
-            <span class="mega-brand-desc">Cao cấp, Nhật Bản</span>
-            <span class="mega-brand-arr">Xem →</span>
-          </a>
-          <a href="#block-cot-vot" class="mega-brand-card">
-            <img src="/images/brand/tibhar-logo-white.png" class="brand-logo" alt="Tibhar">
-            <span class="mega-brand-name">Tibhar</span>
-            <span class="mega-brand-desc">Chuyên nghiệp, Đức</span>
-            <span class="mega-brand-arr">Xem →</span>
-          </a>
-          <a href="#block-cot-vot" class="mega-brand-card">
-            <span class="mega-brand-name">Unrex</span>
-            <span class="mega-brand-desc">Đa dạng kiểu chơi</span>
-            <span class="mega-brand-arr">Xem →</span>
-          </a>
-          <a href="#block-cot-vot" class="mega-brand-card">
-            <img src="/images/brand/yinhe-logo.jpg" class="brand-logo" alt="Yinhe">
-            <span class="mega-brand-name">Yinhe</span>
-            <span class="mega-brand-desc">Giá tốt, hiệu quả</span>
-            <span class="mega-brand-arr">Xem →</span>
-          </a>
-          <a href="#block-cot-vot" class="mega-brand-card">
-            <span class="mega-brand-name">Khác</span>
-            <span class="mega-brand-desc">Thương hiệu khác</span>
-            <span class="mega-brand-arr">Xem →</span>
-          </a>
-        </div>
-      </div>
-    </li>
-    <li class="mega-item">
-      <a href="#block-mat-vot">Mặt Vợt</a>
-      <div class="mega-panel mega-brands">
-        <div class="mega-head">
-          <span class="mega-head-label">Mặt Vợt theo thương hiệu</span>
-          <a href="#block-mat-vot" class="mega-head-all">Xem tất cả →</a>
-        </div>
-        <div class="mega-brands-grid">
-          <a href="#block-mat-vot" class="mega-brand-card">
-            <img src="/images/brand/butterfly-logo.png" class="brand-logo" alt="Butterfly">
-            <span class="mega-brand-name">Butterfly</span>
-            <span class="mega-brand-desc">Cao cấp, Nhật Bản</span>
-            <span class="mega-brand-arr">Xem →</span>
-          </a>
-          <a href="#block-mat-vot" class="mega-brand-card">
-            <img src="/images/brand/tibhar-logo-white.png" class="brand-logo" alt="Tibhar">
-            <span class="mega-brand-name">Tibhar</span>
-            <span class="mega-brand-desc">Chuyên nghiệp, Đức</span>
-            <span class="mega-brand-arr">Xem →</span>
-          </a>
-          <a href="#block-mat-vot" class="mega-brand-card">
-            <span class="mega-brand-name">Unrex</span>
-            <span class="mega-brand-desc">Đa dạng kiểu chơi</span>
-            <span class="mega-brand-arr">Xem →</span>
-          </a>
-          <a href="#block-mat-vot" class="mega-brand-card">
-            <img src="/images/brand/yinhe-logo.jpg" class="brand-logo" alt="Yinhe">
-            <span class="mega-brand-name">Yinhe</span>
-            <span class="mega-brand-desc">Giá tốt, hiệu quả</span>
-            <span class="mega-brand-arr">Xem →</span>
-          </a>
-          <a href="#block-mat-vot" class="mega-brand-card">
-            <span class="mega-brand-name">Khác</span>
-            <span class="mega-brand-desc">Thương hiệu khác</span>
-            <span class="mega-brand-arr">Xem →</span>
-          </a>
-        </div>
-      </div>
-    </li>
+    <li><a href="#block-cot-vot">Cốt Vợt</a></li>
+    <li><a href="#block-mat-vot">Mặt Vợt</a></li>
     <li><a href="#block-bong">Bóng</a></li>
     <li><a href="#block-ban">Bàn</a></li>
-    <li class="mega-item">
-      <a href="#block-do-thi-dau">Đồ Thi Đấu</a>
-      <div class="mega-panel mega-gear">
-        <div class="mega-head">
-          <span class="mega-head-label">Đồ Thi Đấu</span>
-          <a href="#block-do-thi-dau" class="mega-head-all">Xem tất cả →</a>
-        </div>
-        <div class="mega-gear-grid">
-          <a href="#block-do-thi-dau" class="mega-gear-card">
-            <span class="mega-gear-name">Giày</span>
-            <span class="mega-gear-desc">Giày chuyên dụng bóng bàn</span>
-            <span class="mega-gear-arr">Xem →</span>
-          </a>
-          <a href="#block-do-thi-dau" class="mega-gear-card">
-            <span class="mega-gear-name">Trang Phục &amp; Phụ Kiện</span>
-            <span class="mega-gear-desc">Áo, quần, băng tay, vớ…</span>
-            <span class="mega-gear-arr">Xem →</span>
-          </a>
-        </div>
-      </div>
-    </li>
+    <li><a href="#block-do-thi-dau">Đồ Thi Đấu</a></li>
     <li><a href="#block-combo-vot">Combo</a></li>
     <li><a href="kien-thuc.html">Kiến Thức</a></li>
   </ul>
@@ -2328,6 +2128,12 @@ fetch('/api/settings/home_hero_image')
     'do-cu':      { def: 'Đồ Cũ Tiêu Biểu',            all: 'Tất Cả Đồ Cũ' },
   };
 
+  function getStickyHeight() {
+    var navH = (document.getElementById('nav') || {}).offsetHeight || 82;
+    var barH = (document.getElementById('catSearchBar') || {}).offsetHeight || 54;
+    return navH + barH + 12;
+  }
+
   function updateSectionTitles(cat) {
     Object.keys(CAT_TITLES).forEach(function(slug) {
       var el = document.querySelector('#block-' + slug + ' .flow-section-title');
@@ -2450,12 +2256,13 @@ fetch('/api/settings/home_hero_image')
       updateFilterUI();
       applyFilters();
 
-      // Scroll to the master filter section
-      var target = document.getElementById('san-pham');
-      if (target) {
-        var top = target.getBoundingClientRect().top + window.pageYOffset - 80;
-        window.scrollTo({ top: top, behavior: 'smooth' });
-      }
+      requestAnimationFrame(function() {
+        var target = document.getElementById('block-' + cat);
+        if (target) {
+          var top = target.getBoundingClientRect().top + window.pageYOffset - getStickyHeight();
+          window.scrollTo({ top: top, behavior: 'smooth' });
+        }
+      });
     });
   });
 
@@ -2482,11 +2289,10 @@ fetch('/api/settings/home_hero_image')
 
       closeNav();
 
-      // Cuộn đến đúng block sau khi layout cập nhật
       requestAnimationFrame(function() {
         var target = document.getElementById('block-' + cat);
         if (target) {
-          var top = target.getBoundingClientRect().top + window.pageYOffset - 90;
+          var top = target.getBoundingClientRect().top + window.pageYOffset - getStickyHeight();
           window.scrollTo({ top: top, behavior: 'smooth' });
         }
       });
