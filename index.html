@@ -982,70 +982,55 @@
       max-width:1200px; margin:0 auto; padding:36px 40px 88px;
     }
     .flow-body .prod-grid { grid-template-columns:repeat(4,1fr); gap:22px; }
-    /* ─── Row-expansion info panel ─────────────────── */
-    #catInfoPanel {
-      grid-column: 1 / -1;
-      background: var(--white);
-      border: 1.5px solid var(--line);
-      border-radius: 14px;
-      overflow: hidden;
-      max-height: 0;
-      opacity: 0;
-      transition: max-height .32s cubic-bezier(.4,0,.2,1), opacity .22s ease, margin .22s;
-      position: relative;
-      margin: 0;
-      box-shadow: 0 6px 24px rgba(0,0,0,.07);
-      pointer-events: none;
+    /* ─── Dual floating popups ──────────────────────── */
+    .fp-popup {
+      position:fixed; z-index:2999;
+      background:var(--white); border:1.5px solid var(--dark);
+      border-radius:10px; box-shadow:0 10px 40px rgba(0,0,0,.16);
+      opacity:0; pointer-events:none; transition:opacity .2s ease;
     }
-    #catInfoPanel.visible {
-      max-height: 300px;
-      opacity: 1;
-      margin: 6px 0 10px;
-      pointer-events: auto;
+    .fp-popup.visible { opacity:1; pointer-events:auto; }
+    #popupSpecs { width:280px; }
+    #popupDesc  { width:288px; }
+    /* Specs popup */
+    .fp-name {
+      font-size:13px; font-weight:800; color:var(--dark);
+      padding:12px 14px 5px; line-height:1.3;
+      display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
     }
-    /* Mũi tên chỉ lên card đang hover */
-    #catInfoPanel::before {
-      content:''; position:absolute; top:-9px;
-      left:var(--arrow-left,50%); transform:translateX(-50%);
-      border:9px solid transparent; border-bottom-color:var(--line);
+    .fp-price-row {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:4px 14px 9px;
     }
-    #catInfoPanel::after {
-      content:''; position:absolute; top:-7px;
-      left:var(--arrow-left,50%); transform:translateX(-50%);
-      border:8px solid transparent; border-bottom-color:var(--white);
+    .fp-price-val { font-size:17px; font-weight:900; color:var(--navy); }
+    .fp-price-contact { font-size:11px; color:var(--mid); font-style:italic; }
+    .fp-stock { font-size:8px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; }
+    .fp-stock-ok { color:#166534; }
+    .fp-stock-no { color:var(--red); }
+    .fp-sep { height:1px; background:var(--line); margin:0 14px; }
+    .fp-label {
+      font-size:8px; font-weight:700; letter-spacing:.18em;
+      text-transform:uppercase; color:var(--mid); padding:8px 14px 5px;
     }
-    /* Header row: giá + stock + nút CTA */
-    .cip-header {
-      display:flex; align-items:center; gap:16px;
-      padding:11px 20px; border-bottom:1px solid var(--line);
+    .fp-specs { padding:0 14px 12px; display:flex; flex-direction:column; gap:5px; }
+    .fp-spec-row { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+    .fp-sk { font-size:10px; color:var(--mid); white-space:nowrap; flex-shrink:0; }
+    .fp-sv { font-size:10px; font-weight:700; color:var(--dark); text-align:right; flex-shrink:0; }
+    .fp-bar-wrap { flex:1; height:4px; background:var(--line); border-radius:2px; overflow:hidden; min-width:40px; }
+    .fp-bar { display:block; height:100%; background:var(--navy); border-radius:2px; }
+    /* Desc popup */
+    .fp-desc-text {
+      padding:0 14px 10px; font-size:11px; color:var(--mid); line-height:1.6;
+      display:-webkit-box; -webkit-line-clamp:5; -webkit-box-orient:vertical; overflow:hidden;
     }
-    .cip-price {
-      font-size:20px; font-weight:900; color:var(--navy);
-      letter-spacing:-.03em; line-height:1; flex-shrink:0;
-    }
-    .cip-price.contact { font-size:12px; font-weight:700; color:var(--mid); }
-    .cip-stock-ok { font-size:8px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#166534; flex-shrink:0; }
-    .cip-stock-no { font-size:8px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--red); flex-shrink:0; }
-    .cip-header-gap { flex:1; }
-    .cip-cta {
-      flex-shrink:0; padding:9px 18px; background:var(--navy); color:#fff;
+    .fp-buy-btn {
+      display:block; width:calc(100% - 28px); margin:0 14px 12px;
+      padding:10px; background:var(--navy); color:#fff;
       border:none; border-radius:8px; font-family:'Lexend',sans-serif;
       font-size:9px; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
-      cursor:pointer; transition:background .2s; white-space:nowrap;
+      cursor:pointer; transition:background .2s; text-align:center;
     }
-    .cip-cta:hover { background:var(--dark); }
-    /* Hai ô thông tin */
-    .cip-boxes { display:grid; grid-template-columns:1fr 1fr; }
-    .cip-box { padding:12px 20px; overflow:hidden; }
-    .cip-box:first-child { border-right:1px solid var(--line); }
-    .cip-box-title {
-      font-size:8px; font-weight:700; letter-spacing:.18em;
-      text-transform:uppercase; color:var(--mid); margin-bottom:8px;
-    }
-    .cip-specs { display:flex; flex-direction:column; gap:4px; }
-    .cip-spec { font-size:11px; color:var(--mid); }
-    .cip-spec strong { color:var(--dark); font-weight:700; margin-right:4px; }
-    .cip-desc { font-size:11px; color:var(--mid); line-height:1.55; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; }
+    .fp-buy-btn:hover { background:var(--dark); }
 
     @media (max-width:960px) {
       .flow-sticky { top:0; }
@@ -1980,102 +1965,121 @@ fetch('/api/settings/home_hero_image')
     });
   });
 
-  /* Panel dùng chung — di chuyển vào grid tương ứng khi cần */
-  var catInfoPanel = (function() {
-    var el = document.createElement('div');
-    el.id = 'catInfoPanel';
-    return el;
-  }());
+  /* ── Dual floating popup system ────────────────────── */
+  var popupSpecs = document.getElementById('popupSpecs');
+  var popupDesc  = document.getElementById('popupDesc');
+  var fpSvg      = document.getElementById('fp-svg');
+  var fpLH       = document.getElementById('fp-lh');
+  var fpLV       = document.getElementById('fp-lv');
+  var FP_SW = 280, FP_DW = 288;
+
+  function fillSpecs(p) {
+    document.getElementById('fpName').textContent = p.name;
+    var raw = String(p.price || '');
+    var vars = Array.isArray(p.variants) ? p.variants.filter(function(v){ return v && v.price; }) : [];
+    var pt = raw || (vars.length ? 'từ ' + vars[0].price : '');
+    document.getElementById('fpPrice').innerHTML =
+      (pt ? '<span class="fp-price-val">' + pt + '</span>'
+          : '<span class="fp-price-contact">Liên hệ báo giá</span>')
+      + ((p.in_stock === false || p.in_stock === 0)
+          ? '<span class="fp-stock fp-stock-no">● Hết Hàng</span>'
+          : '<span class="fp-stock fp-stock-ok">● Còn Hàng</span>');
+    var h = '';
+    if (p.specs && typeof p.specs === 'object') {
+      Object.entries(p.specs).slice(0, 7).forEach(function(e) {
+        var n = parseFloat(e[1]);
+        var bar = (!isNaN(n) && n >= 0 && n <= 10)
+          ? '<span class="fp-bar-wrap"><span class="fp-bar" style="width:' + (n * 10) + '%"></span></span>'
+          : '<span class="fp-sv">' + e[1] + '</span>';
+        h += '<div class="fp-spec-row"><span class="fp-sk">' + e[0] + '</span>' + bar + '</div>';
+      });
+    }
+    document.getElementById('fpSpecs').innerHTML = h || '<span class="fp-sv" style="color:var(--mid)">Chưa có thông số.</span>';
+  }
+
+  function fillDesc(p) {
+    var desc = (p.description || '').replace(/<[^>]+>/g, '').trim();
+    document.getElementById('fpDesc').textContent = desc ? desc.slice(0, 360) : 'Chưa có mô tả.';
+    document.getElementById('fpBuyBtn').onclick = function() { hidePopups(); showDrawer(p); };
+  }
+
+  function showPopups(card, p) {
+    fillSpecs(p);
+    fillDesc(p);
+
+    /* đo chiều cao khi ẩn ngoài màn hình */
+    popupSpecs.style.cssText = 'position:fixed;left:-9999px;top:0;width:' + FP_SW + 'px;opacity:0;';
+    popupDesc.style.cssText  = 'position:fixed;left:-9999px;top:0;width:' + FP_DW + 'px;opacity:0;';
+    var phH = popupSpecs.offsetHeight;
+    var pvH = popupDesc.offsetHeight;
+    popupSpecs.style.cssText = '';
+    popupDesc.style.cssText  = '';
+
+    var r  = card.getBoundingClientRect();
+    var vw = window.innerWidth, vh = window.innerHeight;
+    var GAP = 16;
+    var cx = r.left + r.width  / 2;
+    var cy = r.top  + r.height / 2;
+
+    /* Specs popup — phải / lật trái */
+    var flipH = (r.right + GAP + FP_SW) > (vw - 10);
+    var sp_l  = flipH ? (r.left - GAP - FP_SW) : (r.right + GAP);
+    var sp_t  = Math.max(8, Math.min(cy - phH / 2, vh - phH - 8));
+
+    /* Desc popup — dưới / lật lên */
+    var flipV = (r.bottom + GAP + pvH) > (vh - 10);
+    var dp_l  = Math.max(8, Math.min(cx - FP_DW / 2, vw - FP_DW - 8));
+    var dp_t  = flipV ? (r.top - GAP - pvH) : (r.bottom + GAP);
+
+    popupSpecs.style.left = sp_l + 'px'; popupSpecs.style.top = sp_t + 'px';
+    popupDesc.style.left  = dp_l + 'px'; popupDesc.style.top  = dp_t + 'px';
+
+    /* Line ngang: card right/left → specs popup */
+    var lhX1 = flipH ? r.left : r.right;
+    var lhX2 = flipH ? (sp_l + FP_SW) : sp_l;
+    fpLH.setAttribute('x1', lhX1); fpLH.setAttribute('y1', cy);
+    fpLH.setAttribute('x2', lhX2); fpLH.setAttribute('y2', cy);
+
+    /* Line dọc: card bottom/top → desc popup */
+    var lvY1 = flipV ? r.top : r.bottom;
+    var lvY2 = flipV ? (dp_t + pvH) : dp_t;
+    fpLV.setAttribute('x1', cx); fpLV.setAttribute('y1', lvY1);
+    fpLV.setAttribute('x2', cx); fpLV.setAttribute('y2', lvY2);
+
+    popupSpecs.classList.add('visible');
+    popupDesc.classList.add('visible');
+    fpSvg.style.opacity = '1';
+  }
+
+  function hidePopups() {
+    popupSpecs.classList.remove('visible');
+    popupDesc.classList.remove('visible');
+    fpSvg.style.opacity = '0';
+  }
 
   function initCards(grid) {
     grid.querySelectorAll('.prod-card').forEach(function(card) {
       card.addEventListener('mouseenter', function() {
-        var self = this;
-        var p = flowCache[getSlug(self)];
-        if (!p) return;
-
-        /* --- Điền nội dung panel --- */
-        var rawPrice = String(p.price || '');
-        var variants = Array.isArray(p.variants) ? p.variants.filter(function(v){ return v && v.price; }) : [];
-        var priceText = rawPrice || (variants.length ? 'từ ' + variants[0].price : '');
-        var priceClass = priceText ? 'cip-price' : 'cip-price contact';
-        var priceDisplay = priceText || 'Liên hệ báo giá';
-
-        var specsHtml = '';
-        if (p.specs && typeof p.specs === 'object') {
-          Object.entries(p.specs).slice(0, 5).forEach(function(kv) {
-            specsHtml += '<span class="cip-spec"><strong>' + kv[0] + '</strong>: ' + kv[1] + '</span>';
-          });
-        }
-        var stockHtml = (p.in_stock === false || p.in_stock === 0)
-          ? '<span class="cip-stock-no">● Hết Hàng</span>'
-          : '<span class="cip-stock-ok">● Còn Hàng</span>';
-
-        var descText = (p.description || '').replace(/<[^>]+>/g, '').trim();
-
-        catInfoPanel.innerHTML =
-          '<div class="cip-header">'
-          + '<div class="' + priceClass + '">' + priceDisplay + '</div>'
-          + stockHtml
-          + '<div class="cip-header-gap"></div>'
-          + '<button class="cip-cta">Xem Chi Tiết ↗</button>'
-          + '</div>'
-          + '<div class="cip-boxes">'
-          + '<div class="cip-box">'
-          + '<div class="cip-box-title">Thông Số Kỹ Thuật</div>'
-          + '<div class="cip-specs">' + (specsHtml || '<span class="cip-spec">Chưa có thông số.</span>') + '</div>'
-          + '</div>'
-          + '<div class="cip-box">'
-          + '<div class="cip-box-title">Chi Tiết Sản Phẩm</div>'
-          + '<div class="cip-desc">' + (descText || 'Chưa có mô tả.') + '</div>'
-          + '</div>'
-          + '</div>';
-
-        catInfoPanel.querySelector('.cip-cta').addEventListener('click', function(e) {
-          e.stopPropagation();
-          showDrawer(p);
-        });
-
-        /* --- Tìm card cuối cùng trong cùng hàng --- */
-        var cardTop = self.offsetTop;
-        var allCards = Array.from(grid.querySelectorAll('.prod-card'));
-        var rowCards = allCards.filter(function(c) {
-          return Math.abs(c.offsetTop - cardTop) < 8;
-        });
-        var lastInRow = rowCards[rowCards.length - 1] || self;
-
-        /* --- Chèn panel sau card cuối hàng --- */
-        if (lastInRow.nextSibling) {
-          grid.insertBefore(catInfoPanel, lastInRow.nextSibling);
-        } else {
-          grid.appendChild(catInfoPanel);
-        }
-
-        /* --- Định vị mũi tên --- */
-        var gridRect = grid.getBoundingClientRect();
-        var cardRect = self.getBoundingClientRect();
-        var arrowLeft = cardRect.left - gridRect.left + cardRect.width / 2;
-        catInfoPanel.style.setProperty('--arrow-left', arrowLeft + 'px');
-
-        catInfoPanel.classList.add('visible');
+        var p = flowCache[getSlug(this)];
+        if (p) showPopups(this, p);
       });
-
       card.addEventListener('mouseleave', function(e) {
-        if (e.relatedTarget && catInfoPanel.contains(e.relatedTarget)) return;
-        catInfoPanel.classList.remove('visible');
+        if (e.relatedTarget && (popupSpecs.contains(e.relatedTarget) || popupDesc.contains(e.relatedTarget))) return;
+        hidePopups();
       });
-
       card.addEventListener('click', function(e) {
         e.preventDefault();
         var p = flowCache[getSlug(this)];
-        if (p) showDrawer(p);
+        if (p) { hidePopups(); showDrawer(p); }
       });
     });
-
-    /* Ẩn panel khi rời khỏi panel (không vào card khác) */
-    catInfoPanel.addEventListener('mouseleave', function(e) {
-      if (e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('.prod-card')) return;
-      this.classList.remove('visible');
+    [popupSpecs, popupDesc].forEach(function(popup) {
+      popup.addEventListener('mouseleave', function(e) {
+        if (!e.relatedTarget) { hidePopups(); return; }
+        if (e.relatedTarget.closest && e.relatedTarget.closest('.prod-card')) return;
+        if (popupSpecs.contains(e.relatedTarget) || popupDesc.contains(e.relatedTarget)) return;
+        hidePopups();
+      });
     });
   }
 
@@ -2340,5 +2344,28 @@ fetch('/api/settings/home_hero_image')
 })();
 </script>
 <script src="/js/banners.js"></script>
+
+<!-- ── Dual floating popups ─────────────────────── -->
+<div id="popupSpecs" class="fp-popup">
+  <div class="fp-name" id="fpName"></div>
+  <div class="fp-price-row" id="fpPrice"></div>
+  <div class="fp-sep"></div>
+  <div class="fp-label">Thông Số Kỹ Thuật</div>
+  <div class="fp-specs" id="fpSpecs"></div>
+</div>
+<div id="popupDesc" class="fp-popup">
+  <div class="fp-label">Chi Tiết Sản Phẩm</div>
+  <div class="fp-desc-text" id="fpDesc"></div>
+  <button class="fp-buy-btn" id="fpBuyBtn">Xem Chi Tiết ↗</button>
+</div>
+<svg id="fp-svg" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:2998;opacity:0;transition:opacity .2s;overflow:visible;">
+  <defs>
+    <marker id="fp-arr" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+      <polygon points="0,0.5 7,3.5 0,6.5" fill="#1A1A1A"/>
+    </marker>
+  </defs>
+  <line id="fp-lh" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#fp-arr)" x1="0" y1="0" x2="0" y2="0"/>
+  <line id="fp-lv" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#fp-arr)" x1="0" y1="0" x2="0" y2="0"/>
+</svg>
 </body>
 </html>
