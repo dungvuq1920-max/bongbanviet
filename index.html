@@ -1086,8 +1086,8 @@
     }
 
     /* ─── Nav Logo & Actions ──────────────────────── */
-    .nav-logo { gap: 10px; }
-    .nav-logo-bv { background:var(--red);color:#fff;font-size:14px;font-weight:900;font-style:italic;width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px rgba(214,43,43,.3); }
+    .nav-logo { gap: 0; }
+    .nav-logo-img { height:38px; width:auto; display:block; object-fit:contain; }
     .nav-logo-text { font-size:14px;font-weight:900;letter-spacing:-.01em;color:var(--dark);text-transform:uppercase;font-style:italic; }
     .nav-logo-text .red { color:var(--red); }
     .nav-actions { display:flex;align-items:center;gap:8px;flex-shrink:0; }
@@ -1260,11 +1260,17 @@
       display:flex; align-items:center; gap:20px;
       box-sizing:border-box;
     }
-    .fltr-label {
-      font-family:'Lexend',sans-serif; font-size:9px; font-weight:800;
-      letter-spacing:.2em; text-transform:uppercase; color:var(--mid);
-      flex-shrink:0; white-space:nowrap;
+    .fltr-name-wrap { position:relative; flex-shrink:0; }
+    .fltr-name-wrap svg { position:absolute; left:10px; top:50%; transform:translateY(-50%); opacity:.35; pointer-events:none; }
+    .fltr-name-input {
+      padding:7px 12px 7px 32px; border:1.5px solid var(--line);
+      border-radius:100px; background:var(--white);
+      font-family:'Lexend',sans-serif; font-size:11px; font-weight:600;
+      color:var(--dark); outline:none; width:180px;
+      transition:border-color .2s, width .2s;
     }
+    .fltr-name-input:focus { border-color:var(--dark); width:240px; }
+    .fltr-name-input::placeholder { color:var(--mid); font-weight:500; }
     .fltr-drops { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
     .fltr-drop { position:relative; }
     .fltr-drop-btn {
@@ -1502,8 +1508,7 @@
 <!-- Navigation -->
 <nav class="nav" id="nav">
   <a href="index.html" class="nav-logo">
-    <div class="nav-logo-bv">BV</div>
-    <span class="nav-logo-text">BongBan<span class="red">Viet</span></span>
+    <img src="/logo_bongbanviet.png" alt="Bóng Bàn Việt" class="nav-logo-img">
   </a>
   <ul class="nav-links">
     <li class="mega-item">
@@ -1653,7 +1658,10 @@
   <!-- Filter Bar -->
   <div class="cat-search-bar" id="catSearchBar">
     <div class="cat-search-inner">
-      <span class="fltr-label">Bộ Lọc Nhanh</span>
+      <div class="fltr-name-wrap">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="fltrNameInput" class="fltr-name-input" placeholder="Tìm theo tên...">
+      </div>
       <div class="fltr-drops">
         <!-- Brand -->
         <div class="fltr-drop" id="fltrBrand">
@@ -2257,6 +2265,7 @@ fetch('/api/settings/home_hero_image')
   var activePr    = 'all';
   var activeBrand = 'all';
   var activeSort  = 'default';
+  var activeNameQ = '';
 
   function applyFilters() {
     SECTIONS.forEach(function(s) {
@@ -2279,6 +2288,7 @@ fetch('/api/settings/home_hero_image')
         var cardBrand = (c.getAttribute('data-brand') || '');
 
         var brandOk = activeBrand === 'all' || cardBrand === activeBrand;
+        var nameOk  = !activeNameQ || (c.getAttribute('data-name') || '').includes(activeNameQ);
 
         var priceOk = false;
         if (activePr === 'all') {
@@ -2292,7 +2302,7 @@ fetch('/api/settings/home_hero_image')
           else if (activePr === '>5000')      priceOk = priceVal >= 5000000;
         }
 
-        c.style.display = (brandOk && priceOk) ? '' : 'none';
+        c.style.display = (brandOk && priceOk && nameOk) ? '' : 'none';
       });
 
       /* 2. Sort visible */
@@ -2373,6 +2383,15 @@ fetch('/api/settings/home_hero_image')
       applyFilters();
     });
   });
+
+  /* Name search */
+  var nameInput = document.getElementById('fltrNameInput');
+  if (nameInput) {
+    nameInput.addEventListener('input', function() {
+      activeNameQ = this.value.trim().toLowerCase();
+      applyFilters();
+    });
+  }
 
   /* "Xem Tất Cả" → mở modal danh sách đầy đủ */
   var CAT_TITLES = {
