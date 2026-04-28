@@ -1092,7 +1092,8 @@
 
     /* ─── Section Header ──────────────────────────── */
     .flow-section-head { display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;padding-left:16px;border-left:4px solid var(--red); }
-    .flow-section-title { font-size:26px;font-weight:800;font-style:italic;text-transform:uppercase;letter-spacing:.02em;color:var(--dark);line-height:1.1; }
+    .flow-section-title { font-size:26px;font-weight:800;font-style:italic;text-transform:uppercase;letter-spacing:.02em;color:var(--dark);line-height:1.1;cursor:pointer; }
+    .flow-section-title:hover { color:var(--red); }
     .flow-section-sub { font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--mid);margin-top:6px; }
     .flow-section-arr { font-size:16px;color:var(--red);opacity:.4;flex-shrink:0;margin-top:4px; }
 
@@ -1729,7 +1730,7 @@
 
     <div class="cat-block" id="block-cot-vot">
       <div class="flow-section-head">
-        <div><h2 class="flow-section-title">Cốt Vợt Tiêu Biểu</h2><p class="flow-section-sub" id="count-cot-vot">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
+        <div><h2 class="flow-section-title" data-see-all="cot-vot">Cốt Vợt Tiêu Biểu</h2><p class="flow-section-sub" id="count-cot-vot">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
         <button class="feat-see-all" data-see-all="cot-vot">Xem Tất Cả ›</button>
       </div>
       <div class="prod-grid" id="gridCotVot"></div>
@@ -1737,7 +1738,7 @@
 
     <div class="cat-block" id="block-mat-vot">
       <div class="flow-section-head">
-        <div><h2 class="flow-section-title">Mặt Vợt Tiêu Biểu</h2><p class="flow-section-sub" id="count-mat-vot">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
+        <div><h2 class="flow-section-title" data-see-all="mat-vot">Mặt Vợt Tiêu Biểu</h2><p class="flow-section-sub" id="count-mat-vot">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
         <button class="feat-see-all" data-see-all="mat-vot">Xem Tất Cả ›</button>
       </div>
       <div class="prod-grid" id="gridMatVot"></div>
@@ -1745,7 +1746,7 @@
 
     <div class="cat-block" id="block-bong">
       <div class="flow-section-head">
-        <div><h2 class="flow-section-title">Bóng Tiêu Biểu</h2><p class="flow-section-sub" id="count-bong">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
+        <div><h2 class="flow-section-title" data-see-all="bong">Bóng Tiêu Biểu</h2><p class="flow-section-sub" id="count-bong">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
         <button class="feat-see-all" data-see-all="bong">Xem Tất Cả ›</button>
       </div>
       <div class="prod-grid" id="gridBong"></div>
@@ -1753,7 +1754,7 @@
 
     <div class="cat-block" id="block-ban">
       <div class="flow-section-head">
-        <div><h2 class="flow-section-title">Bàn Bóng Bàn Tiêu Biểu</h2><p class="flow-section-sub" id="count-ban">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
+        <div><h2 class="flow-section-title" data-see-all="ban">Bàn Bóng Bàn Tiêu Biểu</h2><p class="flow-section-sub" id="count-ban">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
         <button class="feat-see-all" data-see-all="ban">Xem Tất Cả ›</button>
       </div>
       <div class="prod-grid" id="gridBan"></div>
@@ -1761,7 +1762,7 @@
 
     <div class="cat-block" id="block-do-thi-dau">
       <div class="flow-section-head">
-        <div><h2 class="flow-section-title">Đồ Thi Đấu Tiêu Biểu</h2><p class="flow-section-sub" id="count-do-thi-dau">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
+        <div><h2 class="flow-section-title" data-see-all="do-thi-dau">Đồ Thi Đấu Tiêu Biểu</h2><p class="flow-section-sub" id="count-do-thi-dau">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
         <button class="feat-see-all" data-see-all="do-thi-dau">Xem Tất Cả ›</button>
       </div>
       <div class="prod-grid" id="gridDoThiDau"></div>
@@ -1769,7 +1770,7 @@
 
     <div class="cat-block" id="block-combo-vot">
       <div class="flow-section-head">
-        <div><h2 class="flow-section-title">Combo Vợt Tiêu Biểu</h2><p class="flow-section-sub" id="count-combo-vot">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
+        <div><h2 class="flow-section-title" data-see-all="combo-vot">Combo Vợt Tiêu Biểu</h2><p class="flow-section-sub" id="count-combo-vot">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
         <button class="feat-see-all" data-see-all="combo-vot">Xem Tất Cả ›</button>
       </div>
       <div class="prod-grid" id="gridComboVot"></div>
@@ -1777,7 +1778,7 @@
 
     <div class="cat-block" id="block-do-cu">
       <div class="flow-section-head">
-        <div><h2 class="flow-section-title">Đồ Cũ Tiêu Biểu</h2><p class="flow-section-sub" id="count-do-cu">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
+        <div><h2 class="flow-section-title" data-see-all="do-cu">Đồ Cũ Tiêu Biểu</h2><p class="flow-section-sub" id="count-do-cu">KẾT QUẢ LỌC: — SẢN PHẨM</p></div>
         <button class="feat-see-all" data-see-all="do-cu">Xem Tất Cả ›</button>
       </div>
       <div class="prod-grid" id="gridDoCu"></div>
@@ -2287,12 +2288,13 @@ fetch('/api/settings/home_hero_image')
         vis.forEach(function(c){ grid.appendChild(c); });
       }
 
-      /* 3. Cap at 5 per section */
-      vis.forEach(function(c, i){ if (i >= 5) c.style.display = 'none'; });
-      var shown = Math.min(vis.length, 5);
+      /* 3. Cap at 5 per section khi "Tất Cả"; không cap khi xem 1 danh mục */
+      var maxShow = (activeCat === 'all') ? 5 : vis.length;
+      vis.forEach(function(c, i){ if (i >= maxShow) c.style.display = 'none'; });
+      var shown = Math.min(vis.length, maxShow);
 
       var cntEl = document.getElementById('count-' + s.cat);
-      if (cntEl) cntEl.textContent = 'KẾT QUẢ LỌC: ' + shown + ' SẢN PHẨM';
+      if (cntEl) cntEl.textContent = (activeCat === 'all' ? 'KẾT QUẢ LỌC: ' : '') + shown + ' SẢN PHẨM';
 
       if (shown === 0) block.style.display = 'none';
     });
@@ -2313,7 +2315,10 @@ fetch('/api/settings/home_hero_image')
   });
 
   /* Category filter */
+  var BRAND_CATS = { 'cot-vot': true, 'mat-vot': true };
+
   function updateFilterUI() {
+    var hasBrands = BRAND_CATS[activeCat] || false;
     if (activeCat === 'all') {
       document.getElementById('fltrNameWrap').style.display = '';
       document.getElementById('fltrCat').style.display = '';
@@ -2323,7 +2328,7 @@ fetch('/api/settings/home_hero_image')
       document.getElementById('fltrNameWrap').style.display = 'none';
       document.getElementById('fltrCat').style.display = 'none';
       document.getElementById('fltrBrand').style.display = 'none';
-      document.getElementById('catSubPills').style.display = 'flex';
+      document.getElementById('catSubPills').style.display = hasBrands ? 'flex' : 'none';
     }
   }
 
