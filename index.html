@@ -32,8 +32,8 @@
       background: #ECEAE7;
       color: var(--dark);
       font-family: 'Lexend', sans-serif;
-      font-size: 16px;
-      line-height: 1.6;
+      font-size: 15px;
+      line-height: 1.65;
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
     }
@@ -71,7 +71,7 @@
       gap: 22px; list-style: none;
     }
     .nav-links a {
-      font-size:16px;font-weight:700;letter-spacing:.04em; text-transform: uppercase;
+      font-size:14px;font-weight:600;letter-spacing:.08em; text-transform: uppercase;
       color: var(--dark); transition: color .2s; white-space: nowrap;
     }
     .nav-links a:hover { color: var(--red); }
@@ -133,8 +133,8 @@
     .mobile-nav-links { padding: 8px 0; flex: 1; }
     .mobile-nav-links a {
       display: flex; align-items: center;
-      padding: 14px 24px; font-size: 13px; font-weight: 600;
-      letter-spacing: .06em; text-transform: uppercase;
+      padding: 14px 24px; font-size: 14px; font-weight: 600;
+      letter-spacing: .08em; text-transform: uppercase;
       color: var(--dark); border-bottom: 1px solid var(--line);
       transition: background .15s;
     }
@@ -154,8 +154,8 @@
     .btn {
       display: inline-block;
       padding: 13px 30px;
-      font-size: 11.5px; font-weight: 700;
-      letter-spacing: .1em; text-transform: uppercase;
+      font-size: 12px; font-weight: 700;
+      letter-spacing: .12em; text-transform: uppercase;
       transition: all .2s; cursor: pointer;
     }
     .btn-red  { background: var(--red);  color: #fff; }
@@ -215,6 +215,7 @@
       color: #fff; margin-bottom: 16px;
       position: relative; z-index: 1;
       letter-spacing: -.02em;
+      text-shadow: 0 4px 24px rgba(0,0,0,0.3);
     }
     .hero-h1 i { font-style: italic; color: var(--coral); }
     .hero-p {
@@ -1050,7 +1051,7 @@
 
     /* ─── Nav Logo & Actions ──────────────────────── */
     .nav-logo { gap: 0; }
-    .nav-logo-img { height:38px; width:auto; display:block; object-fit:contain; }
+    .nav-logo-img { height:48px; width:auto; display:block; object-fit:contain; }
     .nav-logo-text { font-size:14px;font-weight:900;letter-spacing:-.01em;color:var(--dark);text-transform:uppercase;font-style:italic; }
     .nav-logo-text .red { color:var(--red); }
     .nav-actions { display:flex;align-items:center;gap:8px;flex-shrink:0; }
@@ -1404,7 +1405,7 @@
   <div class="mobile-nav-overlay" id="navOverlay"></div>
   <div class="mobile-nav-panel">
     <div class="mobile-nav-header">
-      <img src="logo_bongbanviet.png" alt="Logo" style="height:44px;width:auto;">
+      <img src="logo_bongbanviet.png" alt="Logo" style="height:48px;width:auto;">
       <button class="mobile-nav-close" id="navClose">✕</button>
     </div>
     <div class="mobile-nav-links">
