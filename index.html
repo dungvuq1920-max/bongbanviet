@@ -2017,7 +2017,9 @@ fetch('/api/settings/home_hero_image')
 
   function fillDesc(p) {
     var desc = (p.description || '').replace(/<[^>]+>/g, '').trim();
-    document.getElementById('fpDesc').textContent = desc ? desc.slice(0, 1080) : 'Chưa có mô tả.';
+    var sliced = desc ? desc.slice(0, 1080) : 'Chưa có mô tả.';
+    if (desc.length > 1080) sliced += '...';
+    document.getElementById('fpDesc').innerHTML = sliced.replace(/\n/g, '<br>');
     document.getElementById('fpBuyBtn').onclick = function() { hidePopups(); showDrawer(p); };
   }
 
@@ -2164,7 +2166,7 @@ fetch('/api/settings/home_hero_image')
 
     /* Description */
     var desc = (p.description || '').replace(/<[^>]+>/g, '').trim();
-    document.getElementById('pdDesc').textContent = desc || 'Liên hệ để được tư vấn chi tiết về sản phẩm này.';
+    document.getElementById('pdDesc').innerHTML = (desc || 'Liên hệ để được tư vấn chi tiết về sản phẩm này.').replace(/\n/g, '<br>');
 
     /* CTAs */
     document.getElementById('pdZalo').href   = 'https://zalo.me/0961269386?text=' + encodeURIComponent('Tôi muốn hỏi về ' + (p.name || ''));
