@@ -1641,6 +1641,19 @@
 
   <!-- Filter Bar -->
   <div class="cat-search-bar" id="catSearchBar">
+    <!-- Sub-Pills (Brands as Tabs) — đặt trên cùng -->
+    <div class="cat-sub-pills" id="catSubPills">
+      <button class="cat-pill-back" onclick="document.querySelector('#fltrCat .fltr-drop-opt[data-cat=\'all\']').click()">← Trở Về</button>
+      <div id="catBrandPillsGroup" style="display:flex;align-items:center;gap:8px;">
+        <div style="width: 1.5px; height: 16px; background: var(--line); margin: 0 4px;"></div>
+        <button class="cat-pill active" data-brand="all">Tất Cả</button>
+        <button class="cat-pill" data-brand="butterfly">Butterfly</button>
+        <button class="cat-pill" data-brand="tibhar">Tibhar</button>
+        <button class="cat-pill" data-brand="unrex">Unrex</button>
+        <button class="cat-pill" data-brand="yinhe">Yinhe</button>
+        <button class="cat-pill" data-brand="khac">Các Hãng Khác</button>
+      </div>
+    </div>
     <div class="cat-search-inner">
       <div class="fltr-name-wrap" id="fltrNameWrap">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -1712,17 +1725,6 @@
           </div>
         </div>
       </div>
-    </div>
-    <!-- Sub-Pills (Brands as Tabs) -->
-    <div class="cat-sub-pills" id="catSubPills">
-      <button class="cat-pill-back" onclick="document.querySelector('#fltrCat .fltr-drop-opt[data-cat=\'all\']').click()">← Trở Về</button>
-      <div style="width: 1.5px; height: 16px; background: var(--line); margin: 0 4px;"></div>
-      <button class="cat-pill active" data-brand="all">Tất Cả</button>
-      <button class="cat-pill" data-brand="butterfly">Butterfly</button>
-      <button class="cat-pill" data-brand="tibhar">Tibhar</button>
-      <button class="cat-pill" data-brand="unrex">Unrex</button>
-      <button class="cat-pill" data-brand="yinhe">Yinhe</button>
-      <button class="cat-pill" data-brand="khac">Các Hãng Khác</button>
     </div>
   </div>
 
@@ -2316,6 +2318,23 @@ fetch('/api/settings/home_hero_image')
 
   /* Category filter */
   var BRAND_CATS = { 'cot-vot': true, 'mat-vot': true };
+  var CAT_TITLES = {
+    'cot-vot':    { def: 'Cốt Vợt Tiêu Biểu',        all: 'Tất Cả Cốt Vợt' },
+    'mat-vot':    { def: 'Mặt Vợt Tiêu Biểu',         all: 'Tất Cả Mặt Vợt' },
+    'bong':       { def: 'Bóng Tiêu Biểu',             all: 'Tất Cả Bóng' },
+    'ban':        { def: 'Bàn Bóng Bàn Tiêu Biểu',     all: 'Tất Cả Bàn Bóng Bàn' },
+    'do-thi-dau': { def: 'Đồ Thi Đấu Tiêu Biểu',       all: 'Tất Cả Đồ Thi Đấu' },
+    'combo-vot':  { def: 'Combo Vợt Tiêu Biểu',        all: 'Tất Cả Combo Vợt' },
+    'do-cu':      { def: 'Đồ Cũ Tiêu Biểu',            all: 'Tất Cả Đồ Cũ' },
+  };
+
+  function updateSectionTitles(cat) {
+    Object.keys(CAT_TITLES).forEach(function(slug) {
+      var el = document.querySelector('#block-' + slug + ' .flow-section-title');
+      if (!el) return;
+      el.textContent = (cat !== 'all' && cat === slug) ? CAT_TITLES[slug].all : CAT_TITLES[slug].def;
+    });
+  }
 
   function updateFilterUI() {
     var hasBrands = BRAND_CATS[activeCat] || false;
@@ -2325,10 +2344,12 @@ fetch('/api/settings/home_hero_image')
       document.getElementById('fltrBrand').style.display = '';
       document.getElementById('catSubPills').style.display = 'none';
     } else {
-      document.getElementById('fltrNameWrap').style.display = 'none';
+      document.getElementById('fltrNameWrap').style.display = '';
       document.getElementById('fltrCat').style.display = 'none';
       document.getElementById('fltrBrand').style.display = 'none';
-      document.getElementById('catSubPills').style.display = hasBrands ? 'flex' : 'none';
+      document.getElementById('catSubPills').style.display = 'flex';
+      var brandGroup = document.getElementById('catBrandPillsGroup');
+      if (brandGroup) brandGroup.style.display = hasBrands ? 'flex' : 'none';
     }
   }
 
@@ -2343,6 +2364,7 @@ fetch('/api/settings/home_hero_image')
       
       // Reset brand when changing category
       document.querySelector('#fltrBrand .fltr-drop-opt[data-brand="all"]').click();
+      updateSectionTitles(activeCat);
       updateFilterUI();
       applyFilters();
     });
@@ -2424,9 +2446,10 @@ fetch('/api/settings/home_hero_image')
       if (val) val.textContent = opt ? opt.textContent.trim() : 'Danh Mục';
       
       document.querySelector('#fltrBrand .fltr-drop-opt[data-brand="all"]').click();
+      updateSectionTitles(cat);
       updateFilterUI();
       applyFilters();
-      
+
       // Scroll to the master filter section
       var target = document.getElementById('san-pham');
       if (target) {

@@ -37,6 +37,17 @@ function _shortDesc(p) {
   return _esc(desc.slice(0, 72) + (desc.length > 72 ? '…' : ''));
 }
 
+function _fmtPrice(raw) {
+  if (!raw) return '';
+  var str = String(raw).trim();
+  var m = str.match(/^(từ\s+)?(\d[\d.]*)(đ)?$/i);
+  if (m) {
+    var num = parseInt(m[2].replace(/\./g, ''), 10);
+    if (!isNaN(num)) return (m[1] || '') + num.toLocaleString('vi-VN') + (m[3] || '');
+  }
+  return str;
+}
+
 /* Render một thẻ sản phẩm */
 function renderProdCard(p, idx, opts) {
   opts = opts || {};
@@ -80,7 +91,7 @@ function renderProdCard(p, idx, opts) {
     <h3 class="prod-name">${_esc(p.name)}</h3>
     <div class="prod-card-footer">
       ${brandFootHtml}
-      <span class="prod-price-inline">${_esc(priceText)}</span>
+      <span class="prod-price-inline">${_esc(_fmtPrice(priceText))}</span>
     </div>
   </div>
 </a>`;
