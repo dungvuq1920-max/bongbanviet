@@ -1966,12 +1966,15 @@ fetch('/api/settings/home_hero_image')
   });
 
   /* ── Dual floating popup system ────────────────────── */
-  var popupSpecs = document.getElementById('popupSpecs');
-  var popupDesc  = document.getElementById('popupDesc');
-  var fpSvg      = document.getElementById('fp-svg');
-  var fpLH       = document.getElementById('fp-lh');
-  var fpLV       = document.getElementById('fp-lv');
+  var popupSpecs = null, popupDesc = null, fpSvg = null, fpLH = null, fpLV = null;
   var FP_SW = 280, FP_DW = 288;
+  function _fpInit() {
+    if (!popupSpecs) popupSpecs = document.getElementById('popupSpecs');
+    if (!popupDesc)  popupDesc  = document.getElementById('popupDesc');
+    if (!fpSvg)      fpSvg      = document.getElementById('fp-svg');
+    if (!fpLH)       fpLH       = document.getElementById('fp-lh');
+    if (!fpLV)       fpLV       = document.getElementById('fp-lv');
+  }
 
   function fillSpecs(p) {
     document.getElementById('fpName').textContent = p.name;
@@ -2004,6 +2007,7 @@ fetch('/api/settings/home_hero_image')
   }
 
   function showPopups(card, p) {
+    _fpInit();
     fillSpecs(p);
     fillDesc(p);
 
@@ -2052,6 +2056,8 @@ fetch('/api/settings/home_hero_image')
   }
 
   function hidePopups() {
+    _fpInit();
+    if (!popupSpecs || !popupDesc || !fpSvg) return;
     popupSpecs.classList.remove('visible');
     popupDesc.classList.remove('visible');
     fpSvg.style.opacity = '0';
