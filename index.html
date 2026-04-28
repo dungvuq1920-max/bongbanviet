@@ -1626,6 +1626,24 @@
         <input type="text" id="fltrNameInput" class="fltr-name-input" placeholder="Tìm theo tên...">
       </div>
       <div class="fltr-drops">
+        <!-- Category -->
+        <div class="fltr-drop" id="fltrCat">
+          <button class="fltr-drop-btn">
+            <span id="fltrCatVal">Danh Mục</span>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="fltr-drop-panel">
+            <div class="fltr-drop-opt fltr-opt-hdr">Danh Mục</div>
+            <div class="fltr-drop-opt active" data-cat="all">Tất Cả</div>
+            <div class="fltr-drop-opt" data-cat="cot-vot">Cốt Vợt</div>
+            <div class="fltr-drop-opt" data-cat="mat-vot">Mặt Vợt</div>
+            <div class="fltr-drop-opt" data-cat="bong">Bóng</div>
+            <div class="fltr-drop-opt" data-cat="ban">Bàn</div>
+            <div class="fltr-drop-opt" data-cat="do-thi-dau">Đồ Thi Đấu</div>
+            <div class="fltr-drop-opt" data-cat="combo-vot">Combo Vợt</div>
+            <div class="fltr-drop-opt" data-cat="do-cu">Đồ Cũ</div>
+          </div>
+        </div>
         <!-- Brand -->
         <div class="fltr-drop" id="fltrBrand">
           <button class="fltr-drop-btn">
@@ -1861,17 +1879,7 @@
   </div>
 </div>
 
-<!-- All Products Modal -->
-<div class="all-prods-overlay" id="allProdsOverlay"></div>
-<div class="all-prods-modal" id="allProdsModal">
-  <div class="all-prods-header">
-    <span class="all-prods-title" id="allProdsTitle"></span>
-    <button class="ap-close" id="allProdsClose">✕</button>
-  </div>
-  <div class="all-prods-body">
-    <div class="prod-grid" id="allProdsGrid"></div>
-  </div>
-</div>
+<!-- All Products Modal (Removed) -->
 
 <script src="/js/products.js"></script>
 <script>
@@ -2273,6 +2281,19 @@ fetch('/api/settings/home_hero_image')
     document.querySelectorAll('.fltr-drop').forEach(function(d){ d.classList.remove('open'); });
   });
 
+  /* Category filter */
+  document.querySelectorAll('#fltrCat .fltr-drop-opt:not(.fltr-opt-hdr)').forEach(function(opt) {
+    opt.addEventListener('click', function() {
+      document.querySelectorAll('#fltrCat .fltr-drop-opt').forEach(function(o){ o.classList.remove('active'); });
+      this.classList.add('active');
+      activeCat = this.getAttribute('data-cat');
+      var val = document.getElementById('fltrCatVal');
+      if (val) val.textContent = activeCat === 'all' ? 'Danh Mục' : this.textContent.trim();
+      document.getElementById('fltrCat').classList.remove('open');
+      applyFilters();
+    });
+  });
+
   /* Brand filter */
   document.querySelectorAll('#fltrBrand .fltr-drop-opt:not(.fltr-opt-hdr)').forEach(function(opt) {
     opt.addEventListener('click', function() {
@@ -2321,45 +2342,32 @@ fetch('/api/settings/home_hero_image')
     });
   }
 
-  /* "Xem Tất Cả" → mở modal danh sách đầy đủ */
-  var CAT_TITLES = {
-    'cot-vot':'Cốt Vợt Tiêu Biểu', 'mat-vot':'Mặt Vợt Tiêu Biểu',
-    'bong':'Bóng Tiêu Biểu', 'ban':'Bàn Bóng Bàn Tiêu Biểu',
-    'do-thi-dau':'Đồ Thi Đấu Tiêu Biểu', 'combo-vot':'Combo Vợt Tiêu Biểu',
-    'do-cu':'Đồ Cũ Tiêu Biểu'
-  };
-
-  function closeAllProdsModal() {
-    document.getElementById('allProdsModal').classList.remove('open');
-    document.getElementById('allProdsOverlay').classList.remove('active');
-  }
-
+  /* "Xem Tất Cả" → cuộn xuống phần lọc tổng hợp */
   document.querySelectorAll('[data-see-all]').forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.stopPropagation();
       var cat = this.getAttribute('data-see-all');
-      var s = SECTIONS.filter(function(x){ return x.cat === cat; })[0];
-      if (!s) return;
-
-      document.getElementById('allProdsTitle').textContent = (CAT_TITLES[cat] || cat).toUpperCase() + ' — TẤT CẢ SẢN PHẨM';
-
-      var sourceGrid = document.getElementById(s.gridId);
-      var modalGrid  = document.getElementById('allProdsGrid');
-      modalGrid.innerHTML = '';
-      Array.from(sourceGrid.querySelectorAll('.prod-card')).forEach(function(c) {
-        var clone = c.cloneNode(true);
-        clone.style.display = '';
-        modalGrid.appendChild(clone);
-      });
-      initCards(modalGrid);
-
-      document.getElementById('allProdsOverlay').classList.add('active');
-      document.getElementById('allProdsModal').classList.add('open');
+      
+      // Update Category Dropdown visually
+      document.querySelectorAll('#fltrCat .fltr-drop-opt').forEach(function(o){ o.classList.remove('active'); });
+      var opt = document.querySelector('#fltrCat .fltr-drop-opt[data-cat="' + cat + '"]');
+      if (opt) opt.classList.add('active');
+      
+      activeCat = cat;
+      var val = document.getElementById('fltrCatVal');
+      if (val) val.textContent = opt ? opt.textContent.trim() : 'Danh Mục';
+      
+      applyFilters();
+      
+      // Scroll to the master filter section
+      var target = document.getElementById('san-pham');
+      if (target) {
+        var top = target.getBoundingClientRect().top + window.pageYOffset - 80;
+        window.scrollTo({ top: top, behavior: 'smooth' });
+      }
     });
   });
 
-  document.getElementById('allProdsClose').addEventListener('click', closeAllProdsModal);
-  document.getElementById('allProdsOverlay').addEventListener('click', closeAllProdsModal);
 })();
 </script>
 <script src="/js/banners.js"></script>
