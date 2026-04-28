@@ -47,7 +47,7 @@
       background: var(--bg);
       box-shadow: 0 0 60px rgba(0,0,0,.12);
       min-height: 100vh;
-      overflow-x: hidden;
+      overflow-x: clip;
     }
 
     /* ─── Announcement Bar ────────────────────────────────── */
@@ -2459,31 +2459,37 @@ fetch('/api/settings/home_hero_image')
     });
   });
 
-  /* Nav links → activate category filter (fix: khi block bị hide thì anchor không scroll được) */
-  document.querySelectorAll('nav a[href^="#block-"]').forEach(function(link) {
+  /* Nav links → về overview, cuộn đến đúng section (không vào filter mode) */
+  document.querySelectorAll('nav a[href^="#block-"], .mobile-nav-links a[href^="#block-"]').forEach(function(link) {
     link.addEventListener('click', function(e) {
       e.preventDefault();
       var cat = this.getAttribute('href').replace('#block-', '');
       if (!document.getElementById('block-' + cat)) return;
 
+      // Reset về overview: tất cả danh mục hiển thị
       document.querySelectorAll('#fltrCat .fltr-drop-opt').forEach(function(o){ o.classList.remove('active'); });
-      var opt = document.querySelector('#fltrCat .fltr-drop-opt[data-cat="' + cat + '"]');
-      if (opt) opt.classList.add('active');
+      var allOpt = document.querySelector('#fltrCat .fltr-drop-opt[data-cat="all"]');
+      if (allOpt) allOpt.classList.add('active');
 
-      activeCat = cat;
+      activeCat = 'all';
       var val = document.getElementById('fltrCatVal');
-      if (val) val.textContent = opt ? opt.textContent.trim() : 'Danh Mục';
+      if (val) val.textContent = 'Danh Mục';
 
       document.querySelector('#fltrBrand .fltr-drop-opt[data-brand="all"]').click();
-      updateSectionTitles(cat);
+      updateSectionTitles('all');
       updateFilterUI();
       applyFilters();
 
-      var target = document.getElementById('san-pham');
-      if (target) {
-        var top = target.getBoundingClientRect().top + window.pageYOffset - 80;
-        window.scrollTo({ top: top, behavior: 'smooth' });
-      }
+      closeNav();
+
+      // Cuộn đến đúng block sau khi layout cập nhật
+      requestAnimationFrame(function() {
+        var target = document.getElementById('block-' + cat);
+        if (target) {
+          var top = target.getBoundingClientRect().top + window.pageYOffset - 90;
+          window.scrollTo({ top: top, behavior: 'smooth' });
+        }
+      });
     });
   });
 
