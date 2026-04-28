@@ -1282,6 +1282,26 @@
       .srch-drop-wrap { padding:0 10px; }
       .cat-block { scroll-margin-top:80px; }
     }
+    
+    /*  Category Sub-Pills (Brands as tabs)  */
+    .cat-sub-pills {
+      display:none; gap:8px; flex-wrap:wrap; padding:12px 40px; align-items:center;
+      background:var(--bg); border-bottom:1px solid var(--line);
+    }
+    @media (max-width:960px) { .cat-sub-pills { padding:10px 20px; } }
+    @media (max-width:640px) { .cat-sub-pills { padding:10px 12px; } }
+    .cat-pill {
+      padding:6px 14px; border-radius:100px; border:1px solid var(--line);
+      font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;
+      background:var(--white); color:var(--dark); cursor:pointer; transition:all .2s;
+    }
+    .cat-pill:hover { border-color:var(--dark); background:var(--dark); color:#fff; }
+    .cat-pill.active { background:var(--red); color:#fff; border-color:var(--red); }
+    .cat-pill-back {
+      padding:6px 8px; border:none; background:transparent; display:flex; align-items:center;
+      font-size:10.5px; font-weight:700; color:var(--red); cursor:pointer; text-transform:uppercase;
+    }
+    .cat-pill-back:hover { color:var(--dark); }
 
     /* ── Product Detail Drawer ──────────────────────── */
     .prod-drawer-overlay {
@@ -1621,7 +1641,7 @@
   <!-- Filter Bar -->
   <div class="cat-search-bar" id="catSearchBar">
     <div class="cat-search-inner">
-      <div class="fltr-name-wrap">
+      <div class="fltr-name-wrap" id="fltrNameWrap">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" id="fltrNameInput" class="fltr-name-input" placeholder="Tìm theo tên...">
       </div>
@@ -1691,6 +1711,17 @@
           </div>
         </div>
       </div>
+    </div>
+    <!-- Sub-Pills (Brands as Tabs) -->
+    <div class="cat-sub-pills" id="catSubPills">
+      <button class="cat-pill-back" onclick="document.querySelector('#fltrCat .fltr-drop-opt[data-cat=\'all\']').click()">← Trở Về</button>
+      <div style="width: 1.5px; height: 16px; background: var(--line); margin: 0 4px;"></div>
+      <button class="cat-pill active" data-brand="all">Tất Cả</button>
+      <button class="cat-pill" data-brand="butterfly">Butterfly</button>
+      <button class="cat-pill" data-brand="tibhar">Tibhar</button>
+      <button class="cat-pill" data-brand="unrex">Unrex</button>
+      <button class="cat-pill" data-brand="yinhe">Yinhe</button>
+      <button class="cat-pill" data-brand="khac">Các Hãng Khác</button>
     </div>
   </div>
 
@@ -2282,6 +2313,20 @@ fetch('/api/settings/home_hero_image')
   });
 
   /* Category filter */
+  function updateFilterUI() {
+    if (activeCat === 'all') {
+      document.getElementById('fltrNameWrap').style.display = '';
+      document.getElementById('fltrCat').style.display = '';
+      document.getElementById('fltrBrand').style.display = '';
+      document.getElementById('catSubPills').style.display = 'none';
+    } else {
+      document.getElementById('fltrNameWrap').style.display = 'none';
+      document.getElementById('fltrCat').style.display = 'none';
+      document.getElementById('fltrBrand').style.display = 'none';
+      document.getElementById('catSubPills').style.display = 'flex';
+    }
+  }
+
   document.querySelectorAll('#fltrCat .fltr-drop-opt:not(.fltr-opt-hdr)').forEach(function(opt) {
     opt.addEventListener('click', function() {
       document.querySelectorAll('#fltrCat .fltr-drop-opt').forEach(function(o){ o.classList.remove('active'); });
@@ -2290,7 +2335,23 @@ fetch('/api/settings/home_hero_image')
       var val = document.getElementById('fltrCatVal');
       if (val) val.textContent = activeCat === 'all' ? 'Danh Mục' : this.textContent.trim();
       document.getElementById('fltrCat').classList.remove('open');
+      
+      // Reset brand when changing category
+      document.querySelector('#fltrBrand .fltr-drop-opt[data-brand="all"]').click();
+      updateFilterUI();
       applyFilters();
+    });
+  });
+
+  /* Brand sub-pills filter */
+  document.querySelectorAll('#catSubPills .cat-pill').forEach(function(pill) {
+    pill.addEventListener('click', function() {
+      var brand = this.getAttribute('data-brand');
+      var opt = document.querySelector('#fltrBrand .fltr-drop-opt[data-brand="' + brand + '"]');
+      if (opt) opt.click(); // This calls applyFilters and updates activeBrand
+      
+      document.querySelectorAll('#catSubPills .cat-pill').forEach(function(p){ p.classList.remove('active'); });
+      this.classList.add('active');
     });
   });
 
@@ -2357,6 +2418,8 @@ fetch('/api/settings/home_hero_image')
       var val = document.getElementById('fltrCatVal');
       if (val) val.textContent = opt ? opt.textContent.trim() : 'Danh Mục';
       
+      document.querySelector('#fltrBrand .fltr-drop-opt[data-brand="all"]').click();
+      updateFilterUI();
       applyFilters();
       
       // Scroll to the master filter section
