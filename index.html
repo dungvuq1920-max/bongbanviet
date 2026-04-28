@@ -982,92 +982,33 @@
       max-width:1200px; margin:0 auto; padding:36px 40px 88px;
     }
     .flow-body .prod-grid { grid-template-columns:repeat(4,1fr); gap:22px; }
-    .prod-card.fp-pinned { outline:2px solid var(--red); outline-offset:-2px; }
-
-    /* ─── Flow Popups (canvas style) ─────────────────── */
-    /* ─── Flow Overlay ─────────────────────────────── */
-    .flow-overlay {
-      position:fixed; inset:0; z-index:97;
-      background:rgba(0,0,0,0); backdrop-filter:blur(0px);
-      pointer-events:none;
-      transition:background .35s ease, backdrop-filter .35s ease;
+    /* ─── Card info overlay (hover-in-place) ─────────── */
+    .all-cats-wrap .prod-img { position:relative; overflow:hidden; }
+    .card-info-ov {
+      position:absolute; inset:0;
+      background:linear-gradient(to top, rgba(10,10,18,.97) 0%, rgba(20,33,54,.88) 55%, rgba(0,0,0,.28) 100%);
+      color:#fff; padding:12px;
+      display:flex; flex-direction:column; justify-content:flex-end;
+      opacity:0; pointer-events:none;
+      transition:opacity .22s ease;
     }
-    .flow-overlay.active {
-      background:rgba(0,0,0,.48);
-      backdrop-filter:blur(4px);
-      pointer-events:auto;
+    .card-info-ov.show { opacity:1; pointer-events:auto; }
+    .cio-price {
+      font-size:16px; font-weight:900; line-height:1; margin-bottom:7px;
+      letter-spacing:-.02em;
     }
-
-    .flow-popup {
-      position:fixed; z-index:100;
-      pointer-events:none; opacity:0;
-      transition:opacity .22s ease, transform .22s ease;
-      transform: scale(.97);
-      background:var(--white);
-      border:1px solid #ebebeb;
-      border-radius:14px;
-      box-shadow:0 20px 48px -8px rgba(0,0,0,.16), 0 0 0 1px rgba(0,0,0,.03);
+    .cio-price.contact { font-size:11px; font-weight:700; color:rgba(255,255,255,.7); }
+    .cio-specs { display:flex; flex-direction:column; gap:3px; margin-bottom:7px; }
+    .cio-spec {
+      font-size:9px; color:rgba(255,255,255,.68);
+      display:flex; justify-content:space-between; align-items:baseline; gap:4px;
     }
-    .flow-popup.visible { opacity:1; pointer-events:auto; transform:scale(1); }
-    .flow-popup.pinned-mode { max-height:78vh; overflow-y:auto; }
-    .flow-popup-r { width:288px; padding:20px 22px; }
-    .flow-popup-b { width:320px; padding:20px 22px; border-left:3px solid var(--red); border-radius:4px 14px 14px 4px; }
-    .fp-tag {
-      display:inline-block;
-      background:var(--red); color:#fff;
-      font-size:9px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
-      padding:3px 10px; margin-bottom:12px; border-radius:4px;
+    .cio-spec span:last-child { color:#fff; font-weight:700; text-align:right; }
+    .cio-divider { border:none; border-top:1px solid rgba(255,255,255,.12); margin:6px 0; }
+    .cio-cta {
+      font-size:8px; font-weight:800; letter-spacing:.16em; text-transform:uppercase;
+      color:var(--red);
     }
-    .fp-name {
-      font-size:17px; font-weight:800;
-      line-height:1.25; color:var(--dark); margin-bottom:6px;
-    }
-    .fp-price {
-      font-size:21px; font-weight:900;
-      color:var(--red); margin-bottom:4px; letter-spacing:-.01em;
-    }
-    .fp-stock {
-      font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; margin-bottom:14px;
-    }
-    .fp-sect-label {
-      font-size:9px; font-weight:700; letter-spacing:.16em; text-transform:uppercase;
-      color:#94a3b8; margin-bottom:10px;
-      display:flex; align-items:center; gap:6px;
-      padding-bottom:9px; border-bottom:1px solid #f0f0f0;
-    }
-    .fp-spec { margin-bottom:9px; }
-    .fp-spec-row {
-      display:flex; justify-content:space-between; align-items:center;
-      font-size:10.5px; font-weight:600;
-      color:#64748b; margin-bottom:5px;
-    }
-    .fp-spec-row span:first-child { color:#64748b; }
-    .fp-spec-row span:last-child { color:var(--dark); font-weight:700; }
-    .fp-bar { height:3px; background:#f0f0f0; border-radius:100px; overflow:hidden; }
-    .fp-fill { height:100%; background:var(--red); border-radius:100px; transition:width .55s ease; }
-    .fpb-label {
-      font-size:9px; font-weight:700; letter-spacing:.16em; text-transform:uppercase;
-      color:#94a3b8; margin-bottom:10px;
-      display:flex; align-items:center; gap:5px;
-      padding-bottom:9px; border-bottom:1px solid #f0f0f0;
-    }
-    .fpb-desc {
-      font-size:13px; color:#475569; line-height:1.75;
-      margin-bottom:16px;
-      overflow-y:auto; max-height:300px;
-    }
-    .fpb-actions { display:flex; flex-direction:column; gap:8px; }
-    .fpb-btn {
-      display:block; width:100%; padding:11px; text-align:center;
-      font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
-      transition:all .2s; text-decoration:none; border-radius:8px;
-    }
-    .fpb-btn-dark { background:var(--dark); color:#fff; }
-    .fpb-btn-dark:hover { background:var(--red); }
-    .fpb-btn-red { background:var(--red); color:#fff; }
-    .fpb-btn-red:hover { background:var(--dark); }
-    .flow-line { transition:stroke-dashoffset .38s ease; }
-    .flow-line.active { stroke-dashoffset:0 !important; }
 
     @media (max-width:960px) {
       .flow-sticky { top:0; }
@@ -1152,7 +1093,6 @@
     }
     .prod-card.fp-pinned {
       border-color: var(--red);
-      box-shadow: 0 0 0 3px rgba(214,43,43,.12);
       transform: none;
     }
     .prod-img {
@@ -1193,7 +1133,7 @@
       display: -webkit-box; -webkit-line-clamp: 2;
       -webkit-box-orient: vertical; overflow: hidden;
     }
-    .prod-card:hover .prod-name, .prod-card.fp-pinned .prod-name { color: var(--red); }
+    .prod-card:hover .prod-name { color: var(--red); }
     .prod-card-footer {
       display: flex; justify-content: space-between;
       align-items: center; margin-top: 10px;
@@ -1774,38 +1714,6 @@
   </div>
 </section>
 
-<!-- Background overlay (shown when popup is pinned) -->
-<div class="flow-overlay" id="flowOverlay"></div>
-
-<!-- Popup: Specs (right of card) -->
-<div class="flow-popup flow-popup-r" id="flowPopupR">
-  <div class="fp-tag" id="fpTag">CỐT VỢT</div>
-  <h2 class="fp-name" id="fpName">Tên sản phẩm</h2>
-  <div class="fp-price" id="fpPrice">2.500.000đ</div>
-  <div class="fp-stock" id="fpStock"></div>
-  <div class="fp-sect-label">Phân Tích Thông Số</div>
-  <div id="fpSpecs"></div>
-</div>
-
-<!-- Popup: Description + CTA (below card) -->
-<div class="flow-popup flow-popup-b" id="flowPopupB">
-  <p class="fpb-label">Chi Tiết Cấu Tạo</p>
-  <p class="fpb-desc" id="fpDesc">Mô tả sản phẩm...</p>
-  <div class="fpb-actions">
-    <a class="fpb-btn fpb-btn-dark" id="fpLink" href="#" onclick="event.stopPropagation()">Xem Chi Tiết →</a>
-    <a class="fpb-btn fpb-btn-red" id="fpZalo" href="#" target="_blank" rel="noopener" onclick="event.stopPropagation()">Tư Vấn Zalo</a>
-  </div>
-</div>
-
-<!-- SVG connector lines -->
-<svg id="flowSvg" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:90;overflow:visible;">
-  <defs>
-    <marker id="fArrowR" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto"><polygon points="0 0,6 2,0 4" fill="#D62B2B"/></marker>
-    <marker id="fArrowB" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto"><polygon points="0 0,6 2,0 4" fill="#D62B2B"/></marker>
-  </defs>
-  <path id="flowLineR" class="flow-line" fill="none" stroke="#D62B2B" stroke-width="2" stroke-dasharray="2000" stroke-dashoffset="2000" marker-end="url(#fArrowR)" d=""/>
-  <path id="flowLineB" class="flow-line" fill="none" stroke="#D62B2B" stroke-width="2" stroke-dasharray="2000" stroke-dashoffset="2000" marker-end="url(#fArrowB)" d=""/>
-</svg>
 
 <!-- Contact Strip -->
 <section class="contact" id="lien-he">
@@ -1992,11 +1900,6 @@ fetch('/api/settings/home_hero_image')
 /* ── All Catalogs (7 × 8 random) ────────────────────── */
 (function() {
   var flowCache = {};
-  var pinnedSlug = null;
-  var popupR = document.getElementById('flowPopupR');
-  var popupB = document.getElementById('flowPopupB');
-  var lineR  = document.getElementById('flowLineR');
-  var lineB  = document.getElementById('flowLineB');
 
   var CATS = {
     'cot-vot':'Cốt Vợt','mat-vot':'Mặt Vợt','bong':'Bóng',
@@ -2042,18 +1945,47 @@ fetch('/api/settings/home_hero_image')
 
   function initCards(grid) {
     grid.querySelectorAll('.prod-card').forEach(function(card) {
+      /* inject overlay into image area once */
+      if (!card.querySelector('.card-info-ov')) {
+        var imgWrap = card.querySelector('.prod-img');
+        if (imgWrap) {
+          var ov = document.createElement('div');
+          ov.className = 'card-info-ov';
+          imgWrap.appendChild(ov);
+        }
+      }
       card.addEventListener('mouseenter', function() {
-        if (pinnedSlug !== null) return;
         var p = flowCache[getSlug(this)];
-        if (p) showPopups(p, this);
+        if (!p) return;
+        var ov = this.querySelector('.card-info-ov');
+        if (!ov) return;
+        var rawPrice = String(p.price || '');
+        var variants = Array.isArray(p.variants) ? p.variants.filter(function(v){ return v && v.price; }) : [];
+        var priceText = rawPrice || (variants.length ? 'từ ' + variants[0].price : '');
+        var priceClass = priceText ? 'cio-price' : 'cio-price contact';
+        var priceDisplay = priceText || 'Liên hệ báo giá';
+        var specsHtml = '';
+        if (p.specs && typeof p.specs === 'object') {
+          Object.entries(p.specs).slice(0, 4).forEach(function(kv) {
+            specsHtml += '<div class="cio-spec"><span>' + kv[0] + '</span><span>' + kv[1] + '</span></div>';
+          });
+        }
+        var stock = (p.in_stock === false || p.in_stock === 0)
+          ? '<span style="color:#ef4444;font-size:8px;font-weight:700;letter-spacing:.1em;">● HẾT HÀNG</span>'
+          : '<span style="color:#4ade80;font-size:8px;font-weight:700;letter-spacing:.1em;">● CÒN HÀNG</span>';
+        ov.innerHTML =
+          '<div class="' + priceClass + '">' + priceDisplay + '</div>'
+          + stock
+          + (specsHtml ? '<hr class="cio-divider"><div class="cio-specs">' + specsHtml + '</div>' : '')
+          + '<div class="cio-cta">Nhấn để xem chi tiết →</div>';
+        ov.classList.add('show');
       });
       card.addEventListener('mouseleave', function() {
-        if (pinnedSlug !== null) return;
-        hidePopups();
+        var ov = this.querySelector('.card-info-ov');
+        if (ov) ov.classList.remove('show');
       });
       card.addEventListener('click', function(e) {
         e.preventDefault();
-        hidePopups();
         var slug = getSlug(this);
         var p = flowCache[slug];
         if (p) showDrawer(p);
@@ -2064,118 +1996,6 @@ fetch('/api/settings/home_hero_image')
   function getSlug(card) {
     return (card.getAttribute('href') || '').replace('san-pham.html?id=', '');
   }
-
-  function showPopups(p, card) {
-    var catLabel   = CATS[p.category_slug] || p.category_slug || 'Sản Phẩm';
-    var brandLabel = BRANDS[p.brand_slug]  || p.brand_slug    || '';
-    document.getElementById('fpTag').textContent  = brandLabel ? brandLabel + ' · ' + catLabel : catLabel;
-    document.getElementById('fpName').textContent = p.name || '';
-
-    var rawPrice = String(p.price || '');
-    var variants = Array.isArray(p.variants) ? p.variants.filter(function(v){ return v && v.price; }) : [];
-    document.getElementById('fpPrice').textContent = rawPrice || (variants.length ? 'từ ' + variants[0].price : 'Liên hệ báo giá');
-
-    var stockEl = document.getElementById('fpStock');
-    if (p.in_stock === false || p.in_stock === 0) {
-      stockEl.textContent = '● Hết Hàng'; stockEl.style.color = '#D62B2B';
-    } else {
-      stockEl.textContent = '● Còn Hàng'; stockEl.style.color = '#166534';
-    }
-
-    var specsHtml = '';
-    if (p.specs && typeof p.specs === 'object') {
-      Object.entries(p.specs).forEach(function(kv) {
-        var k = kv[0], v = kv[1];
-        var pct = (typeof v === 'number' && v > 0 && v <= 100) ? v : null;
-        specsHtml += '<div class="fp-spec"><div class="fp-spec-row"><span>' + k + '</span><span>' + v + (pct ? '%' : '') + '</span></div>';
-        if (pct !== null) specsHtml += '<div class="fp-bar"><div class="fp-fill" style="width:' + pct + '%;"></div></div>';
-        specsHtml += '</div>';
-      });
-    }
-    document.getElementById('fpSpecs').innerHTML = specsHtml;
-
-    var desc = (p.description || '').replace(/<[^>]+>/g, '').trim();
-    document.getElementById('fpDesc').textContent = desc || 'Liên hệ để được tư vấn chi tiết về sản phẩm này.';
-    document.getElementById('fpLink').href = 'san-pham.html?id=' + (p.slug || '');
-    document.getElementById('fpZalo').href = 'https://zalo.me/0961269386?text=' + encodeURIComponent('Tôi muốn hỏi về ' + p.name);
-
-    positionPopups(card);
-  }
-
-  function positionPopups(card) {
-    var isPinned = pinnedSlug !== null;
-    var rect = card.getBoundingClientRect();
-    var vw = window.innerWidth, vh = window.innerHeight;
-    var prW = 272, pbW = 300;
-    var prX, prY, pbX, pbY;
-    var overlay = document.getElementById('flowOverlay');
-
-    if (isPinned) {
-      /* Fixed viewport positions: specs panel right, desc panel left */
-      prX = vw - prW - 32;
-      prY = Math.max(24, vh / 2 - 180);
-      pbX = 32;
-      pbY = Math.max(24, vh / 2 - 160);
-      overlay.classList.add('active');
-      popupR.classList.add('pinned-mode');
-      popupB.classList.add('pinned-mode');
-    } else {
-      prX = rect.right + 18;
-      prY = rect.top + rect.height / 2 - 110;
-      if (prX + prW > vw - 8) prX = rect.left - prW - 18;
-      if (prY < 8) prY = 8;
-      if (prY + 320 > vh) prY = vh - 328;
-      pbX = rect.left + rect.width / 2 - pbW / 2;
-      pbY = rect.bottom + 14;
-      if (pbX < 8) pbX = 8;
-      if (pbX + pbW > vw - 8) pbX = vw - pbW - 8;
-      if (pbY + 220 > vh) pbY = rect.top - 220 - 14;
-      popupR.classList.remove('pinned-mode');
-      popupB.classList.remove('pinned-mode');
-    }
-
-    popupR.style.left = prX + 'px';
-    popupR.style.top  = prY + 'px';
-    popupR.classList.add('visible');
-    popupB.style.left = pbX + 'px';
-    popupB.style.top  = pbY + 'px';
-    popupB.classList.add('visible');
-
-    var cX = rect.left + rect.width / 2;
-    var cY = rect.top  + rect.height / 2;
-
-    /* Mũi tên phải: hoàn toàn ngang (cùng Y = cY) */
-    drawCurve(lineR, rect.right, cY, prX, cY);
-
-    /* Mũi tên dưới: hoàn toàn dọc (cùng X = cX) */
-    drawCurve(lineB, cX, rect.bottom, cX, pbY);
-  }
-
-  function drawCurve(path, x1, y1, x2, y2) {
-    var dx = x2 - x1, dy = y2 - y1;
-    var d = 'M ' + x1 + ' ' + y1 + ' L ' + x2 + ' ' + y2;
-    var len = Math.ceil(Math.sqrt(dx*dx + dy*dy)) + 20;
-    path.style.strokeDasharray  = len;
-    path.style.strokeDashoffset = len;
-    path.setAttribute('d', d);
-    path.classList.remove('active');
-    void path.offsetWidth;
-    path.classList.add('active');
-  }
-
-  function hidePopups() {
-    popupR.classList.remove('visible', 'pinned-mode');
-    popupB.classList.remove('visible', 'pinned-mode');
-    lineR.classList.remove('active');
-    lineB.classList.remove('active');
-  }
-
-  /* Clicks inside popups must not bubble */
-  popupR.addEventListener('click', function(e) { e.stopPropagation(); });
-  popupB.addEventListener('click', function(e) { e.stopPropagation(); });
-
-  window.addEventListener('scroll', function() { hidePopups(); }, { passive: true });
-  window.addEventListener('resize', function() { hidePopups(); });
 
   /* ── Product Detail Drawer ──────────────────────── */
   function showDrawer(p) {
