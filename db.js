@@ -101,19 +101,19 @@ if (fs.existsSync(SEED_FILE)) {
   const seed = JSON.parse(fs.readFileSync(SEED_FILE, 'utf8'));
 
   const catCount = db.prepare('SELECT COUNT(*) as c FROM categories').get();
-  if (catCount.c === 0 && seed.categories?.length) {
+  if (seed.categories?.length) {
     const ins = db.prepare('INSERT OR IGNORE INTO categories (slug,label,description,image,sort_order) VALUES (?,?,?,?,?)');
     seed.categories.forEach(r => ins.run(r.slug, r.label, r.description, r.image, r.sort_order));
   }
 
   const brandCount = db.prepare('SELECT COUNT(*) as c FROM brands').get();
-  if (brandCount.c === 0 && seed.brands?.length) {
+  if (seed.brands?.length) {
     const ins = db.prepare('INSERT OR IGNORE INTO brands (slug,label,logo,sort_order) VALUES (?,?,?,?)');
     seed.brands.forEach(r => ins.run(r.slug, r.label, r.logo, r.sort_order));
   }
 
   const prodCount = db.prepare('SELECT COUNT(*) as c FROM products').get();
-  if (prodCount.c === 0 && seed.products?.length) {
+  if (seed.products?.length) {
     const ins = db.prepare(`INSERT OR IGNORE INTO products
       (id,slug,name,category_slug,brand_slug,gear_subcategory,description,specs,images,
        featured,condition,badge,sort_order,price,in_stock,variants,created_at,updated_at)
@@ -126,7 +126,7 @@ if (fs.existsSync(SEED_FILE)) {
   }
 
   const comboCount = db.prepare('SELECT COUNT(*) as c FROM combos').get();
-  if (comboCount.c === 0 && seed.combos?.length) {
+  if (seed.combos?.length) {
     const ins = db.prepare(`INSERT OR IGNORE INTO combos
       (id,slug,name,level,blade,rubber_fh,rubber_bh,description,images,badge,sort_order,price,in_stock)
       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`);
@@ -137,7 +137,7 @@ if (fs.existsSync(SEED_FILE)) {
   }
 
   const artCount = db.prepare('SELECT COUNT(*) as c FROM articles').get();
-  if (artCount.c === 0 && seed.articles?.length) {
+  if (seed.articles?.length) {
     const ins = db.prepare(`INSERT OR IGNORE INTO articles
       (id,slug,title,excerpt,content,cover_image,category,tags,published_at,created_at)
       VALUES (?,?,?,?,?,?,?,?,?,?)`);
