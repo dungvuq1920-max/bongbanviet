@@ -1021,7 +1021,7 @@
     /* Desc popup */
     .fp-desc-text {
       padding:0 14px 10px; font-size:11px; color:var(--mid); line-height:1.6;
-      display:-webkit-box; -webkit-line-clamp:5; -webkit-box-orient:vertical; overflow:hidden;
+      display:-webkit-box; -webkit-line-clamp:15; -webkit-box-orient:vertical; overflow:hidden;
     }
     .fp-buy-btn {
       display:block; width:calc(100% - 28px); margin:0 14px 12px;
@@ -2003,7 +2003,7 @@ fetch('/api/settings/home_hero_image')
           : '<span class="fp-stock fp-stock-ok">● Còn Hàng</span>');
     var h = '';
     if (p.specs && typeof p.specs === 'object') {
-      Object.entries(p.specs).slice(0, 7).forEach(function(e) {
+      Object.entries(p.specs).slice(0, 21).forEach(function(e) {
         var n = parseFloat(e[1]);
         var bar = (!isNaN(n) && n >= 0 && n <= 10)
           ? '<span class="fp-bar-wrap"><span class="fp-bar" style="width:' + (n * 10) + '%"></span></span>'
@@ -2016,7 +2016,7 @@ fetch('/api/settings/home_hero_image')
 
   function fillDesc(p) {
     var desc = (p.description || '').replace(/<[^>]+>/g, '').trim();
-    document.getElementById('fpDesc').textContent = desc ? desc.slice(0, 360) : 'Chưa có mô tả.';
+    document.getElementById('fpDesc').textContent = desc ? desc.slice(0, 1080) : 'Chưa có mô tả.';
     document.getElementById('fpBuyBtn').onclick = function() { hidePopups(); showDrawer(p); };
   }
 
@@ -2346,6 +2346,7 @@ fetch('/api/settings/home_hero_image')
         clone.style.display = '';
         modalGrid.appendChild(clone);
       });
+      initCards(modalGrid);
 
       document.getElementById('allProdsOverlay').classList.add('active');
       document.getElementById('allProdsModal').classList.add('open');
