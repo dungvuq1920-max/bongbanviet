@@ -5,29 +5,33 @@
   <title>Chia Sẻ Kiến Thức | BÓNG BÀN VIỆT</title>
   <meta name="description" content="Tổng hợp kiến thức, kỹ thuật và kinh nghiệm thực chiến bóng bàn từ đội ngũ chuyên gia BÓNG BÀN VIỆT. Tư Vấn Chuẩn - Hàng Chính Hãng.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    html{scroll-behavior:smooth}
     :root{--red:#D62B2B;--coral:#E8503A;--bg:#FAFAF8;--white:#FFFFFF;--dark:#1A1A1A;--mid:#6B6B6B;--line:#E5E5E3;--warm:#F2EDE7}
-    body{font-family:'Lexend',sans-serif;background:#ECEAE7;color:var(--dark);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+    body{font-family:'Lexend',sans-serif;background:#ECEAE7;color:var(--dark);overflow-x:hidden}
     a{text-decoration:none;color:inherit}
     .site-container{max-width:1200px;margin:0 auto;background:var(--bg);box-shadow:0 0 60px rgba(0,0,0,.12);min-height:100vh;overflow-x:hidden}
 
     /* ── Announcement ── */
     .ann{background:#111;color:rgba(255,255,255,.85);text-align:center;padding:11px 24px;font-size:12.5px;font-weight:500;letter-spacing:.03em;display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap}.ann a{color:var(--coral);font-weight:600}.ann-item{display:inline-flex;align-items:center;gap:7px}.ann-dot{width:3px;height:3px;background:rgba(255,255,255,.22);flex-shrink:0}
 
+
     /* ── Nav ── */
     nav{background:var(--white);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:90;transition:box-shadow .3s}
     nav.scrolled{box-shadow:0 8px 32px rgba(0,0,0,.1)}
     .nav-inner{padding:0 40px;height:78px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+    .nav-logo{font-family:'Lexend',sans-serif;font-size:18px;font-weight:900;letter-spacing:.04em}
+    .nav-logo span{color:var(--red)}
     .nav-links{display:flex;align-items:center;gap:26px}
     .nav-links a{font-size:12px;font-weight:700;color:var(--dark);letter-spacing:.1em;text-transform:uppercase;transition:color .15s;white-space:nowrap;display:block;position:relative}
     .nav-links a::after{content:'';position:absolute;bottom:-5px;left:0;width:0;height:2px;background:var(--red);transition:width .25s}
-    .nav-links a:hover{color:var(--red)}.nav-links a:hover::after,.nav-links a.active::after{width:100%}.nav-links a.active{color:var(--red)}
+    .nav-links a:hover{color:var(--red)}
+    .nav-links a:hover::after,.nav-links a.active::after{width:100%}
+    .nav-links a.active{color:var(--red)}
     .nav-cta{background:var(--red);color:#fff!important;padding:10px 22px;font-weight:700!important;letter-spacing:.1em!important}
-    .nav-cta:hover{background:var(--dark)!important}.nav-cta::after{display:none!important}
+    .nav-cta:hover{background:var(--dark)!important}
+    .nav-cta::after{display:none!important}
     .nav-ham{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:4px}
     .nav-ham span{display:block;width:22px;height:2px;background:var(--dark);transition:all .3s}
     .nav-ham.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
@@ -50,75 +54,54 @@
     @keyframes mfadeIn{from{opacity:0}to{opacity:1}}
     @keyframes mslideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
 
-    /* ── Layout helpers ── */
-    .wrap{max-width:1200px;margin:0 auto;padding:0 48px}
+    /* ════════════════ HERO ════════════════ */
+    .kt-hero{padding:64px 48px 48px;background:var(--white);border-bottom:1px solid var(--line)}
+    .kt-hero-label{font-size:11px;font-weight:700;letter-spacing:.28em;text-transform:uppercase;color:var(--red);margin-bottom:16px}
+    .kt-hero-title{font-family:'Lexend',sans-serif;font-size:clamp(40px,7vw,80px);font-weight:800;line-height:.95;letter-spacing:-.03em;text-transform:uppercase;margin-bottom:16px;color:var(--dark)}
+    .kt-hero-sub{font-size:15px;color:var(--mid);font-style:italic;line-height:1.6;max-width:520px}
 
-    /* ── Page Hero ── */
-    .page-hero{background:var(--dark);padding:72px 0 60px}
-    .page-hero-inner{display:flex;align-items:flex-end;justify-content:space-between;gap:40px}
-    .breadcrumb{font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:20px}
-    .breadcrumb a{color:rgba(255,255,255,.35);transition:color .2s}.breadcrumb a:hover{color:var(--coral)}
-    .breadcrumb span{margin:0 8px}
-    .page-hero h1{font-family:'Lexend',sans-serif;font-size:clamp(48px,7vw,96px);font-weight:900;color:#fff;line-height:.95;letter-spacing:-.01em}
-    .page-hero h1 i{font-style:italic;color:var(--coral)}
-    .page-hero-desc{font-size:15px;color:rgba(255,255,255,.5);line-height:1.75;max-width:360px}
+    /* ════════════════ SEARCH ════════════════ */
+    .kt-search-wrap{padding:32px 48px;background:var(--white);border-bottom:1px solid var(--line)}
+    .kt-search-box{position:relative;max-width:100%}
+    .kt-search-icon{position:absolute;left:20px;top:50%;transform:translateY(-50%);color:var(--mid);pointer-events:none}
+    .kt-search-input{width:100%;padding:16px 20px 16px 52px;border:1.5px solid var(--line);border-radius:100px;font-size:15px;font-family:'Lexend',sans-serif;color:var(--dark);background:var(--bg);outline:none;transition:border-color .2s,box-shadow .2s}
+    .kt-search-input:focus{border-color:var(--dark);box-shadow:0 0 0 3px rgba(26,26,26,.06)}
+    .kt-search-input::placeholder{color:#ABABAB}
 
-    /* ── Toolbar ── */
-    .toolbar-wrap{background:var(--white);border-bottom:1px solid var(--line);padding:0 48px}
-    .toolbar{display:flex;align-items:center;justify-content:space-between;padding:20px 0;gap:16px}
-    .art-count{font-size:13px;color:var(--mid)}
-    .art-count strong{color:var(--dark)}
-    .search-box{display:flex;align-items:center;gap:8px}
-    .search-input{padding:9px 16px;border:1.5px solid var(--line);font-family:'Lexend',sans-serif;font-size:13px;color:var(--dark);background:var(--bg);outline:none;width:280px;transition:border-color .2s}
-    .search-input:focus{border-color:var(--dark)}
-    .search-input::placeholder{color:#ABABAB}
+    /* ════════════════ ACCORDION LIST ════════════════ */
+    .kt-body{padding:32px 48px 64px}
+    .kt-count{font-size:13px;color:var(--mid);margin-bottom:24px}
+    .kt-count strong{color:var(--dark)}
+    .kt-list{display:flex;flex-direction:column;gap:10px}
 
-    /* ── Article Grid ── */
-    .products-section{padding:40px 0 96px}
-    .art-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
-    .art-card{border-radius:20px;border:1.5px solid var(--line);background:var(--white);overflow:hidden;cursor:pointer;display:flex;flex-direction:column;transition:border-color .25s,transform .25s,box-shadow .25s}
-    .art-card:hover{border-color:var(--red);transform:translateY(-4px);box-shadow:0 16px 32px rgba(0,0,0,.07)}
-    .art-card.hidden{display:none}
-    .art-card-img{aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;padding:24px;position:relative;overflow:hidden}
-    .art-num{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.15);color:rgba(0,0,0,.5);font-size:10px;font-weight:700;letter-spacing:.1em;padding:3px 9px;border-radius:100px}
-    .art-card-title-bg{font-size:clamp(13px,1.2vw,16px);font-weight:800;line-height:1.25;color:rgba(0,0,0,.55);text-align:center;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
-    .art-card-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:6px;flex:1}
-    .art-card-meta{font-size:10px;font-weight:700;color:var(--red);letter-spacing:.14em;text-transform:uppercase}
-    .art-card-name{font-size:13px;font-weight:700;line-height:1.35;color:var(--dark);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-    .art-card:hover .art-card-name{color:var(--red)}
-    .art-card-read{font-size:11px;font-weight:600;color:var(--mid);margin-top:auto;padding-top:8px;display:flex;align-items:center;gap:5px;transition:color .2s}
-    .art-card:hover .art-card-read{color:var(--red)}
+    .kt-item{background:var(--white);border:1.5px solid var(--line);border-radius:16px;overflow:hidden;transition:border-color .2s}
+    .kt-item:hover{border-color:#D0CEC9}
+    .kt-item.open{border-color:var(--dark)}
 
-    /* color backgrounds cycling */
-    .pb-1{background:#EDE8E0}.pb-2{background:#E0EDE0}.pb-3{background:#E0E5ED}.pb-4{background:#EDE0E0}
-    .pb-5{background:#E8E0ED}.pb-6{background:#E0EDE8}.pb-7{background:#EDE8D0}.pb-8{background:#D8E0ED}
+    .kt-item-header{display:flex;align-items:center;gap:16px;padding:20px 24px;cursor:pointer;user-select:none}
+    .kt-num{flex-shrink:0;width:36px;height:36px;background:#F0EFEC;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--mid);letter-spacing:.04em;transition:background .2s,color .2s}
+    .kt-item.open .kt-num{background:var(--dark);color:#fff}
+    .kt-item-q{flex:1;font-size:15px;font-weight:600;color:var(--dark);line-height:1.45}
+    .kt-toggle{flex-shrink:0;width:32px;height:32px;background:#F0EFEC;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:300;color:var(--mid);transition:all .25s;line-height:1}
+    .kt-item.open .kt-toggle{background:var(--dark);color:#fff;transform:rotate(45deg)}
 
-    /* ── Empty / Loading ── */
-    .art-empty{grid-column:1/-1;text-align:center;padding:64px 0;color:var(--mid);font-size:14px}
+    .kt-item-body{display:none;padding:0 24px 22px 76px}
+    .kt-item.open .kt-item-body{display:block}
+    .kt-item-body p{font-size:14px;line-height:1.82;color:#444}
+    .kt-item-body p + p{margin-top:10px}
 
-    /* ── Article Drawer ── */
-    .art-drawer{position:fixed;inset:0;z-index:300;pointer-events:none;display:flex;justify-content:flex-end}
-    .art-drawer.open{pointer-events:all}
-    .art-drawer-overlay{position:absolute;inset:0;background:rgba(0,0,0,.45);opacity:0;transition:opacity .3s;cursor:pointer}
-    .art-drawer.open .art-drawer-overlay{opacity:1}
-    .art-drawer-panel{position:relative;width:min(640px,96vw);height:100%;background:var(--white);overflow-y:auto;transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
-    .art-drawer.open .art-drawer-panel{transform:translateX(0)}
-    .art-drawer-head{padding:28px 32px 20px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;justify-content:space-between;gap:16px;position:sticky;top:0;background:var(--white);z-index:2}
-    .art-drawer-label{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--red);margin-bottom:8px}
-    .art-drawer-title{font-size:clamp(17px,2.2vw,22px);font-weight:800;line-height:1.3;color:var(--dark)}
-    .art-drawer-close{flex-shrink:0;width:36px;height:36px;background:#F0EFEC;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--mid);transition:background .2s;border-radius:50%}
-    .art-drawer-close:hover{background:var(--dark);color:#fff}
-    .art-drawer-body{padding:28px 32px 48px;flex:1}
-    .art-drawer-body p{font-size:14.5px;line-height:1.85;color:#3a3a3a;margin-bottom:12px}
-    .art-drawer-body h2{font-size:15px;font-weight:700;color:var(--dark);margin:24px 0 10px;padding-top:4px}
-    .art-drawer-body ul,.art-drawer-body ol{margin:10px 0 14px 20px;display:flex;flex-direction:column;gap:6px}
-    .art-drawer-body li{font-size:14px;line-height:1.75;color:#3a3a3a}
-    .art-drawer-cta{margin:32px 32px 0;padding:20px 24px;background:var(--warm);border-left:3px solid var(--red);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-    .art-drawer-cta p{font-size:13px;line-height:1.6;color:var(--dark)}
-    .art-drawer-cta a{display:inline-flex;align-items:center;gap:8px;background:var(--dark);color:#fff;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:11px 20px;white-space:nowrap;flex-shrink:0;transition:background .2s}
-    .art-drawer-cta a:hover{background:var(--red)}
+    /* ════════════════ PAGINATION ════════════════ */
+    .kt-pagination{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:40px}
+    .kt-page-btn{width:40px;height:40px;border:1.5px solid var(--line);background:var(--white);font-size:14px;font-weight:600;color:var(--mid);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+    .kt-page-btn:hover{border-color:var(--dark);color:var(--dark)}
+    .kt-page-btn.active{background:var(--dark);border-color:var(--dark);color:#fff}
+    .kt-page-btn.arrow{font-size:16px}
+    .kt-page-btn:disabled{opacity:.3;cursor:default}
 
-    /* ── Ask Question ── */
+    /* No results */
+    .kt-empty{text-align:center;padding:48px 0;color:var(--mid);font-size:15px;display:none}
+
+    /* ════════════════ ASK QUESTION ════════════════ */
     .kt-ask{background:var(--dark);padding:80px 48px}
     .kt-ask-inner{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center}
     .kt-ask-label{font-size:11px;font-weight:700;letter-spacing:.28em;text-transform:uppercase;color:var(--red);margin-bottom:14px}
@@ -136,14 +119,20 @@
     .kt-ask-btn:hover{background:#b81c1c}
     .kt-ask-btn:active{transform:scale(.98)}
     .kt-ask-success{display:none;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.12);padding:28px 24px;text-align:center}
-    .kt-ask-success p:first-child{font-size:22px;margin-bottom:8px;color:#fff}
+    .kt-ask-success p:first-child{font-size:22px;margin-bottom:8px}
     .kt-ask-success p:last-child{font-size:13px;color:rgba(255,255,255,.45);line-height:1.6}
+    @media(max-width:960px){
+      .kt-ask{padding:56px 24px}
+      .kt-ask-inner{grid-template-columns:1fr;gap:40px}
+      .kt-ask-sub{max-width:100%}
+    }
 
-    /* ── Footer ── */
+    /* ════════════════ FOOTER ════════════════ */
     footer{background:var(--dark);color:#fff;padding:48px 48px 28px}
     .ft-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;margin-bottom:40px}
     .ft-logo{font-family:'Lexend',sans-serif;font-size:18px;font-weight:900;letter-spacing:.04em}
-    .ft-logo span{color:var(--red)}.ft-sl{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.28);margin-top:4px}
+    .ft-logo span{color:var(--red)}
+    .ft-sl{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.28);margin-top:4px}
     .ft-desc{font-size:13px;color:rgba(255,255,255,.4);line-height:1.7;margin-top:16px;max-width:240px}
     .ft-col h4{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.28);margin-bottom:18px}
     .ft-col a{display:block;font-size:13px;color:rgba(255,255,255,.48);margin-bottom:10px;transition:color .2s}
@@ -152,27 +141,21 @@
     .ft-bottom p{font-size:12px;color:rgba(255,255,255,.2)}
 
     /* ── Responsive ── */
-    @media(max-width:1100px){.art-grid{grid-template-columns:repeat(3,1fr)}}
     @media(max-width:960px){
       .nav-links{display:none}.nav-ham{display:flex}
       .nav-inner{padding:0 24px}
-      .wrap{padding:0 24px}
-      .toolbar-wrap{padding:0 24px}
-      .page-hero{padding:48px 0 40px}
-      .page-hero-inner{flex-direction:column;align-items:flex-start}
-      .art-grid{grid-template-columns:repeat(2,1fr);gap:14px}
-      .ft-grid{grid-template-columns:1fr 1fr;gap:28px}
+      .kt-hero,.kt-search-wrap,.kt-body{padding-left:24px;padding-right:24px}
+      .kt-hero{padding-top:40px;padding-bottom:36px}
+      .kt-item-body{padding-left:24px}
+      .ft-grid{grid-template-columns:1fr 1fr;gap:28px;padding:40px 24px 24px}
       footer{padding:0 0 0}
-      .ft-grid{padding:40px 24px 24px}
       .ft-bottom{padding:16px 24px;flex-direction:column;text-align:center}
-      .kt-ask{padding:56px 24px}
-      .kt-ask-inner{grid-template-columns:1fr;gap:40px}
-      .kt-ask-sub{max-width:100%}
     }
     @media(max-width:640px){
-      .art-grid{grid-template-columns:repeat(2,1fr)}
+      .kt-hero-title{font-size:clamp(32px,10vw,56px)}
+      .kt-item-header{gap:12px;padding:16px 18px}
+      .kt-item-body{padding-left:18px;padding-right:18px}
       .ft-grid{grid-template-columns:1fr}
-      .search-input{width:180px}
     }
   </style>
 </head>
@@ -200,9 +183,9 @@
 
 <div class="ann"><span class="ann-item"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.4;flex-shrink:0"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.09 1.22 2 2 0 012.07 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.18 6.18l1.27-.89a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>Tư vấn miễn phí — <a href="tel:0961269386">096.1269.386</a></span><span class="ann-dot"></span><span class="ann-item"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.4;flex-shrink:0"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>286 Nguyễn Xiển, Hà Nội</span><span class="ann-dot"></span><span class="ann-item">Zalo: <a href="https://zalo.me/0961269386">Nhắn tin ngay →</a></span></div>
 
-<nav id="mainNav">
+<nav>
   <div class="nav-inner">
-    <a href="index.html"><img src="logo_bongbanviet.png" alt="Bóng Bàn Việt" style="height:62px;width:auto;display:block;"></a>
+    <a href="index.html" class="nav-logo"><img src="logo_bongbanviet.png" alt="Bóng Bàn Việt" style="height:62px;width:auto;"></a>
     <div class="nav-links">
       <a href="cot-vot.html">Cốt Vợt</a><a href="mat-vot.html">Mặt Vợt</a>
       <a href="bong.html">Bóng</a><a href="ban.html">Bàn</a>
@@ -215,42 +198,33 @@
   </div>
 </nav>
 
-<!-- Page Hero -->
-<div class="page-hero">
-  <div class="wrap">
-    <div class="page-hero-inner">
-      <div>
-        <p class="breadcrumb"><a href="index.html">Trang Chủ</a><span>→</span>Kiến Thức</p>
-        <h1>Chia Sẻ<br><i>Kiến Thức</i></h1>
-      </div>
-      <p class="page-hero-desc">Tổng hợp kiến thức, kỹ thuật và kinh nghiệm thực chiến từ đội ngũ chuyên gia bóng bàn.</p>
-    </div>
+<!-- Hero -->
+<div class="kt-hero">
+  <p class="kt-hero-label">Bóng Bàn Việt · Cộng Đồng</p>
+  <h1 class="kt-hero-title">Chia Sẻ<br>Kiến Thức</h1>
+  <p class="kt-hero-sub">Tổng hợp kiến thức, kỹ thuật và kinh nghiệm thực chiến từ đội ngũ chuyên gia bóng bàn.</p>
+</div>
+
+<!-- Search -->
+<div class="kt-search-wrap">
+  <div class="kt-search-box">
+    <svg class="kt-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input class="kt-search-input" type="text" id="searchInput" placeholder="Tìm kiếm kiến thức hoặc từ khóa (ví dụ: giật bóng, chọn vợt...)" oninput="onSearch()">
   </div>
 </div>
 
-<!-- Toolbar -->
-<div class="toolbar-wrap">
-  <div class="toolbar">
-    <span class="art-count"><strong id="artCountNum">—</strong> bài kiến thức</span>
-    <div class="search-box">
-      <input type="text" class="search-input" id="searchInput" placeholder="Tìm kiếm bài viết..." oninput="onSearch()">
-    </div>
-  </div>
-</div>
-
-<!-- Grid -->
-<div class="wrap">
-  <div class="products-section">
-    <div class="art-grid" id="artGrid">
-      <div class="art-empty">Đang tải…</div>
-    </div>
-  </div>
+<!-- Body -->
+<div class="kt-body">
+  <p class="kt-count" id="ktCount"><strong id="ktCountNum">—</strong> bài kiến thức</p>
+  <div class="kt-list" id="ktList"></div>
+  <div class="kt-empty" id="ktEmpty">Không tìm thấy kết quả phù hợp. Thử từ khóa khác.</div>
+  <div class="kt-pagination" id="ktPagination"></div>
 </div>
 
 <!-- Ask Question -->
 <section class="kt-ask">
   <div class="kt-ask-inner">
-    <div>
+    <div class="kt-ask-left">
       <p class="kt-ask-label">Góc Hỏi Đáp</p>
       <h2 class="kt-ask-title">Hỏi Chuyên Gia<br>Bóng Bàn Việt</h2>
       <p class="kt-ask-sub">Gửi câu hỏi của bạn — chúng tôi sẽ phản hồi trong vòng 24h qua Zalo hoặc điện thoại.</p>
@@ -260,7 +234,7 @@
         <span class="kt-ask-badge">✓ Tư vấn thực tế</span>
       </div>
     </div>
-    <div>
+    <div class="kt-ask-right">
       <form class="kt-ask-form" id="askForm" onsubmit="submitQuestion(event)">
         <div class="kt-ask-field">
           <label for="askName">Họ tên của bạn</label>
@@ -322,30 +296,9 @@
 
 </div><!-- /site-container -->
 
-<!-- Article Drawer -->
-<div class="art-drawer" id="artDrawer">
-  <div class="art-drawer-overlay" onclick="closeDrawer()"></div>
-  <div class="art-drawer-panel" id="artDrawerPanel">
-    <div class="art-drawer-head">
-      <div>
-        <p class="art-drawer-label">Kiến Thức · Bóng Bàn Việt</p>
-        <h2 class="art-drawer-title" id="drawerTitle"></h2>
-      </div>
-      <button class="art-drawer-close" onclick="closeDrawer()" aria-label="Đóng">✕</button>
-    </div>
-    <div class="art-drawer-body" id="drawerBody"></div>
-    <div class="art-drawer-cta">
-      <p>Cần tư vấn thêm về thiết bị hoặc kỹ thuật?<br><strong>Liên hệ chuyên gia ngay — miễn phí!</strong></p>
-      <a href="https://zalo.me/0961269386" target="_blank">Tư Vấn Qua Zalo →</a>
-    </div>
-  </div>
-</div>
-
 <script>
-// ── Nav scroll ──────────────────────────────────────────────────────────────
-window.addEventListener('scroll', () => document.getElementById('mainNav').classList.toggle('scrolled', window.scrollY > 10), {passive:true});
-
-// ── Mobile nav ──────────────────────────────────────────────────────────────
+window.addEventListener('scroll', function(){ document.querySelector('nav').classList.toggle('scrolled', window.scrollY > 10); }, {passive:true});
+// ── Mobile nav ────────────────────────────────────────────────────────────────
 const mobileNav = document.getElementById('mobileNav');
 const ham = document.getElementById('hamburger');
 const navClose = document.getElementById('navClose');
@@ -355,81 +308,103 @@ function closeNav(){ mobileNav.classList.remove('open'); ham.classList.remove('o
 ham.addEventListener('click', () => mobileNav.classList.contains('open') ? closeNav() : openNav());
 navClose.addEventListener('click', closeNav);
 navOverlay.addEventListener('click', closeNav);
-document.addEventListener('keydown', e => { if(e.key==='Escape'){ closeNav(); closeDrawer(); } });
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeNav(); });
 
-// ── Data ────────────────────────────────────────────────────────────────────
-const BG = ['pb-1','pb-2','pb-3','pb-4','pb-5','pb-6','pb-7','pb-8'];
+// ── Data ──────────────────────────────────────────────────────────────────────
 let allItems = [];
+let filteredItems = [];
 
 async function loadArticles() {
-  const grid = document.getElementById('artGrid');
   try {
     const res = await fetch('/api/articles?limit=200');
     allItems = await res.json();
-    renderGrid(allItems);
+    filteredItems = [...allItems];
+    renderList();
   } catch(e) {
-    grid.innerHTML = '<div class="art-empty">Không tải được nội dung. Vui lòng thử lại.</div>';
+    document.getElementById('ktList').innerHTML = '<p style="color:#999;padding:24px 0">Không tải được nội dung.</p>';
   }
 }
 
-// ── Render grid ─────────────────────────────────────────────────────────────
-function renderGrid(items) {
-  const grid = document.getElementById('artGrid');
-  const countEl = document.getElementById('artCountNum');
-  countEl.textContent = items.length;
+const ITEMS_PER_PAGE = 10;
+let currentPage = 1;
 
-  if (!items.length) {
-    grid.innerHTML = '<div class="art-empty">Không tìm thấy kết quả phù hợp.</div>';
+// ── Render ────────────────────────────────────────────────────────────────────
+function renderList() {
+  const list = document.getElementById('ktList');
+  const empty = document.getElementById('ktEmpty');
+  const countEl = document.getElementById('ktCountNum');
+
+  countEl.textContent = filteredItems.length;
+
+  if (!filteredItems.length) {
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    document.getElementById('ktPagination').innerHTML = '';
     return;
   }
+  empty.style.display = 'none';
 
-  grid.innerHTML = items.map((item, i) => {
-    const bg = BG[i % BG.length];
-    const num = String(i + 1).padStart(2, '0');
-    const excerpt = (item.excerpt || '').replace(/<[^>]+>/g, '').substring(0, 80);
-    const safeTitle = item.title.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    return `<div class="art-card" onclick="openDrawer(${i})" role="button" tabindex="0" aria-label="${safeTitle}">
-  <div class="art-card-img ${bg}">
-    <span class="art-num">${num}</span>
-    <p class="art-card-title-bg">${safeTitle}</p>
-  </div>
-  <div class="art-card-body">
-    <p class="art-card-meta">Kiến Thức</p>
-    <h3 class="art-card-name">${safeTitle}</h3>
-    <p class="art-card-read">Đọc bài <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12h14M12 5l7 7-7 7"/></svg></p>
-  </div>
-</div>`;
+  const start = (currentPage - 1) * ITEMS_PER_PAGE;
+  const pageItems = filteredItems.slice(start, start + ITEMS_PER_PAGE);
+
+  list.innerHTML = pageItems.map((item, i) => {
+    const num = String(start + i + 1).padStart(2, '0');
+    return `<div class="kt-item" id="item-${start + i}">
+      <div class="kt-item-header" onclick="toggleItem(${start + i})">
+        <span class="kt-num">${num}</span>
+        <span class="kt-item-q">${item.title}</span>
+        <button class="kt-toggle" aria-label="Mở rộng">+</button>
+      </div>
+      <div class="kt-item-body">
+        ${item.content || '<p>' + (item.excerpt || '') + '</p>'}
+      </div>
+    </div>`;
   }).join('');
+
+  renderPagination();
 }
 
-// ── Search ──────────────────────────────────────────────────────────────────
+function toggleItem(idx) {
+  const el = document.getElementById(`item-${idx}`);
+  if (!el) return;
+  const isOpen = el.classList.contains('open');
+  document.querySelectorAll('.kt-item.open').forEach(e => e.classList.remove('open'));
+  if (!isOpen) el.classList.add('open');
+}
+
+// ── Pagination ────────────────────────────────────────────────────────────────
+function renderPagination() {
+  const total = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
+  if (total <= 1) { document.getElementById('ktPagination').innerHTML = ''; return; }
+
+  let html = `<button class="kt-page-btn arrow" onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>‹</button>`;
+  for (let i = 1; i <= total; i++) {
+    html += `<button class="kt-page-btn${i === currentPage ? ' active' : ''}" onclick="goPage(${i})">${i}</button>`;
+  }
+  html += `<button class="kt-page-btn arrow" onclick="goPage(${currentPage + 1})" ${currentPage === total ? 'disabled' : ''}>›</button>`;
+  document.getElementById('ktPagination').innerHTML = html;
+}
+
+function goPage(page) {
+  const total = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
+  if (page < 1 || page > total) return;
+  currentPage = page;
+  renderList();
+  document.getElementById('ktList').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── Search ────────────────────────────────────────────────────────────────────
 function onSearch() {
   const q = document.getElementById('searchInput').value.trim().toLowerCase();
-  const filtered = q ? allItems.filter(item =>
+  filteredItems = q ? allItems.filter(item =>
     item.title.toLowerCase().includes(q) ||
     (item.excerpt || '').toLowerCase().includes(q)
-  ) : allItems;
-  renderGrid(filtered);
+  ) : [...allItems];
+  currentPage = 1;
+  renderList();
 }
 
-// ── Drawer ──────────────────────────────────────────────────────────────────
-function openDrawer(idx) {
-  const item = allItems[idx];
-  if (!item) return;
-  document.getElementById('drawerTitle').textContent = item.title;
-  document.getElementById('drawerBody').innerHTML = item.content || '<p>' + (item.excerpt || '') + '</p>';
-  const drawer = document.getElementById('artDrawer');
-  drawer.classList.add('open');
-  document.body.style.overflow = 'hidden';
-  document.getElementById('artDrawerPanel').scrollTop = 0;
-}
-
-function closeDrawer() {
-  document.getElementById('artDrawer').classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-// ── Ask Question ────────────────────────────────────────────────────────────
+// ── Ask Question ──────────────────────────────────────────────────────────────
 function submitQuestion(e) {
   e.preventDefault();
   const name = document.getElementById('askName').value.trim();
@@ -443,8 +418,10 @@ function submitQuestion(e) {
   document.getElementById('askSuccess').style.display = 'block';
 }
 
-// ── Init ────────────────────────────────────────────────────────────────────
+// ── Init ──────────────────────────────────────────────────────────────────────
 loadArticles();
 </script>
+<script src="/js/banners.js"></script>
+<script src="/js/nav-mega.js"></script>
 </body>
 </html>

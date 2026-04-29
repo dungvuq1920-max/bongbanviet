@@ -1313,6 +1313,44 @@
     .all-prods-body { padding:22px 28px 28px; overflow-y:auto; flex:1; }
     .all-prods-body .prod-grid { grid-template-columns:repeat(4,1fr); gap:14px; }
     @media (max-width:768px) { .all-prods-body .prod-grid { grid-template-columns:repeat(2,1fr); } }
+
+    /* ── Article cards (Kiến Thức block) ─────────────── */
+    .kt-art-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;}
+    @media(max-width:1200px){.kt-art-grid{grid-template-columns:repeat(4,1fr);}}
+    @media(max-width:900px){.kt-art-grid{grid-template-columns:repeat(3,1fr);}}
+    @media(max-width:640px){.kt-art-grid{grid-template-columns:repeat(2,1fr);gap:10px;}}
+    .art-card{border-radius:16px;border:1.5px solid var(--line);background:var(--white);overflow:hidden;cursor:pointer;display:flex;flex-direction:column;transition:border-color .25s,transform .25s,box-shadow .25s}
+    .art-card:hover{border-color:var(--red);transform:translateY(-4px);box-shadow:0 14px 28px rgba(0,0,0,.07)}
+    .art-card-img{aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;padding:20px;position:relative;overflow:hidden}
+    .art-num-badge{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.15);color:rgba(0,0,0,.5);font-size:10px;font-weight:700;letter-spacing:.1em;padding:3px 8px;border-radius:100px}
+    .art-card-title-bg{font-size:clamp(12px,1.1vw,15px);font-weight:800;line-height:1.25;color:rgba(0,0,0,.55);text-align:center;display:-webkit-box;-webkit-line-clamp:4;line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+    .art-card-body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:5px;flex:1}
+    .art-card-meta{font-size:10px;font-weight:700;color:var(--red);letter-spacing:.14em;text-transform:uppercase}
+    .art-card-name{font-size:12.5px;font-weight:700;line-height:1.35;color:var(--dark);display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .art-card:hover .art-card-name{color:var(--red)}
+    .art-card-read{font-size:11px;font-weight:600;color:var(--mid);margin-top:auto;padding-top:6px;transition:color .2s}
+    .art-card:hover .art-card-read{color:var(--red)}
+    /* ── Article Drawer ───────────────────────────────── */
+    .art-drawer{position:fixed;inset:0;z-index:400;pointer-events:none;display:flex;justify-content:flex-end}
+    .art-drawer.open{pointer-events:all}
+    .art-drawer-overlay{position:absolute;inset:0;background:rgba(0,0,0,.45);opacity:0;transition:opacity .3s;cursor:pointer}
+    .art-drawer.open .art-drawer-overlay{opacity:1}
+    .art-drawer-panel{position:relative;width:min(640px,96vw);height:100%;background:var(--white);overflow-y:auto;transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+    .art-drawer.open .art-drawer-panel{transform:translateX(0)}
+    .art-drawer-head{padding:24px 28px 18px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;justify-content:space-between;gap:16px;position:sticky;top:0;background:var(--white);z-index:2}
+    .art-drawer-label{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--red);margin-bottom:6px}
+    .art-drawer-title{font-size:clamp(16px,2vw,21px);font-weight:800;line-height:1.3;color:var(--dark)}
+    .art-drawer-close{flex-shrink:0;width:34px;height:34px;background:#F0EFEC;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--mid);transition:background .2s;border-radius:50%}
+    .art-drawer-close:hover{background:var(--dark);color:#fff}
+    .art-drawer-body{padding:24px 28px 40px;flex:1}
+    .art-drawer-body p{font-size:14px;line-height:1.85;color:#3a3a3a;margin-bottom:10px}
+    .art-drawer-body h2{font-size:15px;font-weight:700;color:var(--dark);margin:20px 0 8px}
+    .art-drawer-body ul,.art-drawer-body ol{margin:8px 0 12px 20px;display:flex;flex-direction:column;gap:5px}
+    .art-drawer-body li{font-size:14px;line-height:1.75;color:#3a3a3a}
+    .art-drawer-cta{margin:0 28px 28px;padding:18px 22px;background:var(--warm);border-left:3px solid var(--red);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+    .art-drawer-cta p{font-size:12.5px;line-height:1.6;color:var(--dark)}
+    .art-drawer-cta a{display:inline-flex;align-items:center;gap:8px;background:var(--dark);color:#fff;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:10px 18px;white-space:nowrap;flex-shrink:0;transition:background .2s}
+    .art-drawer-cta a:hover{background:var(--red)}
   </style>
 </head>
 <body>
@@ -1586,8 +1624,37 @@
       <div class="prod-grid" id="gridDoCu"></div>
     </div>
 
+    <div class="cat-block" id="block-kien-thuc">
+      <div class="flow-section-head">
+        <div><h2 class="flow-section-title">Chia Sẻ Kiến Thức</h2><p class="flow-section-sub" id="count-kien-thuc">— BÀI VIẾT</p></div>
+        <a href="kien-thuc.html" class="feat-see-all">Xem Tất Cả ›</a>
+      </div>
+      <div class="kt-art-grid" id="gridKienThuc">
+        <div style="grid-column:1/-1;padding:32px;text-align:center;color:var(--mid);font-size:13px;">Đang tải…</div>
+      </div>
+    </div>
+
   </div>
 </section>
+
+<!-- Article Drawer (Kiến Thức) -->
+<div class="art-drawer" id="artDrawer">
+  <div class="art-drawer-overlay" onclick="closeArtDrawer()"></div>
+  <div class="art-drawer-panel" id="artDrawerPanel">
+    <div class="art-drawer-head">
+      <div>
+        <p class="art-drawer-label">Kiến Thức · Bóng Bàn Việt</p>
+        <h2 class="art-drawer-title" id="artDrawerTitle"></h2>
+      </div>
+      <button class="art-drawer-close" onclick="closeArtDrawer()" aria-label="Đóng">✕</button>
+    </div>
+    <div class="art-drawer-body" id="artDrawerBody"></div>
+    <div class="art-drawer-cta">
+      <p>Cần tư vấn về thiết bị hoặc kỹ thuật?<br><strong>Liên hệ chuyên gia — miễn phí!</strong></p>
+      <a href="https://zalo.me/0961269386" target="_blank">Tư Vấn Qua Zalo →</a>
+    </div>
+  </div>
+</div>
 
 
 <!-- Contact Strip -->
@@ -2299,6 +2366,64 @@ fetch('/api/settings/home_hero_image')
     });
   });
 
+})();
+</script>
+
+<script>
+// ── Kiến Thức article grid ────────────────────────────────────────────────────
+(function(){
+  var ART_BG = ['pb-1','pb-2','pb-3','pb-4','pb-5','pb-6','pb-7','pb-8'];
+  var artItems = [];
+
+  function esc(s){ return String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  async function loadArtGrid() {
+    var grid = document.getElementById('gridKienThuc');
+    var countEl = document.getElementById('count-kien-thuc');
+    try {
+      var res = await fetch('/api/articles?limit=8');
+      artItems = await res.json();
+      if (countEl) countEl.textContent = artItems.length + ' BÀI NỔI BẬT';
+      grid.innerHTML = artItems.map(function(item, i){
+        var bg = ART_BG[i % ART_BG.length];
+        var num = String(i + 1).padStart(2, '0');
+        return '<div class="art-card" onclick="openArtDrawer('+i+')" role="button" tabindex="0">'
+          + '<div class="art-card-img '+bg+'">'
+          + '<span class="art-num-badge">'+num+'</span>'
+          + '<p class="art-card-title-bg">'+esc(item.title)+'</p>'
+          + '</div>'
+          + '<div class="art-card-body">'
+          + '<p class="art-card-meta">Kiến Thức</p>'
+          + '<h3 class="art-card-name">'+esc(item.title)+'</h3>'
+          + '<p class="art-card-read">Đọc bài →</p>'
+          + '</div></div>';
+      }).join('');
+    } catch(e) {
+      grid.innerHTML = '<div style="grid-column:1/-1;padding:32px;text-align:center;color:var(--mid);font-size:13px;">Không tải được bài viết.</div>';
+    }
+  }
+
+  window.openArtDrawer = function(idx) {
+    var item = artItems[idx];
+    if (!item) return;
+    document.getElementById('artDrawerTitle').textContent = item.title;
+    document.getElementById('artDrawerBody').innerHTML = item.content || '<p>' + esc(item.excerpt || '') + '</p>';
+    var drawer = document.getElementById('artDrawer');
+    drawer.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    document.getElementById('artDrawerPanel').scrollTop = 0;
+  };
+
+  window.closeArtDrawer = function() {
+    document.getElementById('artDrawer').classList.remove('open');
+    document.body.style.overflow = '';
+  };
+
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') window.closeArtDrawer();
+  });
+
+  loadArtGrid();
 })();
 </script>
 <script src="/js/banners.js"></script>
