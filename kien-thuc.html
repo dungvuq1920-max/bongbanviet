@@ -100,6 +100,32 @@
     /* No results */
     .kt-empty{text-align:center;padding:48px 0;color:var(--mid);font-size:15px;display:none}
 
+    /* ════════════════ ASK QUESTION ════════════════ */
+    .kt-ask{background:var(--dark);padding:80px 48px}
+    .kt-ask-inner{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center}
+    .kt-ask-label{font-size:11px;font-weight:700;letter-spacing:.28em;text-transform:uppercase;color:var(--red);margin-bottom:14px}
+    .kt-ask-title{font-size:clamp(30px,4vw,46px);font-weight:800;line-height:1.05;letter-spacing:-.02em;color:#fff;margin-bottom:16px;text-transform:uppercase}
+    .kt-ask-sub{font-size:14px;color:rgba(255,255,255,.42);line-height:1.75;margin-bottom:28px;max-width:340px}
+    .kt-ask-badges{display:flex;flex-wrap:wrap;gap:8px}
+    .kt-ask-badge{font-size:11.5px;font-weight:600;color:rgba(255,255,255,.5);background:rgba(255,255,255,.07);padding:6px 14px;border-radius:100px;letter-spacing:.03em}
+    .kt-ask-form{display:flex;flex-direction:column;gap:16px}
+    .kt-ask-field{display:flex;flex-direction:column;gap:8px}
+    .kt-ask-field label{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.32)}
+    .kt-ask-field input,.kt-ask-field textarea{background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.1);color:#fff;font-family:'Lexend',sans-serif;font-size:14px;line-height:1.6;padding:14px 18px;outline:none;resize:none;transition:border-color .2s;border-radius:0}
+    .kt-ask-field input::placeholder,.kt-ask-field textarea::placeholder{color:rgba(255,255,255,.18)}
+    .kt-ask-field input:focus,.kt-ask-field textarea:focus{border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.06)}
+    .kt-ask-btn{background:var(--red);color:#fff;border:none;padding:17px 28px;font-family:'Lexend',sans-serif;font-size:13.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:background .2s,transform .15s;margin-top:4px}
+    .kt-ask-btn:hover{background:#b81c1c}
+    .kt-ask-btn:active{transform:scale(.98)}
+    .kt-ask-success{display:none;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.12);padding:28px 24px;text-align:center}
+    .kt-ask-success p:first-child{font-size:22px;margin-bottom:8px}
+    .kt-ask-success p:last-child{font-size:13px;color:rgba(255,255,255,.45);line-height:1.6}
+    @media(max-width:960px){
+      .kt-ask{padding:56px 24px}
+      .kt-ask-inner{grid-template-columns:1fr;gap:40px}
+      .kt-ask-sub{max-width:100%}
+    }
+
     /* ════════════════ FOOTER ════════════════ */
     footer{background:var(--dark);color:#fff;padding:48px 48px 28px}
     .ft-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;margin-bottom:40px}
@@ -174,25 +200,65 @@
 <!-- Hero -->
 <div class="kt-hero">
   <p class="kt-hero-label">Bóng Bàn Việt · Cộng Đồng</p>
-  <h1 class="kt-hero-title">Chia Sẻ<br>Kỹ Thuật</h1>
-  <p class="kt-hero-sub">Tổng hợp các kỹ thuật cốt lõi giúp nâng tầm lối chơi bóng bàn của bạn.</p>
+  <h1 class="kt-hero-title">Chia Sẻ<br>Kiến Thức</h1>
+  <p class="kt-hero-sub">Tổng hợp kiến thức, kỹ thuật và kinh nghiệm thực chiến từ đội ngũ chuyên gia bóng bàn.</p>
 </div>
 
 <!-- Search -->
 <div class="kt-search-wrap">
   <div class="kt-search-box">
     <svg class="kt-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-    <input class="kt-search-input" type="text" id="searchInput" placeholder="Tìm kiếm kỹ thuật hoặc từ khóa (ví dụ: giật bóng, giao bóng...)" oninput="onSearch()">
+    <input class="kt-search-input" type="text" id="searchInput" placeholder="Tìm kiếm kiến thức hoặc từ khóa (ví dụ: giật bóng, chọn vợt...)" oninput="onSearch()">
   </div>
 </div>
 
 <!-- Body -->
 <div class="kt-body">
-  <p class="kt-count" id="ktCount"><strong id="ktCountNum">40</strong> kỹ thuật &amp; câu hỏi</p>
+  <p class="kt-count" id="ktCount"><strong id="ktCountNum">—</strong> bài kiến thức</p>
   <div class="kt-list" id="ktList"></div>
   <div class="kt-empty" id="ktEmpty">Không tìm thấy kết quả phù hợp. Thử từ khóa khác.</div>
   <div class="kt-pagination" id="ktPagination"></div>
 </div>
+
+<!-- Ask Question -->
+<section class="kt-ask">
+  <div class="kt-ask-inner">
+    <div class="kt-ask-left">
+      <p class="kt-ask-label">Góc Hỏi Đáp</p>
+      <h2 class="kt-ask-title">Hỏi Chuyên Gia<br>Bóng Bàn Việt</h2>
+      <p class="kt-ask-sub">Gửi câu hỏi của bạn — chúng tôi sẽ phản hồi trong vòng 24h qua Zalo hoặc điện thoại.</p>
+      <div class="kt-ask-badges">
+        <span class="kt-ask-badge">✓ Hoàn toàn miễn phí</span>
+        <span class="kt-ask-badge">✓ Phản hồi trong 24h</span>
+        <span class="kt-ask-badge">✓ Tư vấn thực tế</span>
+      </div>
+    </div>
+    <div class="kt-ask-right">
+      <form class="kt-ask-form" id="askForm" onsubmit="submitQuestion(event)">
+        <div class="kt-ask-field">
+          <label for="askName">Họ tên của bạn</label>
+          <input type="text" id="askName" placeholder="Nguyễn Văn A" required autocomplete="off">
+        </div>
+        <div class="kt-ask-field">
+          <label for="askContact">Số điện thoại / Zalo</label>
+          <input type="text" id="askContact" placeholder="096.xxx.xxxx" required autocomplete="off">
+        </div>
+        <div class="kt-ask-field">
+          <label for="askQuestion">Câu hỏi của bạn</label>
+          <textarea id="askQuestion" rows="4" placeholder="Ví dụ: Tôi đang chọn giữa Tenergy 05 và Evolution MX-P, nên chọn cái nào phù hợp với lối chơi tấn công?" required></textarea>
+        </div>
+        <button type="submit" class="kt-ask-btn">
+          Gửi Câu Hỏi Qua Zalo
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </form>
+      <div class="kt-ask-success" id="askSuccess">
+        <p>Đã gửi!</p>
+        <p>Cửa sổ Zalo vừa được mở. Nếu không thấy,<br>liên hệ trực tiếp: <strong style="color:#fff">096.1269.386</strong></p>
+      </div>
+    </div>
+  </div>
+</section>
 
 <footer>
   <div class="ft-grid">
@@ -514,6 +580,20 @@ function onSearch() {
   ) : [...allItems];
   currentPage = 1;
   renderList();
+}
+
+// ── Ask Question ──────────────────────────────────────────────────────────────
+function submitQuestion(e) {
+  e.preventDefault();
+  const name = document.getElementById('askName').value.trim();
+  const contact = document.getElementById('askContact').value.trim();
+  const question = document.getElementById('askQuestion').value.trim();
+  const msg = encodeURIComponent(
+    `Xin chào Bóng Bàn Việt!\n\nHọ tên: ${name}\nLiên hệ: ${contact}\n\nCâu hỏi:\n${question}`
+  );
+  window.open(`https://zalo.me/0961269386?text=${msg}`, '_blank');
+  document.getElementById('askForm').style.display = 'none';
+  document.getElementById('askSuccess').style.display = 'block';
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
