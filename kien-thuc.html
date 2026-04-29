@@ -243,8 +243,23 @@ navClose.addEventListener('click', closeNav);
 navOverlay.addEventListener('click', closeNav);
 document.addEventListener('keydown', e => { if(e.key==='Escape') closeNav(); });
 
-// ── FAQ Data ──────────────────────────────────────────────────────────────────
-const FAQ = [
+// ── Data ──────────────────────────────────────────────────────────────────────
+let allItems = [];
+let filteredItems = [];
+
+async function loadArticles() {
+  try {
+    const res = await fetch('/api/articles?limit=200');
+    allItems = await res.json();
+    filteredItems = [...allItems];
+    renderList();
+  } catch(e) {
+    document.getElementById('ktList').innerHTML = '<p style="color:#999;padding:24px 0">Không tải được nội dung.</p>';
+  }
+}
+
+/* ── LEGACY FAQ kept for reference — replaced by API ──
+const FAQ_LEGACY = [
   // ── KỸ THUẬT ──
   {
     q: 'Làm sao để thực hiện cú giật bóng xoáy xuống hiệu quả?',
@@ -420,11 +435,10 @@ const FAQ = [
     q: 'Hỏi đáp: Những câu hỏi thường gặp khi mua thiết bị lần đầu',
     a: 'Q: Nên mua combo hay mua lẻ? A: Người mới nên mua combo vì đã được tư vấn tương thích. Q: Ngân sách bao nhiêu là hợp lý? A: 1–2 triệu VNĐ cho bộ vợt đầu tiên là hợp lý. Q: Mua online hay tại cửa hàng? A: Tại cửa hàng — được xem hàng thực tế, thử cầm vợt và được tư vấn trực tiếp. Q: Có cần mua thêm phụ kiện không? A: Tối thiểu cần: túi đựng vợt và dung dịch vệ sinh cao su. Liên hệ Bóng Bàn Việt để được tư vấn miễn phí!'
   },
-];
+]; // end FAQ_LEGACY */
 
 const ITEMS_PER_PAGE = 10;
 let currentPage = 1;
-let filteredItems = [...FAQ];
 
 // ── Render ────────────────────────────────────────────────────────────────────
 function renderList() {
@@ -444,18 +458,17 @@ function renderList() {
 
   const start = (currentPage - 1) * ITEMS_PER_PAGE;
   const pageItems = filteredItems.slice(start, start + ITEMS_PER_PAGE);
-  const globalStart = start;
 
   list.innerHTML = pageItems.map((item, i) => {
-    const num = String(globalStart + i + 1).padStart(2, '0');
-    return `<div class="kt-item" id="item-${globalStart + i}">
-      <div class="kt-item-header" onclick="toggleItem(${globalStart + i})">
+    const num = String(start + i + 1).padStart(2, '0');
+    return `<div class="kt-item" id="item-${start + i}">
+      <div class="kt-item-header" onclick="toggleItem(${start + i})">
         <span class="kt-num">${num}</span>
-        <span class="kt-item-q">${item.q}</span>
+        <span class="kt-item-q">${item.title}</span>
         <button class="kt-toggle" aria-label="Mở rộng">+</button>
       </div>
       <div class="kt-item-body">
-        <p>${item.a}</p>
+        ${item.content || '<p>' + (item.excerpt || '') + '</p>'}
       </div>
     </div>`;
   }).join('');
@@ -467,9 +480,7 @@ function toggleItem(idx) {
   const el = document.getElementById(`item-${idx}`);
   if (!el) return;
   const isOpen = el.classList.contains('open');
-  // Close all
   document.querySelectorAll('.kt-item.open').forEach(e => e.classList.remove('open'));
-  // Open clicked if it was closed
   if (!isOpen) el.classList.add('open');
 }
 
@@ -497,19 +508,16 @@ function goPage(page) {
 // ── Search ────────────────────────────────────────────────────────────────────
 function onSearch() {
   const q = document.getElementById('searchInput').value.trim().toLowerCase();
-  if (!q) {
-    filteredItems = [...FAQ];
-  } else {
-    filteredItems = FAQ.filter(item =>
-      item.q.toLowerCase().includes(q) || item.a.toLowerCase().includes(q)
-    );
-  }
+  filteredItems = q ? allItems.filter(item =>
+    item.title.toLowerCase().includes(q) ||
+    (item.excerpt || '').toLowerCase().includes(q)
+  ) : [...allItems];
   currentPage = 1;
   renderList();
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
-renderList();
+loadArticles();
 </script>
 <script src="/js/banners.js"></script>
 <script src="/js/nav-mega.js"></script>
