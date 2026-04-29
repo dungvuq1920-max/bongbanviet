@@ -234,7 +234,7 @@ app.get('/api/combos', (req, res) => {
 });
 
 app.post('/api/combos', (req, res) => {
-  const { name, level, blade, rubber_fh, rubber_bh, description, images, badge, slug, price, in_stock } = req.body;
+  const { name, level, blade, rubber_fh, rubber_bh, description, images, badge, slug, price, in_stock, sort_order } = req.body;
   if (!name || !level) return res.status(400).json({ error: 'Thiếu tên hoặc level' });
 
   const id = generateId();
@@ -273,7 +273,9 @@ app.put('/api/combos/:id', (req, res) => {
 });
 
 app.delete('/api/combos/:id', (req, res) => {
-  db.prepare('DELETE FROM combos WHERE id = ?').run(req.params.id);
+  const row = db.prepare('SELECT id FROM combos WHERE id = ?').get(req.params.id);
+  if (!row) return res.status(404).json({ error: 'Không tìm thấy combo' });
+  db.prepare('DELETE FROM combos WHERE id = ?').run(row.id);
   res.json({ success: true });
 });
 

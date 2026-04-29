@@ -1458,7 +1458,7 @@ async function saveCard(card) {
       const listKey = sub||cat;
       const countEl = document.getElementById('count-'+listKey);
       if (countEl) countEl.textContent = Number(countEl.textContent||0) + 1;
-      const nc = document.getElementById('nc-'+listKey);
+      const nc = document.getElementById('nc-'+cat);
       if (nc) nc.textContent = Number(nc.textContent||0) + 1;
     }
     // Collapse after save
@@ -1487,8 +1487,9 @@ async function deleteCard(card) {
     const listKey = sub||cat;
     const countEl = document.getElementById('count-'+listKey);
     if (countEl) countEl.textContent = Math.max(0, Number(countEl.textContent||0)-1);
-    const nc = document.getElementById('nc-'+listKey);
+    const nc = document.getElementById('nc-'+cat);
     if (nc) nc.textContent = Math.max(0, Number(nc.textContent||0)-1);
+    delete loaded[cat];
     card.remove();
     toast('Đã xóa', 'ok');
   } catch(e) {
