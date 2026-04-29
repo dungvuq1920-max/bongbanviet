@@ -1914,10 +1914,12 @@ fetch('/api/settings/home_hero_image')
     var h = '';
     if (p.specs && typeof p.specs === 'object') {
       Object.entries(p.specs).slice(0, 21).forEach(function(e) {
-        var n = parseFloat(e[1]);
-        var bar = (!isNaN(n) && n >= 0 && n <= 10)
-          ? '<span class="fp-bar-wrap"><span class="fp-bar" style="width:' + (n * 10) + '%"></span></span>'
-          : '<span class="fp-sv">' + e[1] + '</span>';
+        var rawVal = String(e[1]);
+        var n = parseFloat(rawVal);
+        var isPureNum = !isNaN(n) && /^\s*\d+(\.\d+)?\s*$/.test(rawVal);
+        var bar = (isPureNum && n >= 0 && n <= 10)
+          ? '<span class="fp-bar-wrap"><span class="fp-bar" style="width:' + (n * 10) + '%"></span></span><span class="fp-sv">' + rawVal.trim() + '</span>'
+          : '<span class="fp-sv">' + rawVal + '</span>';
         h += '<div class="fp-spec-row"><span class="fp-sk">' + e[0] + '</span>' + bar + '</div>';
       });
     }
