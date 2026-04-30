@@ -81,6 +81,20 @@
     .footer-links a:hover { color:#fff; }
     .footer-bottom { max-width:1200px;margin:0 auto;padding:20px 48px;border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;align-items:center; }
     .footer-bottom p { font-size:11px;color:rgba(255,255,255,.2); }
+    .footer-addr{font-size:13px;color:rgba(255,255,255,.45);line-height:1.5}
+    .footer-hours{font-size:11px;color:rgba(255,255,255,.25);letter-spacing:.03em}
+    .footer-bottom-links{display:flex;align-items:center;gap:12px}
+    .footer-bottom-links a{font-size:11px;color:rgba(255,255,255,.25);transition:color .2s;text-decoration:none}
+    .footer-bottom-links a:hover{color:rgba(255,255,255,.7)}
+    .footer-cta-bar{background:#D62B2B}
+    .footer-cta-inner{max-width:1200px;margin:0 auto;padding:28px 48px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+    .footer-cta-label{font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:4px}
+    .footer-cta-title{font-size:clamp(15px,2vw,20px);font-weight:800;color:#fff}
+    .footer-cta-actions{display:flex;gap:12px;flex-shrink:0;align-items:center}
+    .footer-cta-phone-btn{display:inline-block;padding:11px 24px;background:#fff;color:#D62B2B;font-size:14px;font-weight:800;letter-spacing:.02em;transition:all .2s;text-decoration:none}
+    .footer-cta-phone-btn:hover{background:#1A1A1A;color:#fff}
+    .footer-cta-zalo-btn{display:inline-block;padding:11px 22px;border:2px solid rgba(255,255,255,.45);color:#fff;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;transition:all .2s;text-decoration:none}
+    .footer-cta-zalo-btn:hover{border-color:#fff;background:rgba(255,255,255,.12)}
     .s-label { font-size:11px;font-weight:600;letter-spacing:.28em;text-transform:uppercase;color:var(--red);margin-bottom:14px; }
 
     @media(max-width:900px){.steps-grid,.faq-grid,.payment-grid{grid-template-columns:1fr}}
@@ -231,14 +245,27 @@
   </div>
 </div>
 
+<div class="footer-cta-bar">
+  <div class="footer-cta-inner">
+    <div>
+      <p class="footer-cta-label">Cần Tư Vấn?</p>
+      <p class="footer-cta-title">Liên hệ ngay — miễn phí và phản hồi nhanh</p>
+    </div>
+    <div class="footer-cta-actions">
+      <a href="tel:0961269386" class="footer-cta-phone-btn">096.1269.386</a>
+      <a href="https://zalo.me/0961269386" target="_blank" rel="noopener" class="footer-cta-zalo-btn">Nhắn Zalo →</a>
+    </div>
+  </div>
+</div>
+
 <footer>
   <div class="footer-grid">
-    <div><img src="/logo_bongbanviet.png" alt="Bóng Bàn Việt" style="height:48px;width:auto;display:block;margin-bottom:8px;"><div class="footer-slogan">Tư Vấn Chuẩn · Hàng Chính Hãng</div><p class="footer-desc">Thiết bị bóng bàn chuyên nghiệp tại 286 Nguyễn Xiển, Hà Nội.</p></div>
-    <div><p class="footer-col-title">Sản Phẩm</p><ul class="footer-links"><li><a href="cot-vot.html">Cốt Vợt</a></li><li><a href="mat-vot.html">Mặt Vợt</a></li><li><a href="bong.html">Bóng</a></li><li><a href="ban.html">Bàn</a></li><li><a href="do-thi-dau.html">Đồ Thi Đấu</a></li></ul></div>
-    <div><p class="footer-col-title">Hỗ Trợ</p><ul class="footer-links"><li><a href="combo-vot.html">Combo Vợt</a></li><li><a href="do-cu.html">Đồ Cũ</a></li><li><a href="huong-dan-mua-hang.html">Hướng Dẫn Mua Hàng</a></li><li><a href="chinh-sach-doi-tra.html">Chính Sách Đổi Trả</a></li></ul></div>
-    <div><p class="footer-col-title">Liên Hệ</p><ul class="footer-links"><li style="color:rgba(255,255,255,.45);font-size:13px;">286 Nguyễn Xiển,<br>Thanh Liệt, Hà Nội</li><li><a href="tel:0961269386">096.1269.386</a></li></ul></div>
+    <div><img src="/logo_bongbanviet.png" alt="Bóng Bàn Việt" style="height:48px;width:auto;display:block;margin-bottom:8px;border-radius:50%;"><div class="footer-slogan">Tư Vấn Chuẩn · Hàng Chính Hãng</div><p class="footer-desc">Thiết bị bóng bàn chuyên nghiệp tại Hà Nội. Tư vấn miễn phí theo trình độ và phong cách chơi.</p><div class="footer-social" style="display:flex;gap:14px;margin-top:16px;"><a href="https://facebook.com/bongbanviet.official" target="_blank" rel="noopener">Facebook</a><a href="https://instagram.com/bongbanviet" target="_blank" rel="noopener">Instagram</a><a href="https://tiktok.com/@bongbanviet" target="_blank" rel="noopener">TikTok</a></div></div>
+    <div><p class="footer-col-title">Sản Phẩm</p><ul class="footer-links"><li><a href="cot-vot.html">Cốt Vợt</a></li><li><a href="mat-vot.html">Mặt Vợt</a></li><li><a href="bong.html">Bóng</a></li><li><a href="ban.html">Bàn</a></li><li><a href="do-thi-dau.html">Đồ Thi Đấu</a></li><li><a href="combo-vot.html">Combo Vợt</a></li></ul></div>
+    <div><p class="footer-col-title">Hỗ Trợ</p><ul class="footer-links"><li><a href="do-cu.html">Đồ Cũ</a></li><li><a href="kien-thuc.html">Kiến Thức</a></li><li><a href="huong-dan-mua-hang.html">Hướng Dẫn Mua Hàng</a></li><li><a href="chinh-sach-doi-tra.html">Chính Sách Đổi Trả</a></li></ul></div>
+    <div><p class="footer-col-title">Liên Hệ</p><ul class="footer-links"><li class="footer-addr">286 Nguyễn Xiển,<br>Thanh Liệt, Hà Nội</li><li class="footer-hours">T2 – CN · 8:00 – 20:00</li><li><a href="tel:0961269386">096.1269.386</a></li><li><a href="lien-he.html">Gửi Tin Nhắn →</a></li></ul></div>
   </div>
-  <div class="footer-bottom"><p>© 2025 BongBanViet.com · Tư Vấn Chuẩn - Hàng Chính Hãng</p><p>Thiết kế bởi Bóng Bàn Việt</p></div>
+  <div class="footer-bottom"><p>© 2025 BongBanViet.com · Tư Vấn Chuẩn - Hàng Chính Hãng</p><div class="footer-bottom-links"><a href="chinh-sach-doi-tra.html">Chính Sách Đổi Trả</a><span style="color:rgba(255,255,255,.15)">·</span><a href="lien-he.html">Liên Hệ</a></div></div>
 </footer>
 </div><!-- /site-container -->
 <script src="/js/nav-mega.js"></script>
