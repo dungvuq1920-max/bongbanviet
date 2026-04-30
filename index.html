@@ -1314,22 +1314,20 @@
     .all-prods-body .prod-grid { grid-template-columns:repeat(4,1fr); gap:14px; }
     @media (max-width:768px) { .all-prods-body .prod-grid { grid-template-columns:repeat(2,1fr); } }
 
-    /* ── Article cards (Kiến Thức block) ─────────────── */
-    .kt-art-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;}
-    @media(max-width:1200px){.kt-art-grid{grid-template-columns:repeat(4,1fr);}}
-    @media(max-width:900px){.kt-art-grid{grid-template-columns:repeat(3,1fr);}}
-    @media(max-width:640px){.kt-art-grid{grid-template-columns:repeat(2,1fr);gap:10px;}}
-    .art-card{border-radius:16px;border:1.5px solid var(--line);background:var(--white);overflow:hidden;cursor:pointer;display:flex;flex-direction:column;transition:border-color .25s,transform .25s,box-shadow .25s}
-    .art-card:hover{border-color:var(--red);transform:translateY(-4px);box-shadow:0 14px 28px rgba(0,0,0,.07)}
-    .art-card-img{aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;padding:20px;position:relative;overflow:hidden}
-    .art-num-badge{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.15);color:rgba(0,0,0,.5);font-size:10px;font-weight:700;letter-spacing:.1em;padding:3px 8px;border-radius:100px}
-    .art-card-title-bg{font-size:clamp(12px,1.1vw,15px);font-weight:800;line-height:1.25;color:rgba(0,0,0,.55);text-align:center;display:-webkit-box;-webkit-line-clamp:4;line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
-    .art-card-body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:5px;flex:1}
-    .art-card-meta{font-size:10px;font-weight:700;color:var(--red);letter-spacing:.14em;text-transform:uppercase}
-    .art-card-name{font-size:12.5px;font-weight:700;line-height:1.35;color:var(--dark);display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-    .art-card:hover .art-card-name{color:var(--red)}
-    .art-card-read{font-size:11px;font-weight:600;color:var(--mid);margin-top:auto;padding-top:6px;transition:color .2s}
-    .art-card:hover .art-card-read{color:var(--red)}
+    /* ── Q&A Accordion (Kiến Thức block) ─────────────── */
+    .kt-qa-list{border-top:1px solid var(--line);}
+    .kt-qa-item{border-bottom:1px solid var(--line);}
+    .kt-qa-header{display:flex;align-items:center;gap:14px;padding:16px 2px;cursor:pointer;user-select:none;-webkit-user-select:none;}
+    .kt-qa-toggle{flex-shrink:0;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--line);background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:300;color:var(--mid);line-height:1;transition:background .2s,border-color .2s,color .2s;}
+    .kt-qa-item.open .kt-qa-toggle{background:var(--red);border-color:var(--red);color:#fff;}
+    .kt-qa-hd-title{font-size:15px;font-weight:700;color:var(--dark);flex:1;line-height:1.4;transition:color .2s;}
+    .kt-qa-item.open .kt-qa-hd-title{color:var(--red);}
+    .kt-qa-body{display:none;padding:0 4px 20px 40px;}
+    .kt-qa-item.open .kt-qa-body{display:block;}
+    .kt-qa-body p{font-size:14px;line-height:1.85;color:#3a3a3a;margin-bottom:10px;}
+    .kt-qa-body h2,.kt-qa-body h3{font-size:14.5px;font-weight:700;color:var(--dark);margin:16px 0 6px;}
+    .kt-qa-body ul,.kt-qa-body ol{margin:6px 0 10px 18px;display:flex;flex-direction:column;gap:4px;}
+    .kt-qa-body li{font-size:14px;line-height:1.75;color:#3a3a3a;}
     /* ── Article Drawer ───────────────────────────────── */
     .art-drawer{position:fixed;inset:0;z-index:400;pointer-events:none;display:flex;justify-content:flex-end}
     .art-drawer.open{pointer-events:all}
@@ -1629,8 +1627,8 @@
         <div><h2 class="flow-section-title">Chia Sẻ Kiến Thức</h2><p class="flow-section-sub" id="count-kien-thuc">— BÀI VIẾT</p></div>
         <button class="feat-see-all" id="btnKienThucAll" onclick="expandArtGrid()">Xem Tất Cả ›</button>
       </div>
-      <div class="kt-art-grid" id="gridKienThuc">
-        <div style="grid-column:1/-1;padding:32px;text-align:center;color:var(--mid);font-size:13px;">Đang tải…</div>
+      <div class="kt-qa-list" id="gridKienThuc">
+        <div style="padding:32px 0;text-align:center;color:var(--mid);font-size:13px;">Đang tải…</div>
       </div>
     </div>
 
@@ -2372,27 +2370,22 @@ fetch('/api/settings/home_hero_image')
 </script>
 
 <script>
-// ── Kiến Thức article grid ────────────────────────────────────────────────────
+// ── Kiến Thức Q&A accordion ───────────────────────────────────────────────────
 (function(){
-  var ART_BG = ['pb-1','pb-2','pb-3','pb-4','pb-5','pb-6','pb-7','pb-8'];
   var artItems = [];
   var PREVIEW = 8;
 
   function esc(s){ return String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-  function renderCard(item, i) {
-    var bg = ART_BG[i % ART_BG.length];
-    var num = String(i + 1).padStart(2, '0');
-    return '<div class="art-card" onclick="openArtDrawer('+i+')" role="button" tabindex="0">'
-      + '<div class="art-card-img '+bg+'">'
-      + '<span class="art-num-badge">'+num+'</span>'
-      + '<p class="art-card-title-bg">'+esc(item.title)+'</p>'
+  function renderQAItem(item, i) {
+    var body = item.content || '<p>' + esc(item.excerpt || '') + '</p>';
+    return '<div class="kt-qa-item" id="ktqa-'+i+'">'
+      + '<div class="kt-qa-header" onclick="toggleKtItem('+i+')">'
+      + '<span class="kt-qa-toggle">+</span>'
+      + '<span class="kt-qa-hd-title">'+esc(item.title)+'</span>'
       + '</div>'
-      + '<div class="art-card-body">'
-      + '<p class="art-card-meta">Kiến Thức</p>'
-      + '<h3 class="art-card-name">'+esc(item.title)+'</h3>'
-      + '<p class="art-card-read">Đọc bài →</p>'
-      + '</div></div>';
+      + '<div class="kt-qa-body">'+body+'</div>'
+      + '</div>';
   }
 
   async function loadArtGrid() {
@@ -2403,39 +2396,33 @@ fetch('/api/settings/home_hero_image')
       var res = await fetch('/api/articles?limit=200');
       artItems = await res.json();
       if (countEl) countEl.textContent = artItems.length + ' BÀI VIẾT';
-      grid.innerHTML = artItems.slice(0, PREVIEW).map(renderCard).join('');
+      grid.innerHTML = artItems.slice(0, PREVIEW).map(renderQAItem).join('');
       if (btn) btn.style.display = artItems.length > PREVIEW ? '' : 'none';
     } catch(e) {
-      grid.innerHTML = '<div style="grid-column:1/-1;padding:32px;text-align:center;color:var(--mid);font-size:13px;">Không tải được bài viết.</div>';
+      grid.innerHTML = '<div style="padding:32px 0;text-align:center;color:var(--mid);font-size:13px;">Không tải được bài viết.</div>';
     }
   }
 
   window.expandArtGrid = function() {
     var grid = document.getElementById('gridKienThuc');
     var btn = document.getElementById('btnKienThucAll');
-    grid.innerHTML = artItems.map(renderCard).join('');
+    grid.innerHTML = artItems.map(renderQAItem).join('');
     if (btn) btn.style.display = 'none';
   };
 
-  window.openArtDrawer = function(idx) {
-    var item = artItems[idx];
-    if (!item) return;
-    document.getElementById('artDrawerTitle').textContent = item.title;
-    document.getElementById('artDrawerBody').innerHTML = item.content || '<p>' + esc(item.excerpt || '') + '</p>';
-    var drawer = document.getElementById('artDrawer');
-    drawer.classList.add('open');
-    document.body.style.overflow = 'hidden';
-    document.getElementById('artDrawerPanel').scrollTop = 0;
+  window.toggleKtItem = function(idx) {
+    var el = document.getElementById('ktqa-' + idx);
+    if (!el) return;
+    var wasOpen = el.classList.contains('open');
+    document.querySelectorAll('.kt-qa-item.open').forEach(function(o) {
+      o.classList.remove('open');
+      o.querySelector('.kt-qa-toggle').textContent = '+';
+    });
+    if (!wasOpen) {
+      el.classList.add('open');
+      el.querySelector('.kt-qa-toggle').textContent = '−';
+    }
   };
-
-  window.closeArtDrawer = function() {
-    document.getElementById('artDrawer').classList.remove('open');
-    document.body.style.overflow = '';
-  };
-
-  document.addEventListener('keydown', function(e){
-    if (e.key === 'Escape') window.closeArtDrawer();
-  });
 
   loadArtGrid();
 })();
