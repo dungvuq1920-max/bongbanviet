@@ -1627,7 +1627,7 @@
     <div class="cat-block" id="block-kien-thuc">
       <div class="flow-section-head">
         <div><h2 class="flow-section-title">Chia Sẻ Kiến Thức</h2><p class="flow-section-sub" id="count-kien-thuc">— BÀI VIẾT</p></div>
-        <a href="kien-thuc.html" class="feat-see-all">Xem Tất Cả ›</a>
+        <button class="feat-see-all" id="btnKienThucAll" onclick="expandArtGrid()">Xem Tất Cả ›</button>
       </div>
       <div class="kt-art-grid" id="gridKienThuc">
         <div style="grid-column:1/-1;padding:32px;text-align:center;color:var(--mid);font-size:13px;">Đang tải…</div>
@@ -2376,34 +2376,46 @@ fetch('/api/settings/home_hero_image')
 (function(){
   var ART_BG = ['pb-1','pb-2','pb-3','pb-4','pb-5','pb-6','pb-7','pb-8'];
   var artItems = [];
+  var PREVIEW = 8;
 
   function esc(s){ return String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  function renderCard(item, i) {
+    var bg = ART_BG[i % ART_BG.length];
+    var num = String(i + 1).padStart(2, '0');
+    return '<div class="art-card" onclick="openArtDrawer('+i+')" role="button" tabindex="0">'
+      + '<div class="art-card-img '+bg+'">'
+      + '<span class="art-num-badge">'+num+'</span>'
+      + '<p class="art-card-title-bg">'+esc(item.title)+'</p>'
+      + '</div>'
+      + '<div class="art-card-body">'
+      + '<p class="art-card-meta">Kiến Thức</p>'
+      + '<h3 class="art-card-name">'+esc(item.title)+'</h3>'
+      + '<p class="art-card-read">Đọc bài →</p>'
+      + '</div></div>';
+  }
 
   async function loadArtGrid() {
     var grid = document.getElementById('gridKienThuc');
     var countEl = document.getElementById('count-kien-thuc');
+    var btn = document.getElementById('btnKienThucAll');
     try {
-      var res = await fetch('/api/articles?limit=8');
+      var res = await fetch('/api/articles?limit=200');
       artItems = await res.json();
-      if (countEl) countEl.textContent = artItems.length + ' BÀI NỔI BẬT';
-      grid.innerHTML = artItems.map(function(item, i){
-        var bg = ART_BG[i % ART_BG.length];
-        var num = String(i + 1).padStart(2, '0');
-        return '<div class="art-card" onclick="openArtDrawer('+i+')" role="button" tabindex="0">'
-          + '<div class="art-card-img '+bg+'">'
-          + '<span class="art-num-badge">'+num+'</span>'
-          + '<p class="art-card-title-bg">'+esc(item.title)+'</p>'
-          + '</div>'
-          + '<div class="art-card-body">'
-          + '<p class="art-card-meta">Kiến Thức</p>'
-          + '<h3 class="art-card-name">'+esc(item.title)+'</h3>'
-          + '<p class="art-card-read">Đọc bài →</p>'
-          + '</div></div>';
-      }).join('');
+      if (countEl) countEl.textContent = artItems.length + ' BÀI VIẾT';
+      grid.innerHTML = artItems.slice(0, PREVIEW).map(renderCard).join('');
+      if (btn) btn.style.display = artItems.length > PREVIEW ? '' : 'none';
     } catch(e) {
       grid.innerHTML = '<div style="grid-column:1/-1;padding:32px;text-align:center;color:var(--mid);font-size:13px;">Không tải được bài viết.</div>';
     }
   }
+
+  window.expandArtGrid = function() {
+    var grid = document.getElementById('gridKienThuc');
+    var btn = document.getElementById('btnKienThucAll');
+    grid.innerHTML = artItems.map(renderCard).join('');
+    if (btn) btn.style.display = 'none';
+  };
 
   window.openArtDrawer = function(idx) {
     var item = artItems[idx];
