@@ -149,7 +149,7 @@ app.get('/api/products/:slug', (req, res) => {
 
 app.post('/api/products', (req, res) => {
   const { name, category_slug, brand_slug, gear_subcategory, description,
-          specs, images, variants, featured, condition, badge, slug, price, in_stock } = req.body;
+          specs, images, variants, featured, condition, badge, slug, price, in_stock, sort_order } = req.body;
 
   if (!name || !category_slug) {
     return res.status(400).json({ error: 'Thiếu tên hoặc danh mục' });
