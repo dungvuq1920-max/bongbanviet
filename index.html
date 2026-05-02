@@ -1955,18 +1955,38 @@ function openNav() {
   mobileNav.classList.add('open');
   ham.classList.add('open');
   document.body.style.overflow = 'hidden';
+  history.pushState({ modal: 'nav' }, '');
 }
-function closeNav() {
+function closeNav(fromPopState) {
   mobileNav.classList.remove('open');
   ham.classList.remove('open');
   document.body.style.overflow = '';
+  if (fromPopState !== true && history.state && history.state.modal === 'nav') {
+    history.replaceState(null, '');
+    history.back();
+  }
 }
+window.addEventListener('popstate', function(e) {
+  if (!e.state || e.state.modal !== 'nav') {
+    closeNav(true);
+  }
+});
 ham.addEventListener('click', () => mobileNav.classList.contains('open') ? closeNav() : openNav());
-navClose.addEventListener('click', closeNav);
-navOverlay.addEventListener('click', closeNav);
+navClose.addEventListener('click', function() { closeNav(); });
+navOverlay.addEventListener('click', function() { closeNav(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeNav(); });
 document.querySelectorAll('.mobile-nav-links a[href^="#"]').forEach(function(a) {
-  a.addEventListener('click', closeNav);
+  a.addEventListener('click', function(e) {
+    var href = this.getAttribute('href');
+    if (!href.startsWith('#block-')) {
+      e.preventDefault();
+      closeNav();
+      setTimeout(function() {
+        var el = document.getElementById(href.substring(1));
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }, 50);
+    }
+  });
 });
 
 /* ── Mobile accordion ──────────────────────────────────── */
@@ -2243,16 +2263,27 @@ fetch('/api/settings/home_hero_image')
     drawer.scrollTop = 0;
     overlay.classList.add('active');
     drawer.classList.add('open');
+    history.pushState({ modal: 'prodDrawer' }, '');
   }
 
-  function closeDrawer() {
+  function closeDrawer(fromPopState) {
     document.getElementById('prodDrawer').classList.remove('open');
     document.getElementById('prodDrawerOverlay').classList.remove('active');
+    if (fromPopState !== true && history.state && history.state.modal === 'prodDrawer') {
+      history.replaceState(null, '');
+      history.back();
+    }
   }
 
-  document.getElementById('pdClose').addEventListener('click', closeDrawer);
-  document.getElementById('prodDrawerOverlay').addEventListener('click', closeDrawer);
-  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeDrawer(); closeAllProdsModal(); } });
+  window.addEventListener('popstate', function(e) {
+    if (!e.state || e.state.modal !== 'prodDrawer') {
+      closeDrawer(true);
+    }
+  });
+
+  document.getElementById('pdClose').addEventListener('click', function() { closeDrawer(); });
+  document.getElementById('prodDrawerOverlay').addEventListener('click', function() { closeDrawer(); });
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeDrawer(); if (typeof closeAllProdsModal === 'function') closeAllProdsModal(); } });
 
   /* ── Catalog filters: Thương Hiệu + Giá Tiền + Sắp Xếp ─ */
   var activeCat   = 'all';
