@@ -511,9 +511,71 @@
       .btn-save, .btn-del { flex: 1; }
       .f-row2, .f-row3, .f-row4 { grid-template-columns: 1fr; }
     }
+
+    /* ─── Login Overlay ───────────────────────────────────── */
+    .login-overlay { position:fixed;inset:0;z-index:9999;background:#0F172A;display:flex;align-items:center;justify-content:center; }
+    .login-overlay.hidden { display:none; }
+    .login-box { background:#1E293B;border-radius:16px;padding:48px 40px;width:380px;max-width:90vw;border:1px solid rgba(255,255,255,.1); }
+    .login-logo { text-align:center;margin-bottom:28px; }
+    .login-logo img { height:64px;width:auto;border-radius:50%; }
+    .login-title { font-size:18px;font-weight:700;color:#fff;text-align:center;margin-bottom:4px; }
+    .login-sub { font-size:12px;color:rgba(255,255,255,.4);text-align:center;margin-bottom:28px; }
+    .login-lbl { font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:8px;display:block; }
+    .login-input { width:100%;padding:11px 15px;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s; }
+    .login-input:focus { border-color:#D62B2B; }
+    .login-input::placeholder { color:rgba(255,255,255,.3); }
+    .login-btn { width:100%;padding:12px;background:#D62B2B;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:background .2s;margin-top:18px;font-family:'Inter',sans-serif; }
+    .login-btn:hover { background:#b82020; }
+    .login-err { font-size:12px;color:#fc8181;text-align:center;margin-top:10px;min-height:18px; }
+    /* ─── Change Password Modal ───────────────────────────── */
+    .chpass-overlay { position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center; }
+    .chpass-overlay.hidden { display:none; }
+    .chpass-box { background:#fff;border-radius:16px;padding:40px 36px;width:420px;max-width:92vw; }
+    .chpass-title { font-size:18px;font-weight:700;margin-bottom:6px; }
+    .chpass-sub { font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.6; }
+    .chpass-lbl { font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;display:block; }
+    .chpass-input { width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;outline:none;margin-bottom:14px; }
+    .chpass-input:focus { border-color:var(--dark); }
+    .chpass-btn { width:100%;padding:12px;background:var(--dark);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;transition:background .2s;font-family:'Inter',sans-serif; }
+    .chpass-btn:hover { background:var(--red); }
+    .chpass-err { font-size:12px;color:var(--red);margin-top:10px;min-height:18px; }
+    .chpass-skip { display:block;text-align:center;margin-top:12px;font-size:12px;color:var(--muted);cursor:pointer;background:none;border:none;font-family:'Inter',sans-serif; }
+    .chpass-skip:hover { color:var(--dark); }
+    .sb-btn-link { display:block;font-size:12px;color:rgba(255,255,255,.4);margin-bottom:6px;transition:color .2s;background:none;border:none;text-align:left;cursor:pointer;font-family:'Inter',sans-serif;padding:0;width:100%; }
+    .sb-btn-link:hover { color:#fff; }
   </style>
 </head>
 <body>
+
+<!-- ─── Login Overlay ──────────────────────────────────────────── -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-box">
+    <div class="login-logo">
+      <img src="/logo_bongbanviet.png" alt="Bóng Bàn Việt">
+    </div>
+    <p class="login-title">Quản Trị Viên</p>
+    <p class="login-sub">BÓNG BÀN VIỆT · Admin Panel</p>
+    <label class="login-lbl" for="loginPass">Mật Khẩu</label>
+    <input type="password" class="login-input" id="loginPass" placeholder="Nhập mật khẩu..." autocomplete="current-password">
+    <button class="login-btn" id="loginBtn">Đăng Nhập</button>
+    <p class="login-err" id="loginErr"></p>
+  </div>
+</div>
+
+<!-- ─── Change Password Modal ──────────────────────────────────── -->
+<div class="chpass-overlay hidden" id="chpassOverlay">
+  <div class="chpass-box">
+    <h2 class="chpass-title">Đổi Mật Khẩu</h2>
+    <p class="chpass-sub" id="chpassSub">Đây là lần đầu đăng nhập với mật khẩu mặc định <strong>admin</strong>. Vui lòng đặt mật khẩu mới để bảo vệ trang quản trị.</p>
+    <label class="chpass-lbl" for="chpassNew">Mật Khẩu Mới</label>
+    <input type="password" class="chpass-input" id="chpassNew" placeholder="Tối thiểu 4 ký tự...">
+    <label class="chpass-lbl" for="chpassConfirm">Xác Nhận Mật Khẩu</label>
+    <input type="password" class="chpass-input" id="chpassConfirm" placeholder="Nhập lại mật khẩu...">
+    <button class="chpass-btn" id="chpassBtn">Lưu Mật Khẩu Mới</button>
+    <p class="chpass-err" id="chpassErr"></p>
+    <button class="chpass-skip" id="chpassSkip">Bỏ qua, đổi sau →</button>
+  </div>
+</div>
 
 <div style="display:flex;width:100%;height:100vh;overflow:hidden;">
 
@@ -596,6 +658,8 @@
     </div>
     <a href="/index.html" target="_blank" class="sb-link">↗ Xem trang web</a>
     <a href="/api/download-template" download class="sb-link">⬇ Tải template Excel</a>
+    <button class="sb-btn-link" onclick="openChangePass()">🔑 Đổi Mật Khẩu</button>
+    <button class="sb-btn-link" onclick="adminLogout()">🔒 Đăng Xuất</button>
   </div>
 </aside>
 
@@ -1748,6 +1812,125 @@ async function doImport() {
     document.getElementById('xlResults').innerHTML = `<div class="xl-stat err" style="display:block;padding:14px;margin-bottom:14px;">❌ ${e.message}</div><button class="xl-retry" onclick="resetImport()">← Thử lại</button>`;
   }
 }
+
+/* ─── Admin Auth ───────────────────────────────────────────── */
+(function() {
+  var _orig = window.fetch.bind(window);
+
+  /* Override fetch to auto-inject auth token for /api/ calls */
+  window.fetch = function(url, opts) {
+    opts = opts || {};
+    var token = sessionStorage.getItem('adminToken');
+    if (token && typeof url === 'string' && url.startsWith('/api/')) {
+      opts.headers = Object.assign({}, opts.headers, { 'x-admin-token': token });
+    }
+    return _orig(url, opts).then(function(res) {
+      /* Auto-show login overlay on 401 from protected routes */
+      if (res.status === 401 && typeof url === 'string' &&
+          !url.startsWith('/api/admin/login') && !url.startsWith('/api/admin/verify')) {
+        sessionStorage.removeItem('adminToken');
+        document.getElementById('loginOverlay').classList.remove('hidden');
+      }
+      return res;
+    });
+  };
+
+  async function doLogin() {
+    var pass  = document.getElementById('loginPass').value;
+    var errEl = document.getElementById('loginErr');
+    errEl.textContent = '';
+    if (!pass) { errEl.textContent = 'Vui lòng nhập mật khẩu'; return; }
+    try {
+      var res  = await _orig('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pass }),
+      });
+      var data = await res.json();
+      if (!res.ok) { errEl.textContent = data.error || 'Sai mật khẩu'; return; }
+      sessionStorage.setItem('adminToken', data.token);
+      document.getElementById('loginOverlay').classList.add('hidden');
+      if (data.firstLogin) showChangePass(true);
+    } catch(e) {
+      errEl.textContent = 'Không kết nối được server';
+    }
+  }
+
+  document.getElementById('loginBtn').addEventListener('click', doLogin);
+  document.getElementById('loginPass').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') doLogin();
+  });
+
+  async function doChangePass() {
+    var np  = document.getElementById('chpassNew').value;
+    var cp  = document.getElementById('chpassConfirm').value;
+    var err = document.getElementById('chpassErr');
+    err.textContent = '';
+    if (np.length < 4) { err.textContent = 'Mật khẩu phải có ít nhất 4 ký tự'; return; }
+    if (np !== cp)     { err.textContent = 'Mật khẩu xác nhận không khớp'; return; }
+    try {
+      var token = sessionStorage.getItem('adminToken');
+      var res   = await _orig('/api/admin/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
+        body: JSON.stringify({ newPassword: np }),
+      });
+      var data  = await res.json();
+      if (!res.ok) { err.textContent = data.error; return; }
+      document.getElementById('chpassOverlay').classList.add('hidden');
+      document.getElementById('chpassNew').value = '';
+      document.getElementById('chpassConfirm').value = '';
+      toast('✅ Đổi mật khẩu thành công!');
+    } catch(e) {
+      err.textContent = 'Lỗi kết nối server';
+    }
+  }
+
+  document.getElementById('chpassBtn').addEventListener('click', doChangePass);
+  document.getElementById('chpassSkip').addEventListener('click', function() {
+    document.getElementById('chpassOverlay').classList.add('hidden');
+  });
+
+  window.showChangePass = function(isFirst) {
+    document.getElementById('chpassSub').innerHTML = isFirst
+      ? 'Đây là lần đầu đăng nhập với mật khẩu mặc định <strong>admin</strong>. Vui lòng đặt mật khẩu mới để bảo vệ trang quản trị.'
+      : 'Nhập mật khẩu mới cho tài khoản quản trị viên.';
+    document.getElementById('chpassNew').value = '';
+    document.getElementById('chpassConfirm').value = '';
+    document.getElementById('chpassErr').textContent = '';
+    document.getElementById('chpassOverlay').classList.remove('hidden');
+  };
+
+  window.openChangePass = function() { showChangePass(false); };
+
+  window.adminLogout = function() {
+    var token = sessionStorage.getItem('adminToken');
+    if (token) _orig('/api/admin/logout', {
+      method: 'POST',
+      headers: { 'x-admin-token': token },
+    }).catch(function(){});
+    sessionStorage.removeItem('adminToken');
+    document.getElementById('loginPass').value = '';
+    document.getElementById('loginErr').textContent = '';
+    document.getElementById('loginOverlay').classList.remove('hidden');
+  };
+
+  /* Check stored token on page load */
+  (async function() {
+    var token = sessionStorage.getItem('adminToken');
+    if (!token) return; /* no token → overlay stays visible */
+    try {
+      var res  = await _orig('/api/admin/verify', { headers: { 'x-admin-token': token } });
+      var data = await res.json();
+      if (data.ok) {
+        document.getElementById('loginOverlay').classList.add('hidden');
+        if (data.firstLogin) showChangePass(true);
+      } else {
+        sessionStorage.removeItem('adminToken');
+      }
+    } catch(e) { /* server down — overlay stays */ }
+  })();
+})();
 
 /* ─── Init ─────────────────────────────────────────────────── */
 checkServer();

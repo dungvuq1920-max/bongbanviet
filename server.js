@@ -5,6 +5,7 @@ const fs = require('fs');
 const multer = require('multer');
 const ExcelJS = require('exceljs');
 const db = require('./db');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,6 +15,62 @@ const DATA_DIR = process.env.DATA_DIR
 
 app.use(cors());
 app.use(express.json());
+
+// ─── Admin Auth ──────────────────────────────────────────────────────────────
+
+const adminTokens = new Set();
+
+function getAdminPassword() {
+  const row = db.prepare("SELECT value FROM settings WHERE key = 'admin_password'").get();
+  return row ? row.value : 'admin';
+}
+
+function isDefaultPassword() {
+  return !db.prepare("SELECT value FROM settings WHERE key = 'admin_password'").get();
+}
+
+function requireAuth(req, res, next) {
+  const token = req.headers['x-admin-token'];
+  if (token && adminTokens.has(token)) return next();
+  res.status(401).json({ error: 'Chưa đăng nhập' });
+}
+
+app.post('/api/admin/login', (req, res) => {
+  const { password } = req.body;
+  if (password === getAdminPassword()) {
+    const token = crypto.randomUUID();
+    adminTokens.add(token);
+    res.json({ token, firstLogin: isDefaultPassword() });
+  } else {
+    res.status(401).json({ error: 'Sai mật khẩu' });
+  }
+});
+
+app.get('/api/admin/verify', (req, res) => {
+  const token = req.headers['x-admin-token'];
+  if (token && adminTokens.has(token)) {
+    res.json({ ok: true, firstLogin: isDefaultPassword() });
+  } else {
+    res.status(401).json({ ok: false });
+  }
+});
+
+app.post('/api/admin/change-password', requireAuth, (req, res) => {
+  const { newPassword } = req.body;
+  if (!newPassword || newPassword.length < 4) {
+    return res.status(400).json({ error: 'Mật khẩu phải có ít nhất 4 ký tự' });
+  }
+  db.prepare(`INSERT INTO settings (key, value, updated_at) VALUES ('admin_password', ?, datetime('now'))
+    ON CONFLICT(key) DO UPDATE SET value=excluded.value, updated_at=excluded.updated_at`)
+    .run(newPassword);
+  res.json({ ok: true });
+});
+
+app.post('/api/admin/logout', (req, res) => {
+  const token = req.headers['x-admin-token'];
+  if (token) adminTokens.delete(token);
+  res.json({ ok: true });
+});
 
 // ─── Lichtap Data API ────────────────────────────────────────────────────────
 const LICHTAP_VOLUME_FILE = path.join(DATA_DIR, 'lichtap-data.json');
@@ -78,7 +135,7 @@ const upload = multer({
   },
 });
 
-app.post('/api/upload', upload.single('image'), (req, res) => {
+app.post('/api/upload', requireAuth, upload.single('image'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Không có file' });
   res.json({ path: '/images/products/' + req.file.filename });
 });
@@ -147,7 +204,7 @@ app.get('/api/products/:slug', (req, res) => {
   res.json(productRow(row));
 });
 
-app.post('/api/products', (req, res) => {
+app.post('/api/products', requireAuth, (req, res) => {
   const { name, category_slug, brand_slug, gear_subcategory, description,
           specs, images, variants, featured, condition, badge, slug, price, in_stock, sort_order } = req.body;
 
@@ -176,7 +233,7 @@ app.post('/api/products', (req, res) => {
   res.status(201).json(productRow(created));
 });
 
-app.put('/api/products/:id', (req, res) => {
+app.put('/api/products/:id', requireAuth, (req, res) => {
   const { name, category_slug, brand_slug, gear_subcategory, description,
           specs, images, variants, featured, condition, badge, slug, price, in_stock, sort_order } = req.body;
 
@@ -213,7 +270,7 @@ app.put('/api/products/:id', (req, res) => {
   res.json(productRow(updated));
 });
 
-app.delete('/api/products/:id', (req, res) => {
+app.delete('/api/products/:id', requireAuth, (req, res) => {
   const row = db.prepare('SELECT id FROM products WHERE id = ? OR slug = ?')
     .get(req.params.id, req.params.id);
   if (!row) return res.status(404).json({ error: 'Không tìm thấy sản phẩm' });
@@ -233,7 +290,7 @@ app.get('/api/combos', (req, res) => {
   res.json(rows.map(r => ({ ...r, images: parseJSON(r.images, []), in_stock: r.in_stock !== 0 })));
 });
 
-app.post('/api/combos', (req, res) => {
+app.post('/api/combos', requireAuth, (req, res) => {
   const { name, level, blade, rubber_fh, rubber_bh, description, images, badge, slug, price, in_stock, sort_order } = req.body;
   if (!name || !level) return res.status(400).json({ error: 'Thiếu tên hoặc level' });
 
@@ -252,7 +309,7 @@ app.post('/api/combos', (req, res) => {
   res.status(201).json({ id, slug: finalSlug, name, level });
 });
 
-app.put('/api/combos/:id', (req, res) => {
+app.put('/api/combos/:id', requireAuth, (req, res) => {
   const existing = db.prepare('SELECT * FROM combos WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'Không tìm thấy combo' });
 
@@ -272,7 +329,7 @@ app.put('/api/combos/:id', (req, res) => {
   res.json({ success: true });
 });
 
-app.delete('/api/combos/:id', (req, res) => {
+app.delete('/api/combos/:id', requireAuth, (req, res) => {
   const row = db.prepare('SELECT id FROM combos WHERE id = ?').get(req.params.id);
   if (!row) return res.status(404).json({ error: 'Không tìm thấy combo' });
   db.prepare('DELETE FROM combos WHERE id = ?').run(row.id);
@@ -299,7 +356,7 @@ app.get('/api/articles/:slug', (req, res) => {
   res.json({ ...row, tags: parseJSON(row.tags, []) });
 });
 
-app.post('/api/articles', (req, res) => {
+app.post('/api/articles', requireAuth, (req, res) => {
   const { title, excerpt, content, cover_image, category, tags, slug, published_at } = req.body;
   if (!title) return res.status(400).json({ error: 'Thiếu tiêu đề' });
 
@@ -317,7 +374,7 @@ app.post('/api/articles', (req, res) => {
   res.status(201).json({ id, slug: finalSlug, title });
 });
 
-app.put('/api/articles/:id', (req, res) => {
+app.put('/api/articles/:id', requireAuth, (req, res) => {
   const existing = db.prepare('SELECT * FROM articles WHERE id = ? OR slug = ?')
     .get(req.params.id, req.params.id);
   if (!existing) return res.status(404).json({ error: 'Không tìm thấy bài viết' });
@@ -334,7 +391,7 @@ app.put('/api/articles/:id', (req, res) => {
   res.json({ success: true });
 });
 
-app.delete('/api/articles/:id', (req, res) => {
+app.delete('/api/articles/:id', requireAuth, (req, res) => {
   const row = db.prepare('SELECT id FROM articles WHERE id = ? OR slug = ?')
     .get(req.params.id, req.params.id);
   if (!row) return res.status(404).json({ error: 'Không tìm thấy bài viết' });
@@ -370,7 +427,7 @@ app.get('/api/settings/:key', (req, res) => {
   res.json({ key: req.params.key, value: row ? row.value : null });
 });
 
-app.put('/api/settings/:key', (req, res) => {
+app.put('/api/settings/:key', requireAuth, (req, res) => {
   const { value } = req.body;
   db.prepare(`INSERT INTO settings (key, value, updated_at) VALUES (?, ?, datetime('now'))
     ON CONFLICT(key) DO UPDATE SET value=excluded.value, updated_at=excluded.updated_at`)
@@ -398,7 +455,7 @@ const bannerUpload = multer({
   },
 });
 
-app.post('/api/settings/:key/upload', bannerUpload.single('image'), (req, res) => {
+app.post('/api/settings/:key/upload', requireAuth, bannerUpload.single('image'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Không có file' });
   const imgPath = '/images/banners/' + req.file.filename;
   db.prepare(`INSERT INTO settings (key, value, updated_at) VALUES (?, ?, datetime('now'))
@@ -407,7 +464,7 @@ app.post('/api/settings/:key/upload', bannerUpload.single('image'), (req, res) =
   res.json({ key: req.params.key, value: imgPath });
 });
 
-app.delete('/api/settings/:key', (req, res) => {
+app.delete('/api/settings/:key', requireAuth, (req, res) => {
   db.prepare('DELETE FROM settings WHERE key = ?').run(req.params.key);
   res.json({ success: true });
 });
@@ -467,7 +524,7 @@ function uniqueSlug(base, table) {
   return slug;
 }
 
-app.post('/api/import-excel', xlsxUpload.single('file'), async (req, res) => {
+app.post('/api/import-excel', requireAuth, xlsxUpload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Không có file' });
 
   try {
