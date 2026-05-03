@@ -660,6 +660,397 @@ app.post('/api/import-excel', requireAuth, xlsxUpload.single('file'), async (req
   }
 });
 
+// ─── Telegram Bot + Solana Coin Tracker ─────────────────────────────────────
+
+const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
+const CHAT_ID   = (process.env.TELEGRAM_CHAT_ID  || '').toString();
+const TG_API    = `https://api.telegram.org/bot${BOT_TOKEN}`;
+
+// ── Tracker config (stored in settings table) ─────────────────────────────────
+function getTrackerCfg() {
+  const rows = db.prepare("SELECT key, value FROM settings WHERE key LIKE 'tracker_%'").all();
+  const m = {};
+  for (const r of rows) m[r.key] = r.value;
+  return {
+    drop:        parseFloat(m.tracker_drop        || 30),
+    maxDrop:     parseFloat(m.tracker_max_drop    || 80),
+    lp:          parseFloat(m.tracker_lp          || 70),
+    vol1h:       parseFloat(m.tracker_vol1h       || 5000),
+    reboundM5:   parseFloat(m.tracker_rebound_m5  || 1),
+    cooldownMin: parseFloat(m.tracker_cooldown    || 30),
+    paused:      m.tracker_paused === '1',
+  };
+}
+
+function setTrackerKey(key, value) {
+  db.prepare(`INSERT INTO settings (key, value, updated_at) VALUES (?, ?, datetime('now'))
+    ON CONFLICT(key) DO UPDATE SET value=excluded.value, updated_at=excluded.updated_at`)
+    .run(key, String(value));
+}
+
+// ── Status calculation (mirrors tracking.html getStatus()) ────────────────────
+function calcCoinStatus(coin, pair, cfg) {
+  const cur = parseFloat(pair.priceUsd || 0);
+  if (!cur || !coin.base_price) return 'load';
+  const drop   = ((cur - coin.base_price) / coin.base_price) * 100;
+  const curLiq = pair.liquidity?.usd || 0;
+  const lpRat  = coin.base_liq > 0 ? (curLiq / coin.base_liq) * 100 : 100;
+  const v1h    = pair.volume?.h1 || 0;
+  if (drop < -cfg.maxDrop) return 'dead';
+  if (drop <= -cfg.drop && lpRat >= cfg.lp && v1h >= cfg.vol1h) {
+    const m5 = pair.priceChange?.m5 || 0;
+    const b5 = pair.txns?.m5?.buys  || 0;
+    const s5 = pair.txns?.m5?.sells || 0;
+    if (m5 >= cfg.reboundM5 && b5 >= s5) return 'rebound';
+    return 'alert';
+  }
+  if (drop <= -(cfg.drop * 0.65)) return 'watch';
+  return 'ok';
+}
+
+// ── Format helpers ─────────────────────────────────────────────────────────────
+function fmtUsd(n) {
+  if (!n) return '$0';
+  if (n >= 1e6) return `$${(n / 1e6).toFixed(1)}M`;
+  if (n >= 1e3) return `$${(n / 1e3).toFixed(0)}K`;
+  return `$${n.toFixed(0)}`;
+}
+function fmtPrice(p) {
+  if (!p) return '$0';
+  if (p >= 1)    return `$${p.toFixed(4)}`;
+  if (p >= 0.01) return `$${p.toFixed(6)}`;
+  return `$${p.toFixed(12).replace(/0+$/, '')}`;
+}
+
+// ── Telegram send ──────────────────────────────────────────────────────────────
+async function tgSend(text, chatId = CHAT_ID) {
+  if (!BOT_TOKEN || !chatId) return;
+  try {
+    await fetch(`${TG_API}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML', disable_web_page_preview: true }),
+      signal: AbortSignal.timeout(10000),
+    });
+  } catch (e) { console.error('[TG] send error:', e.message); }
+}
+
+// ── Build alert message ────────────────────────────────────────────────────────
+function buildAlertMsg(coin, pair, st) {
+  const cur  = parseFloat(pair.priceUsd || 0);
+  const drop = ((cur - coin.base_price) / coin.base_price) * 100;
+  const m5   = pair.priceChange?.m5 || 0;
+  const b5   = pair.txns?.m5?.buys  || 0;
+  const s5   = pair.txns?.m5?.sells || 0;
+  const header = st === 'rebound'
+    ? `🔥 <b>REBOUND</b> — <b>$${coin.symbol}</b>`
+    : `🚨 <b>ALERT DIP</b> — <b>$${coin.symbol}</b>`;
+  let msg = `${header}\n<code>━━━━━━━━━━━━━━━━</code>\n`;
+  msg += `📉 Dip: <b>${drop.toFixed(1)}%</b>\n`;
+  msg += `💰 Giá: <code>${fmtPrice(cur)}</code>\n`;
+  msg += `💧 LP: ${fmtUsd(pair.liquidity?.usd || 0)}\n`;
+  msg += `📊 Vol 1h: ${fmtUsd(pair.volume?.h1 || 0)}\n`;
+  if (st === 'rebound') msg += `🕐 5m: <b>+${m5.toFixed(1)}%</b> | Mua ${b5} / Bán ${s5}\n`;
+  if (pair.url) msg += `🔗 <a href="${pair.url}">DexScreener</a>`;
+  return msg;
+}
+
+// ── Best Solana pair picker ────────────────────────────────────────────────────
+function pickBestPair(pairs, addr) {
+  if (!pairs?.length) return null;
+  const a   = addr.toLowerCase();
+  const sol = pairs.filter(p =>
+    p.chainId === 'solana' &&
+    (p.baseToken.address.toLowerCase() === a || p.quoteToken?.address?.toLowerCase() === a)
+  );
+  if (!sol.length) return null;
+  const base = sol.filter(p => p.baseToken.address.toLowerCase() === a);
+  const pool = base.length ? base : sol;
+  pool.sort((x, y) => (y.liquidity?.usd || 0) - (x.liquidity?.usd || 0));
+  return pool[0];
+}
+
+// ── DexScreener fetch (server-side) ───────────────────────────────────────────
+async function dexFetchAddrs(addresses) {
+  const out = [];
+  for (let i = 0; i < addresses.length; i += 30) {
+    const batch = addresses.slice(i, i + 30);
+    try {
+      const r = await fetch(
+        `https://api.dexscreener.com/latest/dex/tokens/${batch.join(',')}`,
+        { signal: AbortSignal.timeout(10000) }
+      );
+      const d = await r.json();
+      if (d.pairs) out.push(...d.pairs);
+    } catch {}
+  }
+  return out;
+}
+
+// ── In-memory last-alert state (avoid redundant DB writes per tick) ────────────
+const lastAlertMap = new Map(); // address → { st, at }
+
+// ── Main tracker tick (runs every 10s) ────────────────────────────────────────
+async function trackerTick() {
+  try {
+    const cfg = getTrackerCfg();
+    if (cfg.paused) return;
+    const coins = db.prepare('SELECT * FROM tracked_coins WHERE paused = 0').all();
+    if (!coins.length) return;
+
+    const pairs = await dexFetchAddrs(coins.map(c => c.address));
+    const pairMap = new Map();
+    for (const p of pairs) {
+      if (p.chainId !== 'solana') continue;
+      const a  = p.baseToken.address;
+      const ex = pairMap.get(a);
+      if (!ex || (p.liquidity?.usd || 0) > (ex.liquidity?.usd || 0)) pairMap.set(a, p);
+    }
+
+    const cooldownMs = cfg.cooldownMin * 60 * 1000;
+    const now = Date.now();
+
+    for (const coin of coins) {
+      const pair = pairMap.get(coin.address);
+      if (!pair) continue;
+      const st = calcCoinStatus(coin, pair, cfg);
+
+      db.prepare('UPDATE tracked_coins SET last_price=?, last_status=?, pair_address=? WHERE address=?')
+        .run(parseFloat(pair.priceUsd || 0), st, pair.pairAddress || null, coin.address);
+
+      if (st !== 'alert' && st !== 'rebound') {
+        lastAlertMap.delete(coin.address);
+        continue;
+      }
+
+      const prev = lastAlertMap.get(coin.address);
+      const shouldAlert =
+        !prev ||
+        (now - prev.at > cooldownMs) ||
+        (st === 'rebound' && prev.st === 'alert'); // transition alert→rebound → immediate re-notify
+
+      if (!shouldAlert) continue;
+
+      await tgSend(buildAlertMsg(coin, pair, st));
+      lastAlertMap.set(coin.address, { st, at: now });
+      db.prepare("UPDATE tracked_coins SET alerted_at=datetime('now'), alert_st=? WHERE address=?")
+        .run(st, coin.address);
+    }
+  } catch (e) {
+    console.error('[Tracker] tick error:', e.message);
+  }
+}
+
+// ── Telegram command handler ───────────────────────────────────────────────────
+async function handleTgCmd(msg) {
+  const text   = (msg.text || '').trim();
+  const chatId = msg.chat.id.toString();
+  if (CHAT_ID && chatId !== CHAT_ID) {
+    await tgSend('⛔ Không có quyền truy cập.', chatId);
+    return;
+  }
+  const parts = text.split(/\s+/);
+  const cmd   = (parts[0] || '').toLowerCase().replace(/@\w+$/, '');
+
+  if (cmd === '/start' || cmd === '/help') {
+    await tgSend(
+      `<b>🏓 Solana Meme Tracker Bot</b>\n\n` +
+      `/add &lt;address&gt; — Thêm coin theo dõi\n` +
+      `/rm &lt;address|symbol&gt; — Xóa coin\n` +
+      `/list — Danh sách đang theo dõi\n` +
+      `/status — Coin đang ALERT/REBOUND\n` +
+      `/set drop=30 vol=5000 lp=70 cd=30 — Đặt ngưỡng\n` +
+      `/pause — Tạm dừng alert\n` +
+      `/resume — Tiếp tục alert\n` +
+      `/help — Xem lệnh này`, chatId
+    );
+    return;
+  }
+
+  if (cmd === '/add') {
+    const addr = (parts[1] || '').trim();
+    if (!addr || !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(addr)) {
+      await tgSend('❌ Cần nhập Solana contract address (base58, 32-44 ký tự)\nVD: <code>/add DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263</code>', chatId);
+      return;
+    }
+    if (db.prepare('SELECT 1 FROM tracked_coins WHERE address = ?').get(addr)) {
+      await tgSend(`⚠️ <code>${addr.slice(0, 8)}...</code> đã có trong danh sách`, chatId);
+      return;
+    }
+    await tgSend('⏳ Đang lấy dữ liệu từ DexScreener...', chatId);
+    const pairs = await dexFetchAddrs([addr]);
+    const pair  = pickBestPair(pairs, addr);
+    if (!pair) {
+      await tgSend('❌ Không tìm thấy token này trên Solana (DexScreener)', chatId);
+      return;
+    }
+    db.prepare(`INSERT OR IGNORE INTO tracked_coins
+      (address, symbol, name, pair_address, base_price, base_liq, last_price, last_status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'watch')`)
+      .run(addr, pair.baseToken.symbol, pair.baseToken.name,
+           pair.pairAddress, parseFloat(pair.priceUsd || 0),
+           pair.liquidity?.usd || 0, parseFloat(pair.priceUsd || 0));
+    await tgSend(
+      `✅ Đã thêm <b>$${pair.baseToken.symbol}</b> (${pair.baseToken.name})\n` +
+      `💰 Giá cơ sở: <code>${fmtPrice(parseFloat(pair.priceUsd || 0))}</code>\n` +
+      `💧 LP: ${fmtUsd(pair.liquidity?.usd || 0)}\n\n` +
+      `Bot sẽ báo khi coin dip ≥${getTrackerCfg().drop}% từ giá này.`, chatId
+    );
+    return;
+  }
+
+  if (cmd === '/rm') {
+    const q = (parts[1] || '').trim();
+    if (!q) { await tgSend('❌ Cần nhập address hoặc symbol\nVD: <code>/rm BONK</code>', chatId); return; }
+    let row = db.prepare('SELECT * FROM tracked_coins WHERE address = ?').get(q);
+    if (!row) row = db.prepare('SELECT * FROM tracked_coins WHERE upper(symbol) = upper(?)').get(q);
+    if (!row) { await tgSend(`❌ Không tìm thấy <code>${q}</code> trong danh sách`, chatId); return; }
+    db.prepare('DELETE FROM tracked_coins WHERE address = ?').run(row.address);
+    lastAlertMap.delete(row.address);
+    await tgSend(`🗑 Đã xóa <b>$${row.symbol}</b> (${row.name})`, chatId);
+    return;
+  }
+
+  if (cmd === '/list') {
+    const coins = db.prepare('SELECT * FROM tracked_coins ORDER BY added_at DESC').all();
+    if (!coins.length) { await tgSend('📭 Danh sách trống. Dùng /add &lt;address&gt; để thêm', chatId); return; }
+    const ICON = { rebound:'🔥', alert:'🚨', watch:'👀', ok:'✅', dead:'☠️', load:'⏳' };
+    let msg = `<b>📋 Đang theo dõi ${coins.length} coin</b>\n\n`;
+    for (const c of coins) {
+      const icon = ICON[c.last_status] || '❓';
+      const dropPct = c.base_price > 0 && c.last_price > 0
+        ? ` (${(((c.last_price - c.base_price) / c.base_price) * 100).toFixed(1)}%)`
+        : '';
+      msg += `${icon} <b>$${c.symbol}</b>${dropPct} — ${c.name}\n`;
+      msg += `<code>${c.address}</code>\n\n`;
+    }
+    await tgSend(msg, chatId);
+    return;
+  }
+
+  if (cmd === '/status') {
+    const coins = db.prepare("SELECT * FROM tracked_coins WHERE last_status IN ('alert','rebound')").all();
+    if (!coins.length) { await tgSend('✅ Không có coin nào trong trạng thái ALERT/REBOUND', chatId); return; }
+    let msg = `<b>🚨 ${coins.length} coin cần chú ý</b>\n\n`;
+    for (const c of coins) {
+      const icon = c.last_status === 'rebound' ? '🔥' : '🚨';
+      const drop = c.base_price > 0 && c.last_price > 0
+        ? `${(((c.last_price - c.base_price) / c.base_price) * 100).toFixed(1)}%`
+        : '?%';
+      msg += `${icon} <b>$${c.symbol}</b> dip ${drop}\n`;
+    }
+    await tgSend(msg, chatId);
+    return;
+  }
+
+  if (cmd === '/set') {
+    const cfg  = getTrackerCfg();
+    const KEYS = { drop:'tracker_drop', vol:'tracker_vol1h', lp:'tracker_lp', cd:'tracker_cooldown', rebound:'tracker_rebound_m5', maxdrop:'tracker_max_drop' };
+    const changed = [];
+    for (const part of parts.slice(1)) {
+      const [k, v] = part.split('=');
+      const dbKey  = KEYS[(k || '').toLowerCase()];
+      if (!dbKey) continue;
+      const n = parseFloat(v);
+      if (isNaN(n)) continue;
+      setTrackerKey(dbKey, n);
+      changed.push(`${k}=${n}`);
+    }
+    if (!changed.length) {
+      await tgSend(
+        `⚙️ <b>Cài đặt hiện tại</b>\n` +
+        `drop=${cfg.drop}%  maxdrop=${cfg.maxDrop}%\n` +
+        `lp=${cfg.lp}%  vol1h=$${cfg.vol1h}\n` +
+        `rebound=${cfg.reboundM5}%  cooldown=${cfg.cooldownMin}min\n\n` +
+        `<i>/set drop=30 vol=5000 lp=70 cd=30</i>`, chatId
+      );
+    } else {
+      await tgSend(`✅ Đã cập nhật: ${changed.join(', ')}`, chatId);
+    }
+    return;
+  }
+
+  if (cmd === '/pause') {
+    setTrackerKey('tracker_paused', '1');
+    await tgSend('⏸ Đã tạm dừng tất cả alert', chatId);
+    return;
+  }
+
+  if (cmd === '/resume') {
+    setTrackerKey('tracker_paused', '0');
+    await tgSend('▶️ Đã tiếp tục gửi alert', chatId);
+    return;
+  }
+
+  await tgSend('❓ Không hiểu lệnh. Gõ /help để xem danh sách lệnh.', chatId);
+}
+
+// ── Long-polling loop ──────────────────────────────────────────────────────────
+async function tgPoll(offset = 0) {
+  if (!BOT_TOKEN) return;
+  try {
+    const r = await fetch(`${TG_API}/getUpdates?timeout=25&offset=${offset}`,
+      { signal: AbortSignal.timeout(30000) });
+    const data = await r.json();
+    if (data.ok) {
+      for (const u of data.result) {
+        if (u.message?.text) handleTgCmd(u.message).catch(e => console.error('[TG] cmd error:', e.message));
+        offset = u.update_id + 1;
+      }
+    }
+  } catch {}
+  setTimeout(() => tgPoll(offset), 200);
+}
+
+// ── API routes for tracked coins (used by tracking.html or future web UI) ─────
+app.get('/api/tracker/coins', (req, res) => {
+  res.json(db.prepare('SELECT * FROM tracked_coins ORDER BY last_status, added_at').all());
+});
+
+app.post('/api/tracker/coins', async (req, res) => {
+  const { address } = req.body || {};
+  if (!address || !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address))
+    return res.status(400).json({ error: 'Invalid Solana address' });
+  if (db.prepare('SELECT 1 FROM tracked_coins WHERE address = ?').get(address))
+    return res.status(409).json({ error: 'Already tracked' });
+  const pairs = await dexFetchAddrs([address]);
+  const pair  = pickBestPair(pairs, address);
+  if (!pair) return res.status(404).json({ error: 'Token not found on Solana' });
+  db.prepare(`INSERT OR IGNORE INTO tracked_coins
+    (address, symbol, name, pair_address, base_price, base_liq, last_price, last_status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, 'watch')`)
+    .run(address, pair.baseToken.symbol, pair.baseToken.name,
+         pair.pairAddress, parseFloat(pair.priceUsd || 0),
+         pair.liquidity?.usd || 0, parseFloat(pair.priceUsd || 0));
+  res.json({ address, symbol: pair.baseToken.symbol, name: pair.baseToken.name });
+});
+
+app.delete('/api/tracker/coins/:address', (req, res) => {
+  db.prepare('DELETE FROM tracked_coins WHERE address = ?').run(req.params.address);
+  lastAlertMap.delete(req.params.address);
+  res.json({ success: true });
+});
+
+app.get('/api/tracker/config', (req, res) => res.json(getTrackerCfg()));
+
+app.put('/api/tracker/config', (req, res) => {
+  const MAP = { drop:'tracker_drop', maxDrop:'tracker_max_drop', lp:'tracker_lp', vol1h:'tracker_vol1h', reboundM5:'tracker_rebound_m5', cooldownMin:'tracker_cooldown', paused:'tracker_paused' };
+  for (const [k, v] of Object.entries(req.body || {}))
+    if (MAP[k] !== undefined) setTrackerKey(MAP[k], v);
+  res.json(getTrackerCfg());
+});
+
+// ── Start tracker + bot after server is up ─────────────────────────────────────
+function startTracker() {
+  if (!BOT_TOKEN) {
+    console.log('⚠️  TELEGRAM_BOT_TOKEN chưa set — coin tracker & bot disabled');
+    return;
+  }
+  setInterval(trackerTick, 10000);
+  tgPoll();
+  console.log(`🤖 Telegram bot started | 🔄 Tracker polling every 10s`);
+}
+
 // ─── Seed default catalog banner images (INSERT OR IGNORE — never overwrites uploads) ────
 const _defBanners = [
   ['banner_cot_vot',    '/images/banners/banner-cot-vot.jpg'],
@@ -694,6 +1085,7 @@ function startServer() {
     console.log(`\n✅ BongBanViet server chạy tại http://localhost:${PORT}`);
     console.log(`   Admin panel:  http://localhost:${PORT}/admin.html`);
     console.log(`   Website:      http://localhost:${PORT}/index.html\n`);
+    startTracker();
   });
   server.on('error', err => {
     if (err.code === 'EADDRINUSE') {

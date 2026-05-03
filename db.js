@@ -84,6 +84,21 @@ db.exec(`
     published_at TEXT DEFAULT (datetime('now')),
     created_at TEXT DEFAULT (datetime('now'))
   );
+
+  CREATE TABLE IF NOT EXISTS tracked_coins (
+    address TEXT PRIMARY KEY,
+    symbol TEXT,
+    name TEXT,
+    pair_address TEXT,
+    base_price REAL DEFAULT 0,
+    base_liq REAL DEFAULT 0,
+    last_price REAL DEFAULT 0,
+    last_status TEXT DEFAULT 'watch',
+    alerted_at TEXT,
+    alert_st TEXT,
+    paused INTEGER DEFAULT 0,
+    added_at TEXT DEFAULT (datetime('now'))
+  );
 `);
 
 // Migrations: add columns if not yet present (must run BEFORE seed)
