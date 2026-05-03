@@ -1819,20 +1819,20 @@
     <div>
       <p class="footer-col-title">Sản Phẩm</p>
       <ul class="footer-links">
-        <li><a href="cot-vot.html">Cốt Vợt</a></li>
-        <li><a href="mat-vot.html">Mặt Vợt</a></li>
-        <li><a href="bong.html">Bóng</a></li>
-        <li><a href="ban.html">Bàn</a></li>
-        <li><a href="do-thi-dau.html">Đồ Thi Đấu</a></li>
-        <li><a href="combo-vot.html">Combo Vợt</a></li>
+        <li><a href="#block-cot-vot" onclick="goToSection('cot-vot');return false;">Cốt Vợt</a></li>
+        <li><a href="#block-mat-vot" onclick="goToSection('mat-vot');return false;">Mặt Vợt</a></li>
+        <li><a href="#block-bong" onclick="goToSection('bong');return false;">Bóng</a></li>
+        <li><a href="#block-ban" onclick="goToSection('ban');return false;">Bàn</a></li>
+        <li><a href="#block-do-thi-dau" onclick="goToSection('do-thi-dau');return false;">Đồ Thi Đấu</a></li>
+        <li><a href="#block-combo-vot" onclick="goToSection('combo-vot');return false;">Combo Vợt</a></li>
       </ul>
     </div>
     <div>
       <p class="footer-col-title">Hỗ Trợ</p>
       <ul class="footer-links">
-        <li><a href="do-cu.html">Đồ Cũ</a></li>
-        <li><a href="#block-kien-thuc">Kiến Thức</a></li>
-        <li><a href="#block-huong-dan">Hướng Dẫn Mua Hàng</a></li>
+        <li><a href="#block-do-cu" onclick="goToSection('do-cu');return false;">Đồ Cũ</a></li>
+        <li><a href="#block-kien-thuc" onclick="goToSection('kien-thuc');return false;">Kiến Thức</a></li>
+        <li><a href="#block-huong-dan" onclick="goToSection('huong-dan');return false;">Hướng Dẫn Mua Hàng</a></li>
         <li><a href="chinh-sach-doi-tra.html">Chính Sách Đổi Trả</a></li>
       </ul>
     </div>
@@ -1852,7 +1852,7 @@
     <div class="footer-bottom-links">
       <a href="chinh-sach-doi-tra.html">Chính Sách Đổi Trả</a>
       <span style="color:rgba(255,255,255,.15)">·</span>
-      <a href="#block-lien-he">Liên Hệ</a>
+      <a href="#block-lien-he" onclick="goToSection('lien-he');return false;">Liên Hệ</a>
       <span style="color:rgba(255,255,255,.15)">·</span>
       <a href="admin.html" style="opacity:.35;">Admin ↗</a>
     </div>
@@ -2518,6 +2518,21 @@ fetch('/api/settings/home_hero_image')
       });
     });
   });
+
+  window.goToSection = function(slug) {
+    activeCat   = 'all';
+    activeBrand = 'all';
+    activePr    = 'all';
+    activeNameQ = '';
+    var fltrCat = document.getElementById('fltrCat');
+    if (fltrCat) { fltrCat.querySelectorAll('.fltr-drop-opt').forEach(function(o){ o.classList.toggle('active', o.dataset.cat === 'all'); }); }
+    applyFilters();
+    var el = document.getElementById('block-' + slug);
+    if (el) {
+      var top = el.getBoundingClientRect().top + window.pageYOffset - (document.getElementById('catSearchBar') ? document.getElementById('catSearchBar').offsetHeight + 60 : 80);
+      window.scrollTo({ top: top, behavior: 'smooth' });
+    }
+  };
 
 })();
 
