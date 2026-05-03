@@ -1930,7 +1930,6 @@
     <p class="pd-desc" id="pdDesc"></p>
     <div class="pd-actions">
       <a class="pd-btn pd-btn-zalo" id="pdZalo" href="#" target="_blank" rel="noopener">Tư Vấn Ngay Qua Zalo</a>
-      <a class="pd-btn pd-btn-detail" id="pdDetail" href="#">Xem Chi Tiết Đầy Đủ ›</a>
     </div>
   </div>
 </div>
@@ -2257,8 +2256,7 @@ fetch('/api/settings/home_hero_image')
     document.getElementById('pdDesc').innerHTML = (desc || 'Liên hệ để được tư vấn chi tiết về sản phẩm này.').replace(/\n/g, '<br>');
 
     /* CTAs */
-    document.getElementById('pdZalo').href   = 'https://zalo.me/0961269386?text=' + encodeURIComponent('Tôi muốn hỏi về ' + (p.name || ''));
-    document.getElementById('pdDetail').href = 'san-pham.html?id=' + (p.slug || '');
+    document.getElementById('pdZalo').href = 'https://zalo.me/0961269386?text=' + encodeURIComponent('Tôi muốn hỏi về ' + (p.name || ''));
 
     drawer.scrollTop = 0;
     overlay.classList.add('active');
