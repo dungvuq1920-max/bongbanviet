@@ -660,7 +660,7 @@
     .newsletter-btn:hover { background: var(--red); }
 
     /* ─── Inline Liên Hệ Section ─────────────────────────── */
-    .lh-inline-layout { display: grid; grid-template-columns: 1fr 360px; gap: 3px; margin-top: 24px; }
+    .lh-inline-layout { display: grid; grid-template-columns: 1fr 420px; gap: 3px; margin-top: 24px; }
     .lh-info-grid { background: #F2EDE7; padding: 44px 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 32px 28px; }
     .lh-info-label { font-size: 10px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: var(--mid); margin-bottom: 8px; }
     .lh-info-val { font-size: 18px; font-weight: 700; color: var(--dark); line-height: 1.3; }
@@ -670,15 +670,23 @@
     .lh-social-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
     .lh-social-pill { display: inline-block; padding: 6px 14px; border: 1.5px solid var(--line); font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--dark); transition: all .2s; text-decoration: none; }
     .lh-social-pill:hover { background: var(--dark); color: #fff; border-color: var(--dark); }
-    .lh-cta-panel { background: var(--dark); padding: 44px 36px; display: flex; flex-direction: column; justify-content: center; }
-    .lh-cta-eyebrow { font-size: 10px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: rgba(255,255,255,.35); margin-bottom: 12px; }
-    .lh-cta-title { font-size: clamp(24px, 3vw, 36px); font-weight: 900; color: #fff; line-height: 1.1; margin-bottom: 12px; }
-    .lh-cta-title em { font-style: italic; color: var(--coral); }
-    .lh-cta-desc { font-size: 13px; color: rgba(255,255,255,.5); line-height: 1.7; margin-bottom: 24px; }
-    .lh-zalo-btn { display: block; padding: 13px 18px; background: var(--red); color: #fff; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; text-align: center; transition: background .2s; margin-bottom: 10px; text-decoration: none; }
+    .lh-form-panel { background: var(--white); padding: 40px 36px; border: 1.5px solid var(--line); }
+    .lh-fp-title { font-size: clamp(22px, 2.5vw, 30px); font-weight: 900; color: var(--dark); line-height: 1.15; margin-bottom: 8px; }
+    .lh-fp-title em { font-style: italic; color: var(--coral); }
+    .lh-fp-sub { font-size: 13px; color: var(--mid); margin-bottom: 22px; line-height: 1.6; }
+    .lh-fp-group { margin-bottom: 14px; }
+    .lh-fp-label { display: block; font-size: 10px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--mid); margin-bottom: 7px; }
+    .lh-fp-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .lh-fp-input, .lh-fp-textarea { width: 100%; padding: 11px 14px; border: 1.5px solid var(--line); font-size: 13px; color: var(--dark); background: var(--bg); outline: none; transition: border-color .2s; font-family: inherit; box-sizing: border-box; }
+    .lh-fp-input:focus, .lh-fp-textarea:focus { border-color: var(--dark); }
+    .lh-fp-textarea { height: 90px; resize: vertical; }
+    .lh-fp-submit { width: 100%; padding: 13px; background: var(--red); color: #fff; border: none; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; transition: background .2s; font-family: inherit; margin-top: 4px; }
+    .lh-fp-submit:hover { background: var(--coral); }
+    .lh-fp-or { display: flex; align-items: center; gap: 10px; margin: 14px 0 10px; }
+    .lh-fp-or-line { flex: 1; height: 1px; background: var(--line); }
+    .lh-fp-or-text { font-size: 10px; color: var(--mid); letter-spacing: .08em; text-transform: uppercase; }
+    .lh-zalo-btn { display: block; padding: 12px 18px; background: var(--red); color: #fff; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; text-align: center; transition: background .2s; text-decoration: none; }
     .lh-zalo-btn:hover { background: var(--coral); }
-    .lh-fb-btn { display: block; padding: 11px 18px; border: 1.5px solid rgba(255,255,255,.15); color: rgba(255,255,255,.55); font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; text-align: center; transition: all .2s; text-decoration: none; }
-    .lh-fb-btn:hover { border-color: rgba(255,255,255,.4); color: #fff; }
 
     /* ─── Inline Hướng Dẫn Mua Hàng Section ─────────────── */
     .hd-steps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin-top: 24px; }
@@ -821,7 +829,8 @@
       .footer-grid { grid-template-columns: 1fr; gap: 28px; padding: 36px 20px 20px; }
       .footer-bottom { padding: 14px 20px; flex-direction: column; gap: 6px; text-align: center; }
       .lh-info-grid { grid-template-columns: 1fr; gap: 24px; padding: 28px 20px; }
-      .lh-cta-panel { padding: 28px 20px; }
+      .lh-form-panel { padding: 28px 20px; }
+      .lh-fp-row2 { grid-template-columns: 1fr; }
       .hd-steps-grid { grid-template-columns: 1fr; }
       .hd-payment-strip { padding: 20px; flex-direction: column; }
       .footer-cta-inner { padding: 20px; }
@@ -1709,12 +1718,32 @@
             </div>
           </div>
         </div>
-        <div class="lh-cta-panel">
-          <p class="lh-cta-eyebrow">Phản hồi trong vài phút</p>
-          <h3 class="lh-cta-title">Tư Vấn<br><em>Qua Zalo</em></h3>
-          <p class="lh-cta-desc">Cho biết trình độ và phong cách chơi — chúng tôi tư vấn chọn thiết bị hoàn toàn miễn phí.</p>
-          <a href="https://zalo.me/0961269386" target="_blank" rel="noopener" class="lh-zalo-btn">Nhắn Zalo 096.1269.386 →</a>
-          <a href="https://facebook.com/bongbanviet.official" target="_blank" rel="noopener" class="lh-fb-btn">Nhắn Facebook →</a>
+        <div class="lh-form-panel">
+          <h3 class="lh-fp-title">Gửi <em>Tin Nhắn</em></h3>
+          <p class="lh-fp-sub">Để lại thông tin, chúng tôi sẽ liên hệ lại trong vòng 2 giờ làm việc.</p>
+          <form onsubmit="handleLhSubmit(event)" id="lhForm">
+            <div class="lh-fp-row2">
+              <div class="lh-fp-group">
+                <label class="lh-fp-label">Họ Và Tên</label>
+                <input class="lh-fp-input" type="text" placeholder="Nguyễn Văn A" required>
+              </div>
+              <div class="lh-fp-group">
+                <label class="lh-fp-label">Số Điện Thoại</label>
+                <input class="lh-fp-input" type="tel" placeholder="09xxxxxxxx" required>
+              </div>
+            </div>
+            <div class="lh-fp-group">
+              <label class="lh-fp-label">Email (Không Bắt Buộc)</label>
+              <input class="lh-fp-input" type="email" placeholder="email@gmail.com">
+            </div>
+            <div class="lh-fp-group">
+              <label class="lh-fp-label">Nội Dung Tư Vấn</label>
+              <textarea class="lh-fp-textarea" placeholder="Mô tả trình độ, phong cách chơi, hoặc sản phẩm bạn quan tâm..." required></textarea>
+            </div>
+            <button type="submit" class="lh-fp-submit" id="lhSubmitBtn">Gửi Tin Nhắn</button>
+          </form>
+          <div class="lh-fp-or"><div class="lh-fp-or-line"></div><span class="lh-fp-or-text">hoặc</span><div class="lh-fp-or-line"></div></div>
+          <a href="https://zalo.me/0961269386" target="_blank" rel="noopener" class="lh-zalo-btn">Nhắn Zalo Trực Tiếp 096.1269.386 →</a>
         </div>
       </div>
     </div>
@@ -2564,6 +2593,14 @@ fetch('/api/settings/home_hero_image')
   });
 
 })();
+
+function handleLhSubmit(e) {
+  e.preventDefault();
+  var btn = document.getElementById('lhSubmitBtn');
+  btn.textContent = 'Đã Gửi! Chúng tôi sẽ liên hệ lại sớm.';
+  btn.style.background = '#1A1A1A';
+  btn.disabled = true;
+}
 </script>
 
 <script>
