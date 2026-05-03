@@ -2312,7 +2312,9 @@ fetch('/api/settings/home_hero_image')
     /* Ẩn/hiện block kien-thuc, lien-he, huong-dan theo activeCat */
     var ktBlock = document.getElementById('block-kien-thuc');
     if (ktBlock) {
-      ktBlock.style.display = (activeCat === 'all' || activeCat === 'kien-thuc') ? '' : 'none';
+      var showKt = (activeCat === 'all' || activeCat === 'kien-thuc');
+      ktBlock.style.display = showKt ? '' : 'none';
+      if (!showKt && window.resetArtGrid) window.resetArtGrid();
     }
     ['block-lien-he', 'block-huong-dan'].forEach(function(bid) {
       var el = document.getElementById(bid);
@@ -2584,6 +2586,14 @@ function handleLhSubmit(e) {
     var btn = document.getElementById('btnKienThucAll');
     grid.innerHTML = artItems.map(renderQAItem).join('');
     if (btn) btn.style.display = 'none';
+  };
+
+  window.resetArtGrid = function() {
+    var grid = document.getElementById('gridKienThuc');
+    var btn = document.getElementById('btnKienThucAll');
+    if (!artItems.length) return;
+    grid.innerHTML = artItems.slice(0, PREVIEW).map(renderQAItem).join('');
+    if (btn) btn.style.display = artItems.length > PREVIEW ? '' : 'none';
   };
 
   window.toggleKtItem = function(idx) {
