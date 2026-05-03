@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solana Meme Tracker</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px}
+body{background:#0d1117;color:#e6edf3;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.5;min-height:100vh}
+
+/* HEADER */
+.hdr{display:flex;align-items:center;gap:12px;padding:12px 20px;background:#161b22;border-bottom:1px solid #30363d;position:sticky;top:0;z-index:100}
+.hdr-logo{width:34px;height:34px;border-radius:50%;object-fit:cover}
+.hdr-brand{font-size:1rem;font-weight:700;letter-spacing:.06em}
+.hdr-sub{font-size:.7rem;color:#8b949e;margin-left:6px;display:none}
+.hdr-right{margin-left:auto;display:flex;gap:6px;align-items:center}
+@media(min-width:600px){.hdr-sub{display:inline}}
+
+/* CONTAINER */
+.wrap{max-width:1700px;margin:0 auto;padding:14px 16px}
+
+/* ADD BAR */
+.add-bar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.add-input{flex:1;min-width:220px;background:#21262d;border:1px solid #30363d;border-radius:6px;padding:9px 14px;color:#e6edf3;font-size:.8rem;font-family:'Courier New',monospace;outline:none}
+.add-input:focus{border-color:#58a6ff}
+.add-input::placeholder{color:#8b949e;font-family:inherit}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:9px 14px;border:none;border-radius:6px;cursor:pointer;font-size:.8rem;font-weight:600;transition:opacity .15s;white-space:nowrap}
+.btn:hover{opacity:.85}
+.btn:disabled{opacity:.45;cursor:default}
+.btn-green{background:#238636;color:#fff}
+.btn-gray{background:#21262d;color:#e6edf3;border:1px solid #30363d}
+.btn-red{background:#da3633;color:#fff}
+.btn-blue{background:transparent;color:#58a6ff;border:1px solid #58a6ff}
+
+/* STATS BAR */
+.stats-bar{display:flex;gap:16px;align-items:center;padding:10px 14px;background:#161b22;border:1px solid #30363d;border-radius:8px;margin-bottom:12px;flex-wrap:wrap}
+.stat{display:flex;flex-direction:column;align-items:center;min-width:44px}
+.stat-val{font-size:1.15rem;font-weight:700;line-height:1}
+.stat-val.red{color:#f85149}
+.stat-val.yellow{color:#d29922}
+.stat-lbl{font-size:.65rem;color:#8b949e;text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
+.vdiv{width:1px;background:#30363d;height:32px}
+.refresh-wrap{margin-left:auto;display:flex;align-items:center;gap:8px}
+.dot{width:8px;height:8px;border-radius:50%;background:#3fb950}
+.dot.live{animation:pulse 1.2s infinite}
+.dot.loading{background:#d29922;animation:spin .8s linear infinite}
+.dot.paused{background:#8b949e}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.cdtxt{font-size:.75rem;color:#8b949e;min-width:28px;text-align:center}
+
+/* ALERT HISTORY */
+.alert-panel{display:none;background:#161b22;border:1px solid rgba(248,81,73,.5);border-radius:8px;margin-bottom:12px;overflow:hidden}
+.alert-panel.show{display:block}
+.alert-ph{padding:9px 14px;background:rgba(248,81,73,.08);display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+.alert-ph h3{font-size:.8rem;font-weight:700;color:#f85149}
+.alert-ph .chevron{margin-left:auto;color:#8b949e;font-size:.7rem;transition:transform .2s}
+.alert-ph .chevron.open{transform:rotate(180deg)}
+.alert-list{max-height:180px;overflow-y:auto;padding:4px 0}
+.alert-row{padding:7px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #21262d;font-size:.75rem;flex-wrap:wrap}
+.alert-row:last-child{border-bottom:none}
+.abadge{background:#f85149;color:#fff;border-radius:4px;padding:1px 7px;font-weight:700;font-size:.65rem}
+.atime{color:#8b949e;min-width:40px}
+.asym{font-weight:700}
+.adrop{color:#f85149}
+.alp{color:#3fb950}
+.avol{color:#8b949e}
+.alink{margin-left:auto;color:#58a6ff;text-decoration:none;font-size:.7rem}
+.alink:hover{text-decoration:underline}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;border:1px solid #30363d;border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.8rem;white-space:nowrap}
+thead th{padding:9px 12px;text-align:right;font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:#8b949e;background:#161b22;border-bottom:1px solid #30363d;cursor:pointer;user-select:none;transition:color .15s}
+thead th:hover{color:#e6edf3}
+thead th:first-child{text-align:left;cursor:default}
+tbody tr{border-bottom:1px solid #21262d;transition:background .1s}
+tbody tr:hover{background:#161b22}
+tbody tr.tr-alert{background:rgba(248,81,73,.06)}
+tbody tr.tr-alert:hover{background:rgba(248,81,73,.1)}
+tbody tr.tr-watch{background:rgba(210,153,34,.04)}
+tbody tr.tr-dead{opacity:.4}
+td{padding:9px 12px;text-align:right;vertical-align:middle}
+td:first-child{text-align:left}
+
+/* TOKEN CELL */
+.tok{display:flex;align-items:center;gap:8px}
+.tok-icon{width:26px;height:26px;border-radius:50%;object-fit:cover;background:#21262d;flex-shrink:0}
+.tok-ph{width:26px;height:26px;border-radius:50%;background:#21262d;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;color:#8b949e;flex-shrink:0}
+.tok-info{display:flex;flex-direction:column}
+.tok-sym{font-weight:700;font-size:.85rem;line-height:1.2}
+.tok-name{font-size:.65rem;color:#8b949e;max-width:100px;overflow:hidden;text-overflow:ellipsis}
+.tok-dex{color:#58a6ff;text-decoration:none;font-size:.65rem;opacity:.6;margin-left:4px}
+.tok-dex:hover{opacity:1}
+
+/* PCT */
+.up{color:#3fb950;font-weight:600}
+.dn{color:#f85149;font-weight:600}
+.neu{color:#8b949e}
+
+/* LIQUIDITY */
+.liq-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:1px}
+.liq-main{font-weight:600}
+.liq-vs{font-size:.65rem}
+
+/* STATUS */
+.sbadge{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:20px;font-size:.65rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.s-alert{background:rgba(248,81,73,.18);color:#f85149;border:1px solid rgba(248,81,73,.4)}
+.s-watch{background:rgba(210,153,34,.14);color:#d29922;border:1px solid rgba(210,153,34,.35)}
+.s-ok{background:rgba(63,185,80,.1);color:#3fb950;border:1px solid rgba(63,185,80,.3)}
+.s-dead{background:rgba(139,148,158,.08);color:#8b949e;border:1px solid rgba(139,148,158,.25)}
+.s-load{background:rgba(88,166,255,.08);color:#58a6ff;border:1px solid rgba(88,166,255,.25)}
+
+/* REMOVE BTN */
+.rm{background:transparent;border:none;color:#484f58;cursor:pointer;padding:3px 7px;border-radius:4px;font-size:.95rem;line-height:1}
+.rm:hover{color:#f85149;background:rgba(248,81,73,.1)}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:56px 20px;color:#8b949e}
+.empty-icon{font-size:2.5rem;margin-bottom:14px}
+.empty h2{font-size:1rem;margin-bottom:8px;color:#e6edf3}
+.empty p{font-size:.8rem;max-width:380px;margin:0 auto;line-height:1.7}
+.empty code{background:#21262d;padding:1px 6px;border-radius:4px;font-size:.75rem;color:#58a6ff}
+
+/* MODALS */
+.mbg{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:200;padding:16px}
+.mbg.open{display:flex}
+.mbox{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:24px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto}
+.mbox h2{font-size:.95rem;font-weight:700;margin-bottom:18px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.7rem;color:#8b949e;margin-bottom:5px;text-transform:uppercase;letter-spacing:.06em}
+.field input,.field select,.field textarea{width:100%;background:#21262d;border:1px solid #30363d;border-radius:6px;padding:8px 11px;color:#e6edf3;font-size:.85rem;outline:none;font-family:inherit}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#58a6ff}
+.field textarea{height:130px;resize:vertical;font-family:'Courier New',monospace;font-size:.75rem}
+.field .hint{font-size:.7rem;color:#8b949e;margin-top:4px}
+.tog-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:6px 0}
+.tog-row span{font-size:.85rem}
+.tog{width:38px;height:21px;background:#30363d;border-radius:11px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
+.tog.on{background:#238636}
+.tog::after{content:'';position:absolute;width:15px;height:15px;border-radius:50%;background:#fff;top:3px;left:3px;transition:transform .2s}
+.tog.on::after{transform:translateX(17px)}
+.mactions{display:flex;gap:8px;margin-top:18px}
+
+/* TOAST */
+.toast-wrap{position:fixed;bottom:18px;right:18px;z-index:300;display:flex;flex-direction:column;gap:7px;max-width:340px}
+.toast{padding:11px 15px;border-radius:8px;font-size:.8rem;font-weight:600;animation:toastin .2s ease;display:flex;align-items:flex-start;gap:8px;box-shadow:0 4px 18px rgba(0,0,0,.45);line-height:1.4}
+.t-info{background:#1f6feb;color:#fff}
+.t-ok{background:#238636;color:#fff}
+.t-warn{background:#9e6a03;color:#fff}
+.t-err{background:#da3633;color:#fff}
+.t-alert{background:#b94a05;color:#fff;font-size:.85rem}
+@keyframes toastin{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:#161b22}
+::-webkit-scrollbar-thumb{background:#30363d;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#484f58}
+
+@media(max-width:520px){
+  .wrap{padding:10px}
+  .stats-bar{gap:10px}
+  .add-input{font-size:.75rem}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <img src="/logo_bongbanviet.png" alt="logo" class="hdr-logo">
+  <span>
+    <span class="hdr-brand">SOLANA MEME TRACKER</span>
+    <span class="hdr-sub">powered by DexScreener · auto-refresh 5s</span>
+  </span>
+  <div class="hdr-right">
+    <button class="btn btn-gray" onclick="openImport()">📥 Import</button>
+    <button class="btn btn-gray" onclick="exportList()">📤 Export</button>
+    <button class="btn btn-gray" onclick="openSettings()">⚙️</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ADD BAR -->
+  <div class="add-bar">
+    <input id="addrInput" class="add-input"
+      placeholder="Dán contract address Solana (32–44 ký tự base58)..."
+      onkeydown="if(event.key==='Enter')addCoin()">
+    <button id="addBtn" class="btn btn-green" onclick="addCoin()">＋ Thêm</button>
+    <button id="pauseBtn" class="btn btn-gray" onclick="togglePause()">⏸ Tạm Dừng</button>
+    <button class="btn btn-red" style="opacity:.7" onclick="clearAll()">🗑 Xóa Hết</button>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stat">
+      <span class="stat-val" id="sTotal">0</span>
+      <span class="stat-lbl">Theo Dõi</span>
+    </div>
+    <div class="vdiv"></div>
+    <div class="stat">
+      <span class="stat-val red" id="sAlerts">0</span>
+      <span class="stat-lbl">🚨 Alert</span>
+    </div>
+    <div class="vdiv"></div>
+    <div class="stat">
+      <span class="stat-val yellow" id="sWatch">0</span>
+      <span class="stat-lbl">⚠️ Watch</span>
+    </div>
+    <div class="vdiv"></div>
+    <div class="stat">
+      <span class="stat-val" id="sUpdated">—</span>
+      <span class="stat-lbl">Cập Nhật</span>
+    </div>
+    <div class="refresh-wrap">
+      <div class="dot live" id="rdot"></div>
+      <span class="cdtxt" id="cdtxt">5s</span>
+    </div>
+  </div>
+
+  <!-- ALERT HISTORY -->
+  <div class="alert-panel" id="alertPanel">
+    <div class="alert-ph" onclick="toggleAlertPanel()">
+      <span>🚨</span>
+      <h3 id="alertPanelTitle">ALERTS (0)</h3>
+      <span class="chevron" id="alertChevron">▼</span>
+    </div>
+    <div class="alert-list" id="alertList" style="display:none"></div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align:left;min-width:150px">Token</th>
+          <th title="Giá hiện tại">Giá</th>
+          <th title="Thay đổi 5 phút">5m</th>
+          <th title="Thay đổi 1 giờ">1h</th>
+          <th title="Thay đổi 6 giờ">6h</th>
+          <th title="Thay đổi 24 giờ">24h</th>
+          <th title="Thanh khoản hiện tại">Liquidity</th>
+          <th title="LP so với khi thêm vào tracker">LP/Base</th>
+          <th title="Volume 1 giờ">Vol 1h</th>
+          <th title="Volume 24 giờ">Vol 24h</th>
+          <th title="Giá so với lúc thêm vào (baseline)">vs Baseline</th>
+          <th title="Trạng thái alert">Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tbl"></tbody>
+    </table>
+  </div>
+
+</div><!-- /wrap -->
+
+<!-- SETTINGS MODAL -->
+<div class="mbg" id="settingsModal">
+  <div class="mbox">
+    <h2>⚙️ Cài Đặt Alert</h2>
+
+    <div class="field">
+      <label>Ngưỡng giảm giá để Alert (% giảm từ baseline)</label>
+      <input type="number" id="cfgDrop" min="5" max="90" step="5" value="30">
+      <div class="hint">Alert khi giá giảm ≥ X% so với lúc bạn thêm coin vào danh sách</div>
+    </div>
+    <div class="field">
+      <label>Giảm tối đa — trên mức này là DEAD, không alert</label>
+      <input type="number" id="cfgMaxDrop" min="50" max="99" step="5" value="80">
+    </div>
+    <div class="field">
+      <label>LP ổn định — LP phải còn ≥ X% so với baseline</label>
+      <input type="number" id="cfgLP" min="20" max="100" step="5" value="70">
+      <div class="hint">Nếu LP sập mạnh thì coin đang bị rút tiền — không alert</div>
+    </div>
+    <div class="field">
+      <label>Volume 1h tối thiểu ($) — coin phải còn hoạt động</label>
+      <input type="number" id="cfgVol" min="0" step="500" value="5000">
+    </div>
+
+    <div class="tog-row">
+      <span>🔊 Âm thanh cảnh báo</span>
+      <div class="tog on" id="togSound" onclick="this.classList.toggle('on')"></div>
+    </div>
+    <div class="tog-row">
+      <span>🔔 Browser Notification</span>
+      <div class="tog" id="togNotif" onclick="reqNotif(this)"></div>
+    </div>
+
+    <div class="mactions">
+      <button class="btn btn-green" onclick="saveSettings();closeModal('settingsModal')">Lưu</button>
+      <button class="btn btn-gray" onclick="closeModal('settingsModal')">Hủy</button>
+    </div>
+  </div>
+</div>
+
+<!-- IMPORT MODAL -->
+<div class="mbg" id="importModal">
+  <div class="mbox">
+    <h2>📥 Import Danh Sách Contract</h2>
+    <div class="field">
+      <label>Contract addresses (mỗi dòng 1 địa chỉ, tối đa 100 coin)</label>
+      <textarea id="importText" placeholder="DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263&#10;8wXtPeW7PZ2jJTGT2HAtHnCFxTMvhFZvzEqVq1htFfC&#10;..."></textarea>
+      <div class="hint">Có thể thêm comment sau dấu # — VD: <code>AaBC...xyz # BONK</code></div>
+    </div>
+    <div class="mactions">
+      <button class="btn btn-green" onclick="doImport()">Import</button>
+      <button class="btn btn-gray" onclick="closeModal('importModal')">Hủy</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  SOLANA MEME TRACKER  —  bongbanviet.com
+// ═══════════════════════════════════════════════
+
+const STORE_COINS = 'smt_coins_v2';
+const STORE_CFG   = 'smt_cfg_v1';
+const DEX_PROXY   = '/api/dex/tokens';
+const REFRESH_MS  = 5000;
+const BATCH       = 30;
+
+// ── Settings ─────────────────────────────────────
+let cfg = {
+  drop:    30,    // alert when price drops >= drop% from baseline
+  maxDrop: 80,    // skip alert if drop > maxDrop% (dead coin)
+  lp:      70,    // LP must remain >= lp% of baseline
+  vol1h:   5000,  // min $5k vol/h for coin to be considered active
+  sound:   true,
+  notif:   false,
+};
+
+// ── State ─────────────────────────────────────────
+let coins      = [];         // { address, symbol, name, iconUrl, addedAt, basePrice, baseLiq }
+let live       = new Map();  // address → DexScreener pair object
+let alertSet   = new Set();  // addresses currently in ALERT state
+let alertLog   = [];         // recent alert history
+let paused     = false;
+let loading    = false;
+let nextAt     = 0;          // timestamp of next scheduled refresh
+let rTimer     = null;
+let cdTimer    = null;
+let lastUpdate = null;
+
+// ── Bootstrap ─────────────────────────────────────
+function boot() {
+  loadCfg();
+  loadCoins();
+  applyCfgUI();
+  render();
+  if (coins.length) fireRefresh(true);
+  startCountdown();
+}
+
+function loadCoins() {
+  try { coins = JSON.parse(localStorage.getItem(STORE_COINS) || '[]'); } catch { coins = []; }
+}
+function saveCoins() { localStorage.setItem(STORE_COINS, JSON.stringify(coins)); }
+
+function loadCfg() {
+  try { const s = JSON.parse(localStorage.getItem(STORE_CFG)||'{}'); cfg = {...cfg,...s}; } catch {}
+}
+function saveSettings() {
+  cfg.drop    = +document.getElementById('cfgDrop').value    || 30;
+  cfg.maxDrop = +document.getElementById('cfgMaxDrop').value || 80;
+  cfg.lp      = +document.getElementById('cfgLP').value      || 70;
+  cfg.vol1h   = +document.getElementById('cfgVol').value     || 5000;
+  cfg.sound   = document.getElementById('togSound').classList.contains('on');
+  cfg.notif   = document.getElementById('togNotif').classList.contains('on');
+  localStorage.setItem(STORE_CFG, JSON.stringify(cfg));
+  toast('✓ Đã lưu cài đặt', 'ok');
+}
+function applyCfgUI() {
+  document.getElementById('cfgDrop').value    = cfg.drop;
+  document.getElementById('cfgMaxDrop').value = cfg.maxDrop;
+  document.getElementById('cfgLP').value      = cfg.lp;
+  document.getElementById('cfgVol').value     = cfg.vol1h;
+  document.getElementById('togSound').classList.toggle('on', cfg.sound);
+  document.getElementById('togNotif').classList.toggle('on', cfg.notif);
+}
+
+// ── Add coin ──────────────────────────────────────
+async function addCoin() {
+  const inp = document.getElementById('addrInput');
+  const addr = inp.value.trim().split(/[\s#]/)[0]; // strip inline comment
+  if (!addr) return;
+
+  if (coins.length >= 100) { toast('Tối đa 100 coin', 'warn'); return; }
+  if (coins.find(c => c.address === addr)) { toast('Contract này đã có trong danh sách', 'warn'); return; }
+  if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(addr)) {
+    toast('Địa chỉ không hợp lệ — phải là Solana base58 (32-44 ký tự)', 'err'); return;
+  }
+
+  inp.value = '';
+  setAddBtn(true);
+  toast('Đang lấy dữ liệu từ DexScreener...', 'info');
+
+  const pairs = await fetchDex([addr]);
+  const pair  = bestPair(pairs, addr);
+  setAddBtn(false);
+
+  if (!pair) { toast('Không tìm thấy token này trên Solana (DexScreener)', 'err'); return; }
+
+  coins.push({
+    address: addr,
+    symbol:    pair.baseToken.symbol,
+    name:      pair.baseToken.name,
+    iconUrl:   pair.info?.imageUrl || null,
+    addedAt:   Date.now(),
+    basePrice: parseFloat(pair.priceUsd || 0),
+    baseLiq:   pair.liquidity?.usd || 0,
+  });
+  live.set(addr, pair);
+  saveCoins();
+  render();
+  updateStats();
+  toast(`✓ Đã thêm ${pair.baseToken.symbol} — ${pair.baseToken.name}`, 'ok');
+  scheduleNext();
+}
+
+function setAddBtn(loading) {
+  const b = document.getElementById('addBtn');
+  b.disabled = loading;
+  b.textContent = loading ? '⟳ Đang tải...' : '＋ Thêm';
+}
+
+function removeCoin(addr) {
+  coins = coins.filter(c => c.address !== addr);
+  live.delete(addr); alertSet.delete(addr);
+  saveCoins(); render(); updateStats();
+}
+
+function clearAll() {
+  if (!confirm('Xóa toàn bộ danh sách theo dõi?')) return;
+  coins = []; live.clear(); alertSet.clear(); alertLog = [];
+  saveCoins(); render(); updateStats(); renderAlertLog();
+  toast('Đã xóa tất cả', 'info');
+}
+
+// ── DexScreener fetch ──────────────────────────────
+async function fetchDex(addresses) {
+  const batches = [];
+  for (let i = 0; i < addresses.length; i += BATCH)
+    batches.push(addresses.slice(i, i + BATCH));
+
+  const results = await Promise.allSettled(
+    batches.map(b =>
+      fetch(`${DEX_PROXY}?addresses=${b.join(',')}`, { signal: AbortSignal.timeout(7000) })
+        .then(r => r.json())
+    )
+  );
+  const out = [];
+  for (const r of results)
+    if (r.status === 'fulfilled' && r.value?.pairs) out.push(...r.value.pairs);
+  return out;
+}
+
+function bestPair(pairs, addr) {
+  if (!pairs?.length) return null;
+  const a = addr.toLowerCase();
+  const sol = pairs.filter(p =>
+    p.chainId === 'solana' &&
+    (p.baseToken.address.toLowerCase() === a || p.quoteToken?.address?.toLowerCase() === a)
+  );
+  if (!sol.length) return null;
+  const base = sol.filter(p => p.baseToken.address.toLowerCase() === a);
+  const pool = base.length ? base : sol;
+  pool.sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0));
+  return pool[0];
+}
+
+// ── Refresh cycle ──────────────────────────────────
+function scheduleNext() {
+  clearTimeout(rTimer);
+  if (paused || coins.length === 0) return;
+  rTimer = setTimeout(() => fireRefresh(false), REFRESH_MS);
+  nextAt = Date.now() + REFRESH_MS;
+}
+
+async function fireRefresh(immediate) {
+  if (paused || coins.length === 0) return;
+  if (!immediate) { /* scheduled */ }
+  loading = true; setDot('loading');
+
+  try {
+    const addrs = coins.map(c => c.address);
+    const pairs = await fetchDex(addrs);
+
+    // build live map — keep highest liquidity pair per address
+    for (const p of pairs) {
+      if (p.chainId !== 'solana') continue;
+      const a = p.baseToken.address;
+      const ex = live.get(a);
+      if (!ex || (p.liquidity?.usd || 0) >= (ex.liquidity?.usd || 0))
+        live.set(a, p);
+    }
+
+    checkAllAlerts();
+    lastUpdate = Date.now();
+  } catch (e) {
+    console.error('Refresh error', e);
+  }
+
+  loading = false; setDot('live');
+  render(); updateStats();
+  scheduleNext();
+}
+
+function togglePause() {
+  paused = !paused;
+  document.getElementById('pauseBtn').innerHTML = paused ? '▶ Tiếp Tục' : '⏸ Tạm Dừng';
+  setDot(paused ? 'paused' : 'live');
+  if (!paused) fireRefresh(true);
+  else { clearTimeout(rTimer); nextAt = 0; }
+}
+
+// ── Alert logic ────────────────────────────────────
+function getStatus(coin, pair) {
+  if (!pair || !coin.basePrice) return 'load';
+  const cur    = parseFloat(pair.priceUsd || 0);
+  if (!cur) return 'load';
+  const drop   = ((cur - coin.basePrice) / coin.basePrice) * 100; // negative = fell
+  const curLiq = pair.liquidity?.usd || 0;
+  const lpRat  = coin.baseLiq > 0 ? (curLiq / coin.baseLiq) * 100 : 100;
+  const v1h    = pair.volume?.h1 || 0;
+
+  if (drop < -cfg.maxDrop) return 'dead';
+  if (drop <= -cfg.drop && lpRat >= cfg.lp && v1h >= cfg.vol1h) return 'alert';
+  if (drop <= -(cfg.drop * 0.65)) return 'watch';
+  return 'ok';
+}
+
+function checkAllAlerts() {
+  const prev = new Set(alertSet);
+  alertSet.clear();
+
+  for (const coin of coins) {
+    const pair = live.get(coin.address);
+    if (!pair) continue;
+    if (getStatus(coin, pair) === 'alert') {
+      alertSet.add(coin.address);
+      if (!prev.has(coin.address)) triggerAlert(coin, pair);
+    }
+  }
+}
+
+function triggerAlert(coin, pair) {
+  const cur   = parseFloat(pair.priceUsd || 0);
+  const drop  = ((cur - coin.basePrice) / coin.basePrice) * 100;
+  const lp    = coin.baseLiq > 0 ? ((pair.liquidity?.usd || 0) / coin.baseLiq) * 100 : 100;
+  const v1h   = pair.volume?.h1 || 0;
+  const sym   = pair.baseToken.symbol;
+
+  alertLog.unshift({ time: Date.now(), symbol: sym, name: pair.baseToken.name, drop, lp, v1h, url: pair.url, address: coin.address });
+  if (alertLog.length > 40) alertLog.pop();
+
+  const msg = `🚨 ${sym}: Giảm ${Math.abs(drop).toFixed(1)}% từ baseline — LP ${lp.toFixed(0)}% ổn — Vol ${fmtUSD(v1h)}/h`;
+  toast(msg, 'alert');
+  if (cfg.sound) beep();
+  if (cfg.notif && Notification.permission === 'granted')
+    new Notification('Solana Meme Alert 🚨', { body: msg, icon: '/logo_bongbanviet.png' });
+
+  renderAlertLog();
+}
+
+// ── Render table ───────────────────────────────────
+function render() {
+  const tbody = document.getElementById('tbl');
+  if (!coins.length) {
+    tbody.innerHTML = `<tr><td colspan="13"><div class="empty">
+      <div class="empty-icon">🔭</div>
+      <h2>Chưa có coin nào được theo dõi</h2>
+      <p>Nhập contract address Solana vào ô phía trên hoặc dùng <strong>Import</strong> để thêm hàng loạt (tối đa 100 coin).<br>
+      Trang sẽ cập nhật mỗi <strong>5 giây</strong> và gửi alert khi giá dip mà LP vẫn ổn.</p>
+    </div></td></tr>`;
+    return;
+  }
+
+  const ORDER = { alert:0, watch:1, ok:2, dead:3, load:4 };
+  const rows = coins
+    .map(c => ({ c, p: live.get(c.address), st: getStatus(c, live.get(c.address)) }))
+    .sort((a, b) => (ORDER[a.st]??9) - (ORDER[b.st]??9));
+
+  tbody.innerHTML = rows.map(({ c, p, st }) => {
+    const trCls = st==='alert'?'tr-alert':st==='watch'?'tr-watch':st==='dead'?'tr-dead':'';
+    const icon  = c.iconUrl
+      ? `<img src="${c.iconUrl}" class="tok-icon" onerror="this.style.display='none'">`
+      : `<div class="tok-ph">${esc(c.symbol||'?').slice(0,3)}</div>`;
+    const dexLnk = p?.url ? `<a href="${p.url}" target="_blank" rel="noopener" class="tok-dex">↗DEX</a>` : '';
+    const tok = `<div class="tok">${icon}<div class="tok-info"><span class="tok-sym">${esc(c.symbol||'—')}</span><span class="tok-name">${esc(c.name||'')}</span></div>${dexLnk}</div>`;
+
+    if (!p) return `<tr class="${trCls}"><td>${tok}</td><td colspan="11" class="neu" style="text-align:center;font-size:.7rem">Đang tải...</td><td><button class="rm" onclick="removeCoin('${c.address}')">✕</button></td></tr>`;
+
+    const cur    = parseFloat(p.priceUsd||0);
+    const drop   = c.basePrice ? ((cur-c.basePrice)/c.basePrice*100) : null;
+    const curLiq = p.liquidity?.usd||0;
+    const lpRat  = c.baseLiq>0 ? (curLiq/c.baseLiq*100)-100 : null; // % change from base
+    const lpPct  = c.baseLiq>0 ? (curLiq/c.baseLiq*100) : null;
+
+    const badge = {
+      alert: `<span class="sbadge s-alert">🚨 ALERT</span>`,
+      watch: `<span class="sbadge s-watch">⚠️ WATCH</span>`,
+      ok:    `<span class="sbadge s-ok">✓ OK</span>`,
+      dead:  `<span class="sbadge s-dead">💀 DEAD</span>`,
+      load:  `<span class="sbadge s-load">⟳</span>`,
+    }[st]||'';
+
+    const liqCell = `<div class="liq-wrap"><span class="liq-main">${fmtUSD(curLiq)}</span>${lpPct!==null?`<span class="liq-vs ${lpPct>=cfg.lp?'up':'dn'}">${lpPct.toFixed(0)}% of base</span>`:''}</div>`;
+
+    return `<tr class="${trCls}">
+      <td>${tok}</td>
+      <td>${fmtPrice(cur)}</td>
+      <td>${pct(p.priceChange?.m5)}</td>
+      <td>${pct(p.priceChange?.h1)}</td>
+      <td>${pct(p.priceChange?.h6)}</td>
+      <td>${pct(p.priceChange?.h24)}</td>
+      <td>${liqCell}</td>
+      <td>${lpRat!==null?pct(lpRat):'—'}</td>
+      <td>${fmtUSD(p.volume?.h1||0)}</td>
+      <td>${fmtUSD(p.volume?.h24||0)}</td>
+      <td>${drop!==null?pct(drop):'—'}</td>
+      <td>${badge}</td>
+      <td><button class="rm" onclick="removeCoin('${c.address}')" title="Xóa">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Alert history panel ────────────────────────────
+function renderAlertLog() {
+  const panel = document.getElementById('alertPanel');
+  const list  = document.getElementById('alertList');
+  const title = document.getElementById('alertPanelTitle');
+  if (!alertLog.length) { panel.classList.remove('show'); return; }
+  panel.classList.add('show');
+  title.textContent = `ALERTS (${alertLog.length})`;
+  list.innerHTML = alertLog.map(a => `
+    <div class="alert-row">
+      <span class="abadge">ALERT</span>
+      <span class="atime">${timeSince(a.time)}</span>
+      <span class="asym">${esc(a.symbol)}</span>
+      <span class="adrop">↓${Math.abs(a.drop).toFixed(1)}%</span>
+      <span class="alp">LP ${a.lp.toFixed(0)}%</span>
+      <span class="avol">${fmtUSD(a.v1h)}/h</span>
+      ${a.url?`<a href="${a.url}" target="_blank" rel="noopener" class="alink">DexScreener ↗</a>`:''}
+    </div>`).join('');
+}
+
+function toggleAlertPanel() {
+  const list = document.getElementById('alertList');
+  const chev = document.getElementById('alertChevron');
+  const open = list.style.display !== 'none';
+  list.style.display = open ? 'none' : 'block';
+  chev.classList.toggle('open', !open);
+}
+
+// ── Stats ──────────────────────────────────────────
+function updateStats() {
+  let w = 0;
+  for (const c of coins) if (getStatus(c, live.get(c.address))==='watch') w++;
+  document.getElementById('sTotal').textContent   = coins.length;
+  document.getElementById('sAlerts').textContent  = alertSet.size;
+  document.getElementById('sWatch').textContent   = w;
+  document.getElementById('sUpdated').textContent = lastUpdate ? timeSince(lastUpdate) : '—';
+}
+
+// ── Countdown ─────────────────────────────────────
+function startCountdown() {
+  setInterval(() => {
+    const el = document.getElementById('cdtxt');
+    if (loading) { el.textContent = '⟳'; return; }
+    if (paused || !nextAt) { el.textContent = '—'; return; }
+    const s = Math.max(0, Math.ceil((nextAt - Date.now()) / 1000));
+    el.textContent = `${s}s`;
+    if (lastUpdate) document.getElementById('sUpdated').textContent = timeSince(lastUpdate);
+  }, 500);
+}
+
+function setDot(state) {
+  const d = document.getElementById('rdot');
+  d.className = 'dot ' + state;
+  if (state === 'live') nextAt = Date.now() + REFRESH_MS;
+}
+
+// ── Import / Export ────────────────────────────────
+function openImport() { document.getElementById('importText').value=''; openModal('importModal'); }
+async function doImport() {
+  const raw = document.getElementById('importText').value;
+  const addrs = [...new Set(
+    raw.split(/[\n]+/).map(l => l.trim().split(/[\s#]/)[0]).filter(a => /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(a))
+  )];
+  if (!addrs.length) { toast('Không tìm thấy địa chỉ hợp lệ nào', 'err'); return; }
+  closeModal('importModal');
+
+  const newAddrs = addrs.filter(a => !coins.find(c=>c.address===a)).slice(0, 100 - coins.length);
+  if (!newAddrs.length) { toast('Tất cả đã có trong danh sách hoặc đã đầy (100 coin)', 'warn'); return; }
+
+  toast(`Đang import ${newAddrs.length} coin...`, 'info');
+  const pairs = await fetchDex(newAddrs);
+  let added = 0;
+  for (const addr of newAddrs) {
+    const pair = bestPair(pairs, addr);
+    if (!pair) continue;
+    coins.push({ address:addr, symbol:pair.baseToken.symbol, name:pair.baseToken.name,
+      iconUrl:pair.info?.imageUrl||null, addedAt:Date.now(),
+      basePrice:parseFloat(pair.priceUsd||0), baseLiq:pair.liquidity?.usd||0 });
+    live.set(addr, pair);
+    added++;
+  }
+  saveCoins(); render(); updateStats();
+  toast(`✓ Đã thêm ${added}/${newAddrs.length} coin`, 'ok');
+  scheduleNext();
+}
+
+function exportList() {
+  if (!coins.length) { toast('Chưa có coin nào', 'warn'); return; }
+  const txt = coins.map(c => `${c.address} # ${c.symbol} ${c.name}`).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([txt],{type:'text/plain'}));
+  a.download = `sol-tracker-${Date.now()}.txt`; a.click();
+}
+
+// ── Modal helpers ──────────────────────────────────
+function openModal(id) { applyCfgUI(); document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function openSettings() { applyCfgUI(); document.getElementById('settingsModal').classList.add('open'); }
+
+// close modal on backdrop click
+document.querySelectorAll('.mbg').forEach(m => m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); }));
+
+function reqNotif(tog) {
+  if (!('Notification' in window)) { toast('Browser không hỗ trợ notification', 'err'); return; }
+  if (Notification.permission === 'granted') { tog.classList.toggle('on'); return; }
+  Notification.requestPermission().then(p => {
+    if (p === 'granted') { tog.classList.add('on'); toast('✓ Đã bật browser notification', 'ok'); }
+    else toast('Quyền notification bị từ chối', 'warn');
+  });
+}
+
+// ── Formatting ─────────────────────────────────────
+function fmtPrice(n) {
+  if (!n||isNaN(n)) return '—';
+  if (n < 0.000001) return '$'+n.toExponential(3);
+  if (n < 0.0001)   return '$'+n.toFixed(8).replace(/0+$/,'');
+  if (n < 0.01)     return '$'+n.toPrecision(4);
+  if (n < 1)        return '$'+n.toPrecision(5);
+  return '$'+n.toLocaleString('en-US',{maximumFractionDigits:4});
+}
+function fmtUSD(n) {
+  if (!n||isNaN(n)) return '—';
+  if (n>=1e9) return '$'+(n/1e9).toFixed(2)+'B';
+  if (n>=1e6) return '$'+(n/1e6).toFixed(2)+'M';
+  if (n>=1e3) return '$'+(n/1e3).toFixed(1)+'K';
+  return '$'+Math.round(n);
+}
+function pct(n) {
+  if (n==null||isNaN(n)) return '<span class="neu">—</span>';
+  const cls = n>0.3?'up':n<-0.3?'dn':'neu';
+  return `<span class="${cls}">${n>0?'+':''}${n.toFixed(2)}%</span>`;
+}
+function timeSince(ts) {
+  const s=Math.floor((Date.now()-ts)/1000);
+  if(s<60) return `${s}s trước`;
+  if(s<3600) return `${Math.floor(s/60)}m trước`;
+  return `${Math.floor(s/3600)}h trước`;
+}
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── Toast ──────────────────────────────────────────
+function toast(msg, type='info') {
+  const el = document.createElement('div');
+  el.className = `toast t-${type}`;
+  el.textContent = msg;
+  document.getElementById('toastWrap').appendChild(el);
+  setTimeout(() => el.remove(), type==='alert'?9000:4000);
+}
+
+// ── Sound alert ────────────────────────────────────
+function beep() {
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    [[880,0],[1100,.12],[880,.24],[1320,.36]].forEach(([f,t]) => {
+      const o=ctx.createOscillator(), g=ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.type='sine'; o.frequency.value=f;
+      const st=ctx.currentTime+t;
+      g.gain.setValueAtTime(.22,st);
+      g.gain.exponentialRampToValueAtTime(.001,st+.1);
+      o.start(st); o.stop(st+.1);
+    });
+  } catch(e){}
+}
+
+// ── Go ─────────────────────────────────────────────
+boot();
+</script>
+</body>
+</html>

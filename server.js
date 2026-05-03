@@ -115,6 +115,23 @@ app.get(['/lichtap', '/lichtap/'], (req, res) => {
 app.use('/lichtap', express.static(path.join(__dirname, 'lichtap')));
 app.use(express.static(__dirname, { extensions: ['html'] }));
 
+// ─── DexScreener Proxy ────────────────────────────────────────────────────────
+app.get('/api/dex/tokens', async (req, res) => {
+  const { addresses } = req.query;
+  if (!addresses) return res.status(400).json({ pairs: [], error: 'addresses required' });
+  try {
+    const response = await fetch(
+      `https://api.dexscreener.com/latest/dex/tokens/${addresses}`,
+      { signal: AbortSignal.timeout(8000) }
+    );
+    if (!response.ok) throw new Error(`DexScreener HTTP ${response.status}`);
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ pairs: [], error: err.message });
+  }
+});
+
 // ─── Image Upload Setup ──────────────────────────────────────────────────────
 
 const imgDir = path.join(DATA_DIR, 'images', 'products');
