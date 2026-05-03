@@ -111,6 +111,17 @@ td:first-child{text-align:left}
 .s-ok{background:rgba(63,185,80,.1);color:#3fb950;border:1px solid rgba(63,185,80,.3)}
 .s-dead{background:rgba(139,148,158,.08);color:#8b949e;border:1px solid rgba(139,148,158,.25)}
 .s-load{background:rgba(88,166,255,.08);color:#58a6ff;border:1px solid rgba(88,166,255,.25)}
+.s-rebound{background:rgba(63,185,80,.18);color:#26a641;border:1px solid rgba(63,185,80,.6);animation:rpulse 1.2s ease-in-out infinite}
+@keyframes rpulse{0%,100%{box-shadow:0 0 0 0 rgba(63,185,80,.5)}50%{box-shadow:0 0 0 5px rgba(63,185,80,.08)}}
+
+/* REBOUND ROW */
+tbody tr.tr-rebound{background:rgba(63,185,80,.07)}
+tbody tr.tr-rebound:hover{background:rgba(63,185,80,.13)}
+
+/* BUY/SELL RATIO */
+.bs-good{color:#3fb950;font-weight:700}
+.bs-bad{color:#f85149}
+.bs-neu{color:#8b949e}
 
 /* REMOVE BTN */
 .rm{background:transparent;border:none;color:#484f58;cursor:pointer;padding:3px 7px;border-radius:4px;font-size:.95rem;line-height:1}
@@ -244,6 +255,7 @@ td:first-child{text-align:left}
           <th title="Thanh khoản hiện tại">Liquidity</th>
           <th title="LP so với khi thêm vào tracker">LP/Base</th>
           <th title="Volume 1 giờ">Vol 1h</th>
+          <th title="Số lệnh mua / bán trong 5 phút — xanh = đang gom">B/S 5m</th>
           <th title="Volume 24 giờ">Vol 24h</th>
           <th title="Giá so với lúc thêm vào (baseline)">vs Baseline</th>
           <th title="Trạng thái alert">Status</th>
@@ -278,6 +290,11 @@ td:first-child{text-align:left}
     <div class="field">
       <label>Volume 1h tối thiểu ($) — coin phải còn hoạt động</label>
       <input type="number" id="cfgVol" min="0" step="500" value="5000">
+    </div>
+    <div class="field">
+      <label>🔥 Rebound: 5m tối thiểu để chuyển sang REBOUND (%)</label>
+      <input type="number" id="cfgReboundM5" min="0" max="20" step="0.5" value="1">
+      <div class="hint">REBOUND = đang dip ≥ X% nhưng 5m đã tăng ≥ Y% VÀ buys ≥ sells → tín hiệu vào lệnh tốt nhất</div>
     </div>
 
     <div class="tog-row">
@@ -328,12 +345,13 @@ const BATCH       = 30;
 
 // ── Settings ─────────────────────────────────────
 let cfg = {
-  drop:    30,    // alert when price drops >= drop% from baseline
-  maxDrop: 80,    // skip alert if drop > maxDrop% (dead coin)
-  lp:      70,    // LP must remain >= lp% of baseline
-  vol1h:   5000,  // min $5k vol/h for coin to be considered active
-  sound:   true,
-  notif:   false,
+  drop:      30,    // alert when price drops >= drop% from baseline
+  maxDrop:   80,    // skip alert if drop > maxDrop% (dead coin)
+  lp:        70,    // LP must remain >= lp% of baseline
+  vol1h:     5000,  // min $5k vol/h for coin to be considered active
+  reboundM5: 1,     // 5m price change must be >= +X% to qualify as REBOUND
+  sound:     true,
+  notif:     false,
 };
 
 // ── State ─────────────────────────────────────────
@@ -367,20 +385,22 @@ function loadCfg() {
   try { const s = JSON.parse(localStorage.getItem(STORE_CFG)||'{}'); cfg = {...cfg,...s}; } catch {}
 }
 function saveSettings() {
-  cfg.drop    = +document.getElementById('cfgDrop').value    || 30;
-  cfg.maxDrop = +document.getElementById('cfgMaxDrop').value || 80;
-  cfg.lp      = +document.getElementById('cfgLP').value      || 70;
-  cfg.vol1h   = +document.getElementById('cfgVol').value     || 5000;
+  cfg.drop      = +document.getElementById('cfgDrop').value      || 30;
+  cfg.maxDrop   = +document.getElementById('cfgMaxDrop').value   || 80;
+  cfg.lp        = +document.getElementById('cfgLP').value        || 70;
+  cfg.vol1h     = +document.getElementById('cfgVol').value       || 5000;
+  cfg.reboundM5 = +document.getElementById('cfgReboundM5').value ?? 1;
   cfg.sound   = document.getElementById('togSound').classList.contains('on');
   cfg.notif   = document.getElementById('togNotif').classList.contains('on');
   localStorage.setItem(STORE_CFG, JSON.stringify(cfg));
   toast('✓ Đã lưu cài đặt', 'ok');
 }
 function applyCfgUI() {
-  document.getElementById('cfgDrop').value    = cfg.drop;
-  document.getElementById('cfgMaxDrop').value = cfg.maxDrop;
-  document.getElementById('cfgLP').value      = cfg.lp;
-  document.getElementById('cfgVol').value     = cfg.vol1h;
+  document.getElementById('cfgDrop').value      = cfg.drop;
+  document.getElementById('cfgMaxDrop').value   = cfg.maxDrop;
+  document.getElementById('cfgLP').value        = cfg.lp;
+  document.getElementById('cfgVol').value       = cfg.vol1h;
+  document.getElementById('cfgReboundM5').value = cfg.reboundM5 ?? 1;
   document.getElementById('togSound').classList.toggle('on', cfg.sound);
   document.getElementById('togNotif').classList.toggle('on', cfg.notif);
 }
@@ -531,7 +551,14 @@ function getStatus(coin, pair) {
   const v1h    = pair.volume?.h1 || 0;
 
   if (drop < -cfg.maxDrop) return 'dead';
-  if (drop <= -cfg.drop && lpRat >= cfg.lp && v1h >= cfg.vol1h) return 'alert';
+  if (drop <= -cfg.drop && lpRat >= cfg.lp && v1h >= cfg.vol1h) {
+    // Rebound = dip confirmed BUT price is now recovering AND buys >= sells → điểm vào tốt
+    const m5 = pair.priceChange?.m5 || 0;
+    const b5 = pair.txns?.m5?.buys  || 0;
+    const s5 = pair.txns?.m5?.sells || 0;
+    if (m5 >= cfg.reboundM5 && b5 >= s5) return 'rebound';
+    return 'alert';
+  }
   if (drop <= -(cfg.drop * 0.65)) return 'watch';
   return 'ok';
 }
@@ -543,28 +570,40 @@ function checkAllAlerts() {
   for (const coin of coins) {
     const pair = live.get(coin.address);
     if (!pair) continue;
-    if (getStatus(coin, pair) === 'alert') {
+    const st = getStatus(coin, pair);
+    if (st === 'alert' || st === 'rebound') {
       alertSet.add(coin.address);
-      if (!prev.has(coin.address)) triggerAlert(coin, pair);
+      if (!prev.has(coin.address)) triggerAlert(coin, pair, st);
+      // Rebound transition: coin was ALERT, now REBOUND → re-trigger
+      else if (st === 'rebound' && prev.has(coin.address)) {
+        const prevSt = (alertLog.find(a => a.address === coin.address) || {}).st;
+        if (prevSt === 'alert') triggerAlert(coin, pair, 'rebound');
+      }
     }
   }
 }
 
-function triggerAlert(coin, pair) {
-  const cur   = parseFloat(pair.priceUsd || 0);
-  const drop  = ((cur - coin.basePrice) / coin.basePrice) * 100;
-  const lp    = coin.baseLiq > 0 ? ((pair.liquidity?.usd || 0) / coin.baseLiq) * 100 : 100;
-  const v1h   = pair.volume?.h1 || 0;
-  const sym   = pair.baseToken.symbol;
+function triggerAlert(coin, pair, st = 'alert') {
+  const cur  = parseFloat(pair.priceUsd || 0);
+  const drop = ((cur - coin.basePrice) / coin.basePrice) * 100;
+  const lp   = coin.baseLiq > 0 ? ((pair.liquidity?.usd || 0) / coin.baseLiq) * 100 : 100;
+  const v1h  = pair.volume?.h1 || 0;
+  const m5   = pair.priceChange?.m5 || 0;
+  const b5   = pair.txns?.m5?.buys  || 0;
+  const s5   = pair.txns?.m5?.sells || 0;
+  const sym  = pair.baseToken.symbol;
 
-  alertLog.unshift({ time: Date.now(), symbol: sym, name: pair.baseToken.name, drop, lp, v1h, url: pair.url, address: coin.address });
+  alertLog.unshift({ time: Date.now(), symbol: sym, name: pair.baseToken.name, drop, lp, v1h, m5, b5, s5, url: pair.url, address: coin.address, st });
   if (alertLog.length > 40) alertLog.pop();
 
-  const msg = `🚨 ${sym}: Giảm ${Math.abs(drop).toFixed(1)}% từ baseline — LP ${lp.toFixed(0)}% ổn — Vol ${fmtUSD(v1h)}/h`;
-  toast(msg, 'alert');
-  if (cfg.sound) beep();
+  const isRebound = st === 'rebound';
+  const prefix    = isRebound ? '🔥 REBOUND' : '🚨 ALERT';
+  const extra     = isRebound ? ` · 5m +${m5.toFixed(1)}% · B${b5}/S${s5}` : '';
+  const msg = `${prefix} ${sym}: ↓${Math.abs(drop).toFixed(1)}% · LP ${lp.toFixed(0)}% · Vol ${fmtUSD(v1h)}/h${extra}`;
+  toast(msg, isRebound ? 'ok' : 'alert');
+  if (cfg.sound) beep(isRebound);
   if (cfg.notif && Notification.permission === 'granted')
-    new Notification('Solana Meme Alert 🚨', { body: msg, icon: '/logo_bongbanviet.png' });
+    new Notification(prefix, { body: msg, icon: '/logo_bongbanviet.png' });
 
   renderAlertLog();
 }
@@ -582,20 +621,20 @@ function render() {
     return;
   }
 
-  const ORDER = { alert:0, watch:1, ok:2, dead:3, load:4 };
+  const ORDER = { rebound:0, alert:1, watch:2, ok:3, dead:4, load:5 };
   const rows = coins
     .map(c => ({ c, p: live.get(c.address), st: getStatus(c, live.get(c.address)) }))
     .sort((a, b) => (ORDER[a.st]??9) - (ORDER[b.st]??9));
 
   tbody.innerHTML = rows.map(({ c, p, st }) => {
-    const trCls = st==='alert'?'tr-alert':st==='watch'?'tr-watch':st==='dead'?'tr-dead':'';
+    const trCls = st==='rebound'?'tr-rebound':st==='alert'?'tr-alert':st==='watch'?'tr-watch':st==='dead'?'tr-dead':'';
     const icon  = c.iconUrl
       ? `<img src="${c.iconUrl}" class="tok-icon" onerror="this.style.display='none'">`
       : `<div class="tok-ph">${esc(c.symbol||'?').slice(0,3)}</div>`;
     const dexLnk = p?.url ? `<a href="${p.url}" target="_blank" rel="noopener" class="tok-dex">↗DEX</a>` : '';
     const tok = `<div class="tok">${icon}<div class="tok-info"><span class="tok-sym">${esc(c.symbol||'—')}</span><span class="tok-name">${esc(c.name||'')}</span></div>${dexLnk}</div>`;
 
-    if (!p) return `<tr class="${trCls}"><td>${tok}</td><td colspan="11" class="neu" style="text-align:center;font-size:.7rem">Đang tải...</td><td><button class="rm" onclick="removeCoin('${c.address}')">✕</button></td></tr>`;
+    if (!p) return `<tr class="${trCls}"><td>${tok}</td><td colspan="12" class="neu" style="text-align:center;font-size:.7rem">Đang tải...</td><td><button class="rm" onclick="removeCoin('${c.address}')">✕</button></td></tr>`;
 
     const cur    = parseFloat(p.priceUsd||0);
     const drop   = c.basePrice ? ((cur-c.basePrice)/c.basePrice*100) : null;
@@ -604,12 +643,19 @@ function render() {
     const lpPct  = c.baseLiq>0 ? (curLiq/c.baseLiq*100) : null;
 
     const badge = {
-      alert: `<span class="sbadge s-alert">🚨 ALERT</span>`,
-      watch: `<span class="sbadge s-watch">⚠️ WATCH</span>`,
-      ok:    `<span class="sbadge s-ok">✓ OK</span>`,
-      dead:  `<span class="sbadge s-dead">💀 DEAD</span>`,
-      load:  `<span class="sbadge s-load">⟳</span>`,
+      rebound: `<span class="sbadge s-rebound">🔥 REBOUND</span>`,
+      alert:   `<span class="sbadge s-alert">🚨 ALERT</span>`,
+      watch:   `<span class="sbadge s-watch">⚠️ WATCH</span>`,
+      ok:      `<span class="sbadge s-ok">✓ OK</span>`,
+      dead:    `<span class="sbadge s-dead">💀 DEAD</span>`,
+      load:    `<span class="sbadge s-load">⟳</span>`,
     }[st]||'';
+
+    const b5     = p.txns?.m5?.buys  || 0;
+    const s5     = p.txns?.m5?.sells || 0;
+    const bsRat  = s5 > 0 ? b5/s5 : (b5 > 0 ? 99 : 0);
+    const bsCls  = bsRat >= 1.5 ? 'bs-good' : bsRat <= 0.7 ? 'bs-bad' : 'bs-neu';
+    const bsCell = `<span class="${bsCls}" title="Buys/Sells 5m">${b5}<span style="color:#484f58">/</span>${s5}</span>`;
 
     const liqCell = `<div class="liq-wrap"><span class="liq-main">${fmtUSD(curLiq)}</span>${lpPct!==null?`<span class="liq-vs ${lpPct>=cfg.lp?'up':'dn'}">${lpPct.toFixed(0)}% of base</span>`:''}</div>`;
 
@@ -623,6 +669,7 @@ function render() {
       <td>${liqCell}</td>
       <td>${lpRat!==null?pct(lpRat):'—'}</td>
       <td>${fmtUSD(p.volume?.h1||0)}</td>
+      <td>${bsCell}</td>
       <td>${fmtUSD(p.volume?.h24||0)}</td>
       <td>${drop!==null?pct(drop):'—'}</td>
       <td>${badge}</td>
@@ -641,11 +688,14 @@ function renderAlertLog() {
   title.textContent = `ALERTS (${alertLog.length})`;
   list.innerHTML = alertLog.map(a => `
     <div class="alert-row">
-      <span class="abadge">ALERT</span>
+      ${a.st === 'rebound'
+        ? `<span class="abadge" style="background:#238636">🔥 REBOUND</span>`
+        : `<span class="abadge">🚨 ALERT</span>`}
       <span class="atime">${timeSince(a.time)}</span>
       <span class="asym">${esc(a.symbol)}</span>
       <span class="adrop">↓${Math.abs(a.drop).toFixed(1)}%</span>
       <span class="alp">LP ${a.lp.toFixed(0)}%</span>
+      ${a.st === 'rebound' ? `<span class="up">5m +${(a.m5||0).toFixed(1)}%</span><span class="bs-good">B${a.b5||0}/S${a.s5||0}</span>` : ''}
       <span class="avol">${fmtUSD(a.v1h)}/h</span>
       ${a.url?`<a href="${a.url}" target="_blank" rel="noopener" class="alink">DexScreener ↗</a>`:''}
     </div>`).join('');
@@ -781,17 +831,22 @@ function toast(msg, type='info') {
 }
 
 // ── Sound alert ────────────────────────────────────
-function beep() {
+function beep(rebound = false) {
   try {
     const ctx = new (window.AudioContext||window.webkitAudioContext)();
-    [[880,0],[1100,.12],[880,.24],[1320,.36]].forEach(([f,t]) => {
+    // Rebound: ascending C-E-G-C (hopeful); Alert: descending alarm
+    const notes = rebound
+      ? [[523,0],[659,.13],[784,.26],[1047,.39],[1047,.52]]
+      : [[880,0],[1100,.12],[880,.24],[1320,.36]];
+    notes.forEach(([f,t]) => {
       const o=ctx.createOscillator(), g=ctx.createGain();
       o.connect(g); g.connect(ctx.destination);
-      o.type='sine'; o.frequency.value=f;
+      o.type = rebound ? 'triangle' : 'sine';
+      o.frequency.value=f;
       const st=ctx.currentTime+t;
-      g.gain.setValueAtTime(.22,st);
-      g.gain.exponentialRampToValueAtTime(.001,st+.1);
-      o.start(st); o.stop(st+.1);
+      g.gain.setValueAtTime(.2,st);
+      g.gain.exponentialRampToValueAtTime(.001,st+(rebound?.15:.1));
+      o.start(st); o.stop(st+.2);
     });
   } catch(e){}
 }
