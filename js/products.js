@@ -82,7 +82,7 @@ function renderProdCard(p, idx, opts) {
     ? `<span class="prod-origin">${_esc(brand.toUpperCase())}</span>`
     : (catLabel ? `<span class="prod-origin">${_esc(catLabel.toUpperCase())}</span>` : `<span class="prod-origin">Chính hãng</span>`);
 
-  return `<a href="${href}" class="prod-card" data-brand="${_esc(p.brand_slug||'')}" data-cat="${_esc(p.category_slug)}" data-name="${_esc(p.name.toLowerCase())}" data-price="${numericPrice}">
+  return `<a href="${href}" class="prod-card" data-brand="${_esc(p.brand_slug||'')}" data-cat="${_esc(p.category_slug)}" data-name="${_esc(p.name.toLowerCase())}" data-price="${numericPrice}" data-featured="${p.featured ? '1' : '0'}">
   <div class="prod-img ${bg}">
     <div class="prod-img-inner">${imgHtml}</div>
   </div>
@@ -113,7 +113,7 @@ function renderComboCard(c, idx) {
     ? `<span style="font-size:10px;color:#D62B2B;font-weight:700;letter-spacing:.08em;text-transform:uppercase;display:block;margin-top:5px;">● Hết Hàng</span>`
     : `<span style="font-size:10px;color:#166534;font-weight:700;letter-spacing:.08em;text-transform:uppercase;display:block;margin-top:5px;">● Còn Hàng</span>`;
 
-  return `<a href="${href}" class="prod-card" data-level="${_esc(c.level)}" data-name="${_esc(c.name.toLowerCase())}">
+  return `<a href="${href}" class="prod-card" data-level="${_esc(c.level)}" data-name="${_esc(c.name.toLowerCase())}" data-featured="${c.featured ? '1' : '0'}">
   <div class="prod-img ${bg}">
     <div class="prod-img-inner">${imgHtml}</div>
     ${badgeHtml}
