@@ -2477,6 +2477,11 @@ fetch('/api/settings/home_hero_image')
       updateSectionTitles(activeCat);
       updateFilterUI();
       applyFilters();
+      if (activeCat !== 'all') {
+        history.pushState({ spaFilter: activeCat }, '');
+      } else if (history.state && history.state.spaFilter) {
+        history.replaceState(null, '');
+      }
     });
   });
 
@@ -2562,6 +2567,8 @@ fetch('/api/settings/home_hero_image')
 
       if (cat === 'kien-thuc' && window.expandArtGrid) expandArtGrid();
 
+      if (activeCat !== 'all') history.pushState({ spaFilter: activeCat }, '');
+
       requestAnimationFrame(function() {
         var target = document.getElementById('block-' + cat);
         if (target) {
@@ -2624,6 +2631,7 @@ fetch('/api/settings/home_hero_image')
     updateSectionTitles('all');
     updateFilterUI();
     applyFilters();
+    if (history.state && history.state.spaFilter) history.replaceState(null, '');
     requestAnimationFrame(function() {
       var el = document.getElementById('block-' + slug);
       if (!el) return;
@@ -2632,6 +2640,40 @@ fetch('/api/settings/home_hero_image')
       window.scrollTo({ top: top, behavior: 'smooth' });
     });
   };
+
+  /* Swipe-back trên mobile: popstate → reset về all-categories view */
+  window.addEventListener('popstate', function(e) {
+    if (e.state && (e.state.modal === 'nav' || e.state.modal === 'prodDrawer')) return;
+    if (e.state && e.state.spaFilter) {
+      /* Đang back về state của 1 danh mục khác — đồng bộ lại */
+      if (activeCat !== e.state.spaFilter) {
+        activeCat = e.state.spaFilter;
+        var opt = document.querySelector('#fltrCat .fltr-drop-opt[data-cat="' + activeCat + '"]');
+        document.querySelectorAll('#fltrCat .fltr-drop-opt').forEach(function(o){ o.classList.remove('active'); });
+        if (opt) { opt.classList.add('active'); var cv = document.getElementById('fltrCatVal'); if (cv) cv.textContent = opt.textContent.trim(); }
+        updateSectionTitles(activeCat);
+        updateFilterUI();
+        applyFilters();
+      }
+      return;
+    }
+    /* Không còn spaFilter state → về base (all categories) */
+    if (activeCat !== 'all') {
+      activeCat = 'all'; activeBrand = 'all'; activePr = 'all'; activeSort = 'default'; activeNameQ = '';
+      document.querySelectorAll('#fltrCat .fltr-drop-opt').forEach(function(o){ o.classList.toggle('active', o.dataset.cat === 'all'); });
+      document.querySelectorAll('#fltrBrand .fltr-drop-opt').forEach(function(o){ o.classList.toggle('active', o.dataset.brand === 'all'); });
+      document.querySelectorAll('#fltrPrice .fltr-drop-opt').forEach(function(o){ o.classList.toggle('active', o.dataset.price === 'all'); });
+      document.querySelectorAll('#fltrSort .fltr-drop-opt').forEach(function(o){ o.classList.toggle('active', o.dataset.sort === 'default'); });
+      var catVal = document.getElementById('fltrCatVal'); if (catVal) catVal.textContent = 'Danh Mục';
+      var brandVal = document.getElementById('fltrBrandVal'); if (brandVal) brandVal.textContent = 'Thương Hiệu';
+      var priceVal = document.getElementById('fltrPriceVal'); if (priceVal) priceVal.textContent = 'Giá Tiền';
+      var sortVal = document.getElementById('fltrSortVal'); if (sortVal) sortVal.textContent = 'Sắp Xếp';
+      var nameInput = document.getElementById('fltrNameInput'); if (nameInput) nameInput.value = '';
+      updateSectionTitles('all');
+      updateFilterUI();
+      applyFilters();
+    }
+  });
 
 })();
 
