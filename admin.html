@@ -577,7 +577,7 @@
     .sb-btn-link:hover { color:#fff; }
 
     /* ─── Facebook Plan ──────────────────────────────────────────── */
-    .fb-cal-grid { display:grid; gap:10px; margin-bottom:28px; }
+    .fb-cal-grid { display:grid; grid-template-columns:1fr; gap:10px; margin-bottom:28px; }
     .fb-post-card { background:var(--card); border:1.5px solid var(--border); display:flex; overflow:hidden; transition:border-color .2s; }
     .fb-post-card:hover { border-color:#94A3B8; }
     .fb-date { width:72px; flex-shrink:0; background:#1E2B3C; color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:12px 6px; }
@@ -626,6 +626,9 @@
     .fb-goal .fg-n { font-size:22px; font-weight:800; color:#1877F2; }
     .fb-goal .fg-l { font-size:10px; color:var(--muted); margin-top:2px; }
     .fb-info-box { background:#eff6ff; border:1px solid #bfdbfe; padding:12px 16px; margin-bottom:20px; font-size:13px; color:#1e40af; }
+    .fb-cap-inline { background:#F8FAFC; border:1px solid var(--border); padding:9px 12px; font-size:12px; line-height:1.65; color:var(--dark); white-space:pre-wrap; margin:6px 0 8px; }
+    .fb-info-note { background:#ECFDF5; color:#065F46; border:1px solid #6EE7B7; border-radius:2px; font-size:10px; padding:2px 8px; font-weight:700; display:inline-block; margin-left:4px; }
+    .fb-date .fd-slot { font-size:10px; opacity:.55; margin-top:3px; }
   </style>
 </head>
 <body>
@@ -924,8 +927,7 @@
       </div>
 
       <div class="sub-tabs">
-        <button class="sub-tab active" data-sub="fb-cal" onclick="switchFbTab(this,'fb-cal')">📅 Lịch Content</button>
-        <button class="sub-tab" data-sub="fb-scripts" onclick="switchFbTab(this,'fb-scripts')">✍️ Scripts</button>
+        <button class="sub-tab active" data-sub="fb-cal" onclick="switchFbTab(this,'fb-cal')">📅 Lịch Content (40 bài)</button>
         <button class="sub-tab" data-sub="fb-hashtags" onclick="switchFbTab(this,'fb-hashtags')">🔖 Hashtags</button>
         <button class="sub-tab" data-sub="fb-tips" onclick="switchFbTab(this,'fb-tips')">💡 Tips</button>
       </div>
@@ -933,7 +935,8 @@
       <!-- LỊCH CONTENT -->
       <div class="sub-section active" id="fb-cal">
         <div class="fb-goal-row">
-          <div class="fb-goal"><div class="fg-n">20</div><div class="fg-l">Bài / tháng</div></div>
+          <div class="fb-goal"><div class="fg-n">40</div><div class="fg-l">Bài / tháng</div></div>
+          <div class="fb-goal"><div class="fg-n">1–2</div><div class="fg-l">Bài / ngày</div></div>
           <div class="fb-goal"><div class="fg-n">10:00</div><div class="fg-l">Giờ sáng</div></div>
           <div class="fb-goal"><div class="fg-n">20:00</div><div class="fg-l">Giờ tối</div></div>
           <div class="fb-goal"><div class="fg-n">50%</div><div class="fg-l">Giáo dục</div></div>
@@ -941,417 +944,668 @@
           <div class="fb-goal"><div class="fg-n">20%</div><div class="fg-l">Cộng đồng</div></div>
         </div>
 
-        <div class="fb-week">Tuần 1 — 5 đến 11 tháng 5</div>
+        <div class="fb-week">Tuần 1 — 5 đến 11 tháng 5 · 10 bài</div>
         <div class="fb-cal-grid">
           <div class="fb-post-card">
-            <div class="fb-date"><div class="fd-num">5</div><div class="fd-day">Thứ 3</div></div>
+            <div class="fb-date"><div class="fd-num">5</div><div class="fd-day">Thứ 3</div><div class="fd-slot">10:00</div></div>
             <div class="fb-body">
-              <div><span class="fb-type fbt-info">Infographic</span><span class="fb-time">🕙 10:00</span></div>
+              <div style="margin-bottom:4px"><span class="fb-type fbt-info">Infographic</span><span class="fb-info-note">📸 Đăng ảnh Infographic</span></div>
               <div class="fb-title">Cách Cầm Vợt Đúng Cho Người Mới</div>
-              <div class="fb-hook">"90% người mới cầm vợt sai ngay từ đầu..."</div>
-              <div class="fb-acts"><button class="fb-btn-copy" onclick="fbCopy('cap01',this)">📋 Copy Caption</button></div>
-              <div class="fb-hashtag">#bongbanviet #kỹthuậtbóngbàn #cầmvợt #mớitập</div>
-            </div>
-          </div>
-          <div class="fb-post-card">
-            <div class="fb-date"><div class="fd-num">7</div><div class="fd-day">Thứ 5</div></div>
-            <div class="fb-body">
-              <div><span class="fb-type fbt-prod">Sản phẩm</span><span class="fb-time">🕙 10:00</span></div>
-              <div class="fb-title">Review Cốt Vợt Butterfly Timo Boll ALC</div>
-              <div class="fb-hook">Vì sao đây là lựa chọn của 60% tay vợt trung–cao?</div>
-              <div class="fb-acts"><button class="fb-btn-copy" onclick="fbCopy('cap02',this)">📋 Copy Caption</button></div>
-              <div class="fb-hashtag">#butterfly #cotvot #bongbanviet #timobollalc</div>
-            </div>
-          </div>
-          <div class="fb-post-card">
-            <div class="fb-date"><div class="fd-num">9</div><div class="fd-day">Thứ 6</div></div>
-            <div class="fb-body">
-              <div><span class="fb-type fbt-engage">Tương Tác</span><span class="fb-time">🕗 20:00</span></div>
-              <div class="fb-title">Poll: Bạn Đang Chơi Ở Trình Độ Nào?</div>
-              <div class="fb-hook">Kéo comment tự nhiên — trả lời tư vấn riêng từng người</div>
-              <div class="fb-acts"><button class="fb-btn-copy" onclick="fbCopy('cap03',this)">📋 Copy Caption</button></div>
-              <div class="fb-hashtag">#bongbanviet #bóngbàn #hỏiđáp</div>
-            </div>
-          </div>
-          <div class="fb-post-card">
-            <div class="fb-date"><div class="fd-num">10</div><div class="fd-day">Thứ 7</div></div>
-            <div class="fb-body">
-              <div><span class="fb-type fbt-combo">Combo</span><span class="fb-time">🕙 10:00</span></div>
-              <div class="fb-title">Combo Vợt Cho Người Mới — Budget 800K</div>
-              <div class="fb-hook">Hàng chính hãng, tư vấn 1-1 qua Zalo</div>
-              <div class="fb-acts"><button class="fb-btn-copy" onclick="fbCopy('cap04',this)">📋 Copy Caption</button></div>
-              <div class="fb-hashtag">#combovot #bongbanviet #mớitập</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="fb-week">Tuần 2 — 12 đến 18 tháng 5</div>
-        <div class="fb-cal-grid">
-          <div class="fb-post-card">
-            <div class="fb-date"><div class="fd-num">12</div><div class="fd-day">Thứ 2</div></div>
-            <div class="fb-body">
-              <div><span class="fb-type fbt-info">Infographic</span><span class="fb-time">🕙 10:00</span></div>
-              <div class="fb-title">Độ Cứng Mặt Vợt — Hard vs Soft</div>
-              <div class="fb-hook">"Bạn biết mặt vợt mình đang ở độ cứng bao nhiêu không?"</div>
-              <div class="fb-acts"><button class="fb-btn-copy" onclick="fbCopy('cap05',this)">📋 Copy Caption</button></div>
-              <div class="fb-hashtag">#matvot #bongbanviet #kỹthuật</div>
-            </div>
-          </div>
-          <div class="fb-post-card">
-            <div class="fb-date"><div class="fd-num">13</div><div class="fd-day">Thứ 3</div></div>
-            <div class="fb-body">
-              <div><span class="fb-type fbt-prod">Sản phẩm</span><span class="fb-time">🕗 20:00</span></div>
-              <div class="fb-title">Tibhar Evolution MX-P — Mặt Vợt Công Tầm Giá</div>
-              <div class="fb-hook">Tốc độ cao, kiểm soát tốt — lý do dân chơi mê Tibhar</div>
-              <div class="fb-acts"><button class="fb-btn-copy" onclick="fbCopy('cap06',this)">📋 Copy Caption</button></div>
-              <div class="fb-hashtag">#tibhar #matvot #bongbanviet</div>
-            </div>
-          </div>
-          <div class="fb-post-card">
-            <div class="fb-date"><div class="fd-num">15</div><div class="fd-day">Thứ 5</div></div>
-            <div class="fb-body">
-              <div><span class="fb-type fbt-engage">Tương Tác</span><span class="fb-time">🕗 20:00</span></div>
-              <div class="fb-title">Hỏi: Budget Bao Nhiêu Là Đủ Để Có Bộ Vợt?</div>
-              <div class="fb-hook">Kéo comment, tư vấn trực tiếp bên dưới</div>
-              <div class="fb-acts"><button class="fb-btn-copy" onclick="fbCopy('cap07',this)">📋 Copy Caption</button></div>
-              <div class="fb-hashtag">#bongbanviet #tưvấn #chọnvợt</div>
-            </div>
-          </div>
-          <div class="fb-post-card">
-            <div class="fb-date"><div class="fd-num">17</div><div class="fd-day">Thứ 7</div></div>
-            <div class="fb-body">
-              <div><span class="fb-type fbt-community">Cộng Đồng</span><span class="fb-time">🕙 10:00</span></div>
-              <div class="fb-title">Review Khách Hàng — [Tên + Sản phẩm]</div>
-              <div class="fb-hook">Social proof thực tế — ảnh thật, feedback thật</div>
-              <div class="fb-acts"><button class="fb-btn-copy" onclick="fbCopy('cap08',this)">📋 Copy Caption</button></div>
-              <div class="fb-hashtag">#bongbanviet #review #hàngchínhhãng</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="fb-week">Tuần 3 — 19 đến 25 tháng 5</div>
-        <div class="fb-cal-grid">
-          <div class="fb-post-card">
-            <div class="fb-date"><div class="fd-num">19</div><div class="fd-day">Thứ 2</div></div>
-            <div class="fb-body">
-              <div><span class="fb-type fbt-info">Infographic</span><span class="fb-time">🕙 10:00</span></div>
-              <div class="fb-title">Kỹ Thuật Di Chuyển Chân — Footwork Cơ Bản</div>
-              <div class="fb-hook">"Chân chậm là thua — đây là bài tập chuẩn hóa bước chân"</div>
-              <div class="fb-acts"><button class="fb-btn-copy" onclick="fbCopy('cap09',this)">📋 Copy Caption</button></div>
-              <div class="fb-hashtag">#footwork #kỹthuật #bongbanviet</div>
-            </div>
-          </div>
-          <div class="fb-post-card">
-            <div class="fb-date"><div class="fd-num">20</div><div class="fd-day">Thứ 3</div></div>
-            <div class="fb-body">
-              <div><span class="fb-type fbt-prod">Sản phẩm</span><span class="fb-time">🕗 20:00</span></div>
-              <div class="fb-title">Carbon vs All-Wood — Nên Chọn Loại Nào?</div>
-              <div class="fb-hook">Câu hỏi kinh điển — trả lời 1 lần cho xong</div>
-              <div class="fb-acts"><button class="fb-btn-copy" onclick="fbCopy('cap10',this)">📋 Copy Caption</button></div>
-              <div class="fb-hashtag">#cotvot #carbon #allwood #bongbanviet</div>
-            </div>
-          </div>
-          <div class="fb-post-card">
-            <div class="fb-date"><div class="fd-num">22</div><div class="fd-day">Thứ 5</div></div>
-            <div class="fb-body">
-              <div><span class="fb-type fbt-info">Infographic</span><span class="fb-time">🕗 20:00</span></div>
-              <div class="fb-title">Hướng Dẫn Chăm Sóc Mặt Vợt Đúng Cách</div>
-              <div class="fb-hook">"Đừng để mặt vợt 3 triệu xuống cấp vì chăm sóc sai"</div>
-              <div class="fb-acts"><button class="fb-btn-copy" onclick="fbCopy('cap11',this)">📋 Copy Caption</button></div>
-              <div class="fb-hashtag">#bảotrìvợt #matvot #mẹohay #bongbanviet</div>
-            </div>
-          </div>
-          <div class="fb-post-card">
-            <div class="fb-date"><div class="fd-num">24</div><div class="fd-day">Thứ 7</div></div>
-            <div class="fb-body">
-              <div><span class="fb-type fbt-combo">Combo</span><span class="fb-time">🕙 10:00</span></div>
-              <div class="fb-title">Combo Intermediate — Nâng Cấp Khi Đánh Được Rồi</div>
-              <div class="fb-hook">Budget 2–3 triệu — bộ vợt đánh giải phong trào</div>
-              <div class="fb-acts"><button class="fb-btn-copy" onclick="fbCopy('cap12',this)">📋 Copy Caption</button></div>
-              <div class="fb-hashtag">#combovot #intermediate #bongbanviet</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="fb-week">Tuần 4 — 26 đến 31 tháng 5</div>
-        <div class="fb-cal-grid">
-          <div class="fb-post-card">
-            <div class="fb-date"><div class="fd-num">26</div><div class="fd-day">Thứ 2</div></div>
-            <div class="fb-body">
-              <div><span class="fb-type fbt-info">Infographic</span><span class="fb-time">🕙 10:00</span></div>
-              <div class="fb-title">Kỹ Thuật Giao Bóng — Nắm 30% Trận</div>
-              <div class="fb-hook">Series kỹ thuật — phần được chờ đợi nhất</div>
-              <div class="fb-acts"><button class="fb-btn-copy" onclick="fbCopy('cap13',this)">📋 Copy Caption</button></div>
-              <div class="fb-hashtag">#giaobóng #kỹthuật #bongban #bongbanviet</div>
-            </div>
-          </div>
-          <div class="fb-post-card">
-            <div class="fb-date"><div class="fd-num">27</div><div class="fd-day">Thứ 3</div></div>
-            <div class="fb-body">
-              <div><span class="fb-type fbt-prod">Sản phẩm</span><span class="fb-time">🕗 20:00</span></div>
-              <div class="fb-title">Sản Phẩm Mới Tháng 5 — [Điền tên]</div>
-              <div class="fb-hook">Thông báo hàng mới — tạo urgency, kêu gọi inbox</div>
-              <div class="fb-acts"><button class="fb-btn-copy" onclick="fbCopy('cap14',this)">📋 Copy Caption</button></div>
-              <div class="fb-hashtag">#hàngnhập #mới #bongbanviet #hàngchínhhãng</div>
-            </div>
-          </div>
-          <div class="fb-post-card">
-            <div class="fb-date"><div class="fd-num">29</div><div class="fd-day">Thứ 5</div></div>
-            <div class="fb-body">
-              <div><span class="fb-type fbt-engage">Tương Tác</span><span class="fb-time">🕗 20:00</span></div>
-              <div class="fb-title">Live / Q&amp;A: Hỏi Gì Về Bóng Bàn Cũng Trả Lời</div>
-              <div class="fb-hook">Facebook ưu tiên Live — tăng organic reach mạnh</div>
-              <div class="fb-acts"><button class="fb-btn-copy" onclick="fbCopy('cap15',this)">📋 Copy Caption</button></div>
-              <div class="fb-hashtag">#bongbanviet #live #tưvấn #hỏiđáp</div>
-            </div>
-          </div>
-          <div class="fb-post-card">
-            <div class="fb-date"><div class="fd-num">31</div><div class="fd-day">CN</div></div>
-            <div class="fb-body">
-              <div><span class="fb-type fbt-community">Cộng Đồng</span><span class="fb-time">🕙 10:00</span></div>
-              <div class="fb-title">Tổng Kết Tháng 5 + Preview Tháng 6</div>
-              <div class="fb-hook">Build loyalty — khách follow vì cảm thấy được quan tâm</div>
-              <div class="fb-acts"><button class="fb-btn-copy" onclick="fbCopy('cap16',this)">📋 Copy Caption</button></div>
-              <div class="fb-hashtag">#bongbanviet #cảmơn #tổngkết</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- SCRIPTS -->
-      <div class="sub-section" id="fb-scripts">
-        <div class="fb-info-box"><strong>Cách dùng:</strong> Nhấn "Copy" → Paste thẳng lên Facebook. Thay nội dung trong [ngoặc vuông] trước khi đăng.</div>
-
-        <div class="fb-script-card" id="fbs-01">
-          <div class="fb-script-head" onclick="toggleFbScript('fbs-01')">
-            <span class="fb-type fbt-info" style="flex-shrink:0">Infographic</span>
-            <span style="font-weight:700;font-size:13px">5/5 — Cách Cầm Vợt Đúng</span>
-            <span class="fb-script-toggle">+</span>
-          </div>
-          <div class="fb-script-body">
-            <div class="fb-script-lbl">Caption</div>
-            <div class="fb-caption-box" id="cap01">90% người mới bắt đầu chơi bóng bàn đều cầm vợt SAI ngay từ đầu 😅
+              <div class="fb-cap-inline" id="cap01">90% người mới bắt đầu chơi bóng bàn đều cầm vợt SAI ngay từ đầu 😅
 
 Và điều đó ảnh hưởng trực tiếp đến:
 ❌ Độ chính xác khi đánh bóng
 ❌ Khả năng xoáy bóng
 ❌ Chấn thương cổ tay về lâu dài
 
-Ảnh dưới là hướng dẫn chi tiết 2 kiểu cầm phổ biến nhất:
-→ Shakehand (bắt tay) — phổ biến toàn cầu
-→ Penhold (cầm bút) — truyền thống châu Á
+Shakehand hay Penhold — bạn đang cầm kiểu nào? Comment bên dưới nhé 👇
 
-Bạn đang cầm kiểu nào? Comment bên dưới nhé 👇
-
-📍 Cần tư vấn thêm → Nhắn Zalo: 096.1269.386
-#bongbanviet #kỹthuậtbóngbàn #mớitập #cầmvợt #bóngbàn<button class="fb-copy-btn" onclick="fbCopyBox('cap01',this)">Copy</button></div>
+📍 Tư vấn thêm → Zalo: 096.1269.386
+#bongbanviet #kỹthuậtbóngbàn #cầmvợt #mớitập #bóngbàn</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap01',this)">📋 Copy Caption</button>
+            </div>
           </div>
-        </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">5</div><div class="fd-day">Thứ 3</div><div class="fd-slot">20:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-prod">Sản phẩm</span></div>
+              <div class="fb-title">Top 3 Cốt Vợt Tốt Nhất Dưới 1 Triệu</div>
+              <div class="fb-cap-inline" id="cap02">Nhiều bạn hỏi: "Dưới 1 triệu có mua được cốt vợt tốt không?" — Có! 🎯
 
-        <div class="fb-script-card" id="fbs-02">
-          <div class="fb-script-head" onclick="toggleFbScript('fbs-02')">
-            <span class="fb-type fbt-prod" style="flex-shrink:0">Sản phẩm</span>
-            <span style="font-weight:700;font-size:13px">7/5 — Butterfly Timo Boll ALC</span>
-            <span class="fb-script-toggle">+</span>
+Top 3 cốt vợt dưới 1 triệu BÓNG BÀN VIỆT hay gợi ý nhất:
+1️⃣ [Tên cốt 1] — kiểm soát tốt, phù hợp người mới
+2️⃣ [Tên cốt 2] — cân bằng tốc độ và kiểm soát
+3️⃣ [Tên cốt 3] — all-wood bền, cảm giác bóng rõ
+
+Tất cả hàng chính hãng, tư vấn 1-1 trước khi mua.
+Inbox hoặc Zalo: 096.1269.386
+
+#bongbanviet #cotvot #chọnvợt #hàngchínhhãng #mớitập</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap02',this)">📋 Copy Caption</button>
+            </div>
           </div>
-          <div class="fb-script-body">
-            <div class="fb-script-lbl">Caption</div>
-            <div class="fb-caption-box" id="cap02">🏓 Timo Boll ALC — Cốt Vợt Mà Dân Chơi Bóng Bàn Ai Cũng Biết Tên
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">6</div><div class="fd-day">Thứ 4</div><div class="fd-slot">10:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-info">Infographic</span><span class="fb-info-note">📸 Đăng ảnh Infographic</span></div>
+              <div class="fb-title">Tư Thế Đứng Chuẩn Trước Bàn Bóng Bàn</div>
+              <div class="fb-cap-inline" id="cap03">Kỹ thuật tốt đến đâu mà TƯ THẾ SAI thì vẫn thua 😤
 
-Đây là lý do cây vợt này luôn nằm trong top được hỏi mua nhất tại BÓNG BÀN VIỆT:
+Tư thế đứng chuẩn trước bàn bóng bàn:
+✅ Chân rộng bằng vai, chân thuận hơi lùi
+✅ Đầu gối hơi khuỵu — không đứng thẳng cứng
+✅ Trọng tâm về phía trước, trên đầu ngón chân
+✅ Tay vợt thả lỏng tự nhiên, không gồng cứng
 
+Bạn đứng đúng tư thế chưa? 🤔
+
+#bongbanviet #kỹthuật #tưthếbóngbàn #mẹohay #mớitập</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap03',this)">📋 Copy Caption</button>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">7</div><div class="fd-day">Thứ 5</div><div class="fd-slot">10:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-prod">Sản phẩm</span></div>
+              <div class="fb-title">Butterfly Timo Boll ALC — Review Chi Tiết</div>
+              <div class="fb-cap-inline" id="cap04">🏓 Timo Boll ALC — Cốt Vợt Mà Dân Chơi Bóng Bàn Ai Cũng Biết Tên
+
+Đây là lý do cây vợt này luôn trong top được hỏi mua nhất:
 ✅ Lõi carbon ALC — tốc độ cao, rung tay ít
 ✅ Kiểm soát tốt hơn vợt carbon thuần
 ✅ Phù hợp lối đánh công + phản công
 ✅ Dùng bền — nhiều khách dùng 3–5 năm chưa đổi
 
 📦 Hàng chính hãng, có tem Butterfly
-💰 Giá: Liên hệ Zalo để được báo giá tốt nhất
+💰 Inbox hoặc Zalo để được báo giá tốt nhất: 096.1269.386
 
-Inbox hoặc Zalo: 096.1269.386 để tư vấn 1-1 nhé!
-
-#butterfly #timobollalc #cotvot #bongbanviet #hàngchínhhãng<button class="fb-copy-btn" onclick="fbCopyBox('cap02',this)">Copy</button></div>
+#butterfly #timobollalc #cotvot #bongbanviet #hàngchínhhãng</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap04',this)">📋 Copy Caption</button>
+            </div>
           </div>
-        </div>
-
-        <div class="fb-script-card" id="fbs-03">
-          <div class="fb-script-head" onclick="toggleFbScript('fbs-03')">
-            <span class="fb-type fbt-engage" style="flex-shrink:0">Tương Tác</span>
-            <span style="font-weight:700;font-size:13px">9/5 — Poll Trình Độ</span>
-            <span class="fb-script-toggle">+</span>
-          </div>
-          <div class="fb-script-body">
-            <div class="fb-script-lbl">Caption</div>
-            <div class="fb-caption-box" id="cap03">Dân bóng bàn ở đây — chúng tôi muốn biết thêm về bạn! 🏓
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">7</div><div class="fd-day">Thứ 5</div><div class="fd-slot">20:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-engage">Tương Tác</span></div>
+              <div class="fb-title">Poll: Bạn Đang Chơi Ở Trình Độ Nào?</div>
+              <div class="fb-cap-inline" id="cap05">Dân bóng bàn ở đây — chúng tôi muốn biết thêm về bạn! 🏓
 
 Comment trình độ của bạn nhé:
-
 🟢 A — Mới tập, đang học cơ bản
 🟡 B — Đánh được, rally tốt
 🔴 C — Đánh giải phong trào
 ⚫ D — Đánh giải cấp tỉnh / chuyên nghiệp
 
-Tag thêm bạn chơi cùng để xem họ tự đánh giá thế nào 😄
+Tag thêm bạn chơi cùng xem họ tự đánh giá thế nào 😄
 
-P/S: Tùy trình độ mà chúng tôi sẽ gợi ý vợt phù hợp — bạn cứ comment, chúng tôi tư vấn miễn phí!
+P/S: Tùy trình độ mà sẽ gợi ý vợt phù hợp — cứ comment, tư vấn miễn phí!
 
-#bongbanviet #bóngbàn #trìnhđộ #tưvấnmiễnphí<button class="fb-copy-btn" onclick="fbCopyBox('cap03',this)">Copy</button></div>
+#bongbanviet #bóngbàn #trìnhđộ #tưvấnmiễnphí #hỏiđáp</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap05',this)">📋 Copy Caption</button>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">8</div><div class="fd-day">Thứ 6</div><div class="fd-slot">10:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-info">Infographic</span><span class="fb-info-note">📸 Đăng ảnh Infographic</span></div>
+              <div class="fb-title">Phân Biệt 3 Loại Xoáy Bóng Cơ Bản</div>
+              <div class="fb-cap-inline" id="cap06">3 loại xoáy trong bóng bàn — biết để phòng thủ tốt hơn 🔄
+
+→ Xoáy lên (Topspin): bóng cắm xuống bàn
+→ Xoáy xuống (Backspin): bóng nảy thấp, khó tấn công
+→ Xoáy ngang (Sidespin): bóng bay lệch theo hướng khó đoán
+
+Biết loại xoáy = phản ứng chính xác hơn!
+Bạn hay bị "mắc" xoáy nào nhất? Comment nhé 👇
+
+#bongbanviet #kỹthuật #xoáybóng #bóngbàn #mẹohay</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap06',this)">📋 Copy Caption</button>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">9</div><div class="fd-day">Thứ 7</div><div class="fd-slot">10:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-combo">Combo</span></div>
+              <div class="fb-title">Combo Người Mới — Budget 800K</div>
+              <div class="fb-cap-inline" id="cap07">🎯 Mới Tập Bóng Bàn — Nên Mua Gì Với 800.000đ?
+
+Combo chúng tôi hay gợi ý nhất cho người mới:
+🏓 Cốt: [Tên cốt vợt] — kiểm soát tốt, không quá cứng
+🔴 Mặt FH: [Tên mặt vợt] — bám bóng, dễ xoáy
+⚫ Mặt BH: [Tên mặt vợt] — phản xạ tốt
+
+Tổng: ~800K | Hàng chính hãng | Tư vấn 1-1 trước khi mua
+Muốn được tư vấn theo lối chơi riêng? Zalo: 096.1269.386!
+
+#combovot #bongbanviet #mớitập #chọnvợt #giárẻhàngthật</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap07',this)">📋 Copy Caption</button>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">9</div><div class="fd-day">Thứ 7</div><div class="fd-slot">20:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-community">Cộng Đồng</span></div>
+              <div class="fb-title">Giới Thiệu Showroom BÓNG BÀN VIỆT</div>
+              <div class="fb-cap-inline" id="cap08">Đây là không gian của chúng tôi 🏪
+
+BÓNG BÀN VIỆT — nơi bạn có thể:
+✅ Đến xem và cầm thử sản phẩm trực tiếp
+✅ Được tư vấn 1-1 không ép mua
+✅ So sánh các mẫu vợt cùng lúc
+
+📍 286 Nguyễn Xiển, Thanh Liệt, Hà Nội
+📞 Zalo đặt lịch trước: 096.1269.386
+🌐 bongbanviet.com
+
+#bongbanviet #showroom #dụngcụbóngbàn #hànội</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap08',this)">📋 Copy Caption</button>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">10</div><div class="fd-day">CN</div><div class="fd-slot">10:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-prod">Sản phẩm</span></div>
+              <div class="fb-title">Yinhe Neptune — Cốt Gỗ Giá Tốt Cho Người Mới</div>
+              <div class="fb-cap-inline" id="cap09">🪐 Yinhe Neptune — Cốt Gỗ Giá Mềm Đáng Tin
+
+Tại sao chúng tôi hay giới thiệu Neptune cho người mới:
+✅ All-wood 5 lớp — cảm giác bóng rõ, tự nhiên
+✅ Tốc độ vừa phải — dễ kiểm soát khi mới tập
+✅ Bền bỉ, dùng được lâu trước khi nâng cấp
+✅ Giá hợp lý — không xót khi còn đang học
+
+Hàng chính hãng Yinhe. Inbox để được tư vấn!
+Zalo: 096.1269.386
+
+#yinhe #neptune #cotvot #bongbanviet #mớitập</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap09',this)">📋 Copy Caption</button>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">11</div><div class="fd-day">Thứ 2</div><div class="fd-slot">20:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-info">Infographic</span><span class="fb-info-note">📸 Đăng ảnh Infographic</span></div>
+              <div class="fb-title">5 Lỗi Thường Gặp Khi Mới Tập Bóng Bàn</div>
+              <div class="fb-cap-inline" id="cap10">5 lỗi mà 95% người mới bóng bàn đều mắc phải 😅
+
+Bạn đang mắc lỗi nào? Comment số lỗi bên dưới nhé 👇
+
+Biết sai → sửa ngay → tiến bộ nhanh hơn!
+Cần hướng dẫn cụ thể? Inbox hoặc Zalo: 096.1269.386
+
+#bongbanviet #mẹobóngbàn #mớitập #kỹthuật #bóngbàn</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap10',this)">📋 Copy Caption</button>
+            </div>
           </div>
         </div>
 
-        <div class="fb-script-card" id="fbs-04">
-          <div class="fb-script-head" onclick="toggleFbScript('fbs-04')">
-            <span class="fb-type fbt-combo" style="flex-shrink:0">Combo</span>
-            <span style="font-weight:700;font-size:13px">10/5 — Combo Beginner 800K</span>
-            <span class="fb-script-toggle">+</span>
+        <div class="fb-week">Tuần 2 — 12 đến 18 tháng 5 · 10 bài</div>
+        <div class="fb-cal-grid">
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">12</div><div class="fd-day">Thứ 3</div><div class="fd-slot">10:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-info">Infographic</span><span class="fb-info-note">📸 Đăng ảnh Infographic</span></div>
+              <div class="fb-title">Độ Cứng Mặt Vợt — Hard vs Soft vs Medium</div>
+              <div class="fb-cap-inline" id="cap11">Bạn biết mặt vợt của mình đang ở độ cứng bao nhiêu không? 🤔
+
+🟢 SOFT (dưới 45°): Người mới, dễ kiểm soát, xoáy dễ
+🟡 MEDIUM (45–50°): Đa số người chơi, cân bằng tốt
+🔴 HARD (trên 50°): Tốc độ cao, cần kỹ thuật tốt mới khai thác được
+
+Tóm lại: mới → mềm | biết đánh → trung | pro → cứng 😄
+Bạn đang dùng độ cứng bao nhiêu? Comment nhé!
+
+#matvot #bongbanviet #kỹthuật #topspin #chọnvợt</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap11',this)">📋 Copy Caption</button>
+            </div>
           </div>
-          <div class="fb-script-body">
-            <div class="fb-script-lbl">Caption</div>
-            <div class="fb-caption-box" id="cap04">🎯 Mới Tập Bóng Bàn — Nên Mua Gì Với 800.000đ?
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">12</div><div class="fd-day">Thứ 3</div><div class="fd-slot">20:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-engage">Tương Tác</span></div>
+              <div class="fb-title">Tag Bạn Chơi Bóng Bàn Cùng Bạn</div>
+              <div class="fb-cap-inline" id="cap12">Tag 1 người bạn chơi bóng bàn cùng bạn vào đây 👇
 
-Đây là combo chúng tôi hay gợi ý nhất cho người mới:
+Câu hỏi vui cho hai người:
+🏓 Ai đánh tốt hơn?
+🏓 Ai nên upgrade vợt trước?
+🏓 Ai hay than về vợt nhất? 😄
 
-🏓 Cốt vợt: [Tên cốt vợt] — kiểm soát tốt, không quá cứng
-🔴 Mặt vợt FH: [Tên mặt vợt] — bám bóng, dễ xoáy
-⚫ Mặt vợt BH: [Tên mặt vợt] — phản xạ tốt cho tay trái
+Tư vấn vợt miễn phí cho cả hai nếu cần!
+Zalo: 096.1269.386
 
-Tổng: ~800.000đ | Hàng chính hãng | Tư vấn 1-1 trước khi mua
-
-Lý do chúng tôi chọn combo này:
-→ Không quá đắt khi mới học
-→ Dùng được 1–2 năm trước khi cần nâng cấp
-→ Phù hợp cả hai lối chơi công và thủ
-
-Muốn được tư vấn theo lối chơi riêng? Nhắn Zalo: 096.1269.386 ngay nhé!
-
-#combovot #bongbanviet #mớitập #chọnvợt #giárẻhàngthật<button class="fb-copy-btn" onclick="fbCopyBox('cap04',this)">Copy</button></div>
+#bongbanviet #bóngbàn #tagbạn #cộngđồng</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap12',this)">📋 Copy Caption</button>
+            </div>
           </div>
-        </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">13</div><div class="fd-day">Thứ 4</div><div class="fd-slot">10:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-prod">Sản phẩm</span></div>
+              <div class="fb-title">Tibhar Evolution MX-P — Mặt Vợt Công Tầm Giá</div>
+              <div class="fb-cap-inline" id="cap13">🔴 Tibhar Evolution MX-P — Khi Tốc Độ Gặp Kiểm Soát
 
-        <div class="fb-script-card" id="fbs-05">
-          <div class="fb-script-head" onclick="toggleFbScript('fbs-05')">
-            <span class="fb-type fbt-info" style="flex-shrink:0">Infographic</span>
-            <span style="font-weight:700;font-size:13px">12/5 — Độ Cứng Mặt Vợt</span>
-            <span class="fb-script-toggle">+</span>
+Vì sao đây là một trong những mặt vợt được hỏi mua nhiều nhất:
+✅ Sponge 47.5° — cân bằng hoàn hảo
+✅ Xoáy tốt, tốc độ cao nhưng vẫn kiểm soát được
+✅ Top sheet bền — dùng lâu hơn nhiều hãng khác
+✅ Phù hợp trình độ trung cấp → nâng cao
+
+Hàng Tibhar chính hãng. Inbox/Zalo: 096.1269.386
+
+#tibhar #matvot #bongbanviet #evolutionmxp #hàngchínhhãng</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap13',this)">📋 Copy Caption</button>
+            </div>
           </div>
-          <div class="fb-script-body">
-            <div class="fb-script-lbl">Caption</div>
-            <div class="fb-caption-box" id="cap05">Bạn biết mặt vợt của mình đang ở độ cứng bao nhiêu không? 🤔
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">13</div><div class="fd-day">Thứ 4</div><div class="fd-slot">20:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-info">Infographic</span><span class="fb-info-note">📸 Đăng ảnh Infographic</span></div>
+              <div class="fb-title">Chọn Mặt Vợt Theo Lối Chơi — Công Hay Thủ?</div>
+              <div class="fb-cap-inline" id="cap14">Lối chơi khác nhau → cần mặt vợt khác nhau! 🏓
 
-Độ cứng ảnh hưởng trực tiếp đến cảm giác đánh bóng:
+Tấn công mạnh? Phòng thủ ổn định? Hay cân bằng cả hai?
+→ Xem infographic để tìm mặt vợt phù hợp với phong cách của bạn
 
-🟢 SOFT (Mềm, dưới 45°):
-→ Dễ kiểm soát, phù hợp người mới
-→ Tốc độ thấp hơn nhưng xoáy dễ hơn
+Bạn chơi kiểu nào — Công hay Thủ? Comment nhé!
 
-🟡 MEDIUM (45°–50°):
-→ Cân bằng tốc độ và kiểm soát
-→ Phù hợp đa số người chơi
-
-🔴 HARD (Trên 50°):
-→ Tốc độ cao, lực xoáy mạnh
-→ Cần kỹ thuật tốt để khai thác
-
-Tóm lại: Người mới → mềm. Đánh được rồi → trung. Pro → cứng 😄
-
-Bạn đang dùng mặt vợt độ cứng bao nhiêu? Comment nhé!
-
-#matvot #bongbanviet #kỹthuật #topspin<button class="fb-copy-btn" onclick="fbCopyBox('cap05',this)">Copy</button></div>
+#bongbanviet #matvot #kỹthuật #chọnvợt #topspin</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap14',this)">📋 Copy Caption</button>
+            </div>
           </div>
-        </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">14</div><div class="fd-day">Thứ 5</div><div class="fd-slot">10:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-prod">Sản phẩm</span></div>
+              <div class="fb-title">UNREX — Thương Hiệu Bóng Bàn Việt Nam</div>
+              <div class="fb-cap-inline" id="cap15">UNREX — Thương Hiệu Bóng Bàn Việt Nam Đáng Tự Hào 🇻🇳
 
-        <div class="fb-script-card" id="fbs-07">
-          <div class="fb-script-head" onclick="toggleFbScript('fbs-07')">
-            <span class="fb-type fbt-engage" style="flex-shrink:0">Tương Tác</span>
-            <span style="font-weight:700;font-size:13px">15/5 — Hỏi Budget</span>
-            <span class="fb-script-toggle">+</span>
+Nhiều khách ngạc nhiên khi thử UNREX lần đầu:
+✅ Chất lượng ngang hàng thương hiệu quốc tế
+✅ Giá thân thiện hơn nhiều
+✅ Made in Vietnam — ủng hộ hàng nội địa
+✅ Dịch vụ hậu mãi tốt, dễ tìm phụ kiện
+
+Bạn đã thử UNREX chưa? Inbox để được tư vấn!
+Zalo: 096.1269.386
+
+#unrex #bongbanviet #hàngnội #cotvot #vietnammade</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap15',this)">📋 Copy Caption</button>
+            </div>
           </div>
-          <div class="fb-script-body">
-            <div class="fb-script-lbl">Caption</div>
-            <div class="fb-caption-box" id="cap07">Câu hỏi mà chúng tôi nhận được nhiều nhất:
-
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">15</div><div class="fd-day">Thứ 6</div><div class="fd-slot">20:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-engage">Tương Tác</span></div>
+              <div class="fb-title">Hỏi: Budget Bao Nhiêu Là Đủ Để Có Bộ Vợt?</div>
+              <div class="fb-cap-inline" id="cap16">Câu hỏi chúng tôi nhận được nhiều nhất:
 "Cần bao nhiêu tiền để có bộ vợt chơi được?"
-
-Câu trả lời thực tế từ chúng tôi:
 
 💚 500K–800K → Chơi được, phù hợp người mới
 💛 1–1.5 triệu → Chơi tốt, giữ được 2–3 năm
 🧡 2–3 triệu → Chơi giải phong trào, cảm giác vợt rõ hơn nhiều
-❤️ 5 triệu+ → Dân chuyên — cảm giác vợt đỉnh, khó quay đầu
+❤️ 5 triệu+ → Dân chuyên — cảm giác đỉnh, khó quay đầu
 
-Bạn đang ở budget nào? Comment để chúng tôi gợi ý combo phù hợp nhé 👇
-
+Bạn đang ở budget nào? Comment để được gợi ý combo phù hợp nhé 👇
 Tư vấn miễn phí qua Zalo: 096.1269.386
 
-#bongbanviet #chọnvợt #budget #tưvấnmiễnphí #bóngbàn<button class="fb-copy-btn" onclick="fbCopyBox('cap07',this)">Copy</button></div>
+#bongbanviet #chọnvợt #budget #tưvấnmiễnphí #bóngbàn</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap16',this)">📋 Copy Caption</button>
+            </div>
           </div>
-        </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">16</div><div class="fd-day">Thứ 7</div><div class="fd-slot">10:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-combo">Combo</span></div>
+              <div class="fb-title">Combo Trung Cấp — Budget 2–3 Triệu</div>
+              <div class="fb-cap-inline" id="cap17">Đánh được rồi, muốn nâng cấp — nên mua gì? 🎯
 
-        <div class="fb-script-card" id="fbs-08">
-          <div class="fb-script-head" onclick="toggleFbScript('fbs-08')">
-            <span class="fb-type fbt-community" style="flex-shrink:0">Cộng đồng</span>
-            <span style="font-weight:700;font-size:13px">17/5 — Review Khách Hàng</span>
-            <span class="fb-script-toggle">+</span>
+Combo trung cấp budget 2–3 triệu chúng tôi hay gợi ý:
+🏓 Cốt: [Tên cốt] — tốc độ tốt, vẫn kiểm soát được
+🔴 Mặt FH: [Tên mặt] — xoáy mạnh, tấn công tốt
+⚫ Mặt BH: [Tên mặt] — ổn định, phản công tốt
+
+Hàng chính hãng, tư vấn 1-1. Zalo: 096.1269.386
+
+#combovot #intermediate #bongbanviet #nângcấpvợt</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap17',this)">📋 Copy Caption</button>
+            </div>
           </div>
-          <div class="fb-script-body">
-            <div class="fb-script-lbl">Caption (điền tên + sản phẩm trước khi đăng)</div>
-            <div class="fb-caption-box" id="cap08">🙌 Cảm ơn anh/chị [TÊN KHÁCH] đã tin tưởng BÓNG BÀN VIỆT!
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">16</div><div class="fd-day">Thứ 7</div><div class="fd-slot">20:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-info">Infographic</span><span class="fb-info-note">📸 Đăng ảnh Infographic</span></div>
+              <div class="fb-title">Kỹ Thuật Phòng Thủ — Chặn Bóng Đúng Cách</div>
+              <div class="fb-cap-inline" id="cap18">Tấn công đẹp thì ai cũng thích — nhưng PHÒNG THỦ mới quyết định thắng thua 🛡️
+
+Xem infographic kỹ thuật chặn bóng chuẩn!
+
+Bạn thiên về tấn công hay phòng thủ? Comment nhé!
+
+#bongbanviet #kỹthuật #phòngthủ #bóngbàn #chặnbóng</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap18',this)">📋 Copy Caption</button>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">17</div><div class="fd-day">CN</div><div class="fd-slot">10:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-community">Cộng Đồng</span></div>
+              <div class="fb-title">Review Khách Hàng — [Tên + Sản Phẩm]</div>
+              <div class="fb-cap-inline" id="cap19">🙌 Cảm ơn anh/chị [TÊN KHÁCH] đã tin tưởng BÓNG BÀN VIỆT!
 
 Anh/chị [TÊN KHÁCH] vừa nhận được [TÊN SẢN PHẨM] và chia sẻ:
 "[TRÍCH DẪN FEEDBACK CỦA KHÁCH]"
 
-Đây là lý do chúng tôi làm việc mỗi ngày — thấy khách hài lòng là vui nhất 🏓❤️
+Đây là lý do chúng tôi làm việc mỗi ngày ❤️
 
-Nếu bạn cũng muốn được tư vấn đúng sản phẩm, phù hợp lối chơi và túi tiền:
+Nếu bạn cũng muốn được tư vấn đúng sản phẩm:
 📞 Zalo: 096.1269.386
 🌐 bongbanviet.com
 
-#bongbanviet #kháchhàng #review #hàngchínhhãng #tưvấnchuẩn<button class="fb-copy-btn" onclick="fbCopyBox('cap08',this)">Copy</button></div>
+#bongbanviet #kháchhàng #review #hàngchínhhãng #tưvấnchuẩn</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap19',this)">📋 Copy Caption</button>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">18</div><div class="fd-day">Thứ 2</div><div class="fd-slot">20:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-prod">Sản phẩm</span></div>
+              <div class="fb-title">Bàn Bóng Bàn — Tập Ngay Tại Nhà</div>
+              <div class="fb-cap-inline" id="cap20">🏓 Muốn Tập Ngay Tại Nhà?
+
+BÓNG BÀN VIỆT có bàn bóng bàn cho mọi không gian:
+✅ Bàn mini cho nhà nhỏ, gấp gọn tiện lợi
+✅ Bàn tiêu chuẩn cho phòng tập hoặc sân vườn
+✅ Bàn ngoài trời chống thời tiết
+
+Tư vấn chọn bàn phù hợp diện tích và ngân sách.
+Zalo: 096.1269.386 | bongbanviet.com
+
+#bàn #bóngbàntạinhà #bongbanviet #dụngcụbóngbàn</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap20',this)">📋 Copy Caption</button>
+            </div>
           </div>
         </div>
 
-        <div class="fb-script-card" id="fbs-10">
-          <div class="fb-script-head" onclick="toggleFbScript('fbs-10')">
-            <span class="fb-type fbt-prod" style="flex-shrink:0">Sản phẩm</span>
-            <span style="font-weight:700;font-size:13px">20/5 — Carbon vs All-Wood</span>
-            <span class="fb-script-toggle">+</span>
-          </div>
-          <div class="fb-script-body">
-            <div class="fb-script-lbl">Caption</div>
-            <div class="fb-caption-box" id="cap10">Carbon hay All-Wood — Câu Hỏi Muôn Thuở Của Dân Bóng Bàn 🤔
+        <div class="fb-week">Tuần 3 — 19 đến 25 tháng 5 · 10 bài</div>
+        <div class="fb-cal-grid">
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">19</div><div class="fd-day">Thứ 3</div><div class="fd-slot">10:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-info">Infographic</span><span class="fb-info-note">📸 Đăng ảnh Infographic</span></div>
+              <div class="fb-title">Kỹ Thuật Di Chuyển Chân — Footwork Cơ Bản</div>
+              <div class="fb-cap-inline" id="cap21">CHÂN CHẬM là nguyên nhân số 1 thua điểm đấy 😤
 
-Đây là breakdown thực tế:
+Bài tập footwork cơ bản để không bị "chôn chân"!
+Xem infographic và thực hành ngay hôm nay nhé!
+
+Bạn có hay tập footwork không? Comment nhé!
+
+#bongbanviet #footwork #kỹthuật #tậpluyện #bóngbàn</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap21',this)">📋 Copy Caption</button>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">19</div><div class="fd-day">Thứ 3</div><div class="fd-slot">20:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-engage">Tương Tác</span></div>
+              <div class="fb-title">Hỏi: Bạn Luyện Tập Mấy Lần Mỗi Tuần?</div>
+              <div class="fb-cap-inline" id="cap22">Dân bóng bàn nghiêm túc thường tập mấy lần/tuần? 🤔
+
+1️⃣ 1 lần/tuần — thỉnh thoảng thôi
+2️⃣ 2–3 lần/tuần — chơi thường xuyên
+3️⃣ 4–5 lần/tuần — nghiêm túc lắm rồi
+4️⃣ Hàng ngày — đam mê thật sự!
+
+Comment số của bạn nhé! Và tập nhiều thì cần vợt tốt hơn đấy 😄
+Tư vấn miễn phí: Zalo 096.1269.386
+
+#bongbanviet #bóngbàn #luyệntập #đammê</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap22',this)">📋 Copy Caption</button>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">20</div><div class="fd-day">Thứ 4</div><div class="fd-slot">10:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-prod">Sản phẩm</span></div>
+              <div class="fb-title">Carbon vs All-Wood — Nên Chọn Loại Nào?</div>
+              <div class="fb-cap-inline" id="cap23">Carbon hay All-Wood — Câu Hỏi Muôn Thuở Của Dân Bóng Bàn 🤔
 
 🪵 ALL-WOOD (thuần gỗ):
 → Cảm giác bóng rõ, tự nhiên
-→ Dễ kiểm soát hơn
-→ Phù hợp người mới → trung cấp
-→ Giá thường mềm hơn
+→ Dễ kiểm soát hơn, phù hợp người mới → trung cấp
 
 ⚡ CARBON:
 → Tốc độ cao hơn 20–30%
-→ Độ rung ít → tay không mỏi
 → Cần kỹ thuật tốt mới khai thác được
 → Phù hợp người đã đánh tốt
 
-Kết luận: Nếu bạn chưa đánh được topspin ổn định → chưa cần carbon.
-Đừng mua vợt "pro" khi kỹ thuật chưa đến 😄
+Kết luận: Nếu chưa đánh được topspin ổn định → chưa cần carbon!
+Bạn đang dùng loại nào? Comment nhé!
 
-Bạn đang dùng loại nào? Carbon hay All-Wood? Comment nhé!
+#bongbanviet #carbon #allwood #cotvot #chọnvợt #kỹthuật</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap23',this)">📋 Copy Caption</button>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">20</div><div class="fd-day">Thứ 4</div><div class="fd-slot">20:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-info">Infographic</span><span class="fb-info-note">📸 Đăng ảnh Infographic</span></div>
+              <div class="fb-title">Cách Đọc Thông Số Trên Hộp Vợt</div>
+              <div class="fb-cap-inline" id="cap24">Speed 95, Spin 90, Control 70 — Bạn Có Biết Đọc Những Con Số Này Không? 🤔
 
-#bongbanviet #carbon #allwood #cotvot #chọnvợt #kỹthuật<button class="fb-copy-btn" onclick="fbCopyBox('cap10',this)">Copy</button></div>
+Xem infographic để hiểu thông số vợt trước khi mua!
+
+Hiểu thông số = mua vợt không bị lệch kỳ vọng 😄
+
+#bongbanviet #kỹthuật #chọnvợt #thôngsốvợt #cotvot</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap24',this)">📋 Copy Caption</button>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">21</div><div class="fd-day">Thứ 5</div><div class="fd-slot">10:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-combo">Combo</span></div>
+              <div class="fb-title">Combo Chơi Giải — Budget 4–5 Triệu</div>
+              <div class="fb-cap-inline" id="cap25">Muốn Chơi Giải Phong Trào — Budget 4–5 Triệu? 🏆
+
+Combo chúng tôi hay gợi ý cho level này:
+🏓 Cốt: [Tên cốt] — tốc độ cao, kiểm soát tốt
+🔴 Mặt FH: [Tên mặt] — xoáy mạnh, tấn công nhanh
+⚫ Mặt BH: [Tên mặt] — ổn định, counter loop tốt
+
+Hàng chính hãng. Zalo để được tư vấn chi tiết: 096.1269.386
+
+#combovot #chigiải #bongbanviet #advanced #nângcấpvợt</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap25',this)">📋 Copy Caption</button>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">22</div><div class="fd-day">Thứ 6</div><div class="fd-slot">10:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-info">Infographic</span><span class="fb-info-note">📸 Đăng ảnh Infographic</span></div>
+              <div class="fb-title">Chăm Sóc Mặt Vợt Đúng Cách</div>
+              <div class="fb-cap-inline" id="cap26">Đừng để mặt vợt 3 triệu xuống cấp vì chăm sóc sai 😤
+
+Xem infographic cách chăm sóc mặt vợt đúng cách!
+
+Bạn hay quên bảo vệ mặt vợt sau khi đánh không? Comment nhé!
+
+#bongbanviet #bảotrìvợt #matvot #mẹohay #chămsócvợt</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap26',this)">📋 Copy Caption</button>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">22</div><div class="fd-day">Thứ 6</div><div class="fd-slot">20:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-prod">Sản phẩm</span></div>
+              <div class="fb-title">Tibhar Samsonov Force Pro — Cốt Của Huyền Thoại</div>
+              <div class="fb-cap-inline" id="cap27">💥 Tibhar Samsonov Force Pro — Cốt Vợt Của Huyền Thoại
+
+Vladimir Samsonov — huyền thoại bóng bàn châu Âu — dùng cây vợt này trong phần lớn sự nghiệp.
+
+✅ All-wood 5 lớp — cảm giác bóng rõ, tự nhiên
+✅ Kiểm soát xuất sắc ở tầm trung
+✅ Bền bỉ theo thời gian
+✅ Phù hợp chuyển từ beginner → intermediate
+
+Inbox hoặc Zalo để được tư vấn: 096.1269.386
+
+#tibhar #cotvot #samsonov #bongbanviet #hàngchínhhãng</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap27',this)">📋 Copy Caption</button>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">23</div><div class="fd-day">Thứ 7</div><div class="fd-slot">10:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-engage">Tương Tác</span></div>
+              <div class="fb-title">Show Bộ Vợt Của Bạn</div>
+              <div class="fb-cap-inline" id="cap28">Challenge cho tất cả dân bóng bàn! 🏓
+
+📸 Post ảnh bộ vợt của bạn vào comment
+💬 Kể cho chúng tôi nghe: bạn dùng bao lâu rồi?
+🤔 Bạn có muốn upgrade không?
+
+Chúng tôi sẽ comment tư vấn riêng cho từng bộ vợt!
+
+#bongbanviet #showvợt #bóngbàn #chiasẻ #cộngđồng</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap28',this)">📋 Copy Caption</button>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">24</div><div class="fd-day">CN</div><div class="fd-slot">10:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-combo">Combo</span></div>
+              <div class="fb-title">Combo Intermediate — Nâng Cấp Đúng Thời Điểm</div>
+              <div class="fb-cap-inline" id="cap29">Đã đánh được rồi — combo nâng cấp đáng đồng tiền nhất! 🎯
+
+Combo Intermediate budget 2–3 triệu:
+🏓 Cốt: [Tên cốt] — lên cấp từ beginner blade
+🔴 Mặt FH: [Tên mặt] — cảm giác khác hẳn mặt vợt entry
+⚫ Mặt BH: [Tên mặt] — kiểm soát tốt hơn rõ rệt
+
+Nâng cấp đúng thời điểm = tiến bộ nhanh gấp đôi!
+Zalo: 096.1269.386
+
+#combovot #intermediate #nângcấp #bongbanviet</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap29',this)">📋 Copy Caption</button>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">25</div><div class="fd-day">Thứ 2</div><div class="fd-slot">20:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-prod">Sản phẩm</span></div>
+              <div class="fb-title">Đồ Thi Đấu — Mặc Đẹp Cũng Quan Trọng</div>
+              <div class="fb-cap-inline" id="cap30">Đánh giải mà mặc đẹp cũng quan trọng không kém 😄🏆
+
+BÓNG BÀN VIỆT có đầy đủ:
+✅ Áo thi đấu — thoáng mát, hút mồ hôi tốt
+✅ Giày bóng bàn — bám sàn, bảo vệ cổ chân
+✅ Vợt case — bảo vệ vợt khi di chuyển
+✅ Túi đựng bóng, khăn lau, phụ kiện đủ loại
+
+Tư vấn chọn đồ thi đấu phù hợp. Zalo: 096.1269.386
+
+#dothidau #bongbanviet #giàybóngbàn #áobóngbàn</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap30',this)">📋 Copy Caption</button>
+            </div>
           </div>
         </div>
 
-        <div class="fb-script-card" id="fbs-15">
-          <div class="fb-script-head" onclick="toggleFbScript('fbs-15')">
-            <span class="fb-type fbt-engage" style="flex-shrink:0">Live Q&amp;A</span>
-            <span style="font-weight:700;font-size:13px">29/5 — Thông Báo + Script Live</span>
-            <span class="fb-script-toggle">+</span>
+        <div class="fb-week">Tuần 4 — 26 đến 31 tháng 5 · 10 bài</div>
+        <div class="fb-cal-grid">
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">26</div><div class="fd-day">Thứ 3</div><div class="fd-slot">10:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-info">Infographic</span><span class="fb-info-note">📸 Đăng ảnh Infographic</span></div>
+              <div class="fb-title">Kỹ Thuật Giao Bóng — Nắm 30% Trận Đấu</div>
+              <div class="fb-cap-inline" id="cap31">GIAO BÓNG tốt = nắm 30% trận đấu trước khi bóng được đánh trả! 🏓
+
+Xem infographic kỹ thuật giao bóng phổ biến nhất — và cách luyện!
+
+Kỹ thuật giao bóng bạn đang luyện là gì? Comment nhé!
+
+#bongbanviet #giaobóng #kỹthuật #bóngbàn #series</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap31',this)">📋 Copy Caption</button>
+            </div>
           </div>
-          <div class="fb-script-body">
-            <div class="fb-script-lbl">Caption thông báo (đăng trước 1 ngày)</div>
-            <div class="fb-caption-box" id="cap15">📣 THÔNG BÁO: Tối mai 20:00 — BÓNG BÀN VIỆT sẽ Live!
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">26</div><div class="fd-day">Thứ 3</div><div class="fd-slot">20:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-prod">Sản phẩm</span></div>
+              <div class="fb-title">Hàng Mới Về Tháng 5 — [Điền Tên Sản Phẩm]</div>
+              <div class="fb-cap-inline" id="cap32">🔥 HÀNG MỚI VỀ THÁNG 5!
+
+BÓNG BÀN VIỆT vừa nhập về:
+📦 [Tên sản phẩm 1] — [đặc điểm nổi bật]
+📦 [Tên sản phẩm 2] — [đặc điểm nổi bật]
+📦 [Tên sản phẩm 3] — [đặc điểm nổi bật]
+
+Số lượng có hạn — ai quan tâm inbox/Zalo sớm nhé!
+Zalo: 096.1269.386
+
+#hàngnhập #mới #bongbanviet #hàngchínhhãng</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap32',this)">📋 Copy Caption</button>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">27</div><div class="fd-day">Thứ 4</div><div class="fd-slot">10:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-info">Infographic</span><span class="fb-info-note">📸 Đăng ảnh Infographic</span></div>
+              <div class="fb-title">Kỹ Thuật Flip — Đòn Phản Công Nguy Hiểm</div>
+              <div class="fb-cap-inline" id="cap33">FLIP — đòn phản công khiến đối thủ không kịp phản ứng ⚡
+
+Xem infographic kỹ thuật flip chuẩn từng bước!
+
+Bạn đã biết flip chưa? Hay vẫn đang dùng push đơn thuần?
+Comment nhé 👇
+
+#bongbanviet #flip #kỹthuật #phảncông #bóngbàn</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap33',this)">📋 Copy Caption</button>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">28</div><div class="fd-day">Thứ 5</div><div class="fd-slot">10:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-prod">Sản phẩm</span></div>
+              <div class="fb-title">Yinhe Mercury II — Mặt Vợt Ngân Hà Đáng Thử</div>
+              <div class="fb-cap-inline" id="cap34">🔴 Yinhe Mercury II — Mặt Vợt Giá Mềm, Chất Lượng Bất Ngờ
+
+Nhiều khách bất ngờ với Mercury II khi so với giá:
+✅ Độ xoáy tốt, kiểm soát ổn định
+✅ Top sheet bền bỉ, dùng được lâu
+✅ Giá mềm hơn các mặt vợt cùng phân khúc
+✅ Phù hợp người đang ở trình độ B–C
+
+Hàng chính hãng Yinhe. Zalo: 096.1269.386
+
+#yinhe #matvot #mercury2 #bongbanviet #giárẻchấtlượng</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap34',this)">📋 Copy Caption</button>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">28</div><div class="fd-day">Thứ 5</div><div class="fd-slot">20:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-engage">Tương Tác</span></div>
+              <div class="fb-title">Quiz: Đường Kính Bóng Bàn Tiêu Chuẩn Là Bao Nhiêu?</div>
+              <div class="fb-cap-inline" id="cap35">QUIZ: Bạn Biết Bao Nhiêu Về Bóng Bàn? 🧠
+
+Câu hỏi: Tiêu chuẩn quốc tế, bóng bàn có đường kính bao nhiêu mm?
+
+A. 38mm  B. 40mm  C. 42mm  D. 44mm
+
+Comment đáp án của bạn — chúng tôi sẽ tiết lộ vào 21:00!
+
+#bongbanviet #quiz #bóngbàn #kiếnthức #đốvui</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap35',this)">📋 Copy Caption</button>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">29</div><div class="fd-day">Thứ 6</div><div class="fd-slot">20:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-engage">Tương Tác</span></div>
+              <div class="fb-title">Thông Báo Live Q&amp;A — Hỏi Gì Trả Lời Nấy</div>
+              <div class="fb-cap-inline" id="cap36">📣 THÔNG BÁO: Tối mai 20:00 — BÓNG BÀN VIỆT sẽ Live!
 
 Chủ đề: "Hỏi Gì Về Bóng Bàn Cũng Trả Lời"
 
@@ -1361,58 +1615,98 @@ Mọi câu hỏi đều được welcome:
 🏓 Cốt vợt nào đang hot nhất hiện tại
 🏓 Cách chăm sóc vợt đúng cách
 
-Đặt câu hỏi trước bên dưới nhé — chúng tôi sẽ trả lời hết trong Live 👇
+Đặt câu hỏi trước bên dưới nhé — sẽ trả lời hết trong Live 👇
 
-#bongbanviet #live #bóngbàn #tưvấnmiễnphí<button class="fb-copy-btn" onclick="fbCopyBox('cap15',this)">Copy</button></div>
-            <div class="fb-script-lbl" style="margin-top:12px">Script mở đầu Live</div>
-            <div class="fb-caption-box" id="cap15b">Xin chào tất cả mọi người đang xem Live!
-
-Mình là [TÊN] từ BÓNG BÀN VIỆT — shop chuyên dụng cụ bóng bàn chính hãng tại Hà Nội.
-
-Hôm nay mình live để trả lời tất cả câu hỏi về bóng bàn — từ cơ bản đến nâng cao. Không có câu hỏi nào là ngớ ngẩn nhé!
-
-Bạn nào đang xem, comment tên và câu hỏi bên dưới — mình sẽ đọc và trả lời từng người.
-
-Và nếu cần tư vấn riêng, inbox hoặc Zalo mình: 096.1269.386 nhé!
-
-Bắt đầu thôi — ai có câu hỏi đầu tiên? 👇<button class="fb-copy-btn" onclick="fbCopyBox('cap15b',this)">Copy</button></div>
+#bongbanviet #live #bóngbàn #tưvấnmiễnphí</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap36',this)">📋 Copy Caption</button>
+            </div>
           </div>
-        </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">30</div><div class="fd-day">Thứ 7</div><div class="fd-slot">10:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-prod">Sản phẩm</span></div>
+              <div class="fb-title">Đồ Cũ Chất Lượng — Hàng Cao Cấp Giá Mềm</div>
+              <div class="fb-cap-inline" id="cap37">💎 Đồ Đã Qua Sử Dụng — Chất Lượng Vẫn Tốt, Giá Mềm Hơn!
 
-        <div class="fb-script-card" id="fbs-16">
-          <div class="fb-script-head" onclick="toggleFbScript('fbs-16')">
-            <span class="fb-type fbt-community" style="flex-shrink:0">Cộng đồng</span>
-            <span style="font-weight:700;font-size:13px">31/5 — Tổng Kết Tháng 5</span>
-            <span class="fb-script-toggle">+</span>
+BÓNG BÀN VIỆT có section đồ cũ uy tín:
+✅ Tất cả được kiểm tra kỹ trước khi bán
+✅ Mô tả tình trạng thật, không che giấu
+✅ Giá tốt hơn 30–50% so với hàng mới
+✅ Phù hợp người muốn thử sản phẩm cao cấp
+
+Xem tại: bongbanviet.com/do-cu.html
+Zalo: 096.1269.386
+
+#đồcũ #bongbanviet #giárẻ #hàngchấtlượng</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap37',this)">📋 Copy Caption</button>
+            </div>
           </div>
-          <div class="fb-script-body">
-            <div class="fb-script-lbl">Caption</div>
-            <div class="fb-caption-box" id="cap16">Tháng 5 đi qua rất nhanh 🏓
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">30</div><div class="fd-day">Thứ 7</div><div class="fd-slot">20:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-community">Cộng Đồng</span></div>
+              <div class="fb-title">Ảnh Khách Hàng Cuối Tuần</div>
+              <div class="fb-cap-inline" id="cap38">Cuối tuần — mọi người đang đánh bóng bàn ở đâu? 🏓
+
+Post ảnh bàn tập / câu lạc bộ của bạn vào comment nhé!
+Chúng tôi muốn thấy cộng đồng bóng bàn Việt Nam sôi động ❤️
+
+#bongbanviet #cộngđồngbóngbàn #cuốituần #bóngbàn #chiasẻ</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap38',this)">📋 Copy Caption</button>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">31</div><div class="fd-day">CN</div><div class="fd-slot">10:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-community">Cộng Đồng</span></div>
+              <div class="fb-title">Tổng Kết Tháng 5 + Preview Tháng 6</div>
+              <div class="fb-cap-inline" id="cap39">Tháng 5 đi qua rất nhanh 🏓
 
 Nhìn lại tháng này tại BÓNG BÀN VIỆT:
 ✅ [X] đơn hàng được giao đến tay khách
 ✅ [X] câu hỏi được tư vấn qua Zalo
 ✅ [X] bộ vợt mới tìm được chủ nhân
 
-Cảm ơn tất cả mọi người đã theo dõi, ủng hộ và tin tưởng chúng tôi ❤️
+Cảm ơn tất cả đã theo dõi và ủng hộ ❤️
 
 Tháng 6 sẽ có:
 🔥 Sản phẩm mới vừa nhập về
 🎯 Series kỹ thuật chuyên sâu hơn
 💬 Buổi Live tư vấn định kỳ
 
-Follow page để không bỏ lỡ nhé! Và nếu bạn cần tư vấn:
+Follow để không bỏ lỡ!
 📞 Zalo: 096.1269.386 | 🌐 bongbanviet.com
 
-#bongbanviet #tổngkếttháng5 #cảmơn #tháng6 #bóngbàn<button class="fb-copy-btn" onclick="fbCopyBox('cap16',this)">Copy</button></div>
+#bongbanviet #tổngkếttháng5 #cảmơn #tháng6 #bóngbàn</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap39',this)">📋 Copy Caption</button>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">31</div><div class="fd-day">CN</div><div class="fd-slot">20:00</div></div>
+            <div class="fb-body">
+              <div style="margin-bottom:4px"><span class="fb-type fbt-info">Infographic</span><span class="fb-info-note">📸 Đăng ảnh Infographic</span></div>
+              <div class="fb-title">Preview Tháng 6 — Chủ Đề Sắp Ra Mắt</div>
+              <div class="fb-cap-inline" id="cap40">🔮 Tháng 6 sắp tới — Chúng Tôi Đang Lên Kế Hoạch!
+
+Series sẽ có trong tháng 6:
+📚 Kỹ thuật chuyên sâu cho trình độ B–C
+🏓 Review chi tiết các mẫu vợt hot nhất
+💬 Buổi Live tư vấn định kỳ hàng tháng
+
+Có chủ đề nào bạn muốn chúng tôi cover? Comment nhé!
+
+#bongbanviet #tháng6 #kỹthuật #sắptới #preview</div>
+              <button class="fb-btn-copy" onclick="fbCopy('cap40',this)">📋 Copy Caption</button>
+            </div>
           </div>
         </div>
 
         <div style="background:var(--bg);border:1.5px solid var(--border);padding:14px 16px;margin-top:8px">
-          <div class="fb-script-lbl">CTA chuẩn — dùng cuối mọi post sản phẩm</div>
-          <div class="fb-caption-box" id="cap-cta">📞 Tư vấn 1-1 → Zalo: 096.1269.386
+          <div style="font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">CTA chuẩn — dùng cuối mọi post sản phẩm</div>
+          <div class="fb-cap-inline" id="cap-cta" style="margin:0">📞 Tư vấn 1-1 → Zalo: 096.1269.386
 🌐 Xem thêm sản phẩm → bongbanviet.com
-📍 Showroom: 286 Nguyễn Xiển, Thanh Liệt, Hà Nội<button class="fb-copy-btn" onclick="fbCopyBox('cap-cta',this)">Copy</button></div>
+📍 Showroom: 286 Nguyễn Xiển, Thanh Liệt, Hà Nội</div>
+          <button class="fb-btn-copy" style="margin-top:8px" onclick="fbCopy('cap-cta',this)">📋 Copy CTA</button>
         </div>
       </div>
 
@@ -1538,7 +1832,7 @@ Follow page để không bỏ lỡ nhé! Và nếu bạn cần tư vấn:
           <div class="fb-tip-card">
             <h4>📅 Chuẩn Bị Tháng 6</h4>
             <ul>
-              <li>Cuối tháng 5: lên 20 chủ đề tháng 6</li>
+              <li>Cuối tháng 5: lên 40 chủ đề tháng 6</li>
               <li>Chọn infographic phù hợp từ thư viện</li>
               <li>Viết caption 2 tuần đầu trước</li>
               <li>Lên lịch qua Meta Business Suite</li>
