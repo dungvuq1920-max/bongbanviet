@@ -667,6 +667,17 @@
     .lh-zalo-btn:hover { background: var(--coral); }
 
     /* ─── Inline Hướng Dẫn Mua Hàng Section ─────────────── */
+    .cs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; margin-top: 24px; }
+    .cs-card { background: var(--white); padding: 28px 24px; border: 1px solid var(--line); }
+    .cs-card-title { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--dark); margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+    .cs-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 9px; }
+    .cs-list li { font-size: 13px; color: var(--mid); line-height: 1.6; padding-left: 16px; position: relative; }
+    .cs-list li::before { content: '—'; position: absolute; left: 0; color: var(--coral); font-weight: 700; }
+    .cs-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+    .cs-table th { background: var(--dark); color: #fff; padding: 9px 12px; text-align: left; font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
+    .cs-table td { padding: 10px 12px; border-bottom: 1px solid var(--line); font-size: 12px; color: var(--mid); line-height: 1.5; }
+    .cs-table tr:last-child td { border-bottom: none; }
+    .cs-note { background: #FFF5F5; border-left: 3px solid var(--red); padding: 14px 18px; margin-top: 14px; font-size: 12px; color: var(--dark); line-height: 1.7; }
     .hd-steps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin-top: 24px; }
     .hd-step-card { background: var(--white); padding: 28px 24px; border: 1px solid var(--line); }
     .hd-step-num { font-size: 52px; font-weight: 900; color: var(--line); line-height: 1; margin-bottom: 12px; }
@@ -730,6 +741,7 @@
       .cat-cu   { grid-column: span 2; }
       .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
       .lh-inline-layout { grid-template-columns: 1fr; }
+      .cs-grid { grid-template-columns: 1fr 1fr; }
       .hd-steps-grid { grid-template-columns: 1fr 1fr; }
       .hd-payment-strip { flex-wrap: wrap; gap: 20px; padding: 24px; }
       .hd-pay-sep { display: none; }
@@ -802,6 +814,7 @@
       .lh-info-grid { grid-template-columns: 1fr; gap: 24px; padding: 28px 20px; }
       .lh-form-panel { padding: 28px 20px; }
       .lh-fp-row2 { grid-template-columns: 1fr; }
+      .cs-grid { grid-template-columns: 1fr; }
       .hd-steps-grid { grid-template-columns: 1fr; }
       .hd-payment-strip { padding: 20px; flex-direction: column; }
       .footer-cta-inner { padding: 20px; }
@@ -1449,7 +1462,7 @@
       <a href="#block-do-cu">Đồ Cũ</a>
       <a href="#block-kien-thuc">Kiến Thức</a>
       <a href="#block-huong-dan">Hướng Dẫn Mua Hàng</a>
-      <a href="chinh-sach-doi-tra.html">Chính Sách Đổi Trả</a>
+      <a href="#block-chinh-sach-doi-tra" onclick="goToSection('chinh-sach-doi-tra');return false;">Chính Sách Đổi Trả</a>
       <a href="#block-lien-he" class="m-cta">Liên Hệ Tư Vấn</a>
     </div>
     <div class="mobile-nav-footer">
@@ -1769,6 +1782,74 @@
       </div>
     </div>
 
+    <div class="cat-block" id="block-chinh-sach-doi-tra">
+      <div class="flow-section-head">
+        <div>
+          <h2 class="flow-section-title">Chính Sách <em style="font-style:italic;color:var(--coral)">Đổi Trả</em></h2>
+          <p class="flow-section-sub">— CAM KẾT BẢO VỆ QUYỀN LỢI KHÁCH HÀNG</p>
+        </div>
+      </div>
+      <div class="cs-grid">
+        <div class="cs-card">
+          <h3 class="cs-card-title">Điều Kiện Đổi Trả</h3>
+          <ul class="cs-list">
+            <li>Sản phẩm lỗi từ nhà sản xuất (hàng mới, chưa qua sử dụng)</li>
+            <li>Giao sai loại, màu sắc hoặc thông số kỹ thuật</li>
+            <li>Hư hỏng trong quá trình vận chuyển (cần có ảnh/video khi nhận hàng)</li>
+            <li>Thiếu phụ kiện đi kèm theo mô tả</li>
+          </ul>
+          <div class="cs-note">Quay video toàn bộ quá trình mở hàng trước mặt shipper để làm bằng chứng.</div>
+        </div>
+        <div class="cs-card">
+          <h3 class="cs-card-title">Thời Hạn</h3>
+          <table class="cs-table">
+            <tr><th>Tình Huống</th><th>Thời Hạn</th></tr>
+            <tr><td>Lỗi nhà sản xuất</td><td>7 ngày từ khi nhận hàng</td></tr>
+            <tr><td>Giao sai sản phẩm</td><td>7 ngày từ khi nhận hàng</td></tr>
+            <tr><td>Hư hỏng vận chuyển</td><td>48 giờ từ khi nhận hàng</td></tr>
+            <tr><td>Bảo hành hãng</td><td>6–12 tháng tùy hãng</td></tr>
+          </table>
+        </div>
+        <div class="cs-card">
+          <h3 class="cs-card-title">Quy Trình Xử Lý</h3>
+          <ul class="cs-list">
+            <li>Liên hệ Zalo/Facebook kèm ảnh/video bằng chứng</li>
+            <li>Xác nhận trong vòng 24 giờ làm việc</li>
+            <li>Gửi sản phẩm về 286 Nguyễn Xiển (chúng tôi hỗ trợ phí ship 1 chiều nếu lỗi từ phía chúng tôi)</li>
+            <li>Kiểm tra 1–2 ngày, gửi lại hoặc hoàn tiền trong 3–5 ngày làm việc</li>
+          </ul>
+        </div>
+        <div class="cs-card">
+          <h3 class="cs-card-title">Không Áp Dụng</h3>
+          <ul class="cs-list">
+            <li>Sản phẩm đã qua sử dụng, có dấu hiệu tác động ngoại lực</li>
+            <li>Thay đổi ý định sau khi mua</li>
+            <li>Sản phẩm đồ cũ (second-hand) đã được thông báo tình trạng</li>
+            <li>Quá thời hạn hoặc thiếu phụ kiện, hộp, giấy tờ đi kèm</li>
+          </ul>
+        </div>
+        <div class="cs-card">
+          <h3 class="cs-card-title">Hoàn Tiền</h3>
+          <p style="font-size:13px;color:var(--mid);line-height:1.7;margin-bottom:12px;">Hoàn tiền 100% giá trị đơn hàng khi không có sản phẩm thay thế phù hợp.</p>
+          <table class="cs-table">
+            <tr><th>Hình Thức</th><th>Thời Gian</th></tr>
+            <tr><td>Chuyển khoản ngân hàng</td><td>1–3 ngày làm việc</td></tr>
+            <tr><td>Tiền mặt tại cửa hàng</td><td>Trong ngày (giờ làm việc)</td></tr>
+          </table>
+        </div>
+        <div class="cs-card">
+          <h3 class="cs-card-title">Bảo Hành</h3>
+          <table class="cs-table">
+            <tr><th>Thương Hiệu</th><th>Bảo Hành</th></tr>
+            <tr><td>Butterfly / Tibhar</td><td>12 tháng</td></tr>
+            <tr><td>Unrex / Yinhe</td><td>6 tháng</td></tr>
+            <tr><td>Các hãng khác</td><td>Theo nhà sản xuất</td></tr>
+          </table>
+          <div class="cs-note">Không bao gồm: hao mòn tự nhiên mặt vợt, vỡ do va đập, ẩm mốc do bảo quản sai.</div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -1836,7 +1917,7 @@
         <li><a href="#block-do-cu" onclick="goToSection('do-cu');return false;">Đồ Cũ</a></li>
         <li><a href="#block-kien-thuc" onclick="goToSection('kien-thuc');return false;">Kiến Thức</a></li>
         <li><a href="#block-huong-dan" onclick="goToSection('huong-dan');return false;">Hướng Dẫn Mua Hàng</a></li>
-        <li><a href="chinh-sach-doi-tra.html">Chính Sách Đổi Trả</a></li>
+        <li><a href="#block-chinh-sach-doi-tra" onclick="goToSection('chinh-sach-doi-tra');return false;">Chính Sách Đổi Trả</a></li>
       </ul>
     </div>
     <div>
@@ -1853,7 +1934,7 @@
   <div class="footer-bottom">
     <p>© 2025 BongBanViet.com · Tư Vấn Chuẩn - Hàng Chính Hãng</p>
     <div class="footer-bottom-links">
-      <a href="chinh-sach-doi-tra.html">Chính Sách Đổi Trả</a>
+      <a href="#block-chinh-sach-doi-tra" onclick="goToSection('chinh-sach-doi-tra');return false;">Chính Sách Đổi Trả</a>
       <span style="color:rgba(255,255,255,.15)">·</span>
       <a href="#block-lien-he" onclick="goToSection('lien-he');return false;">Liên Hệ</a>
       <span style="color:rgba(255,255,255,.15)">·</span>
@@ -2319,7 +2400,7 @@ fetch('/api/settings/home_hero_image')
       ktBlock.style.display = showKt ? '' : 'none';
       if (!showKt && window.resetArtGrid) window.resetArtGrid();
     }
-    ['block-lien-he', 'block-huong-dan'].forEach(function(bid) {
+    ['block-lien-he', 'block-huong-dan', 'block-chinh-sach-doi-tra'].forEach(function(bid) {
       var el = document.getElementById(bid);
       if (el) el.style.display = activeCat === 'all' ? '' : 'none';
     });
