@@ -614,6 +614,7 @@ function selectVariant(idx) {
     pe.className = 'sp-price'; pe.textContent = fmtPrice(v.price);
   }
   if (v.image) setGalleryImage(v.image, -1);
+  else if (galleryImages.length) setGalleryImage(galleryImages[0], 0);
 }
 
 // ── Related products ──────────────────────────────────────────────────────────

@@ -317,6 +317,16 @@
     .var-row .fi { padding: 7px 9px; font-size: 12px; }
     .v-name { flex: 1.6; }
     .v-price { flex: 1; }
+    .v-img-box {
+      width: 36px; height: 36px; flex-shrink: 0;
+      border: 1.5px dashed var(--border); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; background: #f8f8f8; overflow: hidden;
+      transition: border-color .2s;
+    }
+    .v-img-box:hover { border-color: var(--dark); }
+    .v-img-box.has-img { border-style: solid; border-color: #ccc; }
+    .v-img-box img { width: 100%; height: 100%; object-fit: cover; }
     .btn-rm-var {
       background: none; border: 1.5px solid var(--border); color: #94A3B8;
       font-size: 12px; padding: 6px 8px; cursor: pointer; flex-shrink: 0; transition: all .2s;
@@ -1188,10 +1198,16 @@ function removeImg(btn, idx) {
 }
 
 /* ─── Variant helpers ──────────────────────────────────────── */
-function varRowHtml(name, price) {
+function varRowHtml(name, price, image='') {
+  const previewInner = image
+    ? `<img src="${esc(image)}" alt="" onerror="this.style.display='none'">`
+    : `<span>📷</span>`;
   return `<div class="var-row">
     <input type="text" class="fi v-name" placeholder="Tên lựa chọn (VD: Hộp 10 quả)" value="${esc(name)}">
     <input type="text" class="fi v-price" placeholder="Giá (VD: 120.000đ)" value="${esc(price)}">
+    <div class="v-img-box${image?' has-img':''}" title="Ảnh lựa chọn (click để đổi)" onclick="this.nextElementSibling.click()">${previewInner}</div>
+    <input type="file" class="v-img-inp" accept="image/*" style="display:none" onchange="uploadVarImg(this)">
+    <input type="hidden" class="v-img" value="${esc(image)}">
     <button type="button" class="btn-rm-var" onclick="this.closest('.var-row').remove()" title="Xóa">✕</button>
   </div>`;
 }
@@ -1201,6 +1217,23 @@ function addVarRow(btn) {
   d.innerHTML = varRowHtml('','');
   rows.appendChild(d.firstElementChild);
   rows.lastElementChild.querySelector('.v-name').focus();
+}
+async function uploadVarImg(input) {
+  const row = input.closest('.var-row');
+  const file = input.files[0];
+  if (!file) return;
+  const fd = new FormData(); fd.append('image', file);
+  try {
+    const d = await fetch('/api/upload',{method:'POST',body:fd}).then(r=>r.json());
+    if (!d.path) throw new Error('Lỗi upload');
+    row.querySelector('.v-img').value = d.path;
+    const box = row.querySelector('.v-img-box');
+    box.innerHTML = `<img src="${d.path}" alt="">`;
+    box.classList.add('has-img');
+    const card = row.closest('.p-card');
+    if (card && !card.dataset.id.startsWith('new-')) saveCard(card, true);
+    else toast('Đã tải ảnh lên', 'ok');
+  } catch(e) { toast('Lỗi: '+e.message, 'err'); }
 }
 
 /* ─── Render product card ──────────────────────────────────── */
@@ -1232,7 +1265,7 @@ function renderCard(p, cat, sub, isNew=false) {
   const levelOpts = Object.entries(LEVELS).map(([v,l])=>`<option value="${v}"${p.level===v?' selected':''}>${l}</option>`).join('');
 
   // Variants
-  const varHtml = (p.variants||[]).filter(v=>v&&(v.name||v.price)).map(v=>varRowHtml(v.name||'',v.price||'')).join('');
+  const varHtml = (p.variants||[]).filter(v=>v&&(v.name||v.price)).map(v=>varRowHtml(v.name||'',v.price||'',v.image||'')).join('');
 
   // Header thumb
   const thumbHtml = imgs[0]
@@ -1602,7 +1635,8 @@ async function saveCard(card, silent = false) {
       card.querySelectorAll('.var-row').forEach(r=>{
         const n = r.querySelector('.v-name').value.trim();
         const p2 = r.querySelector('.v-price').value.trim();
-        if (n||p2) variants.push({name:n, price:p2});
+        const img = r.querySelector('.v-img')?.value.trim() || '';
+        if (n||p2) variants.push({name:n, price:p2, ...(img && {image:img})});
       });
       const featured = card.querySelector('.f-featured')?.checked ? 1 : 0;
       const payload = {
