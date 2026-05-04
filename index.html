@@ -1217,7 +1217,10 @@
     }
     @media (max-width:640px) {
       .cat-search-bar { top:0; }
-      .cat-search-inner { padding:0 12px; height:44px; }
+      .cat-search-inner { padding:8px 12px; height:auto; flex-wrap:wrap; gap:8px; }
+      .fltr-name-input { width:140px; }
+      .fltr-name-input:focus { width:160px; }
+      .fltr-drop-btn { padding:6px 12px; font-size:9px; }
       .srch-drop-wrap { padding:0 10px; }
       .cat-block { scroll-margin-top:80px; }
     }
@@ -2525,15 +2528,28 @@ fetch('/api/settings/home_hero_image')
     activeCat   = 'all';
     activeBrand = 'all';
     activePr    = 'all';
+    activeSort  = 'default';
     activeNameQ = '';
-    var fltrCat = document.getElementById('fltrCat');
-    if (fltrCat) { fltrCat.querySelectorAll('.fltr-drop-opt').forEach(function(o){ o.classList.toggle('active', o.dataset.cat === 'all'); }); }
+    /* Reset dropdown active states + button labels */
+    document.querySelectorAll('#fltrCat .fltr-drop-opt').forEach(function(o){ o.classList.toggle('active', o.dataset.cat === 'all'); });
+    document.querySelectorAll('#fltrBrand .fltr-drop-opt').forEach(function(o){ o.classList.toggle('active', o.dataset.brand === 'all'); });
+    document.querySelectorAll('#fltrPrice .fltr-drop-opt').forEach(function(o){ o.classList.toggle('active', o.dataset.price === 'all'); });
+    document.querySelectorAll('#fltrSort .fltr-drop-opt').forEach(function(o){ o.classList.toggle('active', o.dataset.sort === 'default'); });
+    var catVal = document.getElementById('fltrCatVal'); if (catVal) catVal.textContent = 'Danh Mục';
+    var brandVal = document.getElementById('fltrBrandVal'); if (brandVal) brandVal.textContent = 'Thương Hiệu';
+    var priceVal = document.getElementById('fltrPriceVal'); if (priceVal) priceVal.textContent = 'Giá Tiền';
+    var sortVal = document.getElementById('fltrSortVal'); if (sortVal) sortVal.textContent = 'Sắp Xếp';
+    var nameInput = document.getElementById('fltrNameInput'); if (nameInput) nameInput.value = '';
+    updateSectionTitles('all');
+    updateFilterUI();
     applyFilters();
-    var el = document.getElementById('block-' + slug);
-    if (el) {
-      var top = el.getBoundingClientRect().top + window.pageYOffset - (document.getElementById('catSearchBar') ? document.getElementById('catSearchBar').offsetHeight + 60 : 80);
+    requestAnimationFrame(function() {
+      var el = document.getElementById('block-' + slug);
+      if (!el) return;
+      var barH = (document.getElementById('catSearchBar') || {}).offsetHeight || 54;
+      var top = el.getBoundingClientRect().top + window.pageYOffset - barH - 16;
       window.scrollTo({ top: top, behavior: 'smooth' });
-    }
+    });
   };
 
 })();
