@@ -351,6 +351,26 @@
     .empty-state { text-align: center; padding: 48px; color: #9CA3AF; border: 2px dashed var(--border); }
     .empty-state p { margin-top: 6px; font-size: 12px; }
 
+    /* ─── Admin Search ───────────────────────────────────────── */
+    .sec-head-right { display: flex; align-items: center; gap: 10px; }
+    .admin-search-wrap { position: relative; }
+    .admin-search-icon {
+      position: absolute; left: 9px; top: 50%; transform: translateY(-50%);
+      color: var(--muted); pointer-events: none;
+    }
+    .admin-search {
+      border: 1.5px solid var(--border); padding: 8px 11px 8px 30px;
+      font-family: 'Inter', sans-serif; font-size: 13px; color: var(--dark);
+      background: var(--card); outline: none; width: 200px;
+      transition: border-color .2s, width .25s;
+    }
+    .admin-search:focus { border-color: var(--dark); width: 260px; }
+    .admin-search::placeholder { color: #94A3B8; }
+    .admin-search-no-result {
+      text-align: center; padding: 32px; color: #94A3B8; font-size: 13px;
+      border: 2px dashed var(--border); display: none;
+    }
+
     /* Sub-tabs */
     .sub-tabs {
       display: flex; margin-bottom: 18px; border-bottom: 2px solid var(--border);
@@ -694,7 +714,13 @@
     <div class="page" id="page-cot-vot">
       <div class="sec-head">
         <span class="sec-title">Cốt Vợt <span class="count-badge" id="count-cot-vot">0</span></span>
-        <button class="btn-red" onclick="addCard('cot-vot')">+ Thêm sản phẩm</button>
+        <div class="sec-head-right">
+          <div class="admin-search-wrap">
+            <svg class="admin-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" class="admin-search" placeholder="Tìm theo tên..." oninput="filterAdminList(this,'list-cot-vot')">
+          </div>
+          <button class="btn-red" onclick="addCard('cot-vot')">+ Thêm sản phẩm</button>
+        </div>
       </div>
       <div id="list-cot-vot"><div class="loading-state">Đang tải…</div></div>
     </div>
@@ -703,7 +729,13 @@
     <div class="page" id="page-mat-vot">
       <div class="sec-head">
         <span class="sec-title">Mặt Vợt <span class="count-badge" id="count-mat-vot">0</span></span>
-        <button class="btn-red" onclick="addCard('mat-vot')">+ Thêm sản phẩm</button>
+        <div class="sec-head-right">
+          <div class="admin-search-wrap">
+            <svg class="admin-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" class="admin-search" placeholder="Tìm theo tên..." oninput="filterAdminList(this,'list-mat-vot')">
+          </div>
+          <button class="btn-red" onclick="addCard('mat-vot')">+ Thêm sản phẩm</button>
+        </div>
       </div>
       <div id="list-mat-vot"></div>
     </div>
@@ -712,7 +744,13 @@
     <div class="page" id="page-bong">
       <div class="sec-head">
         <span class="sec-title">Bóng <span class="count-badge" id="count-bong">0</span></span>
-        <button class="btn-red" onclick="addCard('bong')">+ Thêm sản phẩm</button>
+        <div class="sec-head-right">
+          <div class="admin-search-wrap">
+            <svg class="admin-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" class="admin-search" placeholder="Tìm theo tên..." oninput="filterAdminList(this,'list-bong')">
+          </div>
+          <button class="btn-red" onclick="addCard('bong')">+ Thêm sản phẩm</button>
+        </div>
       </div>
       <div id="list-bong"></div>
     </div>
@@ -721,7 +759,13 @@
     <div class="page" id="page-ban">
       <div class="sec-head">
         <span class="sec-title">Bàn <span class="count-badge" id="count-ban">0</span></span>
-        <button class="btn-red" onclick="addCard('ban')">+ Thêm sản phẩm</button>
+        <div class="sec-head-right">
+          <div class="admin-search-wrap">
+            <svg class="admin-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" class="admin-search" placeholder="Tìm theo tên..." oninput="filterAdminList(this,'list-ban')">
+          </div>
+          <button class="btn-red" onclick="addCard('ban')">+ Thêm sản phẩm</button>
+        </div>
       </div>
       <div id="list-ban"></div>
     </div>
@@ -735,14 +779,26 @@
       <div id="sub-giay" class="sub-section active">
         <div class="sec-head">
           <span class="sec-title">Giày <span class="count-badge" id="count-giay">0</span></span>
-          <button class="btn-red" onclick="addCard('do-thi-dau','giay')">+ Thêm mới</button>
+          <div class="sec-head-right">
+            <div class="admin-search-wrap">
+              <svg class="admin-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" class="admin-search" placeholder="Tìm theo tên..." oninput="filterAdminList(this,'list-giay')">
+            </div>
+            <button class="btn-red" onclick="addCard('do-thi-dau','giay')">+ Thêm mới</button>
+          </div>
         </div>
         <div id="list-giay"></div>
       </div>
       <div id="sub-trang-phuc-phu-kien" class="sub-section">
         <div class="sec-head">
           <span class="sec-title">Trang Phục &amp; Phụ Kiện <span class="count-badge" id="count-trang-phuc-phu-kien">0</span></span>
-          <button class="btn-red" onclick="addCard('do-thi-dau','trang-phuc-phu-kien')">+ Thêm mới</button>
+          <div class="sec-head-right">
+            <div class="admin-search-wrap">
+              <svg class="admin-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" class="admin-search" placeholder="Tìm theo tên..." oninput="filterAdminList(this,'list-trang-phuc-phu-kien')">
+            </div>
+            <button class="btn-red" onclick="addCard('do-thi-dau','trang-phuc-phu-kien')">+ Thêm mới</button>
+          </div>
         </div>
         <div id="list-trang-phuc-phu-kien"></div>
       </div>
@@ -752,7 +808,13 @@
     <div class="page" id="page-combo-vot">
       <div class="sec-head">
         <span class="sec-title">Combo Vợt <span class="count-badge" id="count-combo-vot">0</span></span>
-        <button class="btn-red" onclick="addCard('combo-vot')">+ Thêm combo</button>
+        <div class="sec-head-right">
+          <div class="admin-search-wrap">
+            <svg class="admin-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" class="admin-search" placeholder="Tìm theo tên..." oninput="filterAdminList(this,'list-combo-vot')">
+          </div>
+          <button class="btn-red" onclick="addCard('combo-vot')">+ Thêm combo</button>
+        </div>
       </div>
       <div id="list-combo-vot"></div>
     </div>
@@ -761,7 +823,13 @@
     <div class="page" id="page-do-cu">
       <div class="sec-head">
         <span class="sec-title">Đồ Đã Qua Sử Dụng <span class="count-badge" id="count-do-cu">0</span></span>
-        <button class="btn-red" onclick="addCard('do-cu')">+ Thêm sản phẩm</button>
+        <div class="sec-head-right">
+          <div class="admin-search-wrap">
+            <svg class="admin-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" class="admin-search" placeholder="Tìm theo tên..." oninput="filterAdminList(this,'list-do-cu')">
+          </div>
+          <button class="btn-red" onclick="addCard('do-cu')">+ Thêm sản phẩm</button>
+        </div>
       </div>
       <div id="list-do-cu"></div>
     </div>
@@ -770,7 +838,13 @@
     <div class="page" id="page-kien-thuc">
       <div class="sec-head">
         <span class="sec-title">Kiến Thức <span class="count-badge" id="count-kien-thuc">0</span></span>
-        <button class="btn-red" onclick="addCard('kien-thuc')">+ Thêm bài viết</button>
+        <div class="sec-head-right">
+          <div class="admin-search-wrap">
+            <svg class="admin-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" class="admin-search" placeholder="Tìm theo tên..." oninput="filterAdminList(this,'list-kien-thuc')">
+          </div>
+          <button class="btn-red" onclick="addCard('kien-thuc')">+ Thêm bài viết</button>
+        </div>
       </div>
       <div id="list-kien-thuc"></div>
     </div>
@@ -1336,6 +1410,30 @@ function setCount(key, n) {
   if (el) el.textContent = n;
   const nc = document.getElementById('nc-'+key);
   if (nc) nc.textContent = n;
+}
+
+/* ─── Admin Search ─────────────────────────────────────────── */
+function filterAdminList(input, listId) {
+  const q = input.value.toLowerCase().trim();
+  const list = document.getElementById(listId);
+  if (!list) return;
+  let shown = 0;
+  list.querySelectorAll('.p-card').forEach(function(card) {
+    if (card.classList.contains('new-card')) { shown++; return; }
+    const name = (card.querySelector('.p-head-title')?.textContent || '').toLowerCase();
+    const meta = (card.querySelector('.p-head-meta')?.textContent || '').toLowerCase();
+    const match = !q || name.includes(q) || meta.includes(q);
+    card.style.display = match ? '' : 'none';
+    if (match) shown++;
+  });
+  let noRes = list.querySelector('.admin-search-no-result');
+  if (!noRes) {
+    noRes = document.createElement('div');
+    noRes.className = 'admin-search-no-result';
+    noRes.textContent = 'Không tìm thấy sản phẩm nào.';
+    list.appendChild(noRes);
+  }
+  noRes.style.display = (q && shown === 0) ? 'block' : 'none';
 }
 
 /* ─── Load sections ────────────────────────────────────────── */
