@@ -575,6 +575,57 @@
     .chpass-skip:hover { color:var(--dark); }
     .sb-btn-link { display:block;font-size:12px;color:rgba(255,255,255,.4);margin-bottom:6px;transition:color .2s;background:none;border:none;text-align:left;cursor:pointer;font-family:'Inter',sans-serif;padding:0;width:100%; }
     .sb-btn-link:hover { color:#fff; }
+
+    /* ─── Facebook Plan ──────────────────────────────────────────── */
+    .fb-cal-grid { display:grid; gap:10px; margin-bottom:28px; }
+    .fb-post-card { background:var(--card); border:1.5px solid var(--border); display:flex; overflow:hidden; transition:border-color .2s; }
+    .fb-post-card:hover { border-color:#94A3B8; }
+    .fb-date { width:72px; flex-shrink:0; background:#1E2B3C; color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:12px 6px; }
+    .fb-date .fd-num { font-size:26px; font-weight:800; line-height:1; }
+    .fb-date .fd-day { font-size:9px; opacity:.6; margin-top:2px; text-transform:uppercase; }
+    .fb-body { flex:1; padding:12px 14px; }
+    .fb-type { display:inline-block; font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; padding:2px 7px; margin-bottom:6px; }
+    .fbt-info { background:#dbeafe; color:#1e40af; }
+    .fbt-prod { background:#fef3c7; color:#92400e; }
+    .fbt-engage { background:#d1fae5; color:#065f46; }
+    .fbt-combo { background:#ffe4e6; color:#881337; }
+    .fbt-community { background:#ede9fe; color:#4c1d95; }
+    .fb-time { font-size:11px; color:var(--muted); margin-left:6px; }
+    .fb-title { font-size:13px; font-weight:700; margin-bottom:3px; }
+    .fb-hook { font-size:12px; color:var(--muted); margin-bottom:8px; line-height:1.5; }
+    .fb-acts { display:flex; gap:7px; flex-wrap:wrap; }
+    .fb-btn-copy { font-size:11px; font-weight:700; padding:4px 10px; border:1.5px solid var(--border); background:var(--card); color:var(--dark); cursor:pointer; transition:all .2s; }
+    .fb-btn-copy:hover { border-color:var(--dark); background:var(--dark); color:#fff; }
+    .fb-btn-copy.copied { background:var(--green); border-color:var(--green); color:#fff; }
+    .fb-hashtag { font-size:10px; color:#2563EB; margin-top:6px; }
+    .fb-week { font-size:10px; font-weight:700; letter-spacing:.15em; text-transform:uppercase; color:var(--muted); margin:20px 0 8px; padding-bottom:6px; border-bottom:1.5px solid var(--border); }
+    .fb-script-card { background:var(--card); border:1.5px solid var(--border); margin-bottom:12px; }
+    .fb-script-head { padding:12px 16px; display:flex; align-items:center; gap:10px; cursor:pointer; user-select:none; }
+    .fb-script-head:hover { background:var(--bg); }
+    .fb-script-toggle { margin-left:auto; font-size:16px; color:var(--muted); }
+    .fb-script-card.open .fb-script-toggle { color:var(--red); }
+    .fb-script-body { display:none; padding:16px; border-top:1.5px solid var(--border); }
+    .fb-script-card.open .fb-script-body { display:block; }
+    .fb-script-lbl { font-size:9px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+    .fb-caption-box { background:var(--bg); border:1.5px solid var(--border); padding:14px; font-size:13px; line-height:1.7; white-space:pre-wrap; position:relative; margin-bottom:12px; }
+    .fb-copy-btn { position:absolute; top:8px; right:8px; background:var(--dark); color:#fff; border:none; padding:3px 10px; font-size:10px; font-weight:700; cursor:pointer; }
+    .fb-copy-btn:hover { background:var(--red); }
+    .fb-copy-btn.copied { background:var(--green); }
+    .fb-ht-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:12px; }
+    .fb-ht-card { background:var(--card); border:1.5px solid var(--border); padding:14px; }
+    .fb-ht-card h4 { font-size:12px; font-weight:700; margin-bottom:8px; }
+    .fb-ht-text { font-size:12px; color:#2563EB; line-height:1.8; }
+    .fb-ht-copy { margin-top:8px; width:100%; padding:7px; background:var(--dark); color:#fff; border:none; font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; cursor:pointer; }
+    .fb-ht-copy:hover { background:var(--red); }
+    .fb-tips-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:12px; }
+    .fb-tip-card { background:var(--card); border:1.5px solid var(--border); padding:16px; }
+    .fb-tip-card h4 { font-size:12px; font-weight:700; margin-bottom:8px; }
+    .fb-tip-card ul { padding-left:14px; font-size:12px; color:var(--muted); line-height:1.9; }
+    .fb-goal-row { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px; }
+    .fb-goal { background:var(--card); border:1.5px solid var(--border); padding:12px 16px; flex:1; min-width:110px; text-align:center; }
+    .fb-goal .fg-n { font-size:22px; font-weight:800; color:#1877F2; }
+    .fb-goal .fg-l { font-size:10px; color:var(--muted); margin-top:2px; }
+    .fb-info-box { background:#eff6ff; border:1px solid #bfdbfe; padding:12px 16px; margin-bottom:20px; font-size:13px; color:#1e40af; }
   </style>
 </head>
 <body>
@@ -669,6 +720,10 @@
 
     <div class="sb-group">Quản Lý</div>
 
+    <button class="sb-item" id="nav-facebook" onclick="nav('facebook')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+      Kế Hoạch Facebook
+    </button>
     <button class="sb-item" id="nav-banners" onclick="nav('banners')">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
       Ảnh &amp; Banner
@@ -689,7 +744,6 @@
       <span id="srvText">Đang kiểm tra…</span>
     </div>
     <a href="/index.html" target="_blank" class="sb-link">↗ Xem trang web</a>
-    <a href="/facebook.html" target="_blank" class="sb-link">📘 Kế Hoạch Facebook</a>
     <a href="/api/download-template" download class="sb-link">⬇ Tải template Excel</a>
     <button class="sb-btn-link" onclick="openChangePass()">🔑 Đổi Mật Khẩu</button>
     <button class="sb-btn-link" onclick="adminLogout()">🔒 Đăng Xuất</button>
@@ -860,6 +914,638 @@
         </div>
       </div>
       <div id="list-kien-thuc"></div>
+    </div>
+
+    <!-- ── Facebook Plan ─────────────────────────── -->
+    <div class="page" id="page-facebook">
+      <div class="sec-head">
+        <span class="sec-title">Kế Hoạch Facebook</span>
+        <a href="https://facebook.com/bongbanviet.official" target="_blank" class="btn-dark" style="font-size:11px;padding:7px 14px;text-decoration:none;">↗ Mở Page</a>
+      </div>
+
+      <div class="sub-tabs">
+        <button class="sub-tab active" data-sub="fb-cal" onclick="switchFbTab(this,'fb-cal')">📅 Lịch Content</button>
+        <button class="sub-tab" data-sub="fb-scripts" onclick="switchFbTab(this,'fb-scripts')">✍️ Scripts</button>
+        <button class="sub-tab" data-sub="fb-hashtags" onclick="switchFbTab(this,'fb-hashtags')">🔖 Hashtags</button>
+        <button class="sub-tab" data-sub="fb-tips" onclick="switchFbTab(this,'fb-tips')">💡 Tips</button>
+      </div>
+
+      <!-- LỊCH CONTENT -->
+      <div class="sub-section active" id="fb-cal">
+        <div class="fb-goal-row">
+          <div class="fb-goal"><div class="fg-n">20</div><div class="fg-l">Bài / tháng</div></div>
+          <div class="fb-goal"><div class="fg-n">10:00</div><div class="fg-l">Giờ sáng</div></div>
+          <div class="fb-goal"><div class="fg-n">20:00</div><div class="fg-l">Giờ tối</div></div>
+          <div class="fb-goal"><div class="fg-n">50%</div><div class="fg-l">Giáo dục</div></div>
+          <div class="fb-goal"><div class="fg-n">30%</div><div class="fg-l">Sản phẩm</div></div>
+          <div class="fb-goal"><div class="fg-n">20%</div><div class="fg-l">Cộng đồng</div></div>
+        </div>
+
+        <div class="fb-week">Tuần 1 — 5 đến 11 tháng 5</div>
+        <div class="fb-cal-grid">
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">5</div><div class="fd-day">Thứ 3</div></div>
+            <div class="fb-body">
+              <div><span class="fb-type fbt-info">Infographic</span><span class="fb-time">🕙 10:00</span></div>
+              <div class="fb-title">Cách Cầm Vợt Đúng Cho Người Mới</div>
+              <div class="fb-hook">"90% người mới cầm vợt sai ngay từ đầu..."</div>
+              <div class="fb-acts"><button class="fb-btn-copy" onclick="fbCopy('cap01',this)">📋 Copy Caption</button></div>
+              <div class="fb-hashtag">#bongbanviet #kỹthuậtbóngbàn #cầmvợt #mớitập</div>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">7</div><div class="fd-day">Thứ 5</div></div>
+            <div class="fb-body">
+              <div><span class="fb-type fbt-prod">Sản phẩm</span><span class="fb-time">🕙 10:00</span></div>
+              <div class="fb-title">Review Cốt Vợt Butterfly Timo Boll ALC</div>
+              <div class="fb-hook">Vì sao đây là lựa chọn của 60% tay vợt trung–cao?</div>
+              <div class="fb-acts"><button class="fb-btn-copy" onclick="fbCopy('cap02',this)">📋 Copy Caption</button></div>
+              <div class="fb-hashtag">#butterfly #cotvot #bongbanviet #timobollalc</div>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">9</div><div class="fd-day">Thứ 6</div></div>
+            <div class="fb-body">
+              <div><span class="fb-type fbt-engage">Tương Tác</span><span class="fb-time">🕗 20:00</span></div>
+              <div class="fb-title">Poll: Bạn Đang Chơi Ở Trình Độ Nào?</div>
+              <div class="fb-hook">Kéo comment tự nhiên — trả lời tư vấn riêng từng người</div>
+              <div class="fb-acts"><button class="fb-btn-copy" onclick="fbCopy('cap03',this)">📋 Copy Caption</button></div>
+              <div class="fb-hashtag">#bongbanviet #bóngbàn #hỏiđáp</div>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">10</div><div class="fd-day">Thứ 7</div></div>
+            <div class="fb-body">
+              <div><span class="fb-type fbt-combo">Combo</span><span class="fb-time">🕙 10:00</span></div>
+              <div class="fb-title">Combo Vợt Cho Người Mới — Budget 800K</div>
+              <div class="fb-hook">Hàng chính hãng, tư vấn 1-1 qua Zalo</div>
+              <div class="fb-acts"><button class="fb-btn-copy" onclick="fbCopy('cap04',this)">📋 Copy Caption</button></div>
+              <div class="fb-hashtag">#combovot #bongbanviet #mớitập</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fb-week">Tuần 2 — 12 đến 18 tháng 5</div>
+        <div class="fb-cal-grid">
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">12</div><div class="fd-day">Thứ 2</div></div>
+            <div class="fb-body">
+              <div><span class="fb-type fbt-info">Infographic</span><span class="fb-time">🕙 10:00</span></div>
+              <div class="fb-title">Độ Cứng Mặt Vợt — Hard vs Soft</div>
+              <div class="fb-hook">"Bạn biết mặt vợt mình đang ở độ cứng bao nhiêu không?"</div>
+              <div class="fb-acts"><button class="fb-btn-copy" onclick="fbCopy('cap05',this)">📋 Copy Caption</button></div>
+              <div class="fb-hashtag">#matvot #bongbanviet #kỹthuật</div>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">13</div><div class="fd-day">Thứ 3</div></div>
+            <div class="fb-body">
+              <div><span class="fb-type fbt-prod">Sản phẩm</span><span class="fb-time">🕗 20:00</span></div>
+              <div class="fb-title">Tibhar Evolution MX-P — Mặt Vợt Công Tầm Giá</div>
+              <div class="fb-hook">Tốc độ cao, kiểm soát tốt — lý do dân chơi mê Tibhar</div>
+              <div class="fb-acts"><button class="fb-btn-copy" onclick="fbCopy('cap06',this)">📋 Copy Caption</button></div>
+              <div class="fb-hashtag">#tibhar #matvot #bongbanviet</div>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">15</div><div class="fd-day">Thứ 5</div></div>
+            <div class="fb-body">
+              <div><span class="fb-type fbt-engage">Tương Tác</span><span class="fb-time">🕗 20:00</span></div>
+              <div class="fb-title">Hỏi: Budget Bao Nhiêu Là Đủ Để Có Bộ Vợt?</div>
+              <div class="fb-hook">Kéo comment, tư vấn trực tiếp bên dưới</div>
+              <div class="fb-acts"><button class="fb-btn-copy" onclick="fbCopy('cap07',this)">📋 Copy Caption</button></div>
+              <div class="fb-hashtag">#bongbanviet #tưvấn #chọnvợt</div>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">17</div><div class="fd-day">Thứ 7</div></div>
+            <div class="fb-body">
+              <div><span class="fb-type fbt-community">Cộng Đồng</span><span class="fb-time">🕙 10:00</span></div>
+              <div class="fb-title">Review Khách Hàng — [Tên + Sản phẩm]</div>
+              <div class="fb-hook">Social proof thực tế — ảnh thật, feedback thật</div>
+              <div class="fb-acts"><button class="fb-btn-copy" onclick="fbCopy('cap08',this)">📋 Copy Caption</button></div>
+              <div class="fb-hashtag">#bongbanviet #review #hàngchínhhãng</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fb-week">Tuần 3 — 19 đến 25 tháng 5</div>
+        <div class="fb-cal-grid">
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">19</div><div class="fd-day">Thứ 2</div></div>
+            <div class="fb-body">
+              <div><span class="fb-type fbt-info">Infographic</span><span class="fb-time">🕙 10:00</span></div>
+              <div class="fb-title">Kỹ Thuật Di Chuyển Chân — Footwork Cơ Bản</div>
+              <div class="fb-hook">"Chân chậm là thua — đây là bài tập chuẩn hóa bước chân"</div>
+              <div class="fb-acts"><button class="fb-btn-copy" onclick="fbCopy('cap09',this)">📋 Copy Caption</button></div>
+              <div class="fb-hashtag">#footwork #kỹthuật #bongbanviet</div>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">20</div><div class="fd-day">Thứ 3</div></div>
+            <div class="fb-body">
+              <div><span class="fb-type fbt-prod">Sản phẩm</span><span class="fb-time">🕗 20:00</span></div>
+              <div class="fb-title">Carbon vs All-Wood — Nên Chọn Loại Nào?</div>
+              <div class="fb-hook">Câu hỏi kinh điển — trả lời 1 lần cho xong</div>
+              <div class="fb-acts"><button class="fb-btn-copy" onclick="fbCopy('cap10',this)">📋 Copy Caption</button></div>
+              <div class="fb-hashtag">#cotvot #carbon #allwood #bongbanviet</div>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">22</div><div class="fd-day">Thứ 5</div></div>
+            <div class="fb-body">
+              <div><span class="fb-type fbt-info">Infographic</span><span class="fb-time">🕗 20:00</span></div>
+              <div class="fb-title">Hướng Dẫn Chăm Sóc Mặt Vợt Đúng Cách</div>
+              <div class="fb-hook">"Đừng để mặt vợt 3 triệu xuống cấp vì chăm sóc sai"</div>
+              <div class="fb-acts"><button class="fb-btn-copy" onclick="fbCopy('cap11',this)">📋 Copy Caption</button></div>
+              <div class="fb-hashtag">#bảotrìvợt #matvot #mẹohay #bongbanviet</div>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">24</div><div class="fd-day">Thứ 7</div></div>
+            <div class="fb-body">
+              <div><span class="fb-type fbt-combo">Combo</span><span class="fb-time">🕙 10:00</span></div>
+              <div class="fb-title">Combo Intermediate — Nâng Cấp Khi Đánh Được Rồi</div>
+              <div class="fb-hook">Budget 2–3 triệu — bộ vợt đánh giải phong trào</div>
+              <div class="fb-acts"><button class="fb-btn-copy" onclick="fbCopy('cap12',this)">📋 Copy Caption</button></div>
+              <div class="fb-hashtag">#combovot #intermediate #bongbanviet</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fb-week">Tuần 4 — 26 đến 31 tháng 5</div>
+        <div class="fb-cal-grid">
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">26</div><div class="fd-day">Thứ 2</div></div>
+            <div class="fb-body">
+              <div><span class="fb-type fbt-info">Infographic</span><span class="fb-time">🕙 10:00</span></div>
+              <div class="fb-title">Kỹ Thuật Giao Bóng — Nắm 30% Trận</div>
+              <div class="fb-hook">Series kỹ thuật — phần được chờ đợi nhất</div>
+              <div class="fb-acts"><button class="fb-btn-copy" onclick="fbCopy('cap13',this)">📋 Copy Caption</button></div>
+              <div class="fb-hashtag">#giaobóng #kỹthuật #bongban #bongbanviet</div>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">27</div><div class="fd-day">Thứ 3</div></div>
+            <div class="fb-body">
+              <div><span class="fb-type fbt-prod">Sản phẩm</span><span class="fb-time">🕗 20:00</span></div>
+              <div class="fb-title">Sản Phẩm Mới Tháng 5 — [Điền tên]</div>
+              <div class="fb-hook">Thông báo hàng mới — tạo urgency, kêu gọi inbox</div>
+              <div class="fb-acts"><button class="fb-btn-copy" onclick="fbCopy('cap14',this)">📋 Copy Caption</button></div>
+              <div class="fb-hashtag">#hàngnhập #mới #bongbanviet #hàngchínhhãng</div>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">29</div><div class="fd-day">Thứ 5</div></div>
+            <div class="fb-body">
+              <div><span class="fb-type fbt-engage">Tương Tác</span><span class="fb-time">🕗 20:00</span></div>
+              <div class="fb-title">Live / Q&amp;A: Hỏi Gì Về Bóng Bàn Cũng Trả Lời</div>
+              <div class="fb-hook">Facebook ưu tiên Live — tăng organic reach mạnh</div>
+              <div class="fb-acts"><button class="fb-btn-copy" onclick="fbCopy('cap15',this)">📋 Copy Caption</button></div>
+              <div class="fb-hashtag">#bongbanviet #live #tưvấn #hỏiđáp</div>
+            </div>
+          </div>
+          <div class="fb-post-card">
+            <div class="fb-date"><div class="fd-num">31</div><div class="fd-day">CN</div></div>
+            <div class="fb-body">
+              <div><span class="fb-type fbt-community">Cộng Đồng</span><span class="fb-time">🕙 10:00</span></div>
+              <div class="fb-title">Tổng Kết Tháng 5 + Preview Tháng 6</div>
+              <div class="fb-hook">Build loyalty — khách follow vì cảm thấy được quan tâm</div>
+              <div class="fb-acts"><button class="fb-btn-copy" onclick="fbCopy('cap16',this)">📋 Copy Caption</button></div>
+              <div class="fb-hashtag">#bongbanviet #cảmơn #tổngkết</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCRIPTS -->
+      <div class="sub-section" id="fb-scripts">
+        <div class="fb-info-box"><strong>Cách dùng:</strong> Nhấn "Copy" → Paste thẳng lên Facebook. Thay nội dung trong [ngoặc vuông] trước khi đăng.</div>
+
+        <div class="fb-script-card" id="fbs-01">
+          <div class="fb-script-head" onclick="toggleFbScript('fbs-01')">
+            <span class="fb-type fbt-info" style="flex-shrink:0">Infographic</span>
+            <span style="font-weight:700;font-size:13px">5/5 — Cách Cầm Vợt Đúng</span>
+            <span class="fb-script-toggle">+</span>
+          </div>
+          <div class="fb-script-body">
+            <div class="fb-script-lbl">Caption</div>
+            <div class="fb-caption-box" id="cap01">90% người mới bắt đầu chơi bóng bàn đều cầm vợt SAI ngay từ đầu 😅
+
+Và điều đó ảnh hưởng trực tiếp đến:
+❌ Độ chính xác khi đánh bóng
+❌ Khả năng xoáy bóng
+❌ Chấn thương cổ tay về lâu dài
+
+Ảnh dưới là hướng dẫn chi tiết 2 kiểu cầm phổ biến nhất:
+→ Shakehand (bắt tay) — phổ biến toàn cầu
+→ Penhold (cầm bút) — truyền thống châu Á
+
+Bạn đang cầm kiểu nào? Comment bên dưới nhé 👇
+
+📍 Cần tư vấn thêm → Nhắn Zalo: 096.1269.386
+#bongbanviet #kỹthuậtbóngbàn #mớitập #cầmvợt #bóngbàn<button class="fb-copy-btn" onclick="fbCopyBox('cap01',this)">Copy</button></div>
+          </div>
+        </div>
+
+        <div class="fb-script-card" id="fbs-02">
+          <div class="fb-script-head" onclick="toggleFbScript('fbs-02')">
+            <span class="fb-type fbt-prod" style="flex-shrink:0">Sản phẩm</span>
+            <span style="font-weight:700;font-size:13px">7/5 — Butterfly Timo Boll ALC</span>
+            <span class="fb-script-toggle">+</span>
+          </div>
+          <div class="fb-script-body">
+            <div class="fb-script-lbl">Caption</div>
+            <div class="fb-caption-box" id="cap02">🏓 Timo Boll ALC — Cốt Vợt Mà Dân Chơi Bóng Bàn Ai Cũng Biết Tên
+
+Đây là lý do cây vợt này luôn nằm trong top được hỏi mua nhất tại BÓNG BÀN VIỆT:
+
+✅ Lõi carbon ALC — tốc độ cao, rung tay ít
+✅ Kiểm soát tốt hơn vợt carbon thuần
+✅ Phù hợp lối đánh công + phản công
+✅ Dùng bền — nhiều khách dùng 3–5 năm chưa đổi
+
+📦 Hàng chính hãng, có tem Butterfly
+💰 Giá: Liên hệ Zalo để được báo giá tốt nhất
+
+Inbox hoặc Zalo: 096.1269.386 để tư vấn 1-1 nhé!
+
+#butterfly #timobollalc #cotvot #bongbanviet #hàngchínhhãng<button class="fb-copy-btn" onclick="fbCopyBox('cap02',this)">Copy</button></div>
+          </div>
+        </div>
+
+        <div class="fb-script-card" id="fbs-03">
+          <div class="fb-script-head" onclick="toggleFbScript('fbs-03')">
+            <span class="fb-type fbt-engage" style="flex-shrink:0">Tương Tác</span>
+            <span style="font-weight:700;font-size:13px">9/5 — Poll Trình Độ</span>
+            <span class="fb-script-toggle">+</span>
+          </div>
+          <div class="fb-script-body">
+            <div class="fb-script-lbl">Caption</div>
+            <div class="fb-caption-box" id="cap03">Dân bóng bàn ở đây — chúng tôi muốn biết thêm về bạn! 🏓
+
+Comment trình độ của bạn nhé:
+
+🟢 A — Mới tập, đang học cơ bản
+🟡 B — Đánh được, rally tốt
+🔴 C — Đánh giải phong trào
+⚫ D — Đánh giải cấp tỉnh / chuyên nghiệp
+
+Tag thêm bạn chơi cùng để xem họ tự đánh giá thế nào 😄
+
+P/S: Tùy trình độ mà chúng tôi sẽ gợi ý vợt phù hợp — bạn cứ comment, chúng tôi tư vấn miễn phí!
+
+#bongbanviet #bóngbàn #trìnhđộ #tưvấnmiễnphí<button class="fb-copy-btn" onclick="fbCopyBox('cap03',this)">Copy</button></div>
+          </div>
+        </div>
+
+        <div class="fb-script-card" id="fbs-04">
+          <div class="fb-script-head" onclick="toggleFbScript('fbs-04')">
+            <span class="fb-type fbt-combo" style="flex-shrink:0">Combo</span>
+            <span style="font-weight:700;font-size:13px">10/5 — Combo Beginner 800K</span>
+            <span class="fb-script-toggle">+</span>
+          </div>
+          <div class="fb-script-body">
+            <div class="fb-script-lbl">Caption</div>
+            <div class="fb-caption-box" id="cap04">🎯 Mới Tập Bóng Bàn — Nên Mua Gì Với 800.000đ?
+
+Đây là combo chúng tôi hay gợi ý nhất cho người mới:
+
+🏓 Cốt vợt: [Tên cốt vợt] — kiểm soát tốt, không quá cứng
+🔴 Mặt vợt FH: [Tên mặt vợt] — bám bóng, dễ xoáy
+⚫ Mặt vợt BH: [Tên mặt vợt] — phản xạ tốt cho tay trái
+
+Tổng: ~800.000đ | Hàng chính hãng | Tư vấn 1-1 trước khi mua
+
+Lý do chúng tôi chọn combo này:
+→ Không quá đắt khi mới học
+→ Dùng được 1–2 năm trước khi cần nâng cấp
+→ Phù hợp cả hai lối chơi công và thủ
+
+Muốn được tư vấn theo lối chơi riêng? Nhắn Zalo: 096.1269.386 ngay nhé!
+
+#combovot #bongbanviet #mớitập #chọnvợt #giárẻhàngthật<button class="fb-copy-btn" onclick="fbCopyBox('cap04',this)">Copy</button></div>
+          </div>
+        </div>
+
+        <div class="fb-script-card" id="fbs-05">
+          <div class="fb-script-head" onclick="toggleFbScript('fbs-05')">
+            <span class="fb-type fbt-info" style="flex-shrink:0">Infographic</span>
+            <span style="font-weight:700;font-size:13px">12/5 — Độ Cứng Mặt Vợt</span>
+            <span class="fb-script-toggle">+</span>
+          </div>
+          <div class="fb-script-body">
+            <div class="fb-script-lbl">Caption</div>
+            <div class="fb-caption-box" id="cap05">Bạn biết mặt vợt của mình đang ở độ cứng bao nhiêu không? 🤔
+
+Độ cứng ảnh hưởng trực tiếp đến cảm giác đánh bóng:
+
+🟢 SOFT (Mềm, dưới 45°):
+→ Dễ kiểm soát, phù hợp người mới
+→ Tốc độ thấp hơn nhưng xoáy dễ hơn
+
+🟡 MEDIUM (45°–50°):
+→ Cân bằng tốc độ và kiểm soát
+→ Phù hợp đa số người chơi
+
+🔴 HARD (Trên 50°):
+→ Tốc độ cao, lực xoáy mạnh
+→ Cần kỹ thuật tốt để khai thác
+
+Tóm lại: Người mới → mềm. Đánh được rồi → trung. Pro → cứng 😄
+
+Bạn đang dùng mặt vợt độ cứng bao nhiêu? Comment nhé!
+
+#matvot #bongbanviet #kỹthuật #topspin<button class="fb-copy-btn" onclick="fbCopyBox('cap05',this)">Copy</button></div>
+          </div>
+        </div>
+
+        <div class="fb-script-card" id="fbs-07">
+          <div class="fb-script-head" onclick="toggleFbScript('fbs-07')">
+            <span class="fb-type fbt-engage" style="flex-shrink:0">Tương Tác</span>
+            <span style="font-weight:700;font-size:13px">15/5 — Hỏi Budget</span>
+            <span class="fb-script-toggle">+</span>
+          </div>
+          <div class="fb-script-body">
+            <div class="fb-script-lbl">Caption</div>
+            <div class="fb-caption-box" id="cap07">Câu hỏi mà chúng tôi nhận được nhiều nhất:
+
+"Cần bao nhiêu tiền để có bộ vợt chơi được?"
+
+Câu trả lời thực tế từ chúng tôi:
+
+💚 500K–800K → Chơi được, phù hợp người mới
+💛 1–1.5 triệu → Chơi tốt, giữ được 2–3 năm
+🧡 2–3 triệu → Chơi giải phong trào, cảm giác vợt rõ hơn nhiều
+❤️ 5 triệu+ → Dân chuyên — cảm giác vợt đỉnh, khó quay đầu
+
+Bạn đang ở budget nào? Comment để chúng tôi gợi ý combo phù hợp nhé 👇
+
+Tư vấn miễn phí qua Zalo: 096.1269.386
+
+#bongbanviet #chọnvợt #budget #tưvấnmiễnphí #bóngbàn<button class="fb-copy-btn" onclick="fbCopyBox('cap07',this)">Copy</button></div>
+          </div>
+        </div>
+
+        <div class="fb-script-card" id="fbs-08">
+          <div class="fb-script-head" onclick="toggleFbScript('fbs-08')">
+            <span class="fb-type fbt-community" style="flex-shrink:0">Cộng đồng</span>
+            <span style="font-weight:700;font-size:13px">17/5 — Review Khách Hàng</span>
+            <span class="fb-script-toggle">+</span>
+          </div>
+          <div class="fb-script-body">
+            <div class="fb-script-lbl">Caption (điền tên + sản phẩm trước khi đăng)</div>
+            <div class="fb-caption-box" id="cap08">🙌 Cảm ơn anh/chị [TÊN KHÁCH] đã tin tưởng BÓNG BÀN VIỆT!
+
+Anh/chị [TÊN KHÁCH] vừa nhận được [TÊN SẢN PHẨM] và chia sẻ:
+"[TRÍCH DẪN FEEDBACK CỦA KHÁCH]"
+
+Đây là lý do chúng tôi làm việc mỗi ngày — thấy khách hài lòng là vui nhất 🏓❤️
+
+Nếu bạn cũng muốn được tư vấn đúng sản phẩm, phù hợp lối chơi và túi tiền:
+📞 Zalo: 096.1269.386
+🌐 bongbanviet.com
+
+#bongbanviet #kháchhàng #review #hàngchínhhãng #tưvấnchuẩn<button class="fb-copy-btn" onclick="fbCopyBox('cap08',this)">Copy</button></div>
+          </div>
+        </div>
+
+        <div class="fb-script-card" id="fbs-10">
+          <div class="fb-script-head" onclick="toggleFbScript('fbs-10')">
+            <span class="fb-type fbt-prod" style="flex-shrink:0">Sản phẩm</span>
+            <span style="font-weight:700;font-size:13px">20/5 — Carbon vs All-Wood</span>
+            <span class="fb-script-toggle">+</span>
+          </div>
+          <div class="fb-script-body">
+            <div class="fb-script-lbl">Caption</div>
+            <div class="fb-caption-box" id="cap10">Carbon hay All-Wood — Câu Hỏi Muôn Thuở Của Dân Bóng Bàn 🤔
+
+Đây là breakdown thực tế:
+
+🪵 ALL-WOOD (thuần gỗ):
+→ Cảm giác bóng rõ, tự nhiên
+→ Dễ kiểm soát hơn
+→ Phù hợp người mới → trung cấp
+→ Giá thường mềm hơn
+
+⚡ CARBON:
+→ Tốc độ cao hơn 20–30%
+→ Độ rung ít → tay không mỏi
+→ Cần kỹ thuật tốt mới khai thác được
+→ Phù hợp người đã đánh tốt
+
+Kết luận: Nếu bạn chưa đánh được topspin ổn định → chưa cần carbon.
+Đừng mua vợt "pro" khi kỹ thuật chưa đến 😄
+
+Bạn đang dùng loại nào? Carbon hay All-Wood? Comment nhé!
+
+#bongbanviet #carbon #allwood #cotvot #chọnvợt #kỹthuật<button class="fb-copy-btn" onclick="fbCopyBox('cap10',this)">Copy</button></div>
+          </div>
+        </div>
+
+        <div class="fb-script-card" id="fbs-15">
+          <div class="fb-script-head" onclick="toggleFbScript('fbs-15')">
+            <span class="fb-type fbt-engage" style="flex-shrink:0">Live Q&amp;A</span>
+            <span style="font-weight:700;font-size:13px">29/5 — Thông Báo + Script Live</span>
+            <span class="fb-script-toggle">+</span>
+          </div>
+          <div class="fb-script-body">
+            <div class="fb-script-lbl">Caption thông báo (đăng trước 1 ngày)</div>
+            <div class="fb-caption-box" id="cap15">📣 THÔNG BÁO: Tối mai 20:00 — BÓNG BÀN VIỆT sẽ Live!
+
+Chủ đề: "Hỏi Gì Về Bóng Bàn Cũng Trả Lời"
+
+Mọi câu hỏi đều được welcome:
+🏓 Chọn vợt theo trình độ và lối chơi
+🏓 Budget bao nhiêu là phù hợp
+🏓 Cốt vợt nào đang hot nhất hiện tại
+🏓 Cách chăm sóc vợt đúng cách
+
+Đặt câu hỏi trước bên dưới nhé — chúng tôi sẽ trả lời hết trong Live 👇
+
+#bongbanviet #live #bóngbàn #tưvấnmiễnphí<button class="fb-copy-btn" onclick="fbCopyBox('cap15',this)">Copy</button></div>
+            <div class="fb-script-lbl" style="margin-top:12px">Script mở đầu Live</div>
+            <div class="fb-caption-box" id="cap15b">Xin chào tất cả mọi người đang xem Live!
+
+Mình là [TÊN] từ BÓNG BÀN VIỆT — shop chuyên dụng cụ bóng bàn chính hãng tại Hà Nội.
+
+Hôm nay mình live để trả lời tất cả câu hỏi về bóng bàn — từ cơ bản đến nâng cao. Không có câu hỏi nào là ngớ ngẩn nhé!
+
+Bạn nào đang xem, comment tên và câu hỏi bên dưới — mình sẽ đọc và trả lời từng người.
+
+Và nếu cần tư vấn riêng, inbox hoặc Zalo mình: 096.1269.386 nhé!
+
+Bắt đầu thôi — ai có câu hỏi đầu tiên? 👇<button class="fb-copy-btn" onclick="fbCopyBox('cap15b',this)">Copy</button></div>
+          </div>
+        </div>
+
+        <div class="fb-script-card" id="fbs-16">
+          <div class="fb-script-head" onclick="toggleFbScript('fbs-16')">
+            <span class="fb-type fbt-community" style="flex-shrink:0">Cộng đồng</span>
+            <span style="font-weight:700;font-size:13px">31/5 — Tổng Kết Tháng 5</span>
+            <span class="fb-script-toggle">+</span>
+          </div>
+          <div class="fb-script-body">
+            <div class="fb-script-lbl">Caption</div>
+            <div class="fb-caption-box" id="cap16">Tháng 5 đi qua rất nhanh 🏓
+
+Nhìn lại tháng này tại BÓNG BÀN VIỆT:
+✅ [X] đơn hàng được giao đến tay khách
+✅ [X] câu hỏi được tư vấn qua Zalo
+✅ [X] bộ vợt mới tìm được chủ nhân
+
+Cảm ơn tất cả mọi người đã theo dõi, ủng hộ và tin tưởng chúng tôi ❤️
+
+Tháng 6 sẽ có:
+🔥 Sản phẩm mới vừa nhập về
+🎯 Series kỹ thuật chuyên sâu hơn
+💬 Buổi Live tư vấn định kỳ
+
+Follow page để không bỏ lỡ nhé! Và nếu bạn cần tư vấn:
+📞 Zalo: 096.1269.386 | 🌐 bongbanviet.com
+
+#bongbanviet #tổngkếttháng5 #cảmơn #tháng6 #bóngbàn<button class="fb-copy-btn" onclick="fbCopyBox('cap16',this)">Copy</button></div>
+          </div>
+        </div>
+
+        <div style="background:var(--bg);border:1.5px solid var(--border);padding:14px 16px;margin-top:8px">
+          <div class="fb-script-lbl">CTA chuẩn — dùng cuối mọi post sản phẩm</div>
+          <div class="fb-caption-box" id="cap-cta">📞 Tư vấn 1-1 → Zalo: 096.1269.386
+🌐 Xem thêm sản phẩm → bongbanviet.com
+📍 Showroom: 286 Nguyễn Xiển, Thanh Liệt, Hà Nội<button class="fb-copy-btn" onclick="fbCopyBox('cap-cta',this)">Copy</button></div>
+        </div>
+      </div>
+
+      <!-- HASHTAGS -->
+      <div class="sub-section" id="fb-hashtags">
+        <div class="fb-ht-grid">
+          <div class="fb-ht-card">
+            <h4>🏓 General — Mọi Post</h4>
+            <div class="fb-ht-text" id="ht01">#bongbanviet #bóngbàn #bongban #tabletennis #tưvấnchuẩn #hàngchínhhãng</div>
+            <button class="fb-ht-copy" onclick="fbCopyHt('ht01',this)">Copy Bộ Này</button>
+          </div>
+          <div class="fb-ht-card">
+            <h4>📚 Kỹ Thuật / Infographic</h4>
+            <div class="fb-ht-text" id="ht02">#kỹthuậtbóngbàn #họcbóngbàn #mẹobóngbàn #topspin #footwork #bongban #bongbanviet</div>
+            <button class="fb-ht-copy" onclick="fbCopyHt('ht02',this)">Copy Bộ Này</button>
+          </div>
+          <div class="fb-ht-card">
+            <h4>🏓 Cốt Vợt</h4>
+            <div class="fb-ht-text" id="ht03">#cotvot #chọnvợt #butterfly #tibhar #yinhe #carbon #allwood #bongbanviet #hàngchínhhãng</div>
+            <button class="fb-ht-copy" onclick="fbCopyHt('ht03',this)">Copy Bộ Này</button>
+          </div>
+          <div class="fb-ht-card">
+            <h4>🔴 Mặt Vợt</h4>
+            <div class="fb-ht-text" id="ht04">#matvot #mặtvợt #butterfly #tibhar #yinhe #topspin #bongbanviet #chọnvợt</div>
+            <button class="fb-ht-copy" onclick="fbCopyHt('ht04',this)">Copy Bộ Này</button>
+          </div>
+          <div class="fb-ht-card">
+            <h4>💰 Combo / Gợi Ý</h4>
+            <div class="fb-ht-text" id="ht05">#combovot #chọnvợt #mớitập #nângcấpvợt #bongbanviet #tưvấnmiễnphí #giárẻhàngthật</div>
+            <button class="fb-ht-copy" onclick="fbCopyHt('ht05',this)">Copy Bộ Này</button>
+          </div>
+          <div class="fb-ht-card">
+            <h4>💬 Tương Tác / Cộng Đồng</h4>
+            <div class="fb-ht-text" id="ht06">#bongbanviet #hỏiđáp #tưvấnmiễnphí #cộngđồngbóngbàn #bóngbàn #feedback #review</div>
+            <button class="fb-ht-copy" onclick="fbCopyHt('ht06',this)">Copy Bộ Này</button>
+          </div>
+          <div class="fb-ht-card">
+            <h4>🏢 Thương Hiệu</h4>
+            <div class="fb-ht-text" id="ht07">#butterfly #tibhar #yinhe #unrex #dhs #nittaku #stiga #bongbanviet</div>
+            <button class="fb-ht-copy" onclick="fbCopyHt('ht07',this)">Copy Bộ Này</button>
+          </div>
+          <div class="fb-ht-card">
+            <h4>📍 Địa Phương (Hà Nội)</h4>
+            <div class="fb-ht-text" id="ht08">#bóngbànhànội #shopbóngbàn #bongbanhanoi #286nguyenxien #thanhliêt #hànội</div>
+            <button class="fb-ht-copy" onclick="fbCopyHt('ht08',this)">Copy Bộ Này</button>
+          </div>
+        </div>
+        <div style="background:var(--bg);border:1.5px solid var(--border);padding:14px 16px;margin-top:16px;font-size:12px;color:var(--muted);line-height:1.9">
+          <strong style="color:var(--dark)">Công thức hashtag chuẩn:</strong><br>
+          3–4 Broad (#bóngbàn, #tabletennis) + 3–4 Niche (#cotvot, #matvot) + 2–3 Brand (#bongbanviet) + 1–2 Local (#bóngbànhànội)<br>
+          <strong style="color:var(--dark)">→ Tổng 10–13 hashtag là lý tưởng</strong>
+        </div>
+      </div>
+
+      <!-- TIPS -->
+      <div class="sub-section" id="fb-tips">
+        <div class="fb-tips-grid">
+          <div class="fb-tip-card">
+            <h4>🕙 Giờ Đăng Tối Ưu</h4>
+            <ul>
+              <li><strong>10:00–11:00 sáng</strong> — reach tốt nhất</li>
+              <li><strong>20:00–21:00 tối</strong> — giờ online đông nhất</li>
+              <li>Tránh đăng 14:00–17:00 (thấp nhất)</li>
+              <li>Thứ 7 sáng rất tốt cho post combo</li>
+            </ul>
+          </div>
+          <div class="fb-tip-card">
+            <h4>📸 Tiêu Chuẩn Ảnh</h4>
+            <ul>
+              <li>Tỉ lệ 1:1 hoặc 4:5 cho feed</li>
+              <li>Nền trắng/xám nhạt — sản phẩm nổi bật</li>
+              <li>Carousel 3–7 slide cho infographic</li>
+              <li>Watermark logo góc dưới phải</li>
+              <li>Kích thước tối thiểu 1080×1080px</li>
+            </ul>
+          </div>
+          <div class="fb-tip-card">
+            <h4>💬 Quy Tắc Reply Comment</h4>
+            <ul>
+              <li>Reply trong 30 phút đầu — Facebook ưu tiên</li>
+              <li>Câu hỏi về giá → hướng vào Zalo/inbox</li>
+              <li>Câu hỏi kỹ thuật → trả lời ngắn + link web</li>
+              <li>Luôn gọi "anh/chị" — thân thiện</li>
+            </ul>
+          </div>
+          <div class="fb-tip-card">
+            <h4>📊 Theo Dõi Hiệu Quả</h4>
+            <ul>
+              <li>Xem Insights mỗi tuần</li>
+              <li>Track: Reach, Engagement, Inbox</li>
+              <li>Post nào tốt → làm thêm bài tương tự</li>
+              <li>Post kém → đổi giờ hoặc đổi ảnh</li>
+            </ul>
+          </div>
+          <div class="fb-tip-card">
+            <h4>🚀 Boost Post Khi Nào</h4>
+            <ul>
+              <li>Chỉ boost post có engagement tự nhiên tốt</li>
+              <li>Ưu tiên: combo, sản phẩm hot</li>
+              <li>Target: Nam, 18–45, Hà Nội, thể thao</li>
+              <li>Budget thử: 50K–100K/ngày × 3 ngày</li>
+            </ul>
+          </div>
+          <div class="fb-tip-card">
+            <h4>✍️ Công Thức Viết Caption</h4>
+            <ul>
+              <li><strong>Dòng 1:</strong> Hook mạnh — sự thật bất ngờ</li>
+              <li><strong>Dòng 2–5:</strong> Nội dung giá trị ngắn</li>
+              <li><strong>Dòng 6–8:</strong> Kết nối sản phẩm / giải pháp</li>
+              <li><strong>CTA cuối:</strong> Zalo / Comment / Tag bạn</li>
+              <li>Tối đa 150–200 từ</li>
+            </ul>
+          </div>
+          <div class="fb-tip-card">
+            <h4>📌 Setup Page Một Lần</h4>
+            <ul>
+              <li>Pinned post: giới thiệu shop + link Zalo</li>
+              <li>Nút CTA: "Gọi Ngay" → 0961269386</li>
+              <li>Bật auto-reply Messenger khi offline</li>
+              <li>Story Highlights: Sản phẩm / Review / Kỹ thuật</li>
+            </ul>
+          </div>
+          <div class="fb-tip-card">
+            <h4>📅 Chuẩn Bị Tháng 6</h4>
+            <ul>
+              <li>Cuối tháng 5: lên 20 chủ đề tháng 6</li>
+              <li>Chọn infographic phù hợp từ thư viện</li>
+              <li>Viết caption 2 tuần đầu trước</li>
+              <li>Lên lịch qua Meta Business Suite</li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- ── Ảnh & Banner ──────────────────────────── -->
@@ -1709,6 +2395,51 @@ function switchSub(btn, cat) {
   section.querySelectorAll('.sub-section').forEach(s=>s.classList.remove('active'));
   const ss = document.getElementById('sub-'+sub);
   if (ss) ss.classList.add('active');
+}
+
+/* ─── Facebook Plan helpers ──────────────────────────────────── */
+function switchFbTab(btn, sub) {
+  const page = document.getElementById('page-facebook');
+  page.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  page.querySelectorAll('.sub-section').forEach(s => s.classList.remove('active'));
+  const ss = document.getElementById(sub);
+  if (ss) ss.classList.add('active');
+}
+function toggleFbScript(id) {
+  const card = document.getElementById(id);
+  if (!card) return;
+  card.classList.toggle('open');
+  const tog = card.querySelector('.fb-script-toggle');
+  if (tog) tog.textContent = card.classList.contains('open') ? '−' : '+';
+}
+function fbCopy(id, btn) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const text = el.innerText.replace(/Copy$/,'').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓ Copied';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '📋 Copy Caption'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+function fbCopyBox(id, btn) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const text = el.innerText.replace(/Copy$/,'').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+function fbCopyHt(id, btn) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent.trim()).then(() => {
+    btn.textContent = '✓ Đã Copy';
+    setTimeout(() => btn.textContent = 'Copy Bộ Này', 2000);
+  });
 }
 
 /* ─── Server check ─────────────────────────────────────────── */
