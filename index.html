@@ -2399,7 +2399,7 @@ fetch('/api/settings/home_hero_image')
     if (ktBlock) {
       var showKt = (activeCat === 'all' || activeCat === 'kien-thuc');
       ktBlock.style.display = showKt ? '' : 'none';
-      if (!showKt && window.resetArtGrid) window.resetArtGrid();
+      if (activeCat !== 'kien-thuc' && window.resetArtGrid) window.resetArtGrid();
     }
     ['block-lien-he', 'block-huong-dan', 'block-chinh-sach-doi-tra'].forEach(function(bid) {
       var el = document.getElementById(bid);
