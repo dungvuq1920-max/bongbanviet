@@ -582,7 +582,6 @@ function renderProduct(p) {
       const pe = document.getElementById('spPrice');
       pe.className = 'sp-price'; pe.textContent = fmtPrice(firstV.price);
     }
-    if (firstV.image) setGalleryImage(firstV.image, 0);
   }
 
   document.getElementById('spDesc').innerHTML = renderDesc(p.description || '');
@@ -592,8 +591,11 @@ function renderProduct(p) {
   document.getElementById('advCare').innerHTML = `<h4>Lưu ý bảo quản</h4><p>${adv.care}</p>`;
 
   buildGallery(p.images);
-  // Sync initial gallery to first variant
-  if (window._variants && window._variants.length) selectVariant(0);
+  // Pre-resolve each variant's image (v.image → gallery[idx] → gallery[0])
+  if (variants.length) {
+    window._variantImages = variants.map((v, i) => v.image || galleryImages[i] || galleryImages[0] || '');
+    selectVariant(0);
+  }
   window._product = p;
 
   document.getElementById('loadingState').classList.add('hidden');
@@ -615,9 +617,8 @@ function selectVariant(idx) {
     const pe = document.getElementById('spPrice');
     pe.className = 'sp-price'; pe.textContent = fmtPrice(v.price);
   }
-  if (v.image) setGalleryImage(v.image, -1);
-  else if (galleryImages[idx]) setGalleryImage(galleryImages[idx], idx);
-  else if (galleryImages.length) setGalleryImage(galleryImages[0], 0);
+  const src = (window._variantImages || [])[idx] || galleryImages[idx] || galleryImages[0] || '';
+  if (src) setGalleryImage(src, galleryImages.indexOf(src));
 }
 
 // ── Related products ──────────────────────────────────────────────────────────
