@@ -673,6 +673,12 @@
   .bg-btn-save-row:disabled { opacity:.5; cursor:default; }
   .bg-btn-undo { padding:4px 7px; background:none; border:1px solid var(--border); border-radius:3px; font-size:11px; cursor:pointer; margin-left:4px; color:var(--muted); }
   .bg-btn-undo:hover { background:#F1F5F9; }
+  .bg-saving { font-size:15px; opacity:.6; }
+  .bg-saved { color:#059669; font-size:15px; font-weight:700; }
+  .bg-save-err { color:#DC2626; font-size:13px; font-weight:600; }
+  .bg-btn-retry { padding:3px 8px; font-size:10px; background:#FEF2F2; border:1px solid #FECACA; color:#DC2626; border-radius:3px; cursor:pointer; margin-left:4px; font-family:inherit; }
+  .bg-btn-retry:hover { background:#FEE2E2; }
+  .bg-row-err td { background:#FEF2F2 !important; }
   </style>
 </head>
 <body>
@@ -1894,7 +1900,7 @@ Có chủ đề nào bạn muốn chúng tôi cover? Comment nhé!
     <div class="page" id="page-bang-gia">
       <div style="margin-bottom:18px">
         <h2 style="font-size:17px;font-weight:700;color:var(--dark)">💰 Bảng Giá Đại Lý</h2>
-        <p style="color:var(--muted);font-size:12px;margin-top:4px">Nguồn: <code style="background:#F1F5F9;padding:1px 5px;border-radius:2px;font-size:11px">bang_gia_dai_ly.xlsx</code> · Click vào ô giá để chỉnh sửa trực tiếp · Nhấn <kbd style="background:#F1F5F9;border:1px solid var(--border);padding:1px 5px;border-radius:2px;font-size:11px">Enter</kbd> để xác nhận</p>
+        <p style="color:var(--muted);font-size:12px;margin-top:4px">Nguồn: <code style="background:#F1F5F9;padding:1px 5px;border-radius:2px;font-size:11px">bang_gia_dai_ly.xlsx</code> · Click ô giá → nhập giá mới → <kbd style="background:#F1F5F9;border:1px solid var(--border);padding:1px 5px;border-radius:2px;font-size:11px">Enter</kbd> để lưu ngay · <kbd style="background:#F1F5F9;border:1px solid var(--border);padding:1px 5px;border-radius:2px;font-size:11px">Esc</kbd> để huỷ</p>
       </div>
 
       <div class="bg-toolbar">
@@ -1906,18 +1912,12 @@ Có chủ đề nào bạn muốn chúng tôi cover? Comment nhé!
           <option value="">Tất cả hãng</option>
         </select>
         <button class="bg-btn" onclick="bgLoadData()">🔄 Tải lại</button>
-        <div id="bgDirtyBar" class="bg-dirty-bar" style="display:none">
-          <span class="bg-dirty-count" id="bgDirtyCount">0 thay đổi</span>
-          <button class="bg-btn bg-btn-save-all" onclick="bgSaveAll()">💾 Lưu tất cả</button>
-          <button class="bg-btn" onclick="bgUndoAll()" style="font-size:11px;padding:4px 10px">↩ Hoàn tác</button>
-        </div>
       </div>
 
       <div class="bg-summary">
         <div class="bg-stat-box"><b id="bgStatTotal">…</b><small>Sản phẩm</small></div>
         <div class="bg-stat-box"><b id="bgStatBrands">…</b><small>Hãng</small></div>
         <div class="bg-stat-box"><b id="bgStatVisible">…</b><small>Đang hiện</small></div>
-        <div class="bg-stat-box"><b id="bgStatEdited" style="color:#D97706">0</b><small>Đã sửa</small></div>
       </div>
 
       <div class="bg-table-wrap">
@@ -3196,8 +3196,7 @@ async function doImport() {
 })();
 
 /* ─── Bảng Giá Đại Lý ──────────────────────────────────────── */
-var bgData  = [];
-var bgDirty = {};
+var bgData = [];
 
 const BG_BRAND_COLORS = {
   'Tibhar':        ['#EFF6FF','#1D4ED8','#BFDBFE'],
@@ -3242,9 +3241,7 @@ async function bgLoadData() {
     '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--muted)">Đang tải…</td></tr>';
   try {
     const data = await api('/api/price-list');
-    bgData  = data.rows;
-    bgDirty = {};
-    bgUpdateDirtyBar();
+    bgData = data.rows;
     bgPopulateBrands();
     bgFilter();
     bgUpdateStats();
@@ -3269,13 +3266,6 @@ function bgUpdateStats() {
   document.getElementById('bgStatBrands').textContent = brands.length;
 }
 
-function bgUpdateDirtyBar() {
-  const n = Object.keys(bgDirty).length;
-  document.getElementById('bgDirtyBar').style.display  = n ? 'flex' : 'none';
-  document.getElementById('bgDirtyCount').textContent  = n + ' thay đổi chưa lưu';
-  document.getElementById('bgStatEdited').textContent  = n;
-}
-
 function bgFilter() {
   const q     = document.getElementById('bgSearch').value.trim().toLowerCase();
   const brand = document.getElementById('bgBrand').value;
@@ -3286,7 +3276,6 @@ function bgFilter() {
     return mb && mq;
   });
   document.getElementById('bgStatVisible').textContent = prods.length;
-  // If filtering, flat list; else group by headers
   bgRender(q || brand ? prods : bgData);
 }
 
@@ -3303,23 +3292,16 @@ function bgRender(rows) {
       return;
     }
     num++;
-    const d      = bgDirty[r.rowNum];
-    const retail = d?.retail ?? r.retail;
-    const dealer = d?.dealer ?? r.dealer;
-    const mg     = bgMargin(retail, dealer);
-    const dc     = d ? ' bg-row-dirty' : '';
-    const act    = d
-      ? `<button class="bg-btn-save-row" onclick="bgSaveRow(${r.rowNum},this)">Lưu</button><button class="bg-btn-undo" onclick="bgUndoRow(${r.rowNum})" title="Hoàn tác">↩</button>`
-      : '';
-    html += `<tr class="bg-row${dc}" data-rn="${r.rowNum}">
+    const mg = bgMargin(r.retail, r.dealer);
+    html += `<tr data-rn="${r.rowNum}">
   <td class="bg-td-num">${num}</td>
   <td class="bg-td-brand"><span class="bg-brand-tag" style="${bgBrandStyle(r.brand)}">${esc(r.brand)}</span></td>
   <td class="bg-td-name">${esc(r.name)}${r.update?`<span class="bg-update-badge">${esc(r.update)}</span>`:''}</td>
-  <td class="bg-td-price" data-field="retail" data-val="${retail}" onclick="bgEditCell(this,${r.rowNum},'retail')">${bgFmt(retail)}</td>
-  <td class="bg-td-price" data-field="dealer" data-val="${dealer}" onclick="bgEditCell(this,${r.rowNum},'dealer')">${bgFmt(dealer)}</td>
+  <td class="bg-td-price" data-field="retail" data-val="${r.retail}" onclick="bgEditCell(this,${r.rowNum},'retail')">${bgFmt(r.retail)}</td>
+  <td class="bg-td-price" data-field="dealer" data-val="${r.dealer}" onclick="bgEditCell(this,${r.rowNum},'dealer')">${bgFmt(r.dealer)}</td>
   <td class="bg-td-margin"><span class="${mg.cls}">${mg.label}</span></td>
   <td class="bg-td-promo">${esc(r.promo)}</td>
-  <td class="bg-td-act">${act}</td>
+  <td class="bg-td-act"></td>
 </tr>`;
   });
   tbody.innerHTML = html;
@@ -3328,99 +3310,114 @@ function bgRender(rows) {
 function bgEditCell(td, rowNum, field) {
   if (td.querySelector('input')) return;
   const val = td.dataset.val || '0';
-  td.innerHTML = `<input class="bg-price-input" type="number" step="1000" value="${val}"
-    onblur="bgCommitEdit(this,${rowNum},'${field}')"
-    onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')bgCancelEdit(this,${rowNum},'${field}')">`;
-  td.querySelector('input').focus();
-  td.querySelector('input').select();
+  const inp = document.createElement('input');
+  inp.className = 'bg-price-input';
+  inp.type  = 'number';
+  inp.step  = '1000';
+  inp.value = val;
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter')  { e.preventDefault(); inp.blur(); }
+    if (e.key === 'Escape') { bgCancelEdit(inp, rowNum, field); }
+  });
+  inp.addEventListener('blur', () => bgCommitEdit(inp, rowNum, field));
+  td.textContent = '';
+  td.appendChild(inp);
+  inp.focus();
+  inp.select();
 }
 
-function bgCommitEdit(input, rowNum, field) {
-  const newVal  = parseInt(input.value) || 0;
-  const row     = bgData.find(r=>r.rowNum===rowNum);
+async function bgCommitEdit(inp, rowNum, field) {
+  const newVal = parseInt(inp.value) || 0;
+  const row = bgData.find(r => r.rowNum === rowNum);
   if (!row) return;
-  if (newVal === (bgDirty[rowNum]?.[field] ?? row[field])) {
-    // no change — revert display
-    const origVal = bgDirty[rowNum]?.[field] ?? row[field];
-    input.parentElement.textContent = bgFmt(origVal);
-    input.parentElement.dataset.val = origVal;
-    if (!bgDirty[rowNum]) return;
-  } else {
-    if (!bgDirty[rowNum]) bgDirty[rowNum] = { retail: row.retail, dealer: row.dealer };
-    bgDirty[rowNum][field] = newVal;
-    input.parentElement.textContent  = bgFmt(newVal);
-    input.parentElement.dataset.val  = newVal;
-    // update margin cell
-    const tr = input.parentElement.closest('tr');
+
+  // Restore cell display immediately
+  inp.parentElement.textContent = bgFmt(newVal);
+  inp.parentElement.dataset.val = newVal;
+
+  if (newVal === row[field]) return; // no change
+
+  const saveData = { retail: row.retail, dealer: row.dealer };
+  saveData[field] = newVal;
+
+  // Optimistic UI update
+  row[field] = newVal;
+
+  // Update margin cell
+  const tr = inp.parentElement.closest('tr');
+  if (tr) {
+    const mg = bgMargin(row.retail, row.dealer);
+    const mgTd = tr.querySelector('.bg-td-margin');
+    if (mgTd) mgTd.innerHTML = `<span class="${mg.cls}">${mg.label}</span>`;
+    const actTd = tr.querySelector('.bg-td-act');
+    if (actTd) actTd.innerHTML = '<span class="bg-saving">⏳</span>';
+  }
+
+  // Save to server
+  try {
+    await api(`/api/price-list/${rowNum}`, 'PUT', saveData);
     if (tr) {
-      const retail = bgDirty[rowNum].retail;
-      const dealer = bgDirty[rowNum].dealer;
-      const mg = bgMargin(retail, dealer);
-      const mgTd = tr.querySelector('.bg-td-margin');
-      if (mgTd) mgTd.innerHTML = `<span class="${mg.cls}">${mg.label}</span>`;
-      tr.classList.add('bg-row-dirty');
+      const actTd = tr.querySelector('.bg-td-act');
+      if (actTd) {
+        actTd.innerHTML = '<span class="bg-saved">✓</span>';
+        setTimeout(() => { if (actTd.isConnected) actTd.innerHTML = ''; }, 2000);
+      }
+    }
+  } catch (e) {
+    // Rollback optimistic update on error
+    row[field] = saveData[field] === newVal
+      ? (field === 'retail' ? row.dealer : row.retail) // fallback
+      : row[field];
+    if (tr) {
+      tr.classList.add('bg-row-err');
       const actTd = tr.querySelector('.bg-td-act');
       if (actTd) actTd.innerHTML =
-        `<button class="bg-btn-save-row" onclick="bgSaveRow(${rowNum},this)">Lưu</button>`
-        + `<button class="bg-btn-undo" onclick="bgUndoRow(${rowNum})" title="Hoàn tác">↩</button>`;
+        `<span class="bg-save-err" title="${esc(e.message)}">✗</span>`
+        + `<button class="bg-btn-retry" onclick="bgRetry(${rowNum},'${field}',${newVal})">Thử lại</button>`;
     }
+    toast('Lỗi lưu giá: ' + e.message, 'err');
   }
-  bgUpdateDirtyBar();
 }
 
-function bgCancelEdit(input, rowNum, field) {
-  const row = bgData.find(r=>r.rowNum===rowNum);
-  const val = bgDirty[rowNum]?.[field] ?? row?.[field] ?? 0;
-  input.parentElement.textContent  = bgFmt(val);
-  input.parentElement.dataset.val  = val;
+function bgCancelEdit(inp, rowNum, field) {
+  const row = bgData.find(r => r.rowNum === rowNum);
+  const val = row?.[field] ?? 0;
+  inp.parentElement.textContent  = bgFmt(val);
+  inp.parentElement.dataset.val  = val;
 }
 
-function bgUndoRow(rowNum) {
-  delete bgDirty[rowNum];
-  bgUpdateDirtyBar();
-  bgFilter();
-}
-
-function bgUndoAll() {
-  bgDirty = {};
-  bgUpdateDirtyBar();
-  bgFilter();
-}
-
-async function bgSaveRow(rowNum, btn) {
-  const d = bgDirty[rowNum];
-  if (!d) return;
-  btn.disabled = true; btn.textContent = '…';
+async function bgRetry(rowNum, field, newVal) {
+  const row = bgData.find(r => r.rowNum === rowNum);
+  if (!row) return;
+  const saveData = { retail: row.retail, dealer: row.dealer };
+  saveData[field] = newVal;
+  const tr = document.querySelector(`tr[data-rn="${rowNum}"]`);
+  if (tr) {
+    tr.classList.remove('bg-row-err');
+    const actTd = tr.querySelector('.bg-td-act');
+    if (actTd) actTd.innerHTML = '<span class="bg-saving">⏳</span>';
+  }
   try {
-    await api(`/api/price-list/${rowNum}`, 'PUT', d);
-    const row = bgData.find(r=>r.rowNum===rowNum);
-    if (row) { row.retail = d.retail; row.dealer = d.dealer; }
-    delete bgDirty[rowNum];
-    bgUpdateDirtyBar();
-    bgFilter();
+    await api(`/api/price-list/${rowNum}`, 'PUT', saveData);
+    row[field] = newVal;
+    if (tr) {
+      const actTd = tr.querySelector('.bg-td-act');
+      if (actTd) {
+        actTd.innerHTML = '<span class="bg-saved">✓</span>';
+        setTimeout(() => { if (actTd.isConnected) actTd.innerHTML = ''; }, 2000);
+      }
+    }
     toast('Đã lưu giá');
   } catch (e) {
-    btn.disabled = false; btn.textContent = 'Lưu';
+    if (tr) {
+      tr.classList.add('bg-row-err');
+      const actTd = tr.querySelector('.bg-td-act');
+      if (actTd) actTd.innerHTML =
+        `<span class="bg-save-err" title="${esc(e.message)}">✗</span>`
+        + `<button class="bg-btn-retry" onclick="bgRetry(${rowNum},'${field}',${newVal})">Thử lại</button>`;
+    }
     toast('Lỗi: ' + e.message, 'err');
   }
-}
-
-async function bgSaveAll() {
-  const keys = Object.keys(bgDirty);
-  if (!keys.length) return;
-  let ok = 0;
-  for (const rn of keys) {
-    try {
-      await api(`/api/price-list/${rn}`, 'PUT', bgDirty[rn]);
-      const row = bgData.find(r=>r.rowNum===+rn);
-      if (row) { row.retail = bgDirty[rn].retail; row.dealer = bgDirty[rn].dealer; }
-      delete bgDirty[rn];
-      ok++;
-    } catch { /* skip failed rows */ }
-  }
-  bgUpdateDirtyBar();
-  bgFilter();
-  toast(`Đã lưu ${ok}/${keys.length} dòng`);
 }
 
 /* ─── Init ─────────────────────────────────────────────────── */
