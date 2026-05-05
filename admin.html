@@ -3331,20 +3331,22 @@ async function bgCommitEdit(inp, rowNum, field) {
   const row = bgData.find(r => r.rowNum === rowNum);
   if (!row) return;
 
-  // Restore cell display immediately
-  inp.parentElement.textContent = bgFmt(newVal);
-  inp.parentElement.dataset.val = newVal;
+  const oldVal = row[field];
 
-  if (newVal === row[field]) return; // no change
+  // Save td ref BEFORE textContent wipes inp from the DOM (inp.parentElement becomes null after)
+  const td = inp.parentElement;
+  td.textContent = bgFmt(newVal);
+  td.dataset.val = String(newVal);
 
-  const saveData = { retail: row.retail, dealer: row.dealer };
+  if (newVal === oldVal) return; // no change
+
+  const saveData = {};
   saveData[field] = newVal;
 
-  // Optimistic UI update
+  // Optimistic update
   row[field] = newVal;
 
-  // Update margin cell
-  const tr = inp.parentElement.closest('tr');
+  const tr = td.closest('tr');
   if (tr) {
     const mg = bgMargin(row.retail, row.dealer);
     const mgTd = tr.querySelector('.bg-td-margin');
@@ -3353,7 +3355,6 @@ async function bgCommitEdit(inp, rowNum, field) {
     if (actTd) actTd.innerHTML = '<span class="bg-saving">⏳</span>';
   }
 
-  // Save to server
   try {
     await api(`/api/price-list/${rowNum}`, 'PUT', saveData);
     if (tr) {
@@ -3364,11 +3365,17 @@ async function bgCommitEdit(inp, rowNum, field) {
       }
     }
   } catch (e) {
-    // Rollback optimistic update on error
-    row[field] = saveData[field] === newVal
-      ? (field === 'retail' ? row.dealer : row.retail) // fallback
-      : row[field];
+    // Rollback
+    row[field] = oldVal;
+    if (td.isConnected) {
+      td.textContent = bgFmt(oldVal);
+      td.dataset.val = String(oldVal);
+    }
     if (tr) {
+      // Revert margin too
+      const mg = bgMargin(row.retail, row.dealer);
+      const mgTd = tr.querySelector('.bg-td-margin');
+      if (mgTd) mgTd.innerHTML = `<span class="${mg.cls}">${mg.label}</span>`;
       tr.classList.add('bg-row-err');
       const actTd = tr.querySelector('.bg-td-act');
       if (actTd) actTd.innerHTML =
@@ -3382,8 +3389,9 @@ async function bgCommitEdit(inp, rowNum, field) {
 function bgCancelEdit(inp, rowNum, field) {
   const row = bgData.find(r => r.rowNum === rowNum);
   const val = row?.[field] ?? 0;
-  inp.parentElement.textContent  = bgFmt(val);
-  inp.parentElement.dataset.val  = val;
+  const td = inp.parentElement;
+  td.textContent = bgFmt(val);
+  td.dataset.val = val;
 }
 
 async function bgRetry(rowNum, field, newVal) {
