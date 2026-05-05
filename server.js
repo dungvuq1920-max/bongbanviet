@@ -1117,6 +1117,17 @@ function startTracker() {
   console.log(`🤖 Telegram bot started | 🔄 Tracker polling every 10s`);
 }
 
+// ─── Global Error Handler cho API ───────────────────────────────────────────
+app.use((err, req, res, next) => {
+  if (req.path.startsWith('/api/')) {
+    console.error(`[API Error] ${req.path}:`, err.message);
+    // Trả về JSON để frontend không bị lỗi parse HTML khi gặp exception (vd: lỗi kích thước ảnh, sai định dạng)
+    res.status(400).json({ error: err.message || 'Có lỗi xảy ra trong quá trình xử lý' });
+  } else {
+    next(err);
+  }
+});
+
 // ─── Seed default catalog banner images (INSERT OR IGNORE — never overwrites uploads) ────
 const _defBanners = [
   ['banner_cot_vot',    '/images/banners/banner-cot-vot.jpg'],
