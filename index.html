@@ -1530,6 +1530,10 @@
         <button class="cat-pill" data-brand="tibhar">Tibhar</button>
         <button class="cat-pill" data-brand="unrex">Unrex</button>
         <button class="cat-pill" data-brand="yinhe">Yinhe</button>
+        <button class="cat-pill" data-brand="dhs">DHS</button>
+        <button class="cat-pill" data-brand="dawei">Dawei</button>
+        <button class="cat-pill" data-brand="palio">Palio</button>
+        <button class="cat-pill" data-brand="avx">AVX</button>
         <button class="cat-pill" data-brand="khac">Các Hãng Khác</button>
       </div>
     </div>
@@ -1570,6 +1574,10 @@
             <div class="fltr-drop-opt" data-brand="tibhar">Tibhar</div>
             <div class="fltr-drop-opt" data-brand="unrex">Unrex</div>
             <div class="fltr-drop-opt" data-brand="yinhe">Yinhe</div>
+            <div class="fltr-drop-opt" data-brand="dhs">DHS</div>
+            <div class="fltr-drop-opt" data-brand="dawei">Dawei</div>
+            <div class="fltr-drop-opt" data-brand="palio">Palio</div>
+            <div class="fltr-drop-opt" data-brand="avx">AVX</div>
             <div class="fltr-drop-opt" data-brand="khac">Các Hãng Khác</div>
           </div>
         </div>
@@ -2424,7 +2432,10 @@ fetch('/api/settings/home_hero_image')
   });
 
   /* Category filter */
-  var BRAND_CATS = { 'cot-vot': true, 'mat-vot': true };
+  var BRAND_CATS = {
+    'cot-vot': ['butterfly','tibhar','unrex','yinhe','avx','khac'],
+    'mat-vot': ['butterfly','tibhar','unrex','yinhe','dhs','dawei','palio','khac']
+  };
   var CAT_TITLES = {
     'cot-vot':    { def: 'Cốt Vợt Hot 🔥',        all: 'Tất Cả Cốt Vợt' },
     'mat-vot':    { def: 'Mặt Vợt Hot 🔥',         all: 'Tất Cả Mặt Vợt' },
@@ -2450,7 +2461,7 @@ fetch('/api/settings/home_hero_image')
   }
 
   function updateFilterUI() {
-    var hasBrands = BRAND_CATS[activeCat] || false;
+    var brandSet = BRAND_CATS[activeCat] || null;
     if (activeCat === 'all') {
       document.getElementById('fltrNameWrap').style.display = '';
       document.getElementById('fltrCat').style.display = '';
@@ -2462,7 +2473,15 @@ fetch('/api/settings/home_hero_image')
       document.getElementById('fltrBrand').style.display = 'none';
       document.getElementById('catSubPills').style.display = 'flex';
       var brandGroup = document.getElementById('catBrandPillsGroup');
-      if (brandGroup) brandGroup.style.display = hasBrands ? 'flex' : 'none';
+      if (brandGroup) {
+        brandGroup.style.display = brandSet ? 'flex' : 'none';
+        if (brandSet) {
+          document.querySelectorAll('#catSubPills .cat-pill[data-brand]').forEach(function(pill) {
+            var b = pill.getAttribute('data-brand');
+            pill.style.display = (b === 'all' || brandSet.indexOf(b) > -1) ? '' : 'none';
+          });
+        }
+      }
     }
   }
 
