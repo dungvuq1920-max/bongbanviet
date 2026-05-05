@@ -90,7 +90,7 @@
             brandCard('/cot-vot.html?brand=tibhar',    'Tibhar',    'Chuyên nghiệp, Đức') +
             brandCard('/cot-vot.html?brand=unrex',     'Unrex',     'Đa dạng kiểu chơi') +
             brandCard('/cot-vot.html?brand=yinhe',     'Yinhe',     'Giá tốt, hiệu quả') +
-            brandCard('/cot-vot.html?brand=avx',       'AVX',       'Cốt carbon & gỗ') +
+            brandCard('/cot-vot.html?brand=avx',       'Avalox',    'Cốt carbon & gỗ') +
             brandCard('/cot-vot.html?brand=khac',      'Khác',      'Thương hiệu khác') +
           '</div>' +
         '</div>' +
@@ -174,7 +174,7 @@
             '<a href="/cot-vot.html?brand=tibhar">Tibhar</a>' +
             '<a href="/cot-vot.html?brand=unrex">Unrex</a>' +
             '<a href="/cot-vot.html?brand=yinhe">Yinhe</a>' +
-            '<a href="/cot-vot.html?brand=avx">AVX (Avalox)</a>' +
+            '<a href="/cot-vot.html?brand=avx">Avalox</a>' +
             '<a href="/cot-vot.html?brand=khac">Các Thương Hiệu Khác</a>' +
             '<a href="/cot-vot.html" class="m-group-view-all">Xem Tất Cả Cốt Vợt →</a>'
           ) +
