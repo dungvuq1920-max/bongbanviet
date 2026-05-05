@@ -30,7 +30,7 @@
       '.nav-links .mega-item:hover>a::after{transform:rotate(180deg);opacity:.7}' +
       '.mega-panel{position:absolute;top:calc(100% + 1px);left:0;background:var(--white);border:1px solid var(--line);border-top:2px solid var(--red);box-shadow:0 20px 50px rgba(0,0,0,.1);padding:22px 24px;opacity:0;visibility:hidden;transform:translateY(8px);transition:opacity .2s,transform .2s,visibility .2s;z-index:300;pointer-events:none}' +
       '.mega-item:hover .mega-panel,.mega-item:focus-within .mega-panel{opacity:1;visibility:visible;transform:translateY(0);pointer-events:all}' +
-      '.mega-brands{min-width:560px}' +
+      '.mega-brands{min-width:560px}.mega-brands.wide{min-width:630px}' +
       '.mega-gear{left:50%;transform:translateX(-50%) translateY(8px);min-width:340px}' +
       '.mega-item:hover .mega-gear,.mega-item:focus-within .mega-gear{transform:translateX(-50%) translateY(0)}' +
       '.mega-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--line)}' +
@@ -96,13 +96,14 @@
       '</li>' +
       '<li class="mega-item">' +
         '<a href="/mat-vot.html"' + ac('mat') + '>Mặt Vợt</a>' +
-        '<div class="mega-panel mega-brands">' +
+        '<div class="mega-panel mega-brands wide">' +
           '<div class="mega-head"><span class="mega-head-label">Mặt Vợt theo thương hiệu</span><a href="/mat-vot.html" class="mega-head-all">Xem tất cả →</a></div>' +
-          '<div class="mega-brands-grid">' +
+          '<div class="mega-brands-grid" style="grid-template-columns:repeat(6,1fr)">' +
             brandCard('/mat-vot.html?brand=butterfly', 'Butterfly', 'Cao cấp, Nhật Bản') +
             brandCard('/mat-vot.html?brand=tibhar',    'Tibhar',    'Chuyên nghiệp, Đức') +
             brandCard('/mat-vot.html?brand=unrex',     'Unrex',     'Đa dạng kiểu chơi') +
             brandCard('/mat-vot.html?brand=yinhe',     'Yinhe',     'Giá tốt, hiệu quả') +
+            brandCard('/mat-vot.html?brand=dhs',       'DHS',       'Tacky kiểu Trung Quốc') +
             brandCard('/mat-vot.html?brand=khac',      'Khác',      'Thương hiệu khác') +
           '</div>' +
         '</div>' +
@@ -178,6 +179,7 @@
             '<a href="/mat-vot.html?brand=tibhar">Tibhar</a>' +
             '<a href="/mat-vot.html?brand=unrex">Unrex</a>' +
             '<a href="/mat-vot.html?brand=yinhe">Yinhe</a>' +
+            '<a href="/mat-vot.html?brand=dhs">DHS</a>' +
             '<a href="/mat-vot.html?brand=khac">Các Thương Hiệu Khác</a>' +
             '<a href="/mat-vot.html" class="m-group-view-all">Xem Tất Cả Mặt Vợt →</a>'
           ) +
