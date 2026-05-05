@@ -629,6 +629,50 @@
     .fb-cap-inline { background:#F8FAFC; border:1px solid var(--border); padding:9px 12px; font-size:12px; line-height:1.65; color:var(--dark); white-space:pre-wrap; margin:6px 0 8px; }
     .fb-info-note { background:#ECFDF5; color:#065F46; border:1px solid #6EE7B7; border-radius:2px; font-size:10px; padding:2px 8px; font-weight:700; display:inline-block; margin-left:4px; }
     .fb-date .fd-slot { font-size:10px; opacity:.55; margin-top:3px; }
+  /* ─── Bảng Giá Đại Lý ──────────────────────────────────── */
+  .bg-toolbar { display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+  .bg-search-wrap { position:relative; flex:1; min-width:200px; }
+  .bg-search-wrap svg { position:absolute; left:10px; top:50%; transform:translateY(-50%); opacity:.4; pointer-events:none; }
+  .bg-search-wrap input { width:100%; padding:8px 12px 8px 34px; border:1px solid var(--border); border-radius:4px; font-family:inherit; font-size:13px; background:#fff; }
+  .bg-search-wrap input:focus { outline:none; border-color:#94a3b8; }
+  .bg-filter-sel { padding:7px 10px; border:1px solid var(--border); border-radius:4px; font-family:inherit; font-size:13px; background:#fff; cursor:pointer; }
+  .bg-btn { padding:7px 14px; border:1px solid var(--border); border-radius:4px; font-family:inherit; font-size:12.5px; font-weight:500; background:#fff; cursor:pointer; transition:.15s; }
+  .bg-btn:hover { background:#F8FAFC; }
+  .bg-dirty-bar { display:flex; align-items:center; gap:10px; background:#FFFBEB; border:1px solid #FDE68A; padding:6px 14px; border-radius:4px; font-size:13px; }
+  .bg-dirty-bar .bg-dirty-count { font-weight:600; color:#B45309; }
+  .bg-btn-save-all { background:#D97706; color:#fff; border-color:#D97706; font-size:12px; padding:5px 12px; }
+  .bg-btn-save-all:hover { background:#B45309 !important; }
+  .bg-summary { display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
+  .bg-stat-box { background:#fff; border:1px solid var(--border); border-radius:4px; padding:10px 18px; display:flex; flex-direction:column; align-items:center; gap:2px; }
+  .bg-stat-box b { font-size:18px; font-weight:700; color:var(--dark); }
+  .bg-stat-box small { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); }
+  .bg-table-wrap { background:#fff; border:1px solid var(--border); border-radius:6px; overflow:auto; max-height:calc(100vh - 250px); }
+  .bg-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .bg-table thead th { position:sticky; top:0; z-index:2; background:#F8FAFC; border-bottom:2px solid var(--border); padding:10px 12px; text-align:left; font-size:10.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); white-space:nowrap; }
+  .bg-table tbody tr { border-bottom:1px solid #F1F5F9; transition:background .1s; }
+  .bg-table tbody tr:hover:not(.bg-row-hd) { background:#FAFBFD; }
+  .bg-table tbody tr.bg-row-dirty { background:#FFFBEB !important; }
+  .bg-row-hd td { background:#F1F5F9; font-size:10.5px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:#475569; padding:6px 14px; border-top:2px solid #E2E8F0; }
+  .bg-td-num { width:36px; text-align:center; color:var(--muted); font-size:11px; padding:10px 6px !important; }
+  .bg-td-brand { width:106px; padding:10px 12px; }
+  .bg-brand-tag { display:inline-block; font-size:10px; font-weight:700; letter-spacing:.05em; padding:2px 8px; border-radius:3px; white-space:nowrap; }
+  .bg-td-name { padding:10px 12px; }
+  .bg-update-badge { display:inline-block; margin-left:8px; font-size:9px; color:var(--muted); background:#F1F5F9; border-radius:2px; padding:1px 5px; vertical-align:middle; }
+  .bg-td-price { width:130px; padding:10px 12px; font-weight:600; color:#0F172A; cursor:pointer; white-space:nowrap; }
+  .bg-td-price:hover:not(:has(input)) { background:#EFF6FF; }
+  .bg-price-input { width:100%; padding:4px 8px; border:2px solid #3B82F6; border-radius:3px; font-family:inherit; font-size:13px; font-weight:600; background:#EFF6FF; outline:none; -moz-appearance:textfield; }
+  .bg-price-input::-webkit-inner-spin-button, .bg-price-input::-webkit-outer-spin-button { -webkit-appearance:none; }
+  .bg-td-margin { width:70px; padding:10px 12px; text-align:center; }
+  .bg-mg-high { color:#059669; font-weight:700; font-size:12px; }
+  .bg-mg-mid  { color:#D97706; font-weight:700; font-size:12px; }
+  .bg-mg-low  { color:#DC2626; font-weight:700; font-size:12px; }
+  .bg-td-promo { max-width:180px; padding:10px 12px; font-size:11px; color:var(--muted); line-height:1.5; }
+  .bg-td-act { width:100px; padding:8px 10px; white-space:nowrap; }
+  .bg-btn-save-row { padding:4px 10px; background:#0F172A; color:#fff; border:none; border-radius:3px; font-size:11px; font-weight:600; cursor:pointer; }
+  .bg-btn-save-row:hover { background:#1E293B; }
+  .bg-btn-save-row:disabled { opacity:.5; cursor:default; }
+  .bg-btn-undo { padding:4px 7px; background:none; border:1px solid var(--border); border-radius:3px; font-size:11px; cursor:pointer; margin-left:4px; color:var(--muted); }
+  .bg-btn-undo:hover { background:#F1F5F9; }
   </style>
 </head>
 <body>
@@ -726,6 +770,10 @@
     <button class="sb-item" id="nav-facebook" onclick="nav('facebook')">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
       Kế Hoạch Facebook
+    </button>
+    <button class="sb-item" id="nav-bang-gia" onclick="nav('bang-gia')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Bảng Giá Đại Lý
     </button>
     <button class="sb-item" id="nav-banners" onclick="nav('banners')">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
@@ -1842,6 +1890,57 @@ Có chủ đề nào bạn muốn chúng tôi cover? Comment nhé!
       </div>
     </div>
 
+    <!-- ── Bảng Giá Đại Lý ──────────────────────── -->
+    <div class="page" id="page-bang-gia">
+      <div style="margin-bottom:18px">
+        <h2 style="font-size:17px;font-weight:700;color:var(--dark)">💰 Bảng Giá Đại Lý</h2>
+        <p style="color:var(--muted);font-size:12px;margin-top:4px">Nguồn: <code style="background:#F1F5F9;padding:1px 5px;border-radius:2px;font-size:11px">bang_gia_dai_ly.xlsx</code> · Click vào ô giá để chỉnh sửa trực tiếp · Nhấn <kbd style="background:#F1F5F9;border:1px solid var(--border);padding:1px 5px;border-radius:2px;font-size:11px">Enter</kbd> để xác nhận</p>
+      </div>
+
+      <div class="bg-toolbar">
+        <div class="bg-search-wrap">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" id="bgSearch" placeholder="Tìm tên sản phẩm…" oninput="bgFilter()">
+        </div>
+        <select class="bg-filter-sel" id="bgBrand" onchange="bgFilter()">
+          <option value="">Tất cả hãng</option>
+        </select>
+        <button class="bg-btn" onclick="bgLoadData()">🔄 Tải lại</button>
+        <div id="bgDirtyBar" class="bg-dirty-bar" style="display:none">
+          <span class="bg-dirty-count" id="bgDirtyCount">0 thay đổi</span>
+          <button class="bg-btn bg-btn-save-all" onclick="bgSaveAll()">💾 Lưu tất cả</button>
+          <button class="bg-btn" onclick="bgUndoAll()" style="font-size:11px;padding:4px 10px">↩ Hoàn tác</button>
+        </div>
+      </div>
+
+      <div class="bg-summary">
+        <div class="bg-stat-box"><b id="bgStatTotal">…</b><small>Sản phẩm</small></div>
+        <div class="bg-stat-box"><b id="bgStatBrands">…</b><small>Hãng</small></div>
+        <div class="bg-stat-box"><b id="bgStatVisible">…</b><small>Đang hiện</small></div>
+        <div class="bg-stat-box"><b id="bgStatEdited" style="color:#D97706">0</b><small>Đã sửa</small></div>
+      </div>
+
+      <div class="bg-table-wrap">
+        <table class="bg-table">
+          <thead>
+            <tr>
+              <th class="bg-td-num">#</th>
+              <th class="bg-td-brand">Hãng</th>
+              <th>Tên Sản Phẩm</th>
+              <th class="bg-td-price">Giá Bán Lẻ</th>
+              <th class="bg-td-price">Giá Đại Lý</th>
+              <th class="bg-td-margin">Margin</th>
+              <th class="bg-td-promo">Khuyến Mãi / Ghi Chú</th>
+              <th class="bg-td-act"></th>
+            </tr>
+          </thead>
+          <tbody id="bgBody">
+            <tr><td colspan="8" style="text-align:center;padding:48px;color:var(--muted);font-size:13px">Chọn tab này để tải dữ liệu bảng giá…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- ── Ảnh & Banner ──────────────────────────── -->
     <div class="page" id="page-banners">
       <div class="sec-head">
@@ -2011,7 +2110,7 @@ const CAT_LBL = {
   'cot-vot':'Cốt Vợt','mat-vot':'Mặt Vợt','bong':'Bóng','ban':'Bàn',
   'do-thi-dau':'Đồ Thi Đấu','combo-vot':'Combo Vợt','do-cu':'Đồ Cũ','kien-thuc':'Kiến Thức',
 };
-const PAGE_TITLES = { ...CAT_LBL, dashboard:'Dashboard', banners:'Ảnh & Banner', settings:'Cài Đặt' };
+const PAGE_TITLES = { ...CAT_LBL, dashboard:'Dashboard', banners:'Ảnh & Banner', settings:'Cài Đặt', 'bang-gia':'Bảng Giá Đại Lý' };
 const loaded = {};
 let siteSettings = {};
 
@@ -2460,6 +2559,7 @@ async function loadSection(cat) {
   if (cat === 'dashboard') { loadDashboard(); return; }
   if (cat === 'banners')   { loadBanners(); return; }
   if (cat === 'settings')  { loadSettings(); return; }
+  if (cat === 'bang-gia')  { bgLoadData(); return; }
   if (loaded[cat]) return;
   loaded[cat] = true;
   if (cat === 'combo-vot')  return loadCombos();
@@ -3094,6 +3194,234 @@ async function doImport() {
     } catch(e) { /* server down — overlay stays */ }
   })();
 })();
+
+/* ─── Bảng Giá Đại Lý ──────────────────────────────────────── */
+var bgData  = [];
+var bgDirty = {};
+
+const BG_BRAND_COLORS = {
+  'Tibhar':        ['#EFF6FF','#1D4ED8','#BFDBFE'],
+  'TIBHAR':        ['#EFF6FF','#1D4ED8','#BFDBFE'],
+  'Unrex':         ['#FFFBEB','#B45309','#FDE68A'],
+  'UNREX':         ['#FFFBEB','#B45309','#FDE68A'],
+  'Yinhe':         ['#F5F3FF','#6D28D9','#DDD6FE'],
+  'YINHE':         ['#F5F3FF','#6D28D9','#DDD6FE'],
+  'Galaxy':        ['#F5F3FF','#6D28D9','#DDD6FE'],
+  'DHS':           ['#FEF2F2','#B91C1C','#FECACA'],
+  'XPD':           ['#ECFDF5','#047857','#A7F3D0'],
+  'Dawei':         ['#ECFEFF','#0E7490','#A5F3FC'],
+  'DAWEI':         ['#ECFEFF','#0E7490','#A5F3FC'],
+  'Oukei':         ['#FDF4FF','#7E22CE','#F0ABFC'],
+  'Y&T':           ['#FFF7ED','#C2410C','#FED7AA'],
+  'Palio Germany': ['#F8FAFC','#475569','#CBD5E1'],
+  'Avalox':        ['#FFF7ED','#EA580C','#FDBA74'],
+  'Selkirk':       ['#ECFDF5','#15803D','#BBF7D0'],
+};
+
+function bgBrandStyle(brand) {
+  const c = BG_BRAND_COLORS[brand]
+    || BG_BRAND_COLORS[Object.keys(BG_BRAND_COLORS).find(k=>k.toLowerCase()===brand.toLowerCase())]
+    || ['#F1F5F9','#475569','#CBD5E1'];
+  return `background:${c[0]};color:${c[1]};border:1px solid ${c[2]}`;
+}
+
+function bgFmt(n) {
+  if (!n) return '—';
+  return Number(n).toLocaleString('vi-VN') + 'đ';
+}
+
+function bgMargin(retail, dealer) {
+  if (!retail || !dealer || retail <= dealer) return { label:'—', cls:'' };
+  const pct = Math.round((retail - dealer) / retail * 100);
+  const cls = pct >= 28 ? 'bg-mg-high' : pct >= 18 ? 'bg-mg-mid' : 'bg-mg-low';
+  return { label: pct + '%', cls };
+}
+
+async function bgLoadData() {
+  document.getElementById('bgBody').innerHTML =
+    '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--muted)">Đang tải…</td></tr>';
+  try {
+    const data = await api('/api/price-list');
+    bgData  = data.rows;
+    bgDirty = {};
+    bgUpdateDirtyBar();
+    bgPopulateBrands();
+    bgFilter();
+    bgUpdateStats();
+  } catch (e) {
+    document.getElementById('bgBody').innerHTML =
+      `<tr><td colspan="8" style="text-align:center;padding:40px;color:#DC2626">❌ ${esc(e.message)}</td></tr>`;
+  }
+}
+
+function bgPopulateBrands() {
+  const brands = [...new Set(bgData.filter(r=>!r.isHeader && r.brand).map(r=>r.brand))].sort();
+  const sel = document.getElementById('bgBrand');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">Tất cả hãng</option>'
+    + brands.map(b=>`<option value="${esc(b)}"${b===cur?' selected':''}>${esc(b.toUpperCase())}</option>`).join('');
+}
+
+function bgUpdateStats() {
+  const prods  = bgData.filter(r=>!r.isHeader);
+  const brands = [...new Set(prods.map(r=>r.brand).filter(Boolean))];
+  document.getElementById('bgStatTotal').textContent  = prods.length;
+  document.getElementById('bgStatBrands').textContent = brands.length;
+}
+
+function bgUpdateDirtyBar() {
+  const n = Object.keys(bgDirty).length;
+  document.getElementById('bgDirtyBar').style.display  = n ? 'flex' : 'none';
+  document.getElementById('bgDirtyCount').textContent  = n + ' thay đổi chưa lưu';
+  document.getElementById('bgStatEdited').textContent  = n;
+}
+
+function bgFilter() {
+  const q     = document.getElementById('bgSearch').value.trim().toLowerCase();
+  const brand = document.getElementById('bgBrand').value;
+  const prods = bgData.filter(r => {
+    if (r.isHeader) return false;
+    const mb = !brand || r.brand === brand;
+    const mq = !q     || r.name.toLowerCase().includes(q) || r.brand.toLowerCase().includes(q);
+    return mb && mq;
+  });
+  document.getElementById('bgStatVisible').textContent = prods.length;
+  // If filtering, flat list; else group by headers
+  bgRender(q || brand ? prods : bgData);
+}
+
+function bgRender(rows) {
+  const tbody = document.getElementById('bgBody');
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--muted)">Không tìm thấy sản phẩm nào</td></tr>';
+    return;
+  }
+  let num = 0, html = '';
+  rows.forEach(r => {
+    if (r.isHeader) {
+      html += `<tr class="bg-row-hd"><td colspan="8">${esc(r.name)}</td></tr>`;
+      return;
+    }
+    num++;
+    const d      = bgDirty[r.rowNum];
+    const retail = d?.retail ?? r.retail;
+    const dealer = d?.dealer ?? r.dealer;
+    const mg     = bgMargin(retail, dealer);
+    const dc     = d ? ' bg-row-dirty' : '';
+    const act    = d
+      ? `<button class="bg-btn-save-row" onclick="bgSaveRow(${r.rowNum},this)">Lưu</button><button class="bg-btn-undo" onclick="bgUndoRow(${r.rowNum})" title="Hoàn tác">↩</button>`
+      : '';
+    html += `<tr class="bg-row${dc}" data-rn="${r.rowNum}">
+  <td class="bg-td-num">${num}</td>
+  <td class="bg-td-brand"><span class="bg-brand-tag" style="${bgBrandStyle(r.brand)}">${esc(r.brand)}</span></td>
+  <td class="bg-td-name">${esc(r.name)}${r.update?`<span class="bg-update-badge">${esc(r.update)}</span>`:''}</td>
+  <td class="bg-td-price" data-field="retail" data-val="${retail}" onclick="bgEditCell(this,${r.rowNum},'retail')">${bgFmt(retail)}</td>
+  <td class="bg-td-price" data-field="dealer" data-val="${dealer}" onclick="bgEditCell(this,${r.rowNum},'dealer')">${bgFmt(dealer)}</td>
+  <td class="bg-td-margin"><span class="${mg.cls}">${mg.label}</span></td>
+  <td class="bg-td-promo">${esc(r.promo)}</td>
+  <td class="bg-td-act">${act}</td>
+</tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+function bgEditCell(td, rowNum, field) {
+  if (td.querySelector('input')) return;
+  const val = td.dataset.val || '0';
+  td.innerHTML = `<input class="bg-price-input" type="number" step="1000" value="${val}"
+    onblur="bgCommitEdit(this,${rowNum},'${field}')"
+    onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')bgCancelEdit(this,${rowNum},'${field}')">`;
+  td.querySelector('input').focus();
+  td.querySelector('input').select();
+}
+
+function bgCommitEdit(input, rowNum, field) {
+  const newVal  = parseInt(input.value) || 0;
+  const row     = bgData.find(r=>r.rowNum===rowNum);
+  if (!row) return;
+  if (newVal === (bgDirty[rowNum]?.[field] ?? row[field])) {
+    // no change — revert display
+    const origVal = bgDirty[rowNum]?.[field] ?? row[field];
+    input.parentElement.textContent = bgFmt(origVal);
+    input.parentElement.dataset.val = origVal;
+    if (!bgDirty[rowNum]) return;
+  } else {
+    if (!bgDirty[rowNum]) bgDirty[rowNum] = { retail: row.retail, dealer: row.dealer };
+    bgDirty[rowNum][field] = newVal;
+    input.parentElement.textContent  = bgFmt(newVal);
+    input.parentElement.dataset.val  = newVal;
+    // update margin cell
+    const tr = input.parentElement.closest('tr');
+    if (tr) {
+      const retail = bgDirty[rowNum].retail;
+      const dealer = bgDirty[rowNum].dealer;
+      const mg = bgMargin(retail, dealer);
+      const mgTd = tr.querySelector('.bg-td-margin');
+      if (mgTd) mgTd.innerHTML = `<span class="${mg.cls}">${mg.label}</span>`;
+      tr.classList.add('bg-row-dirty');
+      const actTd = tr.querySelector('.bg-td-act');
+      if (actTd) actTd.innerHTML =
+        `<button class="bg-btn-save-row" onclick="bgSaveRow(${rowNum},this)">Lưu</button>`
+        + `<button class="bg-btn-undo" onclick="bgUndoRow(${rowNum})" title="Hoàn tác">↩</button>`;
+    }
+  }
+  bgUpdateDirtyBar();
+}
+
+function bgCancelEdit(input, rowNum, field) {
+  const row = bgData.find(r=>r.rowNum===rowNum);
+  const val = bgDirty[rowNum]?.[field] ?? row?.[field] ?? 0;
+  input.parentElement.textContent  = bgFmt(val);
+  input.parentElement.dataset.val  = val;
+}
+
+function bgUndoRow(rowNum) {
+  delete bgDirty[rowNum];
+  bgUpdateDirtyBar();
+  bgFilter();
+}
+
+function bgUndoAll() {
+  bgDirty = {};
+  bgUpdateDirtyBar();
+  bgFilter();
+}
+
+async function bgSaveRow(rowNum, btn) {
+  const d = bgDirty[rowNum];
+  if (!d) return;
+  btn.disabled = true; btn.textContent = '…';
+  try {
+    await api(`/api/price-list/${rowNum}`, 'PUT', d);
+    const row = bgData.find(r=>r.rowNum===rowNum);
+    if (row) { row.retail = d.retail; row.dealer = d.dealer; }
+    delete bgDirty[rowNum];
+    bgUpdateDirtyBar();
+    bgFilter();
+    toast('Đã lưu giá');
+  } catch (e) {
+    btn.disabled = false; btn.textContent = 'Lưu';
+    toast('Lỗi: ' + e.message, 'err');
+  }
+}
+
+async function bgSaveAll() {
+  const keys = Object.keys(bgDirty);
+  if (!keys.length) return;
+  let ok = 0;
+  for (const rn of keys) {
+    try {
+      await api(`/api/price-list/${rn}`, 'PUT', bgDirty[rn]);
+      const row = bgData.find(r=>r.rowNum===+rn);
+      if (row) { row.retail = bgDirty[rn].retail; row.dealer = bgDirty[rn].dealer; }
+      delete bgDirty[rn];
+      ok++;
+    } catch { /* skip failed rows */ }
+  }
+  bgUpdateDirtyBar();
+  bgFilter();
+  toast(`Đã lưu ${ok}/${keys.length} dòng`);
+}
 
 /* ─── Init ─────────────────────────────────────────────────── */
 checkServer();

@@ -430,6 +430,72 @@ app.get('/api/stats', (req, res) => {
   });
 });
 
+// ─── Price List (bang_gia_dai_ly.xlsx) ──────────────────────────────────────
+
+const PRICE_LIST_FILE = path.join(__dirname, 'bang_gia_dai_ly.xlsx');
+
+function cellNum(cell) {
+  const v = cell.value;
+  if (typeof v === 'number') return v;
+  if (v && typeof v === 'object' && typeof v.result === 'number') return v.result;
+  return 0;
+}
+
+app.get('/api/price-list', async (req, res) => {
+  try {
+    if (!fs.existsSync(PRICE_LIST_FILE)) {
+      return res.status(404).json({ error: 'File bang_gia_dai_ly.xlsx không tìm thấy' });
+    }
+    const wb = new ExcelJS.Workbook();
+    await wb.xlsx.readFile(PRICE_LIST_FILE);
+    const ws = wb.worksheets[0];
+    const rows = [];
+    let lastBrand = '';
+
+    ws.eachRow((row, rowNum) => {
+      if (rowNum < 27) return;
+      const brandCell = String(row.getCell(2).value || '').trim();
+      const name = String(row.getCell(3).value || '').trim();
+      if (!name) return;
+      if (brandCell) lastBrand = brandCell;
+      const retail = cellNum(row.getCell(4));
+      const dealer = cellNum(row.getCell(5));
+      const promo = String(row.getCell(6).value || '').trim();
+      const update = String(row.getCell(1).value || '').trim();
+      const isHeader = retail === 0 && dealer === 0;
+      rows.push({ rowNum, update, brand: lastBrand, name, retail, dealer, promo, isHeader });
+    });
+
+    res.json({ rows });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.put('/api/price-list/:rowNum', requireAuth, async (req, res) => {
+  try {
+    if (!fs.existsSync(PRICE_LIST_FILE)) {
+      return res.status(404).json({ error: 'File không tồn tại' });
+    }
+    const rowNum = parseInt(req.params.rowNum);
+    if (isNaN(rowNum) || rowNum < 27) return res.status(400).json({ error: 'rowNum không hợp lệ' });
+    const { retail, dealer } = req.body;
+    const wb = new ExcelJS.Workbook();
+    await wb.xlsx.readFile(PRICE_LIST_FILE);
+    const ws = wb.worksheets[0];
+    const row = ws.getRow(rowNum);
+    if (retail !== undefined && retail !== null) row.getCell(4).value = Number(retail);
+    if (dealer !== undefined && dealer !== null) row.getCell(5).value = Number(dealer);
+    row.commit();
+    await wb.xlsx.writeFile(PRICE_LIST_FILE);
+    res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ─── Settings (Banner / Homepage images) ────────────────────────────────────
 
 app.get('/api/settings', (req, res) => {
