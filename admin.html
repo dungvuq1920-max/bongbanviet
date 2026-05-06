@@ -3268,7 +3268,8 @@ function bgShopeePrice(retail, dealer) {
   const payout = dealer + targetProfit + 5000;
   const priceA = payout / (1 - 0.09 - 0.05 - 0.015 - adsRate);
   const priceB = (payout + 40000) / (1 - 0.09 - 0.015 - adsRate);
-  return Math.ceil(Math.min(priceA, priceB) / 1000) * 1000;
+  const calculatedPrice = Math.ceil(Math.min(priceA, priceB) / 1000) * 1000;
+  return Math.max(calculatedPrice, retail);
 }
 
 function bgUpdateComputedCells(tr, row) {
