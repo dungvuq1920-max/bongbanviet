@@ -288,10 +288,8 @@ app.put('/api/products/:id', requireAuth, (req, res) => {
 });
 
 app.delete('/api/products/:id', requireAuth, (req, res) => {
-  const row = db.prepare('SELECT id FROM products WHERE id = ? OR slug = ?')
-    .get(req.params.id, req.params.id);
-  if (!row) return res.status(404).json({ error: 'Không tìm thấy sản phẩm' });
-  db.prepare('DELETE FROM products WHERE id = ?').run(row.id);
+  const info = db.prepare('DELETE FROM products WHERE id = ? OR slug = ?').run(req.params.id, req.params.id);
+  if (info.changes === 0) return res.status(404).json({ error: 'Không tìm thấy sản phẩm' });
   res.json({ success: true });
 });
 
@@ -347,9 +345,8 @@ app.put('/api/combos/:id', requireAuth, (req, res) => {
 });
 
 app.delete('/api/combos/:id', requireAuth, (req, res) => {
-  const row = db.prepare('SELECT id FROM combos WHERE id = ?').get(req.params.id);
-  if (!row) return res.status(404).json({ error: 'Không tìm thấy combo' });
-  db.prepare('DELETE FROM combos WHERE id = ?').run(row.id);
+  const info = db.prepare('DELETE FROM combos WHERE id = ? OR slug = ?').run(req.params.id, req.params.id);
+  if (info.changes === 0) return res.status(404).json({ error: 'Không tìm thấy combo' });
   res.json({ success: true });
 });
 
@@ -409,10 +406,8 @@ app.put('/api/articles/:id', requireAuth, (req, res) => {
 });
 
 app.delete('/api/articles/:id', requireAuth, (req, res) => {
-  const row = db.prepare('SELECT id FROM articles WHERE id = ? OR slug = ?')
-    .get(req.params.id, req.params.id);
-  if (!row) return res.status(404).json({ error: 'Không tìm thấy bài viết' });
-  db.prepare('DELETE FROM articles WHERE id = ?').run(row.id);
+  const info = db.prepare('DELETE FROM articles WHERE id = ? OR slug = ?').run(req.params.id, req.params.id);
+  if (info.changes === 0) return res.status(404).json({ error: 'Không tìm thấy bài viết' });
   res.json({ success: true });
 });
 
