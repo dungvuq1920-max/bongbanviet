@@ -663,6 +663,10 @@
   .bg-price-input { width:100%; padding:4px 8px; border:2px solid #3B82F6; border-radius:3px; font-family:inherit; font-size:13px; font-weight:600; background:#EFF6FF; outline:none; -moz-appearance:textfield; }
   .bg-price-input::-webkit-inner-spin-button, .bg-price-input::-webkit-outer-spin-button { -webkit-appearance:none; }
   .bg-td-shopee { width:130px; padding:10px 12px; font-weight:700; color:#EA580C; white-space:nowrap; background:#FFF7ED; }
+  .bg-td-posted { width:84px; padding:10px 12px; text-align:center; white-space:nowrap; }
+  .bg-posted-check { width:18px; height:18px; accent-color:#16A34A; cursor:pointer; vertical-align:middle; }
+  .bg-posted-check:disabled { opacity:.55; cursor:wait; }
+  .bg-td-posted.is-posted { background:#ECFDF5; }
   .bg-td-margin { width:70px; padding:10px 12px; text-align:center; }
   .bg-mg-high { color:#059669; font-weight:700; font-size:12px; }
   .bg-mg-mid  { color:#D97706; font-weight:700; font-size:12px; }
@@ -1931,13 +1935,14 @@ Có chủ đề nào bạn muốn chúng tôi cover? Comment nhé!
               <th class="bg-td-price">Giá Bán Lẻ</th>
               <th class="bg-td-price">Giá Đại Lý</th>
               <th class="bg-td-shopee">Giá Shopee</th>
+              <th class="bg-td-posted">Đã đăng</th>
               <th class="bg-td-margin">Margin</th>
               <th class="bg-td-promo">Khuyến Mãi / Ghi Chú</th>
               <th class="bg-td-act"></th>
             </tr>
           </thead>
           <tbody id="bgBody">
-            <tr><td colspan="9" style="text-align:center;padding:48px;color:var(--muted);font-size:13px">Chọn tab này để tải dữ liệu bảng giá…</td></tr>
+            <tr><td colspan="10" style="text-align:center;padding:48px;color:var(--muted);font-size:13px">Chọn tab này để tải dữ liệu bảng giá…</td></tr>
           </tbody>
         </table>
       </div>
@@ -3209,6 +3214,8 @@ async function doImport() {
 
 /* ─── Bảng Giá Đại Lý ──────────────────────────────────────── */
 var bgData = [];
+var bgPostedMap = {};
+const BG_POSTED_SETTING_KEY = 'price_list_shopee_posted';
 
 const BG_BRAND_COLORS = {
   'Tibhar':        ['#EFF6FF','#1D4ED8','#BFDBFE'],
@@ -3248,6 +3255,10 @@ function bgMargin(retail, dealer) {
   return { label: pct + '%', cls };
 }
 
+function bgPostedKey(row) {
+  return `${row.brand || ''}::${row.name || ''}`.trim().toLowerCase();
+}
+
 function bgShopeePrice(retail, dealer) {
   retail = Number(retail) || 0;
   dealer = Number(dealer) || 0;
@@ -3283,16 +3294,21 @@ function bgUpdateComputedCells(tr, row) {
 
 async function bgLoadData() {
   document.getElementById('bgBody').innerHTML =
-    '<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--muted)">Đang tải…</td></tr>';
+    '<tr><td colspan="10" style="text-align:center;padding:40px;color:var(--muted)">Đang tải…</td></tr>';
   try {
-    const data = await api('/api/price-list');
+    const [data, postedSetting] = await Promise.all([
+      api('/api/price-list'),
+      api(`/api/settings/${BG_POSTED_SETTING_KEY}`).catch(() => ({ value:null })),
+    ]);
     bgData = data.rows;
+    try { bgPostedMap = postedSetting.value ? JSON.parse(postedSetting.value) : {}; }
+    catch { bgPostedMap = {}; }
     bgPopulateBrands();
     bgFilter();
     bgUpdateStats();
   } catch (e) {
     document.getElementById('bgBody').innerHTML =
-      `<tr><td colspan="9" style="text-align:center;padding:40px;color:#DC2626">❌ ${esc(e.message)}</td></tr>`;
+      `<tr><td colspan="10" style="text-align:center;padding:40px;color:#DC2626">❌ ${esc(e.message)}</td></tr>`;
   }
 }
 
@@ -3327,18 +3343,19 @@ function bgFilter() {
 function bgRender(rows) {
   const tbody = document.getElementById('bgBody');
   if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--muted)">Không tìm thấy sản phẩm nào</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:40px;color:var(--muted)">Không tìm thấy sản phẩm nào</td></tr>';
     return;
   }
   let num = 0, html = '';
   rows.forEach(r => {
     if (r.isHeader) {
-      html += `<tr class="bg-row-hd"><td colspan="9">${esc(r.name)}</td></tr>`;
+      html += `<tr class="bg-row-hd"><td colspan="10">${esc(r.name)}</td></tr>`;
       return;
     }
     num++;
     const mg = bgMargin(r.retail, r.dealer);
     const shopeePrice = bgShopeePrice(r.retail, r.dealer);
+    const posted = !!bgPostedMap[bgPostedKey(r)];
     html += `<tr data-rn="${r.rowNum}">
   <td class="bg-td-num">${num}</td>
   <td class="bg-td-brand"><span class="bg-brand-tag" style="${bgBrandStyle(r.brand)}">${esc(r.brand)}</span></td>
@@ -3346,12 +3363,49 @@ function bgRender(rows) {
   <td class="bg-td-price" data-field="retail" data-val="${r.retail}" onclick="bgEditCell(this,${r.rowNum},'retail')">${bgFmt(r.retail)}</td>
   <td class="bg-td-price" data-field="dealer" data-val="${r.dealer}" onclick="bgEditCell(this,${r.rowNum},'dealer')">${bgFmt(r.dealer)}</td>
   <td class="bg-td-shopee">${bgFmt(shopeePrice)}</td>
+  <td class="bg-td-posted${posted?' is-posted':''}"><input class="bg-posted-check" type="checkbox" ${posted?'checked':''} aria-label="Đã đăng Shopee" onchange="bgTogglePosted(this,${r.rowNum})"></td>
   <td class="bg-td-margin"><span class="${mg.cls}">${mg.label}</span></td>
   <td class="bg-td-promo">${esc(r.promo)}</td>
   <td class="bg-td-act"></td>
 </tr>`;
   });
   tbody.innerHTML = html;
+}
+
+async function bgTogglePosted(input, rowNum) {
+  const row = bgData.find(r => r.rowNum === rowNum);
+  if (!row) return;
+  const key = bgPostedKey(row);
+  const oldVal = !!bgPostedMap[key];
+  const newVal = input.checked;
+  const td = input.closest('.bg-td-posted');
+  const tr = input.closest('tr');
+  const actTd = tr?.querySelector('.bg-td-act');
+
+  input.disabled = true;
+  bgPostedMap[key] = newVal;
+  if (!newVal) delete bgPostedMap[key];
+  td?.classList.toggle('is-posted', newVal);
+  if (actTd) actTd.innerHTML = '<span class="bg-saving">⏳</span>';
+
+  try {
+    await api(`/api/settings/${BG_POSTED_SETTING_KEY}`, 'PUT', {
+      value: JSON.stringify(bgPostedMap)
+    });
+    if (actTd) {
+      actTd.innerHTML = '<span class="bg-saved">✓</span>';
+      setTimeout(() => { if (actTd.isConnected) actTd.innerHTML = ''; }, 1200);
+    }
+  } catch (e) {
+    if (oldVal) bgPostedMap[key] = true;
+    else delete bgPostedMap[key];
+    input.checked = oldVal;
+    td?.classList.toggle('is-posted', oldVal);
+    if (actTd) actTd.innerHTML = `<span class="bg-save-err" title="${esc(e.message)}">✗</span>`;
+    toast('Lỗi lưu trạng thái đã đăng: ' + e.message, 'err');
+  } finally {
+    input.disabled = false;
+  }
 }
 
 function bgEditCell(td, rowNum, field) {
