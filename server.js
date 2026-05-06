@@ -230,9 +230,9 @@ app.post('/api/products', requireAuth, (req, res) => {
   }
 
   const id = generateId();
-  const finalSlug = slug || name.toLowerCase()
+  const finalSlug = uniqueSlug(slug || name.toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''), 'products');
 
   db.prepare(`INSERT INTO products
     (id, slug, name, category_slug, brand_slug, gear_subcategory, description,
@@ -276,7 +276,7 @@ app.put('/api/products/:id', requireAuth, (req, res) => {
       featured !== undefined ? (featured ? 1 : 0) : existing.featured,
       condition ?? existing.condition,
       badge ?? existing.badge,
-      slug ?? existing.slug,
+      slug ? uniqueSlug(slug, 'products', existing.id) : existing.slug,
       price !== undefined ? price : (existing.price || ''),
       in_stock !== undefined ? (in_stock ? 1 : 0) : existing.in_stock,
       sort_order !== undefined ? Number(sort_order) : (existing.sort_order || 0),
@@ -312,9 +312,9 @@ app.post('/api/combos', requireAuth, (req, res) => {
   if (!name || !level) return res.status(400).json({ error: 'Thiếu tên hoặc level' });
 
   const id = generateId();
-  const finalSlug = slug || name.toLowerCase()
+  const finalSlug = uniqueSlug(slug || name.toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''), 'combos');
 
   db.prepare(`INSERT INTO combos (id, slug, name, level, blade, rubber_fh, rubber_bh, description, images, badge, price, in_stock, sort_order)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
@@ -378,9 +378,9 @@ app.post('/api/articles', requireAuth, (req, res) => {
   if (!title) return res.status(400).json({ error: 'Thiếu tiêu đề' });
 
   const id = generateId();
-  const finalSlug = slug || title.toLowerCase()
+  const finalSlug = uniqueSlug(slug || title.toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''), 'articles');
 
   db.prepare(`INSERT INTO articles (id, slug, title, excerpt, content, cover_image, category, tags, published_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
@@ -599,9 +599,11 @@ function parseSpecs(text) {
   return specs;
 }
 
-function uniqueSlug(base, table) {
+function uniqueSlug(base, table, excludeId = null) {
   let slug = base, n = 0;
-  while (db.prepare(`SELECT id FROM ${table} WHERE slug = ?`).get(slug)) {
+  while (true) {
+    const existing = db.prepare(`SELECT id FROM ${table} WHERE slug = ?`).get(slug);
+    if (!existing || existing.id === excludeId) break;
     slug = base + '-' + (++n);
   }
   return slug;
