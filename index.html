@@ -2030,15 +2030,13 @@ navOverlay.addEventListener('click', function() { closeNav(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeNav(); });
 document.querySelectorAll('.mobile-nav-links a[href^="#"]').forEach(function(a) {
   a.addEventListener('click', function(e) {
+    e.preventDefault();
     var href = this.getAttribute('href');
-    if (!href.startsWith('#block-')) {
-      e.preventDefault();
-      closeNav();
-      setTimeout(function() {
-        var el = document.getElementById(href.substring(1));
-        if (el) el.scrollIntoView({ behavior: 'smooth' });
-      }, 50);
-    }
+    closeNav();
+    setTimeout(function() {
+      var el = document.getElementById(href.substring(1));
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }, 300);
   });
 });
 
