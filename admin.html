@@ -2278,17 +2278,18 @@ function removeImg(btn, idx) {
 }
 
 /* ─── Variant helpers ──────────────────────────────────────── */
-function varRowHtml(name, price, image='') {
+function varRowHtml(name, price, image='', desc='') {
   const previewInner = image
     ? `<img src="${esc(image)}" alt="" onerror="this.style.display='none'">`
     : `<span>📷</span>`;
-  return `<div class="var-row">
-    <input type="text" class="fi v-name" placeholder="Tên lựa chọn (VD: Hộp 10 quả)" value="${esc(name)}">
-    <input type="text" class="fi v-price" placeholder="Giá (VD: 120.000đ)" value="${esc(price)}">
-    <div class="v-img-box${image?' has-img':''}" title="Ảnh lựa chọn (click để đổi)" onclick="this.nextElementSibling.click()">${previewInner}</div>
+  return `<div class="var-row" style="align-items:flex-start; padding:6px; border:1px solid var(--border); border-radius:6px; flex-wrap:wrap; gap:6px;">
+    <input type="text" class="fi v-name" placeholder="Tên lựa chọn" value="${esc(name)}" style="flex:1.6; min-width:120px; height:32px;">
+    <input type="text" class="fi v-price" placeholder="Giá" value="${esc(price)}" style="flex:1; min-width:80px; height:32px;">
+    <div class="v-img-box${image?' has-img':''}" title="Ảnh lựa chọn" onclick="this.nextElementSibling.click()" style="width:32px; height:32px;">${previewInner}</div>
     <input type="file" class="v-img-inp" accept="image/*" style="display:none" onchange="uploadVarImg(this)">
     <input type="hidden" class="v-img" value="${esc(image)}">
-    <button type="button" class="btn-rm-var" onclick="this.closest('.var-row').remove()" title="Xóa">✕</button>
+    <button type="button" class="btn-rm-var" onclick="this.closest('.var-row').remove()" title="Xóa" style="height:32px;">✕</button>
+    <textarea class="fi v-desc" placeholder="Mô tả chi tiết biến thể này..." style="flex:1 1 100%; min-height:48px; resize:vertical; font-family:'Inter',sans-serif; font-size:12px;">${esc(desc)}</textarea>
   </div>`;
 }
 function addVarRow(btn) {
@@ -2345,7 +2346,7 @@ function renderCard(p, cat, sub, isNew=false) {
   const levelOpts = Object.entries(LEVELS).map(([v,l])=>`<option value="${v}"${p.level===v?' selected':''}>${l}</option>`).join('');
 
   // Variants
-  const varHtml = (p.variants||[]).filter(v=>v&&(v.name||v.price)).map(v=>varRowHtml(v.name||'',v.price||'',v.image||'')).join('');
+  const varHtml = (p.variants||[]).filter(v=>v&&(v.name||v.price)).map(v=>varRowHtml(v.name||'',v.price||'',v.image||'',v.desc||'')).join('');
 
   // Header thumb
   const thumbHtml = imgs[0]
@@ -2717,7 +2718,8 @@ async function saveCard(card, silent = false) {
         const n = r.querySelector('.v-name').value.trim();
         const p2 = r.querySelector('.v-price').value.trim();
         const img = r.querySelector('.v-img')?.value.trim() || '';
-        if (n||p2) variants.push({name:n, price:p2, ...(img && {image:img})});
+        const desc = r.querySelector('.v-desc')?.value.trim() || '';
+        if (n||p2) variants.push({name:n, price:p2, ...(img && {image:img}), ...(desc && {desc:desc})});
       });
       const featured = card.querySelector('.f-featured')?.checked ? 1 : 0;
       const payload = {

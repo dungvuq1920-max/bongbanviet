@@ -2244,10 +2244,15 @@ fetch('/api/settings/home_hero_image')
     var drawer  = document.getElementById('prodDrawer');
     var overlay = document.getElementById('prodDrawerOverlay');
 
+    /* Description (Base) */
+    var baseDesc = (p.description || '').replace(/<[^>]+>/g, '').trim();
+    var finalBaseDesc = (baseDesc || 'Liên hệ để được tư vấn chi tiết về sản phẩm này.').replace(/\n/g, '<br>');
+
     /* Image */
     var imgWrap = document.getElementById('pdImgWrap');
-    if (p.images && p.images.length) {
-      imgWrap.innerHTML = '<img src="' + p.images[0] + '" alt="' + (p.name || '') + '" loading="lazy">';
+    var origImg = p.images && p.images.length ? p.images[0] : null;
+    if (origImg) {
+      imgWrap.innerHTML = '<img src="' + origImg + '" alt="' + (p.name || '') + '" loading="lazy">';
     } else {
       imgWrap.innerHTML = '<div class="pd-img-placeholder">📷</div>';
     }
@@ -2266,29 +2271,13 @@ fetch('/api/settings/home_hero_image')
     /* Price + stock */
     var rawPrice = String(p.price || '');
     var variants = Array.isArray(p.variants) ? p.variants.filter(function(v){ return v && v.price; }) : [];
-    document.getElementById('pdPrice').textContent = rawPrice || (variants.length ? 'Từ ' + variants[0].price : 'Liên hệ báo giá');
+    var priceEl = document.getElementById('pdPrice');
+    priceEl.textContent = rawPrice || (variants.length ? 'Từ ' + variants[0].price : 'Liên hệ báo giá');
     var stockEl = document.getElementById('pdStock');
     if (p.in_stock === false || p.in_stock === 0) {
       stockEl.textContent = '● Hết Hàng'; stockEl.style.color = '#D62B2B';
     } else {
       stockEl.textContent = '● Còn Hàng'; stockEl.style.color = '#166534';
-    }
-
-    /* Variants */
-    var variantsEl = document.getElementById('pdVariants');
-    if (variants.length) {
-      variantsEl.innerHTML = variants.map(function(v, i) {
-        return '<button class="pd-variant-btn' + (i === 0 ? ' active' : '') + '" data-price="' + v.price + '">' + v.name + '</button>';
-      }).join('');
-      variantsEl.querySelectorAll('.pd-variant-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          variantsEl.querySelectorAll('.pd-variant-btn').forEach(function(b){ b.classList.remove('active'); });
-          this.classList.add('active');
-          document.getElementById('pdPrice').textContent = this.getAttribute('data-price');
-        });
-      });
-    } else {
-      variantsEl.innerHTML = '';
     }
 
     /* Specs — tất cả */
@@ -2300,9 +2289,48 @@ fetch('/api/settings/home_hero_image')
     }
     document.getElementById('pdSpecs').innerHTML = specsHtml || '<p style="color:var(--mid);font-size:12px;margin:0">Liên hệ để biết thêm thông số.</p>';
 
-    /* Description */
-    var desc = (p.description || '').replace(/<[^>]+>/g, '').trim();
-    document.getElementById('pdDesc').innerHTML = (desc || 'Liên hệ để được tư vấn chi tiết về sản phẩm này.').replace(/\n/g, '<br>');
+    /* Description (Set initially) */
+    var descEl = document.getElementById('pdDesc');
+    descEl.innerHTML = finalBaseDesc;
+
+    /* Variants */
+    var variantsEl = document.getElementById('pdVariants');
+    if (variants.length) {
+      variantsEl.innerHTML = variants.map(function(v, i) {
+        return '<button class="pd-variant-btn' + (i === 0 ? ' active' : '') + '" data-idx="' + i + '">' + v.name + '</button>';
+      }).join('');
+      
+      variantsEl.querySelectorAll('.pd-variant-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          variantsEl.querySelectorAll('.pd-variant-btn').forEach(function(b){ b.classList.remove('active'); });
+          this.classList.add('active');
+          var v = variants[parseInt(this.getAttribute('data-idx'), 10)];
+          
+          priceEl.textContent = v.price;
+          
+          if (v.image) {
+            imgWrap.innerHTML = '<img src="' + v.image + '" alt="' + v.name + '" loading="lazy">';
+          } else if (origImg) {
+            imgWrap.innerHTML = '<img src="' + origImg + '" alt="' + (p.name || '') + '" loading="lazy">';
+          } else {
+            imgWrap.innerHTML = '<div class="pd-img-placeholder">📷</div>';
+          }
+          
+          if (v.desc && v.desc.trim()) {
+            descEl.innerHTML = v.desc.trim().replace(/\n/g, '<br>');
+          } else {
+            descEl.innerHTML = finalBaseDesc;
+          }
+        });
+      });
+      
+      // Auto-click first variant to show its specific image/desc if any
+      if (variantsEl.firstElementChild) {
+        variantsEl.firstElementChild.click();
+      }
+    } else {
+      variantsEl.innerHTML = '';
+    }
 
     /* CTAs */
     document.getElementById('pdZalo').href = 'https://zalo.me/0961269386?text=' + encodeURIComponent('Tôi muốn hỏi về ' + (p.name || ''));

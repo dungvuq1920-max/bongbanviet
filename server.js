@@ -1125,6 +1125,21 @@ app.use((err, req, res, next) => {
   }
 });
 
+// ─── Fix NULL IDs from previous migrations ──────────────────────────────────
+['products', 'combos', 'articles'].forEach(table => {
+  try {
+    const rows = db.prepare(`SELECT rowid, slug FROM ${table} WHERE id IS NULL`).all();
+    if (rows.length > 0) {
+      const stmt = db.prepare(`UPDATE ${table} SET id = ? WHERE rowid = ?`);
+      const transaction = db.transaction((rows) => {
+        for (const row of rows) stmt.run(generateId(), row.rowid);
+      });
+      transaction(rows);
+      console.log(`[DB Fix] Generated IDs for ${rows.length} rows in ${table}`);
+    }
+  } catch(e) { console.error('Error fixing null IDs:', e); }
+});
+
 // ─── Seed default catalog banner images (INSERT OR IGNORE — never overwrites uploads) ────
 const _defBanners = [
   ['banner_cot_vot',    '/images/banners/banner-cot-vot.jpg'],
