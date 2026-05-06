@@ -110,8 +110,9 @@ db.exec(`
   "ALTER TABLE combos ADD COLUMN in_stock INTEGER DEFAULT 1",
 ].forEach(sql => { try { db.exec(sql); } catch {} });
 
-// Migration G1: Group A products (46 SP — Yinhe/DHS/Tibhar/Unrex additions 2026-05)
-{
+// Legacy one-off catalog backfill. Keep disabled by default so products deleted
+// from admin are not recreated on every server restart/redeploy.
+if (process.env.BBV_RUN_LEGACY_PRODUCT_MIGRATIONS === '1') {
   const insB = db.prepare(`INSERT OR IGNORE INTO brands (slug,label,logo,sort_order) VALUES (?,?,?,?)`);
   insB.run('dhs','DHS','',5);
   try { db.exec("UPDATE brands SET sort_order=6 WHERE slug='khac'"); } catch {}
@@ -172,7 +173,7 @@ db.exec(`
 }
 
 // Migration G2: Group B — Dawei + Palio + AVX (26 SP 2026-05)
-{
+if (process.env.BBV_RUN_LEGACY_PRODUCT_MIGRATIONS === '1') {
   const insB = db.prepare(`INSERT OR IGNORE INTO brands (slug,label,logo,sort_order) VALUES (?,?,?,?)`);
   insB.run('dawei','DAWEI','',7);
   insB.run('palio','PALIO','',8);
