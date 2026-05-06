@@ -1241,23 +1241,47 @@
     
     /*  Category Sub-Pills (Brands as tabs)  */
     .cat-sub-pills {
-      display:none; gap:8px; flex-wrap:wrap; padding:12px 40px; align-items:center;
+      display:none; gap:8px; flex-wrap:nowrap; padding:12px 40px; align-items:center;
       background:var(--bg); border-bottom:1px solid var(--line);
     }
     @media (max-width:960px) { .cat-sub-pills { padding:10px 20px; } }
-    @media (max-width:640px) { .cat-sub-pills { padding:10px 12px; } }
+    @media (max-width:640px) { .cat-sub-pills { padding:10px 12px; gap:6px; } }
     .cat-pill {
       padding:6px 14px; border-radius:100px; border:1px solid var(--line);
       font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;
       background:var(--white); color:var(--dark); cursor:pointer; transition:all .2s;
+      white-space:nowrap; flex-shrink:0;
     }
     .cat-pill:hover { border-color:var(--dark); background:var(--dark); color:#fff; }
     .cat-pill.active { background:var(--red); color:#fff; border-color:var(--red); }
     .cat-pill-back {
       padding:6px 8px; border:none; background:transparent; display:flex; align-items:center;
       font-size:10.5px; font-weight:700; color:var(--red); cursor:pointer; text-transform:uppercase;
+      flex-shrink:0;
     }
     .cat-pill-back:hover { color:var(--dark); }
+    /* Brand pills scroll wrapper */
+    .cat-brand-scroll-wrap {
+      display:flex; align-items:center; gap:0; flex:1; min-width:0; position:relative;
+    }
+    .cat-brand-scroll-inner {
+      display:flex; align-items:center; gap:8px;
+      overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none;
+      scroll-behavior:smooth; flex:1; min-width:0;
+      padding:2px 0;
+    }
+    .cat-brand-scroll-inner::-webkit-scrollbar { display:none; }
+    .cat-brand-arrow {
+      display:none; align-items:center; justify-content:center;
+      width:28px; height:28px; border-radius:50%; border:1.5px solid var(--line);
+      background:var(--white); color:var(--dark); cursor:pointer;
+      font-size:13px; font-weight:700; flex-shrink:0;
+      transition:all .15s; z-index:2; box-shadow:0 2px 8px rgba(0,0,0,.08);
+    }
+    .cat-brand-arrow:hover { background:var(--dark); color:#fff; border-color:var(--dark); }
+    .cat-brand-arrow.visible { display:flex; }
+    .cat-brand-arrow-left { margin-right:6px; }
+    .cat-brand-arrow-right { margin-left:6px; }
 
     /* ── Product Detail Drawer ──────────────────────── */
     .prod-drawer-overlay {
@@ -1528,18 +1552,22 @@
     <!-- Sub-Pills (Brands as Tabs) — đặt trên cùng -->
     <div class="cat-sub-pills" id="catSubPills">
       <button class="cat-pill-back" onclick="document.querySelector('#fltrCat .fltr-drop-opt[data-cat=\'all\']').click()">← Trở Về</button>
-      <div id="catBrandPillsGroup" style="display:flex;align-items:center;gap:8px;">
-        <div style="width: 1.5px; height: 16px; background: var(--line); margin: 0 4px;"></div>
-        <button class="cat-pill active" data-brand="all">Tất Cả</button>
-        <button class="cat-pill" data-brand="butterfly">Butterfly</button>
-        <button class="cat-pill" data-brand="tibhar">Tibhar</button>
-        <button class="cat-pill" data-brand="unrex">Unrex</button>
-        <button class="cat-pill" data-brand="yinhe">Yinhe</button>
-        <button class="cat-pill" data-brand="dhs">DHS</button>
-        <button class="cat-pill" data-brand="dawei">Dawei</button>
-        <button class="cat-pill" data-brand="palio">Palio</button>
-        <button class="cat-pill" data-brand="avx">Avalox</button>
-        <button class="cat-pill" data-brand="khac">Các Hãng Khác</button>
+      <div id="catBrandPillsGroup" class="cat-brand-scroll-wrap">
+        <div style="width: 1.5px; height: 16px; background: var(--line); margin: 0 4px; flex-shrink:0;"></div>
+        <button class="cat-brand-arrow cat-brand-arrow-left" id="brandScrollLeft" aria-label="Cuộn trái">‹</button>
+        <div class="cat-brand-scroll-inner" id="brandScrollInner">
+          <button class="cat-pill active" data-brand="all">Tất Cả</button>
+          <button class="cat-pill" data-brand="butterfly">Butterfly</button>
+          <button class="cat-pill" data-brand="tibhar">Tibhar</button>
+          <button class="cat-pill" data-brand="unrex">Unrex</button>
+          <button class="cat-pill" data-brand="yinhe">Yinhe</button>
+          <button class="cat-pill" data-brand="dhs">DHS</button>
+          <button class="cat-pill" data-brand="dawei">Dawei</button>
+          <button class="cat-pill" data-brand="palio">Palio</button>
+          <button class="cat-pill" data-brand="avx">Avalox</button>
+          <button class="cat-pill" data-brand="khac">Các Hãng Khác</button>
+        </div>
+        <button class="cat-brand-arrow cat-brand-arrow-right" id="brandScrollRight" aria-label="Cuộn phải">›</button>
       </div>
     </div>
     <div class="cat-search-inner">
@@ -2039,8 +2067,14 @@ document.querySelectorAll('.mobile-nav-links a[href^="#"]').forEach(function(a) 
       if (cat && typeof goToCatBrand === 'function') {
         goToCatBrand(cat, brand);
       } else {
-        var el = document.getElementById(href.substring(1));
-        if (el) el.scrollIntoView({ behavior: 'smooth' });
+        /* For non-product sections (Kiến Thức, Hướng Dẫn, etc.): reset to all-categories view first, then scroll */
+        if (typeof goToSection === 'function') {
+          var sectionId = href.substring(1).replace('block-', '');
+          goToSection(sectionId);
+        } else {
+          var el = document.getElementById(href.substring(1));
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
       }
     }, 300);
   });
@@ -2531,7 +2565,40 @@ fetch('/api/settings/home_hero_image')
           });
         }
       }
+      // Update scroll arrows after filter UI changes
+      requestAnimationFrame(updateBrandScrollArrows);
     }
+  }
+
+  /* ── Brand scroll arrows ──────────────────────── */
+  var brandScrollInner = document.getElementById('brandScrollInner');
+  var brandScrollLeft  = document.getElementById('brandScrollLeft');
+  var brandScrollRight = document.getElementById('brandScrollRight');
+
+  function updateBrandScrollArrows() {
+    if (!brandScrollInner) return;
+    var sl = brandScrollInner.scrollLeft;
+    var sw = brandScrollInner.scrollWidth;
+    var cw = brandScrollInner.clientWidth;
+    var canScrollLeft  = sl > 2;
+    var canScrollRight = sl < (sw - cw - 2);
+    if (brandScrollLeft)  brandScrollLeft.classList.toggle('visible', canScrollLeft);
+    if (brandScrollRight) brandScrollRight.classList.toggle('visible', canScrollRight);
+  }
+
+  if (brandScrollInner) {
+    brandScrollInner.addEventListener('scroll', updateBrandScrollArrows, { passive: true });
+    window.addEventListener('resize', updateBrandScrollArrows, { passive: true });
+  }
+  if (brandScrollLeft) {
+    brandScrollLeft.addEventListener('click', function() {
+      brandScrollInner.scrollBy({ left: -140, behavior: 'smooth' });
+    });
+  }
+  if (brandScrollRight) {
+    brandScrollRight.addEventListener('click', function() {
+      brandScrollInner.scrollBy({ left: 140, behavior: 'smooth' });
+    });
   }
 
   document.querySelectorAll('#fltrCat .fltr-drop-opt:not(.fltr-opt-hdr)').forEach(function(opt) {
@@ -2567,6 +2634,13 @@ fetch('/api/settings/home_hero_image')
       this.classList.add('active');
     });
   });
+
+  /* Sync brand sub-pills when brand is changed programmatically (e.g. goToCatBrand) */
+  function syncBrandSubPills(brand) {
+    document.querySelectorAll('#catSubPills .cat-pill').forEach(function(p) {
+      p.classList.toggle('active', p.getAttribute('data-brand') === brand);
+    });
+  }
 
   /* Brand filter */
   document.querySelectorAll('#fltrBrand .fltr-drop-opt:not(.fltr-opt-hdr)').forEach(function(opt) {
@@ -2721,7 +2795,9 @@ fetch('/api/settings/home_hero_image')
     /* 2. Set the brand filter */
     var brandOpt = document.querySelector('#fltrBrand .fltr-drop-opt[data-brand="' + brand + '"]');
     if (brandOpt) brandOpt.click(); else { activeBrand = brand; applyFilters(); }
-    /* 3. Scroll to section */
+    /* 3. Sync the brand sub-pills active state */
+    syncBrandSubPills(brand);
+    /* 4. Scroll to section */
     requestAnimationFrame(function() {
       var el = document.getElementById('block-' + cat);
       if (!el) return;
