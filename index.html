@@ -2285,14 +2285,19 @@ fetch('/api/settings/home_hero_image')
       stockEl.textContent = '● Còn Hàng'; stockEl.style.color = '#166534';
     }
 
-    /* Specs — tất cả */
-    var specsHtml = '';
-    if (p.specs && typeof p.specs === 'object') {
-      Object.entries(p.specs).forEach(function(kv) {
-        specsHtml += '<div class="pd-spec-row"><span>' + kv[0] + '</span><span>' + kv[1] + '</span></div>';
-      });
+    /* Specs — helper */
+    var specsEl = document.getElementById('pdSpecs');
+    var baseSpecs = p.specs && typeof p.specs === 'object' ? p.specs : null;
+    function renderSpecs(specsObj) {
+      var html = '';
+      if (specsObj && typeof specsObj === 'object') {
+        Object.entries(specsObj).forEach(function(kv) {
+          html += '<div class="pd-spec-row"><span>' + kv[0] + '</span><span>' + kv[1] + '</span></div>';
+        });
+      }
+      specsEl.innerHTML = html || '<p style="color:var(--mid);font-size:12px;margin:0">Liên hệ để biết thêm thông số.</p>';
     }
-    document.getElementById('pdSpecs').innerHTML = specsHtml || '<p style="color:var(--mid);font-size:12px;margin:0">Liên hệ để biết thêm thông số.</p>';
+    renderSpecs(baseSpecs);
 
     /* Description (Set initially) */
     var descEl = document.getElementById('pdDesc');
@@ -2326,10 +2331,17 @@ fetch('/api/settings/home_hero_image')
           } else {
             descEl.innerHTML = finalBaseDesc;
           }
+
+          /* Switch specs: use variant-specific specs if defined, else fall back to product specs */
+          if (v.specs && typeof v.specs === 'object' && Object.keys(v.specs).length) {
+            renderSpecs(v.specs);
+          } else {
+            renderSpecs(baseSpecs);
+          }
         });
       });
       
-      // Auto-click first variant to show its specific image/desc if any
+      // Auto-click first variant to show its specific image/desc/specs if any
       if (variantsEl.firstElementChild) {
         variantsEl.firstElementChild.click();
       }
