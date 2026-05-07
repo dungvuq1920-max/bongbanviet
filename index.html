@@ -1221,10 +1221,32 @@
 
     /* ── 5-column grid for homepage catalogs ─────────── */
     .all-cats-wrap .prod-grid { grid-template-columns:repeat(5,1fr); gap:14px; }
-    .cat-block { scroll-margin-top:160px; }
+    .cat-block { scroll-margin-top:160px; position:relative; }
+    .cat-scroll-btn {
+      display:none; position:absolute; right:-8px; top:50%;
+      width:38px; height:38px; border:none; border-radius:50%;
+      background:var(--dark); color:#fff; align-items:center; justify-content:center;
+      box-shadow:0 8px 22px rgba(0,0,0,.2); cursor:pointer; z-index:5;
+      transform:translateY(-50%); transition:opacity .2s, background .2s;
+    }
+    .cat-scroll-btn svg { width:18px; height:18px; }
+    .cat-scroll-btn:hover { background:var(--red); }
+    .cat-scroll-btn.is-disabled { opacity:0; pointer-events:none; }
     @media (max-width:1200px) { .all-cats-wrap .prod-grid { grid-template-columns:repeat(4,1fr); } }
     @media (max-width:900px)  { .all-cats-wrap .prod-grid { grid-template-columns:repeat(3,1fr); } }
-    @media (max-width:640px)  { .all-cats-wrap .prod-grid { grid-template-columns:repeat(2,1fr); gap:10px; } }
+    @media (max-width:640px)  {
+      .all-cats-wrap .cat-block { margin-right:-16px; padding-right:16px; }
+      .all-cats-wrap .prod-grid {
+        display:flex; grid-template-columns:none; gap:10px; overflow-x:auto;
+        padding:0 44px 6px 0; scroll-snap-type:x mandatory;
+        overscroll-behavior-x:contain; scrollbar-width:none;
+      }
+      .all-cats-wrap .prod-grid::-webkit-scrollbar { display:none; }
+      .all-cats-wrap .prod-grid .prod-card {
+        flex:0 0 clamp(136px, 42vw, 168px); scroll-snap-align:start;
+      }
+      .cat-scroll-btn { display:flex; }
+    }
     @media (max-width:960px) {
       .cat-search-bar { top:0; }
       .cat-search-inner { padding:0 20px; }
@@ -2127,6 +2149,41 @@ fetch('/api/settings/home_hero_image')
     });
   }
 
+  function setupCatScrollButton(block, grid) {
+    if (!block || !grid || block.querySelector('.cat-scroll-btn')) return;
+    var btn = document.createElement('button');
+    btn.className = 'cat-scroll-btn is-disabled';
+    btn.type = 'button';
+    btn.setAttribute('aria-label', 'Xem thêm sản phẩm');
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>';
+    btn.addEventListener('click', function() {
+      var card = Array.from(grid.querySelectorAll('.prod-card')).find(function(c){ return c.style.display !== 'none'; });
+      var step = card ? card.getBoundingClientRect().width + 10 : grid.clientWidth * 0.8;
+      grid.scrollBy({ left: step, behavior: 'smooth' });
+    });
+    grid.addEventListener('scroll', function() { updateCatScrollButton(block, grid); }, { passive:true });
+    block.appendChild(btn);
+  }
+
+  function updateCatScrollButton(block, grid) {
+    var btn = block && block.querySelector('.cat-scroll-btn');
+    if (!btn) return;
+    var visibleCards = Array.from(grid.querySelectorAll('.prod-card')).filter(function(c){ return c.style.display !== 'none'; });
+    var canScroll = window.matchMedia('(max-width: 640px)').matches
+      && visibleCards.length > 1
+      && grid.scrollWidth > grid.clientWidth + 4
+      && grid.scrollLeft < grid.scrollWidth - grid.clientWidth - 6;
+    btn.classList.toggle('is-disabled', !canScroll);
+  }
+
+  function updateAllCatScrollButtons() {
+    SECTIONS.forEach(function(s) {
+      var grid = document.getElementById(s.gridId);
+      var block = document.getElementById('block-' + s.cat);
+      if (block && grid) updateCatScrollButton(block, grid);
+    });
+  }
+
   SECTIONS.forEach(function(s) {
     var params = {};
     if (!s.isCombo) params.category = s.cat;
@@ -2135,7 +2192,8 @@ fetch('/api/settings/home_hero_image')
       onDone: function(prods) {
         prods.forEach(function(p){ flowCache[p.slug] = p; });
         var grid = document.getElementById(s.gridId);
-        if (grid) { shuffleDom(grid); initCards(grid); }
+        var block = document.getElementById('block-' + s.cat);
+        if (grid) { shuffleDom(grid); initCards(grid); setupCatScrollButton(block, grid); }
         applyFilters();
       }
     });
@@ -2480,6 +2538,8 @@ fetch('/api/settings/home_hero_image')
       var maxShow = (activeCat === 'all') ? 5 : vis.length;
       vis.forEach(function(c, i){ if (i >= maxShow) c.style.display = 'none'; });
       var shown = Math.min(vis.length, maxShow);
+      if (grid.scrollLeft) grid.scrollLeft = 0;
+      updateCatScrollButton(block, grid);
 
       var cntEl = document.getElementById('count-' + s.cat);
       if (cntEl) cntEl.textContent = (activeCat === 'all' ? 'KẾT QUẢ LỌC: ' : '') + shown + ' SẢN PHẨM';
@@ -2499,6 +2559,8 @@ fetch('/api/settings/home_hero_image')
       if (el) el.style.display = activeCat === 'all' ? '' : 'none';
     });
   }
+
+  window.addEventListener('resize', updateAllCatScrollButtons);
 
   /* Custom dropdown toggle */
   document.querySelectorAll('.fltr-drop-btn').forEach(function(btn) {
