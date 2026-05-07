@@ -1235,17 +1235,18 @@
     @media (max-width:1200px) { .all-cats-wrap .prod-grid { grid-template-columns:repeat(4,1fr); } }
     @media (max-width:900px)  { .all-cats-wrap .prod-grid { grid-template-columns:repeat(3,1fr); } }
     @media (max-width:640px)  {
-      .all-cats-wrap .cat-block { margin-right:-16px; padding-right:16px; }
-      .all-cats-wrap .prod-grid {
+      .all-cats-wrap .prod-grid { grid-template-columns:repeat(2,1fr); gap:10px; }
+      .all-cats-wrap.is-hot-overview .cat-block { margin-right:-16px; padding-right:16px; }
+      .all-cats-wrap.is-hot-overview .prod-grid {
         display:flex; grid-template-columns:none; gap:10px; overflow-x:auto;
         padding:0 44px 6px 0; scroll-snap-type:x mandatory;
         overscroll-behavior-x:contain; scrollbar-width:none;
       }
-      .all-cats-wrap .prod-grid::-webkit-scrollbar { display:none; }
-      .all-cats-wrap .prod-grid .prod-card {
+      .all-cats-wrap.is-hot-overview .prod-grid::-webkit-scrollbar { display:none; }
+      .all-cats-wrap.is-hot-overview .prod-grid .prod-card {
         flex:0 0 clamp(136px, 42vw, 168px); scroll-snap-align:start;
       }
-      .cat-scroll-btn { display:flex; }
+      .all-cats-wrap.is-hot-overview .cat-scroll-btn { display:flex; }
     }
     @media (max-width:960px) {
       .cat-search-bar { top:0; }
@@ -2170,6 +2171,7 @@ fetch('/api/settings/home_hero_image')
     if (!btn) return;
     var visibleCards = Array.from(grid.querySelectorAll('.prod-card')).filter(function(c){ return c.style.display !== 'none'; });
     var canScroll = window.matchMedia('(max-width: 640px)').matches
+      && activeCat === 'all'
       && visibleCards.length > 1
       && grid.scrollWidth > grid.clientWidth + 4
       && grid.scrollLeft < grid.scrollWidth - grid.clientWidth - 6;
@@ -2481,6 +2483,9 @@ fetch('/api/settings/home_hero_image')
   var activeNameQ = '';
 
   function applyFilters() {
+    var catsWrap = document.getElementById('san-pham');
+    if (catsWrap) catsWrap.classList.toggle('is-hot-overview', activeCat === 'all');
+
     SECTIONS.forEach(function(s) {
       var grid  = document.getElementById(s.gridId);
       var block = document.getElementById('block-' + s.cat);
