@@ -663,6 +663,15 @@
   .sp-generated a { display:block; border:1px solid var(--border); border-radius:6px; overflow:hidden; background:#fff; text-decoration:none; color:var(--dark); font-size:11px; font-weight:700; }
   .sp-generated img { width:100%; aspect-ratio:1; object-fit:cover; display:block; }
   .sp-generated span { display:block; padding:7px 8px; }
+  .sp-candidates { display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px; }
+  .sp-candidate { border:1px solid var(--border); border-radius:6px; overflow:hidden; background:#fff; cursor:pointer; position:relative; }
+  .sp-candidate.selected { border-color:#16A34A; box-shadow:0 0 0 2px rgba(22,163,74,.18); }
+  .sp-candidate img { width:100%; aspect-ratio:1; object-fit:cover; display:block; background:#F8FAFC; }
+  .sp-candidate span { display:block; padding:7px 8px; font-size:10px; line-height:1.35; color:#334155; min-height:42px; }
+  .sp-candidate mark { position:absolute; top:6px; left:6px; background:#16A34A; color:#fff; border-radius:3px; padding:2px 6px; font-size:9px; font-weight:800; display:none; }
+  .sp-candidate.selected mark { display:block; }
+  .sp-links { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  .sp-links a { font-size:11px; font-weight:700; color:#1D4ED8; background:#EFF6FF; border:1px solid #BFDBFE; border-radius:4px; padding:5px 8px; text-decoration:none; }
   /* ─── Bảng Giá Đại Lý ──────────────────────────────────── */
   .bg-toolbar { display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
   .bg-search-wrap { position:relative; flex:1; min-width:200px; }
@@ -1987,6 +1996,7 @@ Có chủ đề nào bạn muốn chúng tôi cover? Comment nhé!
           </div>
           <div class="sp-actions">
             <button class="sp-btn primary" id="spCopyBtn" onclick="spGenerateCopy()">Tạo content</button>
+            <button class="sp-btn dark" id="spFindBtn" onclick="spFindProductImages()">Tìm ảnh chính xác</button>
             <button class="sp-btn dark" id="spImgPromptBtn" onclick="spGenerateImagePrompts()">Tạo prompt ảnh</button>
             <button class="sp-btn light" id="spImgBtn" onclick="spGenerateImages()">Tạo 3 ảnh AI</button>
           </div>
@@ -2005,6 +2015,13 @@ Có chủ đề nào bạn muốn chúng tôi cover? Comment nhé!
           <div class="sp-outbox">
             <div class="sp-outhead"><b>Prompt tạo ảnh / thumbnail</b><button class="sp-copy" onclick="spCopyText('spPromptOut',this)">Copy</button></div>
             <div class="sp-outcontent" id="spPromptOut">Chưa có prompt.</div>
+          </div>
+          <div class="sp-outbox">
+            <div class="sp-outhead"><b>Ảnh sản phẩm tìm được</b><button class="sp-copy" onclick="spUseSelectedImages()">Dùng ảnh đã chọn</button></div>
+            <div class="sp-outcontent">
+              <div class="sp-candidates" id="spImageCandidates"></div>
+              <div class="sp-links" id="spSearchLinks"></div>
+            </div>
           </div>
           <div class="sp-outbox">
             <div class="sp-outhead"><b>Ảnh AI đã tạo</b></div>
@@ -3001,6 +3018,59 @@ function spPreviewImages(input) {
     wrap.appendChild(box);
   }
 }
+function spSelectedImageUrls() {
+  return Array.from(document.querySelectorAll('#spImageCandidates .sp-candidate.selected'))
+    .map(el => el.dataset.src)
+    .filter(Boolean)
+    .slice(0, 3);
+}
+function spRenderImageCandidates(items, links) {
+  const wrap = document.getElementById('spImageCandidates');
+  const linkWrap = document.getElementById('spSearchLinks');
+  if (wrap) {
+    wrap.innerHTML = (items || []).map((img, i) => `
+      <button type="button" class="sp-candidate${i < 3 ? ' selected' : ''}" data-src="${esc(img.url)}" onclick="this.classList.toggle('selected')">
+        <mark>Chọn</mark>
+        <img src="${esc(img.thumbnail || img.url)}" alt="" loading="lazy" onerror="this.closest('.sp-candidate').style.display='none'">
+        <span>${esc(img.title || img.source || 'Ảnh sản phẩm')}</span>
+      </button>`).join('') || '<div style="font-size:12px;color:#64748B">Chưa tìm thấy ảnh tự động.</div>';
+  }
+  if (linkWrap) {
+    linkWrap.innerHTML = (links || []).map(l => `<a href="${esc(l.url)}" target="_blank">${esc(l.label)}</a>`).join('');
+  }
+}
+async function spFindProductImages() {
+  const data = spInput();
+  if (!data.productName) return spSetStatus('Vui lòng nhập tên sản phẩm trước khi tìm ảnh.', 'err');
+  const btn = document.getElementById('spFindBtn');
+  if (btn) btn.disabled = true;
+  spSetStatus('Đang tìm ảnh sản phẩm chính xác...');
+  try {
+    const res = await api('/api/shopee/find-images', 'POST', data);
+    spRenderImageCandidates(res.images || [], res.searchLinks || []);
+    spSetStatus((res.images || []).length ? `Đã tìm thấy ${res.images.length} ảnh. Chọn ảnh đúng rồi bấm tạo ảnh AI.` : 'Chưa có API tìm ảnh. Dùng các link tìm kiếm bên dưới để lấy ảnh gốc.', (res.images || []).length ? 'ok' : 'err');
+  } catch (e) {
+    spRenderImageCandidates([], []);
+    spSetStatus('Không tìm được ảnh tự động: ' + (e.message || 'lỗi không xác định'), 'err');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+function spUseSelectedImages() {
+  const selected = spSelectedImageUrls();
+  if (!selected.length) return spSetStatus('Chọn ít nhất 1 ảnh sản phẩm tìm được.', 'err');
+  const wrap = document.getElementById('spPreviews');
+  if (wrap) {
+    wrap.innerHTML = selected.map(url => `<div class="sp-preview"><img src="${esc(url)}" alt=""></div>`).join('');
+    while (wrap.children.length < 3) {
+      const box = document.createElement('div');
+      box.className = 'sp-preview';
+      box.textContent = `Ảnh ${wrap.children.length + 1}`;
+      wrap.appendChild(box);
+    }
+  }
+  spSetStatus('Đã chọn ảnh nguồn. Khi tạo ảnh AI, hệ thống sẽ gửi các ảnh này kèm prompt.', 'ok');
+}
 function spLocalPrompt() {
   const data = spInput();
   const name = data.productName || '[Tên sản phẩm]';
@@ -3067,6 +3137,7 @@ async function spGenerateImages() {
   try {
     const fd = new FormData();
     fd.append('prompts', JSON.stringify(prompts));
+    fd.append('sourceUrls', JSON.stringify(spSelectedImageUrls()));
     Array.from(document.getElementById('spImages')?.files || []).slice(0, 3).forEach(file => fd.append('images', file));
     const raw = await fetch('/api/shopee/generate-images', { method: 'POST', body: fd });
     const res = await raw.json();

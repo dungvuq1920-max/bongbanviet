@@ -268,6 +268,118 @@ function parseAiJson(text, fallback) {
   }
 }
 
+function normalizeText(s) {
+  return String(s || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function shopeeSearchLinks(productName) {
+  const q = encodeURIComponent(productName || '');
+  return [
+    { label: 'Google Images', url: `https://www.google.com/search?tbm=isch&q=${q}` },
+    { label: 'Shopee search', url: `https://shopee.vn/search?keyword=${q}` },
+    { label: 'Bóng Bàn Việt', url: `https://www.google.com/search?tbm=isch&q=${q}%20site%3Abongbanviet.com` },
+  ];
+}
+
+function localProductImages(productName, limit = 8) {
+  const q = normalizeText(productName);
+  const tokens = q.split(/\s+/).filter(t => t.length > 1);
+  if (!tokens.length) return [];
+  const rows = db.prepare(`SELECT name, images FROM products WHERE images IS NOT NULL AND images != '[]' LIMIT 1000`).all();
+  const scored = [];
+  for (const row of rows) {
+    const name = normalizeText(row.name);
+    const score = tokens.reduce((n, t) => n + (name.includes(t) ? 2 : 0), 0);
+    if (!score) continue;
+    const images = parseJSON(row.images, []);
+    for (const url of images.filter(Boolean)) {
+      scored.push({ url, thumbnail: url, title: row.name, source: 'catalog', score });
+    }
+  }
+  try {
+    const productDir = path.join(DATA_DIR, 'images', 'products');
+    if (fs.existsSync(productDir)) {
+      for (const file of fs.readdirSync(productDir)) {
+        const name = normalizeText(file);
+        const score = tokens.reduce((n, t) => n + (name.includes(t) ? 1 : 0), 0);
+        if (score) scored.push({ url: '/images/products/' + file, thumbnail: '/images/products/' + file, title: file, source: 'files', score });
+      }
+    }
+  } catch {}
+  const seen = new Set();
+  return scored
+    .sort((a, b) => b.score - a.score)
+    .filter(img => !seen.has(img.url) && seen.add(img.url))
+    .slice(0, limit);
+}
+
+async function webProductImages(productName, limit = 10) {
+  const q = `${productName} chính hãng sản phẩm`;
+  try {
+    if (process.env.SERPAPI_KEY) {
+      const r = await fetch(`https://serpapi.com/search.json?engine=google_images&q=${encodeURIComponent(q)}&api_key=${process.env.SERPAPI_KEY}`, { signal: AbortSignal.timeout(12000) });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || `SerpAPI HTTP ${r.status}`);
+      return (data.images_results || []).slice(0, limit).map(x => ({
+        url: x.original || x.thumbnail,
+        thumbnail: x.thumbnail || x.original,
+        title: x.title || 'Ảnh sản phẩm',
+        source: x.source || 'Google Images',
+      })).filter(x => x.url);
+    }
+    if (process.env.BING_IMAGE_SEARCH_KEY) {
+      const r = await fetch(`https://api.bing.microsoft.com/v7.0/images/search?q=${encodeURIComponent(q)}&count=${limit}&safeSearch=Moderate`, {
+        headers: { 'Ocp-Apim-Subscription-Key': process.env.BING_IMAGE_SEARCH_KEY },
+        signal: AbortSignal.timeout(12000),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error?.message || `Bing HTTP ${r.status}`);
+      return (data.value || []).map(x => ({
+        url: x.contentUrl,
+        thumbnail: x.thumbnailUrl || x.contentUrl,
+        title: x.name || 'Ảnh sản phẩm',
+        source: x.hostPageDomainFriendlyName || x.hostPageDisplayUrl || 'Bing Images',
+      })).filter(x => x.url);
+    }
+    if (process.env.GOOGLE_CSE_API_KEY && process.env.GOOGLE_CSE_CX) {
+      const r = await fetch(`https://www.googleapis.com/customsearch/v1?searchType=image&num=${Math.min(limit, 10)}&key=${process.env.GOOGLE_CSE_API_KEY}&cx=${process.env.GOOGLE_CSE_CX}&q=${encodeURIComponent(q)}`, { signal: AbortSignal.timeout(12000) });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error?.message || `Google CSE HTTP ${r.status}`);
+      return (data.items || []).map(x => ({
+        url: x.link,
+        thumbnail: x.image?.thumbnailLink || x.link,
+        title: x.title || 'Ảnh sản phẩm',
+        source: x.displayLink || 'Google CSE',
+      })).filter(x => x.url);
+    }
+  } catch (e) {
+    console.error('[Shopee image search]', e.message);
+  }
+  return [];
+}
+
+async function imageSourceToBlob(url) {
+  if (!url) return null;
+  if (url.startsWith('/images/products/')) {
+    const filePath = path.join(imgDir, path.basename(url));
+    if (!fs.existsSync(filePath)) return null;
+    const ext = path.extname(filePath).toLowerCase();
+    const type = ext === '.png' ? 'image/png' : ext === '.webp' ? 'image/webp' : 'image/jpeg';
+    return new Blob([fs.readFileSync(filePath)], { type });
+  }
+  if (!/^https?:\/\//i.test(url)) return null;
+  const r = await fetch(url, { signal: AbortSignal.timeout(15000) });
+  if (!r.ok) return null;
+  const type = r.headers.get('content-type') || 'image/jpeg';
+  if (!/^image\//i.test(type)) return null;
+  return new Blob([Buffer.from(await r.arrayBuffer())], { type });
+}
+
 // ─── Categories ─────────────────────────────────────────────────────────────
 
 app.get('/api/categories', (req, res) => {
@@ -1193,6 +1305,24 @@ app.put('/api/tracker/config', (req, res) => {
 });
 
 // ── Start tracker + bot after server is up ─────────────────────────────────────
+app.post('/api/shopee/find-images', requireAuth, async (req, res) => {
+  const { productName } = req.body || {};
+  if (!productName) return res.status(400).json({ error: 'Thiếu tên sản phẩm' });
+
+  const local = localProductImages(productName, 8);
+  const web = await webProductImages(productName, 10);
+  const seen = new Set();
+  const images = [...local, ...web]
+    .filter(img => img.url && !seen.has(img.url) && seen.add(img.url))
+    .slice(0, 18);
+
+  res.json({
+    images,
+    searchLinks: shopeeSearchLinks(productName),
+    hasSearchApi: !!(process.env.SERPAPI_KEY || process.env.BING_IMAGE_SEARCH_KEY || (process.env.GOOGLE_CSE_API_KEY && process.env.GOOGLE_CSE_CX)),
+  });
+});
+
 app.post('/api/shopee/generate-copy', requireAuth, async (req, res) => {
   const { productName, pack, facts, provider = 'openai' } = req.body || {};
   if (!productName) return res.status(400).json({ error: 'Thiếu tên sản phẩm' });
@@ -1263,6 +1393,8 @@ app.post('/api/shopee/generate-images', requireAuth, upload.array('images', 3), 
   else {
     try { prompts = JSON.parse(req.body?.prompts || '[]'); } catch { prompts = []; }
   }
+  let sourceUrls = [];
+  try { sourceUrls = JSON.parse(req.body?.sourceUrls || '[]'); } catch { sourceUrls = []; }
   prompts = prompts.slice(0, 3).filter(Boolean);
   if (!prompts.length) return res.status(400).json({ error: 'Thiếu prompt ảnh' });
   if (!process.env.OPENAI_API_KEY) return res.json({ images: [], usedFallback: true });
@@ -1270,13 +1402,17 @@ app.post('/api/shopee/generate-images', requireAuth, upload.array('images', 3), 
   const saved = [];
   for (let i = 0; i < prompts.length; i++) {
     const source = req.files?.[i] || req.files?.[0] || null;
+    const sourceBlob = source ? null : await imageSourceToBlob(sourceUrls[i] || sourceUrls[0]);
     let r;
-    if (source) {
+    if (source || sourceBlob) {
       const fd = new FormData();
       fd.append('model', process.env.OPENAI_IMAGE_MODEL || 'gpt-image-1');
       fd.append('prompt', prompts[i]);
       fd.append('size', '1024x1024');
-      fd.append('image', new Blob([fs.readFileSync(source.path)], { type: source.mimetype || 'image/png' }), source.originalname || 'product.png');
+      fd.append('image',
+        sourceBlob || new Blob([fs.readFileSync(source.path)], { type: source.mimetype || 'image/png' }),
+        source?.originalname || `source-${i + 1}.png`
+      );
       r = await fetch('https://api.openai.com/v1/images/edits', {
         method: 'POST',
         headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
