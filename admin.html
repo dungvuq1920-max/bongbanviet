@@ -2027,6 +2027,17 @@ Có chủ đề nào bạn muốn chúng tôi cover? Comment nhé!
               <div class="sp-preview">Ảnh 1</div><div class="sp-preview">Ảnh 2</div><div class="sp-preview">Ảnh 3</div>
             </div>
           </div>
+          <div class="sp-outbox">
+            <div class="sp-outhead"><b>Ảnh sản phẩm tìm được</b><button class="sp-copy" onclick="spUseSelectedImages()">Dùng ảnh đã chọn</button></div>
+            <div class="sp-outcontent">
+              <div class="sp-candidates" id="spImageCandidates"></div>
+              <div class="sp-links" id="spSearchLinks"></div>
+            </div>
+          </div>
+          <div class="sp-outbox">
+            <div class="sp-outhead"><b>Ảnh AI đã tạo</b></div>
+            <div class="sp-outcontent"><div class="sp-generated" id="spGeneratedImages"></div></div>
+          </div>
           <div class="sp-actions">
             <button class="sp-btn primary" id="spCopyBtn" onclick="spGenerateCopy()">Tạo content</button>
             <button class="sp-btn dark" id="spFindBtn" onclick="spFindProductImages()">Tìm ảnh chính xác</button>
@@ -2048,17 +2059,6 @@ Có chủ đề nào bạn muốn chúng tôi cover? Comment nhé!
           <div class="sp-outbox">
             <div class="sp-outhead"><b>Prompt tạo ảnh / thumbnail</b><button class="sp-copy" onclick="spCopyText('spPromptOut',this)">Copy</button></div>
             <div class="sp-outcontent" id="spPromptOut">Chưa có prompt.</div>
-          </div>
-          <div class="sp-outbox">
-            <div class="sp-outhead"><b>Ảnh sản phẩm tìm được</b><button class="sp-copy" onclick="spUseSelectedImages()">Dùng ảnh đã chọn</button></div>
-            <div class="sp-outcontent">
-              <div class="sp-candidates" id="spImageCandidates"></div>
-              <div class="sp-links" id="spSearchLinks"></div>
-            </div>
-          </div>
-          <div class="sp-outbox">
-            <div class="sp-outhead"><b>Ảnh AI đã tạo</b></div>
-            <div class="sp-outcontent"><div class="sp-generated" id="spGeneratedImages"></div></div>
           </div>
         </div>
       </div>
@@ -3205,6 +3205,19 @@ function spGenerateImagePrompts() {
   document.getElementById('spPromptOut').textContent = prompts.join('\n\n');
   spSetStatus('Đã tạo 3 prompt ảnh chuyên nghiệp.', 'ok');
 }
+function spFriendlyAiImageError(message) {
+  const msg = String(message || '');
+  if (/billing hard limit|quota|insufficient_quota|rate limit/i.test(msg)) {
+    return 'Tài khoản API đã chạm giới hạn billing/quota. Cần tăng hard limit/nạp billing hoặc đổi API key khác.';
+  }
+  if (/api key|unauthorized|permission|forbidden/i.test(msg)) {
+    return 'API key không hợp lệ hoặc chưa có quyền tạo ảnh. Kiểm tra lại key/provider.';
+  }
+  if (/region|country|location/i.test(msg)) {
+    return 'Model tạo ảnh chưa hỗ trợ vùng/tài khoản hiện tại. Thử đổi provider hoặc model.';
+  }
+  return msg || 'Server chưa cấu hình tạo ảnh, hãy copy prompt sang công cụ AI ảnh.';
+}
 async function spGenerateImages() {
   const promptEl = document.getElementById('spPromptOut');
   if (!promptEl?.textContent.trim() || promptEl.textContent.trim() === 'Chưa có prompt.') spGenerateImagePrompts();
@@ -3223,9 +3236,9 @@ async function spGenerateImages() {
     if (!raw.ok) throw new Error(res.error || `HTTP ${raw.status}`);
     const wrap = document.getElementById('spGeneratedImages');
     wrap.innerHTML = (res.images || []).map((src, i) => `<a href="${esc(src)}" target="_blank"><img src="${esc(src)}" alt=""><span>Ảnh ${i + 1}</span></a>`).join('');
-    spSetStatus(res.images?.length ? 'Đã tạo ảnh và lưu vào /images/products.' : (res.providerError || 'Server chưa cấu hình tạo ảnh, hãy copy prompt sang công cụ AI ảnh.'), res.images?.length ? 'ok' : 'err');
+    spSetStatus(res.images?.length ? 'Đã tạo ảnh và lưu vào /images/products.' : spFriendlyAiImageError(res.providerError), res.images?.length ? 'ok' : 'err');
   } catch (e) {
-    spSetStatus('Không tạo được ảnh AI: ' + (e.message || 'hãy kiểm tra API key và provider.'), 'err');
+    spSetStatus('Không tạo được ảnh AI: ' + spFriendlyAiImageError(e.message), 'err');
   } finally {
     if (btn) btn.disabled = false;
   }
