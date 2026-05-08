@@ -179,6 +179,95 @@ function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
 
+function buildShopeePrompt({ productName, pack, facts }) {
+  return `Bạn là chuyên gia Shopee SEO cho ngành bóng bàn tại Việt Nam.
+
+Hãy viết nội dung đăng Shopee cho sản phẩm: ${productName}
+Quy cách: ${pack || 'chưa rõ'}
+Thông tin thật:
+${facts || 'Chưa cung cấp'}
+
+Yêu cầu đầu ra bằng JSON hợp lệ, không markdown:
+{
+  "title": "tiêu đề tối đa khoảng 120 ký tự, đủ keyword mạnh, không spam",
+  "description": "mô tả tiếng Việt theo cấu trúc: headline, lợi ích ngắn, THÔNG TIN SẢN PHẨM, ĐIỂM NỔI BẬT, PHÙ HỢP CHO, SẢN PHẨM BAO GỒM, CAM KẾT TỪ BÓNG BÀN VIỆT",
+  "imagePrompts": ["prompt thumbnail 1:1", "prompt ảnh lợi ích 1:1", "prompt ảnh thông số 1:1"]
+}
+
+Giữ giọng chuyên nghiệp, dễ đọc trên mobile. Không bịa thông số chưa được cung cấp.`;
+}
+
+function fallbackShopeeContent({ productName, pack, facts }) {
+  const name = productName || 'Sản phẩm bóng bàn';
+  const specLines = String(facts || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+  const specs = specLines.length ? specLines.map(s => `• ${s}`).join('\n') : `• Tên sản phẩm: ${name}\n${pack ? `• Quy cách: ${pack}` : '• Quy cách: Theo thông tin shop'}`;
+  const title = `${name}${pack ? ` (${pack})` : ''} Chính Hãng`.replace(/\s+/g, ' ').trim();
+  const description = `🏓 ${name.toUpperCase()} – CHUẨN CHO TẬP LUYỆN VÀ THI ĐẤU
+
+Độ ổn định cao • Cảm giác sử dụng chắc chắn • Phù hợp người chơi bóng bàn
+
+${name} phù hợp cho người chơi bóng bàn đang cần sản phẩm chính hãng, dễ sử dụng và có độ ổn định tốt trong tập luyện hằng ngày.
+
+━━━━━━━━━━━━━━━
+
+✅ THÔNG TIN SẢN PHẨM
+
+${specs}
+
+━━━━━━━━━━━━━━━
+
+✅ ĐIỂM NỔI BẬT
+
+• Thiết kế phù hợp cho nhu cầu bóng bàn
+• Dễ sử dụng cho tập luyện và chơi phong trào
+• Chất lượng ổn định trong tầm giá
+• Phù hợp cá nhân, CLB và người chơi nâng cấp dụng cụ
+
+━━━━━━━━━━━━━━━
+
+✅ PHÙ HỢP CHO
+
+• Người chơi bóng bàn phong trào
+• CLB bóng bàn
+• Người tập luyện nâng cao
+• Người cần sản phẩm chính hãng, dễ chọn mua
+
+━━━━━━━━━━━━━━━
+
+📦 SẢN PHẨM BAO GỒM
+
+• ${pack || name}
+
+━━━━━━━━━━━━━━━
+
+🛡 CAM KẾT TỪ BÓNG BÀN VIỆT
+
+• Hàng chính hãng
+• Đóng gói cẩn thận
+• Hỗ trợ nhanh chóng khi cần tư vấn`;
+  const imagePrompts = [
+    `Ảnh thumbnail Shopee 1:1 cho ${name}, nền sáng sạch, sản phẩm lớn ở trung tâm, ánh sáng studio, badge "Chính hãng", text ngắn dễ đọc mobile.`,
+    `Ảnh lợi ích Shopee 1:1 cho ${name}, bố cục chuyên nghiệp, 3 điểm nổi bật dạng callout, màu sắc thể thao, không rối mắt.`,
+    `Ảnh thông số Shopee 1:1 cho ${name}, có bảng thông tin sản phẩm gọn gàng, nền sạch, cảm giác chính hãng và đáng tin cậy.`
+  ];
+  return { title, description, imagePrompts };
+}
+
+function parseAiJson(text, fallback) {
+  try {
+    const cleaned = String(text || '').replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/i, '').trim();
+    const match = cleaned.match(/\{[\s\S]*\}/);
+    const obj = JSON.parse(match ? match[0] : cleaned);
+    return {
+      title: obj.title || fallback.title,
+      description: obj.description || fallback.description,
+      imagePrompts: Array.isArray(obj.imagePrompts) ? obj.imagePrompts.slice(0, 3) : fallback.imagePrompts,
+    };
+  } catch {
+    return fallback;
+  }
+}
+
 // ─── Categories ─────────────────────────────────────────────────────────────
 
 app.get('/api/categories', (req, res) => {
@@ -1104,6 +1193,123 @@ app.put('/api/tracker/config', (req, res) => {
 });
 
 // ── Start tracker + bot after server is up ─────────────────────────────────────
+app.post('/api/shopee/generate-copy', requireAuth, async (req, res) => {
+  const { productName, pack, facts, provider = 'openai' } = req.body || {};
+  if (!productName) return res.status(400).json({ error: 'Thiếu tên sản phẩm' });
+
+  const prompt = buildShopeePrompt({ productName, pack, facts });
+  const fallback = fallbackShopeeContent({ productName, pack, facts });
+
+  try {
+    let raw = '';
+    if (provider === 'gemini' && process.env.GEMINI_API_KEY) {
+      const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+        signal: AbortSignal.timeout(45000),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error?.message || `Gemini HTTP ${r.status}`);
+      raw = data.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('\n') || '';
+    } else if (provider === 'claude' && process.env.ANTHROPIC_API_KEY) {
+      const r = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: process.env.CLAUDE_MODEL || 'claude-sonnet-4-5',
+          max_tokens: 2200,
+          messages: [{ role: 'user', content: prompt }],
+        }),
+        signal: AbortSignal.timeout(45000),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error?.message || `Claude HTTP ${r.status}`);
+      raw = data.content?.map(p => p.text || '').join('\n') || '';
+    } else if (provider === 'openai' && process.env.OPENAI_API_KEY) {
+      const r = await fetch('https://api.openai.com/v1/responses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: process.env.OPENAI_TEXT_MODEL || 'gpt-5.4-mini',
+          input: prompt,
+        }),
+        signal: AbortSignal.timeout(45000),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error?.message || `OpenAI HTTP ${r.status}`);
+      raw = data.output_text || data.output?.flatMap(o => o.content || []).map(c => c.text || '').join('\n') || '';
+    } else {
+      return res.json({ ...fallback, prompt, usedFallback: true });
+    }
+
+    res.json({ ...parseAiJson(raw, fallback), usedFallback: false });
+  } catch (e) {
+    res.json({ ...fallback, prompt, usedFallback: true, providerError: e.message });
+  }
+});
+
+app.post('/api/shopee/generate-images', requireAuth, upload.array('images', 3), async (req, res) => {
+  let prompts = [];
+  if (Array.isArray(req.body?.prompts)) prompts = req.body.prompts;
+  else {
+    try { prompts = JSON.parse(req.body?.prompts || '[]'); } catch { prompts = []; }
+  }
+  prompts = prompts.slice(0, 3).filter(Boolean);
+  if (!prompts.length) return res.status(400).json({ error: 'Thiếu prompt ảnh' });
+  if (!process.env.OPENAI_API_KEY) return res.json({ images: [], usedFallback: true });
+
+  const saved = [];
+  for (let i = 0; i < prompts.length; i++) {
+    const source = req.files?.[i] || req.files?.[0] || null;
+    let r;
+    if (source) {
+      const fd = new FormData();
+      fd.append('model', process.env.OPENAI_IMAGE_MODEL || 'gpt-image-1');
+      fd.append('prompt', prompts[i]);
+      fd.append('size', '1024x1024');
+      fd.append('image', new Blob([fs.readFileSync(source.path)], { type: source.mimetype || 'image/png' }), source.originalname || 'product.png');
+      r = await fetch('https://api.openai.com/v1/images/edits', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
+        body: fd,
+        signal: AbortSignal.timeout(90000),
+      });
+    } else {
+      r = await fetch('https://api.openai.com/v1/images/generations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: process.env.OPENAI_IMAGE_MODEL || 'gpt-image-1',
+          prompt: prompts[i],
+          size: '1024x1024',
+        }),
+        signal: AbortSignal.timeout(90000),
+      });
+    }
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error?.message || `OpenAI Images HTTP ${r.status}`);
+    const b64 = data.data?.[0]?.b64_json;
+    if (!b64) continue;
+    const filename = `${Date.now().toString(36)}-shopee-${i + 1}.png`;
+    fs.writeFileSync(path.join(imgDir, filename), Buffer.from(b64, 'base64'));
+    saved.push('/images/products/' + filename);
+  }
+
+  res.json({ images: saved, usedFallback: saved.length === 0 });
+});
+
 function startTracker() {
   if (!BOT_TOKEN) {
     console.log('⚠️  TELEGRAM_BOT_TOKEN chưa set — coin tracker & bot disabled');

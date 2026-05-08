@@ -542,6 +542,8 @@
       .p-actions { width: 100%; flex-direction: row; border-left: none; border-top: 1px solid var(--border); }
       .btn-save, .btn-del { flex: 1; }
       .f-row2, .f-row3, .f-row4 { grid-template-columns: 1fr; }
+      .sp-grid, .sp-row { grid-template-columns: 1fr; }
+      .sp-generated { grid-template-columns: 1fr; }
     }
 
     /* ─── Login Overlay ───────────────────────────────────── */
@@ -629,6 +631,38 @@
     .fb-cap-inline { background:#F8FAFC; border:1px solid var(--border); padding:9px 12px; font-size:12px; line-height:1.65; color:var(--dark); white-space:pre-wrap; margin:6px 0 8px; }
     .fb-info-note { background:#ECFDF5; color:#065F46; border:1px solid #6EE7B7; border-radius:2px; font-size:10px; padding:2px 8px; font-weight:700; display:inline-block; margin-left:4px; }
     .fb-date .fd-slot { font-size:10px; opacity:.55; margin-top:3px; }
+  /* Shopee AI */
+  .sp-grid { display:grid; grid-template-columns:minmax(320px, 420px) 1fr; gap:16px; align-items:start; }
+  .sp-panel { background:#fff; border:1px solid var(--border); border-radius:6px; padding:16px; }
+  .sp-panel h3 { font-size:13px; font-weight:800; margin-bottom:12px; letter-spacing:.04em; text-transform:uppercase; color:var(--dark); }
+  .sp-field { margin-bottom:12px; }
+  .sp-label { display:block; font-size:10px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+  .sp-input, .sp-text, .sp-select { width:100%; border:1.5px solid var(--border); border-radius:5px; padding:9px 11px; font-family:'Inter',sans-serif; font-size:13px; outline:none; background:#fff; }
+  .sp-input:focus, .sp-text:focus, .sp-select:focus { border-color:var(--dark); }
+  .sp-text { min-height:92px; resize:vertical; line-height:1.55; }
+  .sp-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .sp-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+  .sp-btn { border:none; border-radius:5px; padding:9px 13px; font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; cursor:pointer; font-family:'Inter',sans-serif; }
+  .sp-btn.primary { background:#D62B2B; color:#fff; }
+  .sp-btn.dark { background:#0F172A; color:#fff; }
+  .sp-btn.light { background:#F8FAFC; color:#0F172A; border:1px solid var(--border); }
+  .sp-btn:disabled { opacity:.55; cursor:wait; }
+  .sp-upload { border:1.5px dashed #CBD5E1; border-radius:6px; padding:14px; text-align:center; color:var(--muted); font-size:12px; cursor:pointer; background:#F8FAFC; }
+  .sp-previews { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px; }
+  .sp-preview { aspect-ratio:1; border:1px solid var(--border); border-radius:5px; overflow:hidden; background:#F8FAFC; display:flex; align-items:center; justify-content:center; color:#94A3B8; font-size:11px; text-align:center; }
+  .sp-preview img { width:100%; height:100%; object-fit:cover; }
+  .sp-output { display:grid; gap:12px; }
+  .sp-outbox { background:#fff; border:1px solid var(--border); border-radius:6px; overflow:hidden; }
+  .sp-outhead { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 12px; background:#F8FAFC; border-bottom:1px solid var(--border); }
+  .sp-outhead b { font-size:12px; }
+  .sp-copy { border:1px solid var(--border); background:#fff; border-radius:4px; padding:5px 9px; font-size:10px; font-weight:800; cursor:pointer; }
+  .sp-outcontent { padding:12px; font-size:13px; line-height:1.7; white-space:pre-wrap; min-height:42px; }
+  .sp-note { font-size:12px; line-height:1.6; color:#475569; background:#EFF6FF; border:1px solid #BFDBFE; padding:10px 12px; border-radius:5px; margin-bottom:12px; }
+  .sp-status { font-size:12px; color:var(--muted); margin-top:8px; min-height:18px; }
+  .sp-generated { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .sp-generated a { display:block; border:1px solid var(--border); border-radius:6px; overflow:hidden; background:#fff; text-decoration:none; color:var(--dark); font-size:11px; font-weight:700; }
+  .sp-generated img { width:100%; aspect-ratio:1; object-fit:cover; display:block; }
+  .sp-generated span { display:block; padding:7px 8px; }
   /* ─── Bảng Giá Đại Lý ──────────────────────────────────── */
   .bg-toolbar { display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
   .bg-search-wrap { position:relative; flex:1; min-width:200px; }
@@ -785,6 +819,10 @@
     <button class="sb-item" id="nav-bang-gia" onclick="nav('bang-gia')">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
       Bảng Giá Đại Lý
+    </button>
+    <button class="sb-item" id="nav-shopee" onclick="nav('shopee')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 7V6a6 6 0 0 1 12 0v1"/><path d="M4 7h16l-1 14H5L4 7z"/><path d="M9 11c.8.7 1.8 1 3 1s2.2-.3 3-1"/></svg>
+      Shopee
     </button>
     <button class="sb-item" id="nav-banners" onclick="nav('banners')">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
@@ -1902,6 +1940,80 @@ Có chủ đề nào bạn muốn chúng tôi cover? Comment nhé!
     </div>
 
     <!-- ── Bảng Giá Đại Lý ──────────────────────── -->
+    <div class="page" id="page-shopee">
+      <div class="sec-head">
+        <span class="sec-title">Shopee AI</span>
+        <div class="sec-head-right">
+          <button class="btn-dark" onclick="spBuildManualPrompt()">Tạo prompt thủ công</button>
+          <button class="btn-red" onclick="spGenerateCopy()">Tạo tiêu đề & mô tả</button>
+        </div>
+      </div>
+
+      <div class="sp-grid">
+        <div class="sp-panel">
+          <h3>Thông tin sản phẩm</h3>
+          <div class="sp-note">Luồng chuẩn: nhập tên sản phẩm, bổ sung thông số thật, chọn AI. Hệ thống ưu tiên gọi API nếu server có key; nếu chưa có key sẽ trả về prompt để copy sang Gemini, ChatGPT hoặc Claude.</div>
+          <div class="sp-field">
+            <label class="sp-label">Tên sản phẩm cần đăng</label>
+            <input id="spName" class="sp-input" placeholder="Ví dụ: Bóng bàn Unrex SUN+ 3 sao ABS 40+ hộp 6 quả">
+          </div>
+          <div class="sp-row">
+            <div class="sp-field">
+              <label class="sp-label">Công cụ AI</label>
+              <select id="spProvider" class="sp-select">
+                <option value="openai">ChatGPT / OpenAI</option>
+                <option value="gemini">Gemini</option>
+                <option value="claude">Claude</option>
+              </select>
+            </div>
+            <div class="sp-field">
+              <label class="sp-label">Quy cách</label>
+              <input id="spPack" class="sp-input" placeholder="Hộp 6 quả">
+            </div>
+          </div>
+          <div class="sp-field">
+            <label class="sp-label">Thông số thật</label>
+            <textarea id="spFacts" class="sp-text" placeholder="Thương hiệu: Unrex&#10;Dòng: SUN+ 3 sao&#10;Chất liệu: ABS 40+&#10;Tiêu chuẩn: ITTF Approved"></textarea>
+          </div>
+          <div class="sp-field">
+            <label class="sp-label">Ảnh gốc sản phẩm</label>
+            <label class="sp-upload">
+              Chọn tối đa 3 ảnh sản phẩm để làm input bố cục
+              <input id="spImages" type="file" accept="image/*" multiple style="display:none" onchange="spPreviewImages(this)">
+            </label>
+            <div class="sp-previews" id="spPreviews">
+              <div class="sp-preview">Ảnh 1</div><div class="sp-preview">Ảnh 2</div><div class="sp-preview">Ảnh 3</div>
+            </div>
+          </div>
+          <div class="sp-actions">
+            <button class="sp-btn primary" id="spCopyBtn" onclick="spGenerateCopy()">Tạo content</button>
+            <button class="sp-btn dark" id="spImgPromptBtn" onclick="spGenerateImagePrompts()">Tạo prompt ảnh</button>
+            <button class="sp-btn light" id="spImgBtn" onclick="spGenerateImages()">Tạo 3 ảnh AI</button>
+          </div>
+          <div class="sp-status" id="spStatus"></div>
+        </div>
+
+        <div class="sp-output">
+          <div class="sp-outbox">
+            <div class="sp-outhead"><b>Tiêu đề Shopee SEO</b><button class="sp-copy" onclick="spCopyText('spTitleOut',this)">Copy</button></div>
+            <div class="sp-outcontent" id="spTitleOut">Chưa có nội dung.</div>
+          </div>
+          <div class="sp-outbox">
+            <div class="sp-outhead"><b>Mô tả chi tiết</b><button class="sp-copy" onclick="spCopyText('spDescOut',this)">Copy</button></div>
+            <div class="sp-outcontent" id="spDescOut">Chưa có nội dung.</div>
+          </div>
+          <div class="sp-outbox">
+            <div class="sp-outhead"><b>Prompt tạo ảnh / thumbnail</b><button class="sp-copy" onclick="spCopyText('spPromptOut',this)">Copy</button></div>
+            <div class="sp-outcontent" id="spPromptOut">Chưa có prompt.</div>
+          </div>
+          <div class="sp-outbox">
+            <div class="sp-outhead"><b>Ảnh AI đã tạo</b></div>
+            <div class="sp-outcontent"><div class="sp-generated" id="spGeneratedImages"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="page" id="page-bang-gia">
       <div style="margin-bottom:18px">
         <h2 style="font-size:17px;font-weight:700;color:var(--dark)">💰 Bảng Giá Đại Lý</h2>
@@ -2119,6 +2231,7 @@ const CAT_LBL = {
 };
 const PAGE_TITLES = { ...CAT_LBL, dashboard:'Dashboard', banners:'Ảnh & Banner', settings:'Cài Đặt', 'bang-gia':'Bảng Giá Đại Lý' };
 const loaded = {};
+PAGE_TITLES.shopee = 'Shopee AI';
 let siteSettings = {};
 
 /* ─── Helpers ──────────────────────────────────────────────── */
@@ -2574,6 +2687,7 @@ async function loadSection(cat) {
   if (cat === 'banners')   { loadBanners(); return; }
   if (cat === 'settings')  { loadSettings(); return; }
   if (cat === 'bang-gia')  { bgLoadData(); return; }
+  if (cat === 'shopee')    { return; }
   if (loaded[cat]) return;
   loaded[cat] = true;
   if (cat === 'combo-vot')  return loadCombos();
@@ -2854,6 +2968,128 @@ function fbCopyHt(id, btn) {
 }
 
 /* ─── Server check ─────────────────────────────────────────── */
+/* Shopee AI helpers */
+function spInput() {
+  return {
+    productName: document.getElementById('spName')?.value.trim() || '',
+    pack: document.getElementById('spPack')?.value.trim() || '',
+    facts: document.getElementById('spFacts')?.value.trim() || '',
+    provider: document.getElementById('spProvider')?.value || 'openai',
+  };
+}
+function spSetStatus(msg, type) {
+  const el = document.getElementById('spStatus');
+  if (!el) return;
+  el.textContent = msg || '';
+  el.style.color = type === 'err' ? '#991B1B' : (type === 'ok' ? '#166534' : '#64748B');
+}
+function spPreviewImages(input) {
+  const files = Array.from(input.files || []).slice(0, 3);
+  const wrap = document.getElementById('spPreviews');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  for (let i = 0; i < 3; i++) {
+    const box = document.createElement('div');
+    box.className = 'sp-preview';
+    if (files[i]) {
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(files[i]);
+      box.appendChild(img);
+    } else {
+      box.textContent = `Ảnh ${i + 1}`;
+    }
+    wrap.appendChild(box);
+  }
+}
+function spLocalPrompt() {
+  const data = spInput();
+  const name = data.productName || '[Tên sản phẩm]';
+  const facts = data.facts || 'Thương hiệu:\nDòng sản phẩm:\nChất liệu:\nQuy cách:\nTiêu chuẩn:';
+  return `Bạn là chuyên gia Shopee SEO cho ngành bóng bàn tại Việt Nam.
+
+Hãy viết nội dung đăng Shopee cho sản phẩm: ${name}
+Quy cách: ${data.pack || 'chưa rõ'}
+Thông tin thật:
+${facts}
+
+Yêu cầu đầu ra bằng JSON hợp lệ:
+{
+  "title": "tiêu đề tối đa khoảng 120 ký tự, đủ keyword mạnh, không spam",
+  "description": "mô tả tiếng Việt theo cấu trúc mẫu: headline, lợi ích ngắn, THÔNG TIN SẢN PHẨM, ĐIỂM NỔI BẬT, PHÙ HỢP CHO, SẢN PHẨM BAO GỒM, CAM KẾT TỪ BÓNG BÀN VIỆT",
+  "imagePrompts": ["prompt thumbnail 1:1", "prompt ảnh lợi ích 1:1", "prompt ảnh thông số 1:1"]
+}
+
+Giữ giọng chuyên nghiệp, dễ đọc trên mobile, không bịa thông số chưa được cung cấp.`;
+}
+function spBuildManualPrompt() {
+  document.getElementById('spPromptOut').textContent = spLocalPrompt();
+  spSetStatus('Đã tạo prompt thủ công để copy sang Gemini, ChatGPT hoặc Claude.', 'ok');
+}
+async function spGenerateCopy() {
+  const data = spInput();
+  if (!data.productName) return spSetStatus('Vui lòng nhập tên sản phẩm.', 'err');
+  const btn = document.getElementById('spCopyBtn');
+  if (btn) btn.disabled = true;
+  spSetStatus('Đang tạo nội dung Shopee...');
+  try {
+    const res = await api('/api/shopee/generate-copy', 'POST', data);
+    document.getElementById('spTitleOut').textContent = res.title || '';
+    document.getElementById('spDescOut').textContent = res.description || '';
+    document.getElementById('spPromptOut').textContent = (res.imagePrompts || []).join('\n\n');
+    spSetStatus(res.usedFallback ? 'Chưa có API key, đã tạo prompt thủ công.' : 'Đã tạo nội dung bằng AI.', 'ok');
+  } catch (e) {
+    document.getElementById('spPromptOut').textContent = spLocalPrompt();
+    spSetStatus('Không gọi được API AI. Đã tạo prompt thủ công để copy.', 'err');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+function spGenerateImagePrompts() {
+  const data = spInput();
+  const name = data.productName || '[Tên sản phẩm]';
+  const pack = data.pack ? `, quy cách ${data.pack}` : '';
+  const base = `Ảnh sản phẩm bóng bàn thương mại cao cấp cho Shopee, sản phẩm ${name}${pack}, nền sáng sạch, ánh sáng studio, bố cục 1:1, rõ sản phẩm, không logo giả, không claim sai, text tiếng Việt ngắn gọn`;
+  const prompts = [
+    `${base}. Thumbnail chính: sản phẩm lớn ở trung tâm, badge "Chính hãng", "Chuẩn Shopee", cảm giác thể thao chuyên nghiệp.`,
+    `${base}. Ảnh lợi ích: có 3 cụm text nhỏ "Độ nảy ổn định", "Bóng tròn đều", "Cảm giác chắc tay", layout thoáng dễ đọc mobile.`,
+    `${base}. Ảnh thông số: bảng thông tin gọn gàng cho thương hiệu, chất liệu, quy cách, tiêu chuẩn; phong cách sạch, tin cậy.`
+  ];
+  document.getElementById('spPromptOut').textContent = prompts.join('\n\n');
+  spSetStatus('Đã tạo 3 prompt ảnh chuyên nghiệp.', 'ok');
+}
+async function spGenerateImages() {
+  const promptEl = document.getElementById('spPromptOut');
+  if (!promptEl?.textContent.trim() || promptEl.textContent.trim() === 'Chưa có prompt.') spGenerateImagePrompts();
+  const prompts = promptEl.textContent.split(/\n\s*\n/).map(s => s.trim()).filter(Boolean).slice(0, 3);
+  const btn = document.getElementById('spImgBtn');
+  if (btn) btn.disabled = true;
+  spSetStatus('Đang gửi ảnh gốc và tạo ảnh AI nếu server có OPENAI_API_KEY...');
+  try {
+    const fd = new FormData();
+    fd.append('prompts', JSON.stringify(prompts));
+    Array.from(document.getElementById('spImages')?.files || []).slice(0, 3).forEach(file => fd.append('images', file));
+    const raw = await fetch('/api/shopee/generate-images', { method: 'POST', body: fd });
+    const res = await raw.json();
+    if (!raw.ok) throw new Error(res.error || `HTTP ${raw.status}`);
+    const wrap = document.getElementById('spGeneratedImages');
+    wrap.innerHTML = (res.images || []).map((src, i) => `<a href="${esc(src)}" target="_blank"><img src="${esc(src)}" alt=""><span>Ảnh ${i + 1}</span></a>`).join('');
+    spSetStatus(res.images?.length ? 'Đã tạo ảnh và lưu vào /images/products.' : 'Server chưa cấu hình tạo ảnh, hãy copy prompt sang công cụ AI ảnh.', res.images?.length ? 'ok' : 'err');
+  } catch (e) {
+    spSetStatus('Không tạo được ảnh AI. Hãy dùng prompt ở trên với ChatGPT/Gemini image.', 'err');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+function spCopyText(id, btn) {
+  const text = document.getElementById(id)?.textContent.trim() || '';
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    const old = btn.textContent;
+    btn.textContent = 'Copied';
+    setTimeout(() => btn.textContent = old, 1500);
+  });
+}
+
 async function checkServer() {
   const badge = document.getElementById('srvBadge');
   const text  = document.getElementById('srvText');
