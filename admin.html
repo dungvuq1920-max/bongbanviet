@@ -672,6 +672,12 @@
   .sp-candidate.selected mark { display:block; }
   .sp-links { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
   .sp-links a { font-size:11px; font-weight:700; color:#1D4ED8; background:#EFF6FF; border:1px solid #BFDBFE; border-radius:4px; padding:5px 8px; text-decoration:none; }
+  .sp-key-grid { display:grid; gap:9px; margin:12px 0 14px; }
+  .sp-key-row { display:grid; grid-template-columns:78px 1fr auto auto; gap:7px; align-items:center; }
+  .sp-key-name { font-size:11px; font-weight:800; color:#0F172A; }
+  .sp-key-status { font-size:10px; color:#64748B; margin-top:-4px; }
+  .sp-key-link { font-size:10px; font-weight:800; color:#1D4ED8; text-decoration:none; border:1px solid #BFDBFE; background:#EFF6FF; border-radius:4px; padding:6px 8px; white-space:nowrap; }
+  .sp-key-del { font-size:10px; font-weight:800; color:#991B1B; border:1px solid #FECACA; background:#FEF2F2; border-radius:4px; padding:6px 8px; cursor:pointer; }
   /* ─── Bảng Giá Đại Lý ──────────────────────────────────── */
   .bg-toolbar { display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
   .bg-search-wrap { position:relative; flex:1; min-width:200px; }
@@ -1962,6 +1968,33 @@ Có chủ đề nào bạn muốn chúng tôi cover? Comment nhé!
         <div class="sp-panel">
           <h3>Thông tin sản phẩm</h3>
           <div class="sp-note">Luồng chuẩn: nhập tên sản phẩm, bổ sung thông số thật, chọn AI. Hệ thống ưu tiên gọi API nếu server có key; nếu chưa có key sẽ trả về prompt để copy sang Gemini, ChatGPT hoặc Claude.</div>
+          <div class="sp-note">
+            <strong>Cấu hình API key</strong>
+            <div class="sp-key-grid">
+              <div class="sp-key-row">
+                <span class="sp-key-name">OpenAI</span>
+                <input id="spKeyOpenai" class="sp-input" type="password" autocomplete="off" placeholder="sk-...">
+                <a class="sp-key-link" href="https://platform.openai.com/api-keys" target="_blank">Lấy key</a>
+                <button class="sp-key-del" onclick="spClearAiKey('openai')">Xóa</button>
+              </div>
+              <div class="sp-key-row">
+                <span class="sp-key-name">Gemini</span>
+                <input id="spKeyGemini" class="sp-input" type="password" autocomplete="off" placeholder="AIza...">
+                <a class="sp-key-link" href="https://aistudio.google.com/app/apikey" target="_blank">Lấy key</a>
+                <button class="sp-key-del" onclick="spClearAiKey('gemini')">Xóa</button>
+              </div>
+              <div class="sp-key-row">
+                <span class="sp-key-name">Claude</span>
+                <input id="spKeyClaude" class="sp-input" type="password" autocomplete="off" placeholder="sk-ant-...">
+                <a class="sp-key-link" href="https://console.anthropic.com/settings/keys" target="_blank">Lấy key</a>
+                <button class="sp-key-del" onclick="spClearAiKey('claude')">Xóa</button>
+              </div>
+            </div>
+            <div class="sp-actions" style="margin-top:0">
+              <button class="sp-btn dark" id="spSaveKeysBtn" onclick="spSaveAiKeys()">Lưu API key</button>
+            </div>
+            <div class="sp-key-status" id="spKeyStatus">Đang kiểm tra cấu hình...</div>
+          </div>
           <div class="sp-field">
             <label class="sp-label">Tên sản phẩm cần đăng</label>
             <input id="spName" class="sp-input" placeholder="Ví dụ: Bóng bàn Unrex SUN+ 3 sao ABS 40+ hộp 6 quả">
@@ -2704,7 +2737,7 @@ async function loadSection(cat) {
   if (cat === 'banners')   { loadBanners(); return; }
   if (cat === 'settings')  { loadSettings(); return; }
   if (cat === 'bang-gia')  { bgLoadData(); return; }
-  if (cat === 'shopee')    { return; }
+  if (cat === 'shopee')    { spLoadAiConfig(); return; }
   if (loaded[cat]) return;
   loaded[cat] = true;
   if (cat === 'combo-vot')  return loadCombos();
@@ -3018,6 +3051,51 @@ function spPreviewImages(input) {
     wrap.appendChild(box);
   }
 }
+async function spLoadAiConfig() {
+  const el = document.getElementById('spKeyStatus');
+  if (!el) return;
+  try {
+    const cfg = await api('/api/shopee/ai-config');
+    const label = (name, info) => info?.configured
+      ? `${name}: đã có key ${info.source === 'env' ? 'trên server' : 'trong admin'}${info.tail ? ` (...${info.tail})` : ''}`
+      : `${name}: chưa có key`;
+    el.textContent = [label('OpenAI', cfg.openai), label('Gemini', cfg.gemini), label('Claude', cfg.claude)].join(' | ');
+  } catch (e) {
+    el.textContent = 'Không đọc được cấu hình API key.';
+  }
+}
+async function spSaveAiKeys() {
+  const payload = {
+    openaiApiKey: document.getElementById('spKeyOpenai')?.value.trim() || '',
+    geminiApiKey: document.getElementById('spKeyGemini')?.value.trim() || '',
+    claudeApiKey: document.getElementById('spKeyClaude')?.value.trim() || '',
+  };
+  if (!payload.openaiApiKey && !payload.geminiApiKey && !payload.claudeApiKey) {
+    return spSetStatus('Nhập ít nhất 1 API key để lưu.', 'err');
+  }
+  const btn = document.getElementById('spSaveKeysBtn');
+  if (btn) btn.disabled = true;
+  try {
+    await api('/api/shopee/ai-config', 'PUT', payload);
+    ['spKeyOpenai','spKeyGemini','spKeyClaude'].forEach(id => { const input = document.getElementById(id); if (input) input.value = ''; });
+    await spLoadAiConfig();
+    spSetStatus('Đã lưu API key.', 'ok');
+  } catch (e) {
+    spSetStatus('Không lưu được API key: ' + (e.message || 'lỗi không xác định'), 'err');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+async function spClearAiKey(provider) {
+  if (!confirm('Xóa API key đã lưu cho provider này? Nếu key đang set bằng biến môi trường server thì không thể xóa tại đây.')) return;
+  try {
+    await api(`/api/shopee/ai-config/${provider}`, 'DELETE');
+    await spLoadAiConfig();
+    spSetStatus('Đã xóa API key lưu trong admin.', 'ok');
+  } catch (e) {
+    spSetStatus('Không xóa được API key: ' + (e.message || 'lỗi không xác định'), 'err');
+  }
+}
 function spSelectedImageUrls() {
   return Array.from(document.querySelectorAll('#spImageCandidates .sp-candidate.selected'))
     .map(el => el.dataset.src)
@@ -3133,7 +3211,7 @@ async function spGenerateImages() {
   const prompts = promptEl.textContent.split(/\n\s*\n/).map(s => s.trim()).filter(Boolean).slice(0, 3);
   const btn = document.getElementById('spImgBtn');
   if (btn) btn.disabled = true;
-  spSetStatus('Đang gửi ảnh gốc và tạo ảnh AI nếu server có OPENAI_API_KEY...');
+  spSetStatus('Đang gửi ảnh gốc và tạo ảnh AI nếu đã có OpenAI API key...');
   try {
     const fd = new FormData();
     fd.append('prompts', JSON.stringify(prompts));

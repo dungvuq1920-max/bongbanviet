@@ -12,6 +12,7 @@ const PORT = process.env.PORT || 3000;
 const DATA_DIR = process.env.DATA_DIR
   ? path.resolve(process.env.DATA_DIR)
   : __dirname;
+const SHOPEE_AI_CONFIG_FILE = path.join(DATA_DIR, 'shopee-ai-config.json');
 
 app.use(cors());
 app.use(express.json());
@@ -27,6 +28,33 @@ function getAdminPassword() {
 
 function isDefaultPassword() {
   return !db.prepare("SELECT value FROM settings WHERE key = 'admin_password'").get();
+}
+
+function readShopeeAiConfig() {
+  try {
+    if (!fs.existsSync(SHOPEE_AI_CONFIG_FILE)) return {};
+    return JSON.parse(fs.readFileSync(SHOPEE_AI_CONFIG_FILE, 'utf8'));
+  } catch {
+    return {};
+  }
+}
+
+function writeShopeeAiConfig(next) {
+  fs.mkdirSync(path.dirname(SHOPEE_AI_CONFIG_FILE), { recursive: true });
+  fs.writeFileSync(SHOPEE_AI_CONFIG_FILE, JSON.stringify(next, null, 2));
+}
+
+function keyTail(value) {
+  if (!value) return '';
+  return String(value).slice(-4);
+}
+
+function getAiKey(provider) {
+  const cfg = readShopeeAiConfig();
+  if (provider === 'openai') return process.env.OPENAI_API_KEY || cfg.openaiApiKey || '';
+  if (provider === 'gemini') return process.env.GEMINI_API_KEY || cfg.geminiApiKey || '';
+  if (provider === 'claude') return process.env.ANTHROPIC_API_KEY || cfg.claudeApiKey || '';
+  return '';
 }
 
 function requireAuth(req, res, next) {
@@ -1323,6 +1351,44 @@ app.post('/api/shopee/find-images', requireAuth, async (req, res) => {
   });
 });
 
+app.get('/api/shopee/ai-config', requireAuth, (req, res) => {
+  const cfg = readShopeeAiConfig();
+  res.json({
+    openai: { configured: !!(process.env.OPENAI_API_KEY || cfg.openaiApiKey), source: process.env.OPENAI_API_KEY ? 'env' : (cfg.openaiApiKey ? 'admin' : ''), tail: keyTail(process.env.OPENAI_API_KEY || cfg.openaiApiKey) },
+    gemini: { configured: !!(process.env.GEMINI_API_KEY || cfg.geminiApiKey), source: process.env.GEMINI_API_KEY ? 'env' : (cfg.geminiApiKey ? 'admin' : ''), tail: keyTail(process.env.GEMINI_API_KEY || cfg.geminiApiKey) },
+    claude: { configured: !!(process.env.ANTHROPIC_API_KEY || cfg.claudeApiKey), source: process.env.ANTHROPIC_API_KEY ? 'env' : (cfg.claudeApiKey ? 'admin' : ''), tail: keyTail(process.env.ANTHROPIC_API_KEY || cfg.claudeApiKey) },
+  });
+});
+
+app.put('/api/shopee/ai-config', requireAuth, (req, res) => {
+  const cfg = readShopeeAiConfig();
+  const next = { ...cfg };
+  const map = {
+    openaiApiKey: 'openaiApiKey',
+    geminiApiKey: 'geminiApiKey',
+    claudeApiKey: 'claudeApiKey',
+  };
+  for (const [bodyKey, cfgKey] of Object.entries(map)) {
+    if (!(bodyKey in (req.body || {}))) continue;
+    const value = String(req.body[bodyKey] || '').trim();
+    if (value) next[cfgKey] = value;
+  }
+  next.updatedAt = new Date().toISOString();
+  writeShopeeAiConfig(next);
+  res.json({ ok: true });
+});
+
+app.delete('/api/shopee/ai-config/:provider', requireAuth, (req, res) => {
+  const cfg = readShopeeAiConfig();
+  const map = { openai: 'openaiApiKey', gemini: 'geminiApiKey', claude: 'claudeApiKey' };
+  const key = map[req.params.provider];
+  if (!key) return res.status(400).json({ error: 'Provider không hợp lệ' });
+  delete cfg[key];
+  cfg.updatedAt = new Date().toISOString();
+  writeShopeeAiConfig(cfg);
+  res.json({ ok: true });
+});
+
 app.post('/api/shopee/generate-copy', requireAuth, async (req, res) => {
   const { productName, pack, facts, provider = 'openai' } = req.body || {};
   if (!productName) return res.status(400).json({ error: 'Thiếu tên sản phẩm' });
@@ -1332,9 +1398,12 @@ app.post('/api/shopee/generate-copy', requireAuth, async (req, res) => {
 
   try {
     let raw = '';
-    if (provider === 'gemini' && process.env.GEMINI_API_KEY) {
+    const geminiKey = getAiKey('gemini');
+    const claudeKey = getAiKey('claude');
+    const openaiKey = getAiKey('openai');
+    if (provider === 'gemini' && geminiKey) {
       const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
-      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
@@ -1343,12 +1412,12 @@ app.post('/api/shopee/generate-copy', requireAuth, async (req, res) => {
       const data = await r.json();
       if (!r.ok) throw new Error(data.error?.message || `Gemini HTTP ${r.status}`);
       raw = data.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('\n') || '';
-    } else if (provider === 'claude' && process.env.ANTHROPIC_API_KEY) {
+    } else if (provider === 'claude' && claudeKey) {
       const r = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': process.env.ANTHROPIC_API_KEY,
+          'x-api-key': claudeKey,
           'anthropic-version': '2023-06-01',
         },
         body: JSON.stringify({
@@ -1361,12 +1430,12 @@ app.post('/api/shopee/generate-copy', requireAuth, async (req, res) => {
       const data = await r.json();
       if (!r.ok) throw new Error(data.error?.message || `Claude HTTP ${r.status}`);
       raw = data.content?.map(p => p.text || '').join('\n') || '';
-    } else if (provider === 'openai' && process.env.OPENAI_API_KEY) {
+    } else if (provider === 'openai' && openaiKey) {
       const r = await fetch('https://api.openai.com/v1/responses', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          Authorization: `Bearer ${openaiKey}`,
         },
         body: JSON.stringify({
           model: process.env.OPENAI_TEXT_MODEL || 'gpt-5.4-mini',
@@ -1397,7 +1466,8 @@ app.post('/api/shopee/generate-images', requireAuth, upload.array('images', 3), 
   try { sourceUrls = JSON.parse(req.body?.sourceUrls || '[]'); } catch { sourceUrls = []; }
   prompts = prompts.slice(0, 3).filter(Boolean);
   if (!prompts.length) return res.status(400).json({ error: 'Thiếu prompt ảnh' });
-  if (!process.env.OPENAI_API_KEY) return res.json({ images: [], usedFallback: true });
+  const openaiKey = getAiKey('openai');
+  if (!openaiKey) return res.json({ images: [], usedFallback: true });
 
   const saved = [];
   for (let i = 0; i < prompts.length; i++) {
@@ -1415,7 +1485,7 @@ app.post('/api/shopee/generate-images', requireAuth, upload.array('images', 3), 
       );
       r = await fetch('https://api.openai.com/v1/images/edits', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
+        headers: { Authorization: `Bearer ${openaiKey}` },
         body: fd,
         signal: AbortSignal.timeout(90000),
       });
@@ -1424,7 +1494,7 @@ app.post('/api/shopee/generate-images', requireAuth, upload.array('images', 3), 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          Authorization: `Bearer ${openaiKey}`,
         },
         body: JSON.stringify({
           model: process.env.OPENAI_IMAGE_MODEL || 'gpt-image-1',
