@@ -408,6 +408,92 @@ async function imageSourceToBlob(url) {
   return new Blob([Buffer.from(await r.arrayBuffer())], { type });
 }
 
+async function imageSourceToPart(url) {
+  const blob = await imageSourceToBlob(url);
+  if (!blob) return null;
+  const buffer = Buffer.from(await blob.arrayBuffer());
+  return {
+    inline_data: {
+      mime_type: blob.type || 'image/jpeg',
+      data: buffer.toString('base64'),
+    },
+  };
+}
+
+function uploadedFileToGeminiPart(file) {
+  if (!file || !fs.existsSync(file.path)) return null;
+  return {
+    inline_data: {
+      mime_type: file.mimetype || 'image/jpeg',
+      data: fs.readFileSync(file.path).toString('base64'),
+    },
+  };
+}
+
+async function generateOpenAiShopeeImage({ prompt, sourceFile, sourceUrl, openaiKey, index }) {
+  const sourceBlob = sourceFile ? null : await imageSourceToBlob(sourceUrl);
+  let r;
+  if (sourceFile || sourceBlob) {
+    const fd = new FormData();
+    fd.append('model', process.env.OPENAI_IMAGE_MODEL || 'gpt-image-1.5');
+    fd.append('prompt', prompt);
+    fd.append('size', '1024x1024');
+    fd.append('image',
+      sourceBlob || new Blob([fs.readFileSync(sourceFile.path)], { type: sourceFile.mimetype || 'image/png' }),
+      sourceFile?.originalname || `source-${index + 1}.png`
+    );
+    r = await fetch('https://api.openai.com/v1/images/edits', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${openaiKey}` },
+      body: fd,
+      signal: AbortSignal.timeout(90000),
+    });
+  } else {
+    r = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${openaiKey}`,
+      },
+      body: JSON.stringify({
+        model: process.env.OPENAI_IMAGE_MODEL || 'gpt-image-1.5',
+        prompt,
+        size: '1024x1024',
+      }),
+      signal: AbortSignal.timeout(90000),
+    });
+  }
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error?.message || `OpenAI Images HTTP ${r.status}`);
+  return data.data?.[0]?.b64_json || '';
+}
+
+async function generateGeminiShopeeImage({ prompt, sourceFile, sourceUrl, geminiKey }) {
+  const model = process.env.GEMINI_IMAGE_MODEL || 'gemini-3.1-flash-image-preview';
+  const parts = [{ text: prompt }];
+  const uploadedPart = uploadedFileToGeminiPart(sourceFile);
+  const urlPart = uploadedPart ? null : await imageSourceToPart(sourceUrl);
+  if (uploadedPart || urlPart) parts.push(uploadedPart || urlPart);
+
+  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-goog-api-key': geminiKey,
+    },
+    body: JSON.stringify({
+      contents: [{ role: 'user', parts }],
+      generationConfig: { responseModalities: ['IMAGE'] },
+    }),
+    signal: AbortSignal.timeout(90000),
+  });
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error?.message || `Gemini Image HTTP ${r.status}`);
+  const outParts = data.candidates?.[0]?.content?.parts || [];
+  const imagePart = outParts.find(p => p.inlineData?.data || p.inline_data?.data);
+  return imagePart?.inlineData?.data || imagePart?.inline_data?.data || '';
+}
+
 // ─── Categories ─────────────────────────────────────────────────────────────
 
 app.get('/api/categories', (req, res) => {
@@ -1457,6 +1543,7 @@ app.post('/api/shopee/generate-copy', requireAuth, async (req, res) => {
 });
 
 app.post('/api/shopee/generate-images', requireAuth, upload.array('images', 3), async (req, res) => {
+  const provider = req.body?.provider || 'openai';
   let prompts = [];
   if (Array.isArray(req.body?.prompts)) prompts = req.body.prompts;
   else {
@@ -1466,12 +1553,31 @@ app.post('/api/shopee/generate-images', requireAuth, upload.array('images', 3), 
   try { sourceUrls = JSON.parse(req.body?.sourceUrls || '[]'); } catch { sourceUrls = []; }
   prompts = prompts.slice(0, 3).filter(Boolean);
   if (!prompts.length) return res.status(400).json({ error: 'Thiếu prompt ảnh' });
+  if (provider === 'claude') {
+    return res.json({ images: [], usedFallback: true, providerError: 'Claude API hiện không hỗ trợ tạo ảnh trong tích hợp này. Hãy chọn ChatGPT/OpenAI hoặc Gemini.' });
+  }
   const openaiKey = getAiKey('openai');
-  if (!openaiKey) return res.json({ images: [], usedFallback: true });
+  const geminiKey = getAiKey('gemini');
+  if (provider === 'openai' && !openaiKey) return res.json({ images: [], usedFallback: true, providerError: 'Chưa có OpenAI API key. Hãy nhập key OpenAI hoặc chọn Gemini.' });
+  if (provider === 'gemini' && !geminiKey) return res.json({ images: [], usedFallback: true, providerError: 'Chưa có Gemini API key. Hãy nhập key Gemini hoặc chọn ChatGPT/OpenAI.' });
 
   const saved = [];
+  try {
   for (let i = 0; i < prompts.length; i++) {
     const source = req.files?.[i] || req.files?.[0] || null;
+    if (provider === 'gemini') {
+      const b64Gemini = await generateGeminiShopeeImage({
+        prompt: prompts[i],
+        sourceFile: source,
+        sourceUrl: sourceUrls[i] || sourceUrls[0] || '',
+        geminiKey,
+      });
+      if (!b64Gemini) continue;
+      const filename = `${Date.now().toString(36)}-shopee-gemini-${i + 1}.png`;
+      fs.writeFileSync(path.join(imgDir, filename), Buffer.from(b64Gemini, 'base64'));
+      saved.push('/images/products/' + filename);
+      continue;
+    }
     const sourceBlob = source ? null : await imageSourceToBlob(sourceUrls[i] || sourceUrls[0]);
     let r;
     if (source || sourceBlob) {
@@ -1513,7 +1619,15 @@ app.post('/api/shopee/generate-images', requireAuth, upload.array('images', 3), 
     saved.push('/images/products/' + filename);
   }
 
-  res.json({ images: saved, usedFallback: saved.length === 0 });
+  } catch (e) {
+    return res.json({ images: saved, usedFallback: saved.length === 0, providerError: e.message });
+  }
+
+  res.json({
+    images: saved,
+    usedFallback: saved.length === 0,
+    providerError: saved.length ? '' : `${provider === 'gemini' ? 'Gemini' : 'OpenAI'} không trả về ảnh. Kiểm tra model, quota, vùng hỗ trợ hoặc API key.`,
+  });
 });
 
 function startTracker() {

@@ -3215,6 +3215,7 @@ async function spGenerateImages() {
   try {
     const fd = new FormData();
     fd.append('prompts', JSON.stringify(prompts));
+    fd.append('provider', document.getElementById('spProvider')?.value || 'openai');
     fd.append('sourceUrls', JSON.stringify(spSelectedImageUrls()));
     Array.from(document.getElementById('spImages')?.files || []).slice(0, 3).forEach(file => fd.append('images', file));
     const raw = await fetch('/api/shopee/generate-images', { method: 'POST', body: fd });
@@ -3222,9 +3223,9 @@ async function spGenerateImages() {
     if (!raw.ok) throw new Error(res.error || `HTTP ${raw.status}`);
     const wrap = document.getElementById('spGeneratedImages');
     wrap.innerHTML = (res.images || []).map((src, i) => `<a href="${esc(src)}" target="_blank"><img src="${esc(src)}" alt=""><span>Ảnh ${i + 1}</span></a>`).join('');
-    spSetStatus(res.images?.length ? 'Đã tạo ảnh và lưu vào /images/products.' : 'Server chưa cấu hình tạo ảnh, hãy copy prompt sang công cụ AI ảnh.', res.images?.length ? 'ok' : 'err');
+    spSetStatus(res.images?.length ? 'Đã tạo ảnh và lưu vào /images/products.' : (res.providerError || 'Server chưa cấu hình tạo ảnh, hãy copy prompt sang công cụ AI ảnh.'), res.images?.length ? 'ok' : 'err');
   } catch (e) {
-    spSetStatus('Không tạo được ảnh AI. Hãy dùng prompt ở trên với ChatGPT/Gemini image.', 'err');
+    spSetStatus('Không tạo được ảnh AI: ' + (e.message || 'hãy kiểm tra API key và provider.'), 'err');
   } finally {
     if (btn) btn.disabled = false;
   }
