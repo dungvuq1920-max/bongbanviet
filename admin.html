@@ -1959,15 +1959,114 @@ Có chủ đề nào bạn muốn chúng tôi cover? Comment nhé!
       <div class="sec-head">
         <span class="sec-title">Shopee AI</span>
         <div class="sec-head-right">
-          <button class="btn-dark" onclick="spBuildManualPrompt()">Tạo prompt thủ công</button>
           <button class="btn-red" onclick="spGenerateCopy()">Tạo tiêu đề & mô tả</button>
         </div>
       </div>
 
       <div class="sp-grid">
         <div class="sp-panel">
-          <h3>Thông tin sản phẩm</h3>
-          <div class="sp-note">Luồng chuẩn: nhập tên sản phẩm, bổ sung thông số thật, chọn AI. Hệ thống ưu tiên gọi API nếu server có key; nếu chưa có key sẽ trả về prompt để copy sang Gemini, ChatGPT hoặc Claude.</div>
+          <h3>Sản phẩm & ảnh</h3>
+          <div class="sp-field">
+            <label class="sp-label">Tên sản phẩm cần đăng</label>
+            <input id="spName" class="sp-input" placeholder="Ví dụ: Bóng bàn Unrex SUN+ 3 sao ABS 40+ hộp 6 quả">
+          </div>
+          <div class="sp-field">
+            <label class="sp-label">Mô tả ngắn</label>
+            <textarea id="spShortDesc" class="sp-text" style="min-height:58px" placeholder="Ví dụ: Bóng tập luyện ổn định, phù hợp CLB và người chơi phong trào."></textarea>
+          </div>
+          <div class="sp-field">
+            <label class="sp-label">Đặc điểm nổi bật</label>
+            <textarea id="spFeatures" class="sp-text" style="min-height:72px" placeholder="Ví dụ: độ nảy ổn định, bóng tròn đều, cảm giác đánh chắc tay"></textarea>
+          </div>
+          <div class="sp-row">
+            <div class="sp-field">
+              <label class="sp-label">Công cụ AI</label>
+              <select id="spProvider" class="sp-select">
+                <option value="openai">ChatGPT / OpenAI</option>
+                <option value="gemini">Gemini</option>
+                <option value="claude">Claude</option>
+              </select>
+            </div>
+            <div class="sp-field">
+              <label class="sp-label">Quy cách</label>
+              <input id="spPack" class="sp-input" placeholder="Hộp 6 quả">
+            </div>
+          </div>
+          <div class="sp-row">
+            <div class="sp-field">
+              <label class="sp-label">Chất liệu</label>
+              <input id="spMaterial" class="sp-input" placeholder="ABS 40+, gỗ, carbon...">
+            </div>
+            <div class="sp-field">
+              <label class="sp-label">Kích thước</label>
+              <input id="spSize" class="sp-input" placeholder="40+, 157x150mm...">
+            </div>
+          </div>
+          <div class="sp-row">
+            <div class="sp-field">
+              <label class="sp-label">Màu sắc</label>
+              <input id="spColor" class="sp-input" placeholder="Trắng, đen, xanh...">
+            </div>
+            <div class="sp-field">
+              <label class="sp-label">Tệp khách hàng</label>
+              <input id="spCustomer" class="sp-input" placeholder="Người chơi phong trào, CLB...">
+            </div>
+          </div>
+          <div class="sp-row">
+            <div class="sp-field">
+              <label class="sp-label">Keyword chính</label>
+              <input id="spMainKeyword" class="sp-input" placeholder="bóng bàn Unrex">
+            </div>
+            <div class="sp-field">
+              <label class="sp-label">Keyword phụ</label>
+              <input id="spSubKeyword" class="sp-input" placeholder="ABS 40+, 3 sao, ITTF">
+            </div>
+          </div>
+          <div class="sp-row">
+            <div class="sp-field">
+              <label class="sp-label">Tone màu ảnh</label>
+              <input id="spTone" class="sp-input" placeholder="trắng, đỏ, đen, cao cấp">
+            </div>
+            <div class="sp-field">
+              <label class="sp-label">Style ảnh</label>
+              <input id="spStyle" class="sp-input" placeholder="premium, clean layout">
+            </div>
+          </div>
+          <div class="sp-field">
+            <label class="sp-label">Thông số thật</label>
+            <textarea id="spFacts" class="sp-text" placeholder="Thương hiệu: Unrex&#10;Dòng: SUN+ 3 sao&#10;Chất liệu: ABS 40+&#10;Tiêu chuẩn: ITTF Approved"></textarea>
+          </div>
+          <div class="sp-field">
+            <label class="sp-label">Ảnh gốc sản phẩm</label>
+            <label class="sp-upload">
+              Click để chọn tối đa 3 ảnh local làm nguồn tạo thumbnail
+              <input id="spImages" type="file" accept="image/*" multiple style="display:none" onchange="spPreviewImages(this)">
+            </label>
+            <div class="sp-previews" id="spPreviews">
+              <div class="sp-preview">Ảnh 1</div><div class="sp-preview">Ảnh 2</div><div class="sp-preview">Ảnh 3</div>
+            </div>
+          </div>
+          <div class="sp-outbox">
+            <div class="sp-outhead"><b>Ảnh sản phẩm tìm được</b><button class="sp-copy" onclick="spUseSelectedImages()">Dùng ảnh đã chọn</button></div>
+            <div class="sp-outcontent">
+              <div class="sp-candidates" id="spImageCandidates"></div>
+              <div class="sp-links" id="spSearchLinks"></div>
+            </div>
+          </div>
+          <div class="sp-outbox">
+            <div class="sp-outhead"><b>Ảnh AI đã tạo</b></div>
+            <div class="sp-outcontent"><div class="sp-generated" id="spGeneratedImages"></div></div>
+          </div>
+          <div class="sp-actions">
+            <button class="sp-btn primary" id="spCopyBtn" onclick="spGenerateCopy()">Tạo content</button>
+            <button class="sp-btn dark" id="spFindBtn" onclick="spFindProductImages()">Tìm ảnh chính xác</button>
+            <button class="sp-btn light" id="spImgBtn" onclick="spGenerateImages()">Tạo 3 ảnh AI</button>
+          </div>
+          <div class="sp-status" id="spStatus"></div>
+          <div class="sp-note">
+            <strong>Thông tin sản phẩm</strong><br>
+            Luồng chuẩn: nhập tên sản phẩm, bổ sung thông số thật, chọn AI. Hệ thống ưu tiên gọi API nếu server có key; nếu chưa có key sẽ trả về nội dung mẫu để chỉnh thủ công.
+          </div>
           <div class="sp-note">
             <strong>Cấu hình API key</strong>
             <div class="sp-key-grid">
@@ -1995,56 +2094,6 @@ Có chủ đề nào bạn muốn chúng tôi cover? Comment nhé!
             </div>
             <div class="sp-key-status" id="spKeyStatus">Đang kiểm tra cấu hình...</div>
           </div>
-          <div class="sp-field">
-            <label class="sp-label">Tên sản phẩm cần đăng</label>
-            <input id="spName" class="sp-input" placeholder="Ví dụ: Bóng bàn Unrex SUN+ 3 sao ABS 40+ hộp 6 quả">
-          </div>
-          <div class="sp-row">
-            <div class="sp-field">
-              <label class="sp-label">Công cụ AI</label>
-              <select id="spProvider" class="sp-select">
-                <option value="openai">ChatGPT / OpenAI</option>
-                <option value="gemini">Gemini</option>
-                <option value="claude">Claude</option>
-              </select>
-            </div>
-            <div class="sp-field">
-              <label class="sp-label">Quy cách</label>
-              <input id="spPack" class="sp-input" placeholder="Hộp 6 quả">
-            </div>
-          </div>
-          <div class="sp-field">
-            <label class="sp-label">Thông số thật</label>
-            <textarea id="spFacts" class="sp-text" placeholder="Thương hiệu: Unrex&#10;Dòng: SUN+ 3 sao&#10;Chất liệu: ABS 40+&#10;Tiêu chuẩn: ITTF Approved"></textarea>
-          </div>
-          <div class="sp-field">
-            <label class="sp-label">Ảnh gốc sản phẩm</label>
-            <label class="sp-upload">
-              Chọn tối đa 3 ảnh sản phẩm để làm input bố cục
-              <input id="spImages" type="file" accept="image/*" multiple style="display:none" onchange="spPreviewImages(this)">
-            </label>
-            <div class="sp-previews" id="spPreviews">
-              <div class="sp-preview">Ảnh 1</div><div class="sp-preview">Ảnh 2</div><div class="sp-preview">Ảnh 3</div>
-            </div>
-          </div>
-          <div class="sp-outbox">
-            <div class="sp-outhead"><b>Ảnh sản phẩm tìm được</b><button class="sp-copy" onclick="spUseSelectedImages()">Dùng ảnh đã chọn</button></div>
-            <div class="sp-outcontent">
-              <div class="sp-candidates" id="spImageCandidates"></div>
-              <div class="sp-links" id="spSearchLinks"></div>
-            </div>
-          </div>
-          <div class="sp-outbox">
-            <div class="sp-outhead"><b>Ảnh AI đã tạo</b></div>
-            <div class="sp-outcontent"><div class="sp-generated" id="spGeneratedImages"></div></div>
-          </div>
-          <div class="sp-actions">
-            <button class="sp-btn primary" id="spCopyBtn" onclick="spGenerateCopy()">Tạo content</button>
-            <button class="sp-btn dark" id="spFindBtn" onclick="spFindProductImages()">Tìm ảnh chính xác</button>
-            <button class="sp-btn dark" id="spImgPromptBtn" onclick="spGenerateImagePrompts()">Tạo prompt ảnh</button>
-            <button class="sp-btn light" id="spImgBtn" onclick="spGenerateImages()">Tạo 3 ảnh AI</button>
-          </div>
-          <div class="sp-status" id="spStatus"></div>
         </div>
 
         <div class="sp-output">
@@ -2055,10 +2104,6 @@ Có chủ đề nào bạn muốn chúng tôi cover? Comment nhé!
           <div class="sp-outbox">
             <div class="sp-outhead"><b>Mô tả chi tiết</b><button class="sp-copy" onclick="spCopyText('spDescOut',this)">Copy</button></div>
             <div class="sp-outcontent" id="spDescOut">Chưa có nội dung.</div>
-          </div>
-          <div class="sp-outbox">
-            <div class="sp-outhead"><b>Prompt tạo ảnh / thumbnail</b><button class="sp-copy" onclick="spCopyText('spPromptOut',this)">Copy</button></div>
-            <div class="sp-outcontent" id="spPromptOut">Chưa có prompt.</div>
           </div>
         </div>
       </div>
@@ -3023,6 +3068,16 @@ function spInput() {
   return {
     productName: document.getElementById('spName')?.value.trim() || '',
     pack: document.getElementById('spPack')?.value.trim() || '',
+    shortDesc: document.getElementById('spShortDesc')?.value.trim() || '',
+    features: document.getElementById('spFeatures')?.value.trim() || '',
+    material: document.getElementById('spMaterial')?.value.trim() || '',
+    size: document.getElementById('spSize')?.value.trim() || '',
+    color: document.getElementById('spColor')?.value.trim() || '',
+    customer: document.getElementById('spCustomer')?.value.trim() || '',
+    mainKeyword: document.getElementById('spMainKeyword')?.value.trim() || '',
+    subKeyword: document.getElementById('spSubKeyword')?.value.trim() || '',
+    tone: document.getElementById('spTone')?.value.trim() || '',
+    style: document.getElementById('spStyle')?.value.trim() || '',
     facts: document.getElementById('spFacts')?.value.trim() || '',
     provider: document.getElementById('spProvider')?.value || 'openai',
   };
@@ -3151,26 +3206,13 @@ function spUseSelectedImages() {
 }
 function spLocalPrompt() {
   const data = spInput();
-  const name = data.productName || '[Tên sản phẩm]';
-  const facts = data.facts || 'Thương hiệu:\nDòng sản phẩm:\nChất liệu:\nQuy cách:\nTiêu chuẩn:';
-  return `Bạn là chuyên gia Shopee SEO cho ngành bóng bàn tại Việt Nam.
-
-Hãy viết nội dung đăng Shopee cho sản phẩm: ${name}
-Quy cách: ${data.pack || 'chưa rõ'}
-Thông tin thật:
-${facts}
-
-Yêu cầu đầu ra bằng JSON hợp lệ:
-{
-  "title": "tiêu đề tối đa khoảng 120 ký tự, đủ keyword mạnh, không spam",
-  "description": "mô tả tiếng Việt theo cấu trúc mẫu: headline, lợi ích ngắn, THÔNG TIN SẢN PHẨM, ĐIỂM NỔI BẬT, PHÙ HỢP CHO, SẢN PHẨM BAO GỒM, CAM KẾT TỪ BÓNG BÀN VIỆT",
-  "imagePrompts": ["prompt thumbnail 1:1", "prompt ảnh lợi ích 1:1", "prompt ảnh thông số 1:1"]
-}
-
-Giữ giọng chuyên nghiệp, dễ đọc trên mobile, không bịa thông số chưa được cung cấp.`;
+  return `Tạo tiêu đề và mô tả Shopee cho sản phẩm: ${data.productName || '[Tên sản phẩm]'}
+Đặc điểm: ${data.features || data.facts || '[Đặc điểm]'}
+Khách hàng: ${data.customer || '[Khách hàng]'}
+Keyword chính: ${data.mainKeyword || data.productName || '[Keyword]'}
+Keyword phụ: ${data.subKeyword || '[Keyword phụ]'}`;
 }
 function spBuildManualPrompt() {
-  document.getElementById('spPromptOut').textContent = spLocalPrompt();
   spSetStatus('Đã tạo prompt thủ công để copy sang Gemini, ChatGPT hoặc Claude.', 'ok');
 }
 async function spGenerateCopy() {
@@ -3183,10 +3225,8 @@ async function spGenerateCopy() {
     const res = await api('/api/shopee/generate-copy', 'POST', data);
     document.getElementById('spTitleOut').textContent = res.title || '';
     document.getElementById('spDescOut').textContent = res.description || '';
-    document.getElementById('spPromptOut').textContent = (res.imagePrompts || []).join('\n\n');
     spSetStatus(res.usedFallback ? 'Chưa có API key, đã tạo prompt thủ công.' : 'Đã tạo nội dung bằng AI.', 'ok');
   } catch (e) {
-    document.getElementById('spPromptOut').textContent = spLocalPrompt();
     spSetStatus('Không gọi được API AI. Đã tạo prompt thủ công để copy.', 'err');
   } finally {
     if (btn) btn.disabled = false;
@@ -3195,15 +3235,65 @@ async function spGenerateCopy() {
 function spGenerateImagePrompts() {
   const data = spInput();
   const name = data.productName || '[Tên sản phẩm]';
-  const pack = data.pack ? `, quy cách ${data.pack}` : '';
-  const base = `Ảnh sản phẩm bóng bàn thương mại cao cấp cho Shopee, sản phẩm ${name}${pack}, nền sáng sạch, ánh sáng studio, bố cục 1:1, rõ sản phẩm, không logo giả, không claim sai, text tiếng Việt ngắn gọn`;
-  const prompts = [
-    `${base}. Thumbnail chính: sản phẩm lớn ở trung tâm, badge "Chính hãng", "Chuẩn Shopee", cảm giác thể thao chuyên nghiệp.`,
-    `${base}. Ảnh lợi ích: có 3 cụm text nhỏ "Độ nảy ổn định", "Bóng tròn đều", "Cảm giác chắc tay", layout thoáng dễ đọc mobile.`,
-    `${base}. Ảnh thông số: bảng thông tin gọn gàng cho thương hiệu, chất liệu, quy cách, tiêu chuẩn; phong cách sạch, tin cậy.`
+  const features = data.features || data.facts || '[ĐẶC ĐIỂM]';
+  const tone = data.tone || 'tối giản, cao cấp, hài hòa với sản phẩm';
+  const style = data.style || 'E-commerce premium, clean layout, high CTR';
+  const base = `Bạn là designer chuyên tạo thumbnail sản phẩm TMĐT chuyên nghiệp cho Shopee.
+
+Hãy tạo thumbnail từ ảnh sản phẩm có sẵn với phong cách hiện đại, sạch sẽ, tăng tỷ lệ click nhưng vẫn tuân thủ chính sách Shopee.
+
+Yêu cầu thiết kế:
+- Giữ nguyên sản phẩm chính từ ảnh gốc
+- Làm nổi bật sản phẩm
+- Background tối giản, cao cấp
+- Ánh sáng tự nhiên
+- Màu sắc hài hòa
+- Thiết kế giống brand lớn trên Shopee Mall
+- Tạo cảm giác uy tín và chuyên nghiệp
+- Bố cục rõ ràng trên mobile
+
+Text trên ảnh:
+- Ngắn gọn
+- Chỉ nêu lợi ích chính
+- Không dùng từ vi phạm như: “best”, “#1”, “cam kết”, “100%”, “hiệu quả ngay”, “rẻ nhất”
+- Không dùng biểu tượng gây hiểu lầm
+- Không giả mạo Shopee Mall
+
+Phong cách:
+- E-commerce premium
+- Clean layout
+- High CTR
+- Chuẩn thumbnail Shopee
+- Tỷ lệ 1:1
+
+Hiệu ứng:
+- Shadow nhẹ
+- Glow nhẹ quanh sản phẩm
+- Tăng độ nét sản phẩm
+- Không lạm dụng filter
+
+Thông tin sản phẩm:
+${name}
+
+Điểm nổi bật:
+${features}
+
+Tone màu mong muốn:
+${tone}
+
+Phong cách:
+${style}
+
+Mục tiêu:
+- Tăng CTR
+- Chuyên nghiệp
+- Chuẩn SEO hình ảnh Shopee
+- Không vi phạm policy`;
+  return [
+    `${base}\n\nBiến thể 1: thumbnail chính, sản phẩm lớn ở trung tâm, 1 cụm text lợi ích ngắn.`,
+    `${base}\n\nBiến thể 2: thumbnail có bố cục premium với callout nhỏ cho điểm nổi bật, ưu tiên đọc rõ trên mobile.`,
+    `${base}\n\nBiến thể 3: thumbnail sạch, nhiều khoảng trắng, nhấn mạnh chất liệu/quy cách nếu có.`
   ];
-  document.getElementById('spPromptOut').textContent = prompts.join('\n\n');
-  spSetStatus('Đã tạo 3 prompt ảnh chuyên nghiệp.', 'ok');
 }
 function spFriendlyAiImageError(message) {
   const msg = String(message || '');
@@ -3219,9 +3309,7 @@ function spFriendlyAiImageError(message) {
   return msg || 'Server chưa cấu hình tạo ảnh, hãy copy prompt sang công cụ AI ảnh.';
 }
 async function spGenerateImages() {
-  const promptEl = document.getElementById('spPromptOut');
-  if (!promptEl?.textContent.trim() || promptEl.textContent.trim() === 'Chưa có prompt.') spGenerateImagePrompts();
-  const prompts = promptEl.textContent.split(/\n\s*\n/).map(s => s.trim()).filter(Boolean).slice(0, 3);
+  const prompts = spGenerateImagePrompts();
   const btn = document.getElementById('spImgBtn');
   if (btn) btn.disabled = true;
   spSetStatus('Đang gửi ảnh gốc và tạo ảnh AI nếu đã có OpenAI API key...');

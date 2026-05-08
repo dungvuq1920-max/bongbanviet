@@ -207,22 +207,113 @@ function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
 
-function buildShopeePrompt({ productName, pack, facts }) {
-  return `Bạn là chuyên gia Shopee SEO cho ngành bóng bàn tại Việt Nam.
+function buildShopeePrompt(data) {
+  const productName = data.productName || '';
+  const features = data.features || data.facts || '';
+  const customer = data.customer || '';
+  const mainKeyword = data.mainKeyword || productName;
+  const subKeyword = data.subKeyword || '';
+  const shortDesc = data.shortDesc || '';
+  const material = data.material || '';
+  const size = data.size || data.pack || '';
+  const color = data.color || '';
+  return `Tạo nội dung Shopee bằng JSON hợp lệ, không markdown, không giải thích thêm.
 
-Hãy viết nội dung đăng Shopee cho sản phẩm: ${productName}
-Quy cách: ${pack || 'chưa rõ'}
-Thông tin thật:
-${facts || 'Chưa cung cấp'}
-
-Yêu cầu đầu ra bằng JSON hợp lệ, không markdown:
+Trả về đúng cấu trúc:
 {
-  "title": "tiêu đề tối đa khoảng 120 ký tự, đủ keyword mạnh, không spam",
-  "description": "mô tả tiếng Việt theo cấu trúc: headline, lợi ích ngắn, THÔNG TIN SẢN PHẨM, ĐIỂM NỔI BẬT, PHÙ HỢP CHO, SẢN PHẨM BAO GỒM, CAM KẾT TỪ BÓNG BÀN VIỆT",
-  "imagePrompts": ["prompt thumbnail 1:1", "prompt ảnh lợi ích 1:1", "prompt ảnh thông số 1:1"]
+  "title": "một tiêu đề sản phẩm duy nhất",
+  "description": "mô tả sản phẩm hoàn chỉnh"
 }
 
-Giữ giọng chuyên nghiệp, dễ đọc trên mobile. Không bịa thông số chưa được cung cấp.`;
+PHẦN TIÊU ĐỀ:
+Bạn là chuyên gia SEO Shopee và tối ưu chuyển đổi bán hàng TMĐT.
+
+Hãy tạo tiêu đề sản phẩm chuyên nghiệp cho sản phẩm dưới đây theo chuẩn SEO Shopee Việt Nam.
+
+Yêu cầu:
+- Tối đa 100 ký tự
+- Keyword chính đặt đầu câu
+- Tự nhiên, dễ đọc, không spam keyword
+- Không viết IN HOA toàn bộ
+- Không dùng từ bị cấm như: “số 1”, “tốt nhất”, “cam kết khỏi”, “100% hiệu quả”, “vĩnh viễn”, “chính hãng tuyệt đối”
+- Không chứa thông tin vi phạm chính sách Shopee
+- Tập trung tăng CTR và tỷ lệ tìm kiếm
+- Ưu tiên cấu trúc:
+  [Tên sản phẩm] + [Đặc điểm nổi bật] + [Công dụng] + [Đối tượng]
+
+Thông tin sản phẩm:
+${productName}
+
+Đặc điểm nổi bật:
+${features}
+
+Tệp khách hàng:
+${customer}
+
+Keyword chính:
+${mainKeyword}
+
+Keyword phụ:
+${subKeyword}
+
+PHẦN MÔ TẢ:
+Bạn là copywriter chuyên viết mô tả sản phẩm Shopee chuẩn SEO và tối ưu chuyển đổi.
+
+Hãy viết mô tả sản phẩm chuyên nghiệp cho sản phẩm dưới đây.
+
+Yêu cầu:
+- Viết tự nhiên, thuyết phục
+- Chuẩn SEO Shopee
+- Không spam keyword
+- Không dùng từ ngữ vi phạm chính sách Shopee
+- Không hứa hẹn quá mức
+- Không dùng các từ tuyệt đối như:
+  “100%”, “cam kết”, “đảm bảo khỏi”, “tốt nhất thị trường”, “hiệu quả ngay”
+- Có icon nhẹ để dễ đọc
+- Format rõ ràng
+
+Cấu trúc:
+1. Hook mở đầu thu hút
+2. Lợi ích nổi bật
+3. Đặc điểm chi tiết
+4. Hướng dẫn sử dụng
+5. Thông tin sản phẩm
+6. Chính sách hỗ trợ khách hàng
+7. CTA mềm thúc đẩy mua hàng
+
+Thông tin sản phẩm:
+${productName}
+
+Mô tả ngắn:
+${shortDesc}
+
+Đặc điểm:
+${features}
+
+Chất liệu:
+${material}
+
+Kích thước:
+${size}
+
+Màu sắc:
+${color}
+
+Đối tượng:
+${customer}
+
+Keyword chính:
+${mainKeyword}
+
+Keyword phụ:
+${subKeyword}
+
+Yêu cầu SEO:
+- Chèn keyword tự nhiên
+- Có đoạn ngắn dễ đọc trên mobile
+- Tối ưu tìm kiếm Shopee và Google
+
+Chỉ trả về JSON hợp lệ.`;
 }
 
 function fallbackShopeeContent({ productName, pack, facts }) {
@@ -1479,7 +1570,7 @@ app.post('/api/shopee/generate-copy', requireAuth, async (req, res) => {
   const { productName, pack, facts, provider = 'openai' } = req.body || {};
   if (!productName) return res.status(400).json({ error: 'Thiếu tên sản phẩm' });
 
-  const prompt = buildShopeePrompt({ productName, pack, facts });
+  const prompt = buildShopeePrompt(req.body || {});
   const fallback = fallbackShopeeContent({ productName, pack, facts });
 
   try {
