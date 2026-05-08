@@ -372,6 +372,9 @@ Yêu cầu:
 - Tối đa 100 ký tự
 - Keyword chính đặt đầu câu
 - Tự nhiên, dễ đọc, không spam keyword
+- Không được chỉ trả về tên sản phẩm + “chính hãng”
+- Bắt buộc khai thác mô tả/thông số kỹ thuật để thêm ít nhất 2 yếu tố bán hàng cụ thể
+- Ưu tiên yếu tố kỹ thuật như: chất liệu, cấu tạo, lối chơi, độ kiểm soát, tốc độ, đối tượng sử dụng, quy cách
 - Không viết IN HOA toàn bộ
 - Không dùng từ bị cấm như: “số 1”, “tốt nhất”, “cam kết khỏi”, “100% hiệu quả”, “vĩnh viễn”, “chính hãng tuyệt đối”
 - Không chứa thông tin vi phạm chính sách Shopee
@@ -381,6 +384,9 @@ Yêu cầu:
 
 Thông tin sản phẩm:
 ${productName}
+
+Mô tả kỹ thuật từ website:
+${shortDesc}
 
 Đặc điểm nổi bật:
 ${features}
@@ -454,6 +460,67 @@ Yêu cầu SEO:
 Chỉ trả về JSON hợp lệ.`;
 }
 
+function cleanShopeeTitle(title) {
+  return String(title || '')
+    .replace(/["“”]/g, '')
+    .replace(/\b(số 1|tốt nhất|cam kết khỏi|100% hiệu quả|vĩnh viễn|chính hãng tuyệt đối|rẻ nhất)\b/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function inferTitlePhrases(data) {
+  const text = normalizeText([data.productName, data.shortDesc, data.features, data.facts, data.material, data.size, data.customer].join(' '));
+  const phrases = [];
+  const add = (cond, phrase) => { if (cond && !phrases.includes(phrase)) phrases.push(phrase); };
+  add(/carbon|alc|arylate/.test(text), 'Carbon kiểm soát tốt');
+  add(/gỗ|go |wood/.test(text), 'Gỗ ổn định');
+  add(/abs|40\+/.test(text), 'ABS 40+ ổn định');
+  add(/ittf/.test(text), 'chuẩn ITTF');
+  add(/gai dài|gai dai/.test(text), 'gai dài phòng thủ');
+  add(/gai ngắn|gai ngan/.test(text), 'gai ngắn tấn công');
+  add(/anti|chống xoáy|chong xoay/.test(text), 'chống xoáy');
+  add(/xoáy|xoay|spin/.test(text), 'tạo xoáy tốt');
+  add(/kiểm soát|kiem soat|control/.test(text), 'kiểm soát dễ');
+  add(/tốc độ|toc do|speed|off/.test(text), 'tốc độ ổn định');
+  add(/clb|phong trào|phong trao/.test(text), 'cho CLB');
+  add(/người mới|nguoi moi|beginner/.test(text), 'cho người mới');
+  return phrases;
+}
+
+function buildSeoTitleFallback(data) {
+  const productName = cleanShopeeTitle(data.productName || data.mainKeyword || 'Sản phẩm bóng bàn');
+  const keyword = cleanShopeeTitle(data.mainKeyword || productName);
+  const base = productName.toLowerCase().startsWith(keyword.toLowerCase()) ? productName : `${keyword} ${productName}`;
+  const phrases = inferTitlePhrases(data);
+  const customer = data.customer ? cleanShopeeTitle(data.customer).replace(/^người chơi\s*/i, 'cho ') : '';
+  const pieces = [base, ...phrases.slice(0, 2), customer].filter(Boolean);
+  let title = '';
+  for (const piece of pieces) {
+    const next = title ? `${title} ${piece}` : piece;
+    if (next.length <= 100) title = next;
+  }
+  return cleanShopeeTitle(title || base).slice(0, 100).trim();
+}
+
+function normalizeShopeeTitle(aiTitle, data) {
+  let title = cleanShopeeTitle(aiTitle);
+  const productName = cleanShopeeTitle(data.productName || '');
+  const tooShort = title.length < Math.min(55, productName.length + 18);
+  const genericOnly = /chính hãng$/i.test(title) && title.length <= productName.length + 18;
+  const missingProduct = productName && !normalizeText(title).includes(normalizeText(productName).split(/\s+/)[0]);
+  if (!title || tooShort || genericOnly || missingProduct) title = buildSeoTitleFallback(data);
+  if (title.length > 100) {
+    const words = title.split(/\s+/);
+    title = '';
+    for (const word of words) {
+      const next = title ? `${title} ${word}` : word;
+      if (next.length > 100) break;
+      title = next;
+    }
+  }
+  return cleanShopeeTitle(title);
+}
+
 function fallbackShopeeContent({ productName, pack, facts }) {
   const name = productName || 'Sản phẩm bóng bàn';
   const specLines = String(facts || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean);
@@ -523,6 +590,14 @@ function parseAiJson(text, fallback) {
   } catch {
     return fallback;
   }
+}
+
+function parseAiJsonWithTitleData(text, fallback, titleData) {
+  const parsed = parseAiJson(text, fallback);
+  return {
+    ...parsed,
+    title: normalizeShopeeTitle(parsed.title, titleData),
+  };
 }
 
 function normalizeText(s) {
@@ -1733,7 +1808,8 @@ app.post('/api/shopee/generate-copy', requireAuth, async (req, res) => {
     facts: req.body.facts || match?.specsText || facts || '',
   };
   const prompt = buildShopeePrompt(enriched);
-  const fallback = fallbackShopeeContent({ productName, pack, facts: enriched.facts });
+  const fallbackRaw = fallbackShopeeContent({ productName, pack, facts: enriched.facts });
+  const fallback = { ...fallbackRaw, title: normalizeShopeeTitle(fallbackRaw.title, enriched) };
 
   try {
     let raw = '';
@@ -1789,7 +1865,7 @@ app.post('/api/shopee/generate-copy', requireAuth, async (req, res) => {
       return res.json({ ...fallback, prompt, usedFallback: true });
     }
 
-    res.json({ ...parseAiJson(raw, fallback), usedFallback: false });
+    res.json({ ...parseAiJsonWithTitleData(raw, fallback, enriched), usedFallback: false });
   } catch (e) {
     res.json({ ...fallback, prompt, usedFallback: true, providerError: e.message });
   }
