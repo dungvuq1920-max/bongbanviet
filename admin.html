@@ -651,6 +651,11 @@
   .sp-previews { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px; }
   .sp-preview { aspect-ratio:1; border:1px solid var(--border); border-radius:5px; overflow:hidden; background:#F8FAFC; display:flex; align-items:center; justify-content:center; color:#94A3B8; font-size:11px; text-align:center; }
   .sp-preview img { width:100%; height:100%; object-fit:cover; }
+  .sp-preview label { width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; cursor:pointer; }
+  .sp-preview .sp-plus { width:34px; height:34px; border-radius:50%; border:1.5px solid #CBD5E1; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:600; color:#64748B; background:#fff; }
+  .sp-preview .sp-slot-label { font-size:11px; color:#64748B; }
+  .sp-preview input { display:none; }
+  .sp-hidden-fields { display:none; }
   .sp-output { display:grid; gap:12px; }
   .sp-outbox { background:#fff; border:1px solid var(--border); border-radius:6px; overflow:hidden; }
   .sp-outhead { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 12px; background:#F8FAFC; border-bottom:1px solid var(--border); }
@@ -1968,15 +1973,7 @@ Có chủ đề nào bạn muốn chúng tôi cover? Comment nhé!
           <h3>Sản phẩm & ảnh</h3>
           <div class="sp-field">
             <label class="sp-label">Tên sản phẩm cần đăng</label>
-            <input id="spName" class="sp-input" placeholder="Ví dụ: Bóng bàn Unrex SUN+ 3 sao ABS 40+ hộp 6 quả">
-          </div>
-          <div class="sp-field">
-            <label class="sp-label">Mô tả ngắn</label>
-            <textarea id="spShortDesc" class="sp-text" style="min-height:58px" placeholder="Ví dụ: Bóng tập luyện ổn định, phù hợp CLB và người chơi phong trào."></textarea>
-          </div>
-          <div class="sp-field">
-            <label class="sp-label">Đặc điểm nổi bật</label>
-            <textarea id="spFeatures" class="sp-text" style="min-height:72px" placeholder="Ví dụ: độ nảy ổn định, bóng tròn đều, cảm giác đánh chắc tay"></textarea>
+            <input id="spName" class="sp-input" placeholder="Ví dụ: Bóng bàn Unrex SUN+ 3 sao ABS 40+ hộp 6 quả" oninput="spScheduleProductMatch()" onblur="spMatchProductKnowledge()">
           </div>
           <div class="sp-row">
             <div class="sp-field">
@@ -1992,58 +1989,31 @@ Có chủ đề nào bạn muốn chúng tôi cover? Comment nhé!
               <input id="spPack" class="sp-input" placeholder="Hộp 6 quả">
             </div>
           </div>
-          <div class="sp-row">
-            <div class="sp-field">
-              <label class="sp-label">Chất liệu</label>
-              <input id="spMaterial" class="sp-input" placeholder="ABS 40+, gỗ, carbon...">
-            </div>
-            <div class="sp-field">
-              <label class="sp-label">Kích thước</label>
-              <input id="spSize" class="sp-input" placeholder="40+, 157x150mm...">
-            </div>
-          </div>
-          <div class="sp-row">
-            <div class="sp-field">
-              <label class="sp-label">Màu sắc</label>
-              <input id="spColor" class="sp-input" placeholder="Trắng, đen, xanh...">
-            </div>
-            <div class="sp-field">
-              <label class="sp-label">Tệp khách hàng</label>
-              <input id="spCustomer" class="sp-input" placeholder="Người chơi phong trào, CLB...">
-            </div>
-          </div>
-          <div class="sp-row">
-            <div class="sp-field">
-              <label class="sp-label">Keyword chính</label>
-              <input id="spMainKeyword" class="sp-input" placeholder="bóng bàn Unrex">
-            </div>
-            <div class="sp-field">
-              <label class="sp-label">Keyword phụ</label>
-              <input id="spSubKeyword" class="sp-input" placeholder="ABS 40+, 3 sao, ITTF">
-            </div>
-          </div>
-          <div class="sp-row">
-            <div class="sp-field">
-              <label class="sp-label">Tone màu ảnh</label>
-              <input id="spTone" class="sp-input" placeholder="trắng, đỏ, đen, cao cấp">
-            </div>
-            <div class="sp-field">
-              <label class="sp-label">Style ảnh</label>
-              <input id="spStyle" class="sp-input" placeholder="premium, clean layout">
-            </div>
-          </div>
-          <div class="sp-field">
-            <label class="sp-label">Thông số thật</label>
-            <textarea id="spFacts" class="sp-text" placeholder="Thương hiệu: Unrex&#10;Dòng: SUN+ 3 sao&#10;Chất liệu: ABS 40+&#10;Tiêu chuẩn: ITTF Approved"></textarea>
+          <div class="sp-hidden-fields">
+            <textarea id="spShortDesc"></textarea>
+            <textarea id="spFeatures"></textarea>
+            <input id="spMaterial">
+            <input id="spSize">
+            <input id="spColor">
+            <input id="spCustomer">
+            <input id="spMainKeyword">
+            <input id="spSubKeyword">
+            <input id="spTone" value="trắng, đỏ, đen, cao cấp">
+            <input id="spStyle" value="premium, clean layout">
+            <textarea id="spFacts"></textarea>
           </div>
           <div class="sp-field">
             <label class="sp-label">Ảnh gốc sản phẩm</label>
-            <label class="sp-upload">
-              Click để chọn tối đa 3 ảnh local làm nguồn tạo thumbnail
-              <input id="spImages" type="file" accept="image/*" multiple style="display:none" onchange="spPreviewImages(this)">
-            </label>
             <div class="sp-previews" id="spPreviews">
-              <div class="sp-preview">Ảnh 1</div><div class="sp-preview">Ảnh 2</div><div class="sp-preview">Ảnh 3</div>
+              <div class="sp-preview">
+                <label><span class="sp-plus">+</span><span class="sp-slot-label">Ảnh 1</span><input class="sp-image-input" type="file" accept="image/*" onchange="spPreviewImageSlot(this,0)"></label>
+              </div>
+              <div class="sp-preview">
+                <label><span class="sp-plus">+</span><span class="sp-slot-label">Ảnh 2</span><input class="sp-image-input" type="file" accept="image/*" onchange="spPreviewImageSlot(this,1)"></label>
+              </div>
+              <div class="sp-preview">
+                <label><span class="sp-plus">+</span><span class="sp-slot-label">Ảnh 3</span><input class="sp-image-input" type="file" accept="image/*" onchange="spPreviewImageSlot(this,2)"></label>
+              </div>
             </div>
           </div>
           <div class="sp-outbox">
@@ -2060,6 +2030,7 @@ Có chủ đề nào bạn muốn chúng tôi cover? Comment nhé!
           <div class="sp-actions">
             <button class="sp-btn primary" id="spCopyBtn" onclick="spGenerateCopy()">Tạo content</button>
             <button class="sp-btn dark" id="spFindBtn" onclick="spFindProductImages()">Tìm ảnh chính xác</button>
+            <button class="sp-btn light" id="spRebuildBtn" onclick="spRebuildKnowledge()">Cập nhật DB kỹ thuật</button>
             <button class="sp-btn light" id="spImgBtn" onclick="spGenerateImages()">Tạo 3 ảnh AI</button>
           </div>
           <div class="sp-status" id="spStatus"></div>
@@ -3088,23 +3059,15 @@ function spSetStatus(msg, type) {
   el.textContent = msg || '';
   el.style.color = type === 'err' ? '#991B1B' : (type === 'ok' ? '#166534' : '#64748B');
 }
-function spPreviewImages(input) {
-  const files = Array.from(input.files || []).slice(0, 3);
-  const wrap = document.getElementById('spPreviews');
-  if (!wrap) return;
-  wrap.innerHTML = '';
-  for (let i = 0; i < 3; i++) {
-    const box = document.createElement('div');
-    box.className = 'sp-preview';
-    if (files[i]) {
-      const img = document.createElement('img');
-      img.src = URL.createObjectURL(files[i]);
-      box.appendChild(img);
-    } else {
-      box.textContent = `Ảnh ${i + 1}`;
-    }
-    wrap.appendChild(box);
-  }
+function spSlotEmptyHtml(n) {
+  return `<label><span class="sp-plus">+</span><span class="sp-slot-label">Ảnh ${n}</span><input class="sp-image-input" type="file" accept="image/*" onchange="spPreviewImageSlot(this,${n - 1})"></label>`;
+}
+function spPreviewImageSlot(input, idx) {
+  const file = input.files?.[0];
+  const slot = document.querySelectorAll('#spPreviews .sp-preview')[idx];
+  if (!slot || !file) return;
+  slot.innerHTML = `<label><img src="${URL.createObjectURL(file)}" alt=""><input class="sp-image-input" type="file" accept="image/*" onchange="spPreviewImageSlot(this,${idx})"></label>`;
+  slot.dataset.source = 'local';
 }
 async function spLoadAiConfig() {
   const el = document.getElementById('spKeyStatus');
@@ -3151,6 +3114,50 @@ async function spClearAiKey(provider) {
     spSetStatus('Không xóa được API key: ' + (e.message || 'lỗi không xác định'), 'err');
   }
 }
+let spMatchTimer = null;
+function spScheduleProductMatch() {
+  clearTimeout(spMatchTimer);
+  spMatchTimer = setTimeout(spMatchProductKnowledge, 450);
+}
+function spFillKnowledgeFields(match) {
+  if (!match) return;
+  const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+  set('spShortDesc', match.shortDesc || match.description || '');
+  set('spFeatures', match.features || '');
+  set('spMaterial', match.material || '');
+  set('spSize', match.size || '');
+  set('spColor', match.color || '');
+  set('spCustomer', match.customer || '');
+  set('spMainKeyword', match.mainKeyword || '');
+  set('spSubKeyword', match.subKeyword || '');
+  set('spFacts', match.specsText || '');
+}
+async function spMatchProductKnowledge() {
+  const productName = document.getElementById('spName')?.value.trim();
+  if (!productName || productName.length < 3) return;
+  try {
+    const res = await api('/api/shopee/match-knowledge', 'POST', { productName });
+    if (res.match) {
+      spFillKnowledgeFields(res.match);
+      spSetStatus(`Đã lấy dữ liệu kỹ thuật từ DB: ${res.match.name} (${Math.round((res.match.score || 0) * 100)}%)`, 'ok');
+    }
+  } catch (e) {
+    spSetStatus('Chưa match được DB kỹ thuật: ' + (e.message || 'lỗi không xác định'), 'err');
+  }
+}
+async function spRebuildKnowledge() {
+  const btn = document.getElementById('spRebuildBtn');
+  if (btn) btn.disabled = true;
+  try {
+    const res = await api('/api/shopee/rebuild-knowledge', 'POST', {});
+    spSetStatus(`Đã cập nhật DB kỹ thuật: ${res.count || 0} sản phẩm.`, 'ok');
+    await spMatchProductKnowledge();
+  } catch (e) {
+    spSetStatus('Không cập nhật được DB kỹ thuật: ' + (e.message || 'lỗi không xác định'), 'err');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
 function spSelectedImageUrls() {
   return Array.from(document.querySelectorAll('#spImageCandidates .sp-candidate.selected'))
     .map(el => el.dataset.src)
@@ -3194,12 +3201,19 @@ function spUseSelectedImages() {
   if (!selected.length) return spSetStatus('Chọn ít nhất 1 ảnh sản phẩm tìm được.', 'err');
   const wrap = document.getElementById('spPreviews');
   if (wrap) {
-    wrap.innerHTML = selected.map(url => `<div class="sp-preview"><img src="${esc(url)}" alt=""></div>`).join('');
-    while (wrap.children.length < 3) {
-      const box = document.createElement('div');
-      box.className = 'sp-preview';
-      box.textContent = `Ảnh ${wrap.children.length + 1}`;
-      wrap.appendChild(box);
+    const slots = Array.from(wrap.querySelectorAll('.sp-preview'));
+    for (let i = 0; i < 3; i++) {
+      const slot = slots[i];
+      if (!slot) continue;
+      if (selected[i]) {
+        slot.innerHTML = `<label><img src="${esc(selected[i])}" alt=""><input class="sp-image-input" type="file" accept="image/*" onchange="spPreviewImageSlot(this,${i})"></label>`;
+        slot.dataset.sourceUrl = selected[i];
+        slot.dataset.source = 'remote';
+      } else if (!slot.querySelector('img')) {
+        slot.innerHTML = spSlotEmptyHtml(i + 1);
+        delete slot.dataset.sourceUrl;
+        delete slot.dataset.source;
+      }
     }
   }
   spSetStatus('Đã chọn ảnh nguồn. Khi tạo ảnh AI, hệ thống sẽ gửi các ảnh này kèm prompt.', 'ok');
@@ -3317,8 +3331,13 @@ async function spGenerateImages() {
     const fd = new FormData();
     fd.append('prompts', JSON.stringify(prompts));
     fd.append('provider', document.getElementById('spProvider')?.value || 'openai');
-    fd.append('sourceUrls', JSON.stringify(spSelectedImageUrls()));
-    Array.from(document.getElementById('spImages')?.files || []).slice(0, 3).forEach(file => fd.append('images', file));
+    const sourceUrls = [];
+    document.querySelectorAll('#spPreviews .sp-preview').forEach(slot => {
+      const file = slot.querySelector('.sp-image-input')?.files?.[0];
+      if (file) fd.append('images', file);
+      else if (slot.dataset.sourceUrl) sourceUrls.push(slot.dataset.sourceUrl);
+    });
+    fd.append('sourceUrls', JSON.stringify(sourceUrls));
     const raw = await fetch('/api/shopee/generate-images', { method: 'POST', body: fd });
     const res = await raw.json();
     if (!raw.ok) throw new Error(res.error || `HTTP ${raw.status}`);

@@ -207,6 +207,144 @@ function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS shopee_product_knowledge (
+    id TEXT PRIMARY KEY,
+    source_type TEXT NOT NULL,
+    source_id TEXT,
+    slug TEXT,
+    name TEXT NOT NULL,
+    category_slug TEXT,
+    brand_slug TEXT,
+    description TEXT,
+    specs TEXT DEFAULT '{}',
+    variants TEXT DEFAULT '[]',
+    images TEXT DEFAULT '[]',
+    search_text TEXT,
+    updated_at TEXT DEFAULT (datetime('now'))
+  );
+`);
+
+function specsText(specs) {
+  const obj = typeof specs === 'string' ? parseJSON(specs, {}) : (specs || {});
+  return Object.entries(obj).map(([k, v]) => `${String(k).replace(/^-+\s*/, '')}: ${v}`).join('\n');
+}
+
+function productKnowledgeSearchText(item) {
+  return normalizeText([item.name, item.category_slug, item.brand_slug, item.description, specsText(item.specs), item.variants].join(' '));
+}
+
+function rebuildShopeeKnowledgeDb() {
+  const rows = db.prepare(`SELECT id, slug, name, category_slug, brand_slug, description, specs, variants, images FROM products`).all();
+  const combos = db.prepare(`SELECT id, slug, name, level, blade, rubber_fh, rubber_bh, description, images FROM combos`).all();
+  const insert = db.prepare(`
+    INSERT INTO shopee_product_knowledge
+      (id, source_type, source_id, slug, name, category_slug, brand_slug, description, specs, variants, images, search_text, updated_at)
+    VALUES (@id, @source_type, @source_id, @slug, @name, @category_slug, @brand_slug, @description, @specs, @variants, @images, @search_text, datetime('now'))
+  `);
+  db.prepare('DELETE FROM shopee_product_knowledge').run();
+  const tx = db.transaction(() => {
+    for (const r of rows) {
+      insert.run({
+        id: `product:${r.id}`,
+        source_type: 'product',
+        source_id: r.id,
+        slug: r.slug,
+        name: r.name,
+        category_slug: r.category_slug,
+        brand_slug: r.brand_slug || '',
+        description: r.description || '',
+        specs: r.specs || '{}',
+        variants: r.variants || '[]',
+        images: r.images || '[]',
+        search_text: productKnowledgeSearchText(r),
+      });
+    }
+    for (const c of combos) {
+      const comboSpecs = {
+        'Cốt': c.blade || '',
+        'Mặt FH': c.rubber_fh || '',
+        'Mặt BH': c.rubber_bh || '',
+        'Trình độ': c.level || '',
+      };
+      insert.run({
+        id: `combo:${c.id}`,
+        source_type: 'combo',
+        source_id: c.id,
+        slug: c.slug,
+        name: c.name,
+        category_slug: 'combo-vot',
+        brand_slug: '',
+        description: c.description || '',
+        specs: JSON.stringify(comboSpecs),
+        variants: '[]',
+        images: c.images || '[]',
+        search_text: productKnowledgeSearchText({ ...c, category_slug: 'combo-vot', specs: comboSpecs, variants: '' }),
+      });
+    }
+  });
+  tx();
+  return rows.length + combos.length;
+}
+
+function ensureShopeeKnowledgeDb() {
+  const row = db.prepare('SELECT COUNT(*) AS c FROM shopee_product_knowledge').get();
+  if (!row || row.c === 0) return rebuildShopeeKnowledgeDb();
+  return row.c;
+}
+
+function inferKnowledgeFields(row) {
+  const specs = parseJSON(row.specs, {});
+  const specTxt = specsText(specs);
+  const findSpec = (...keys) => {
+    const entry = Object.entries(specs).find(([k]) => keys.some(key => normalizeText(k).includes(normalizeText(key))));
+    return entry ? String(entry[1] || '') : '';
+  };
+  const features = [specTxt, row.description || ''].filter(Boolean).join('\n\n').slice(0, 2200);
+  return {
+    id: row.id,
+    name: row.name,
+    slug: row.slug,
+    score: row.score || 0,
+    description: row.description || '',
+    shortDesc: String(row.description || '').split(/\n\s*\n/)[0]?.replace(/^[-•]\s*/, '').slice(0, 500) || '',
+    specs,
+    specsText: specTxt,
+    features,
+    material: findSpec('chất liệu', 'loại', 'công nghệ'),
+    size: findSpec('kích thước', 'độ dày', 'độ cứng', 'size'),
+    color: findSpec('màu', 'color'),
+    customer: row.category_slug === 'combo-vot' ? 'Người chơi cần combo vợt cấu hình sẵn' : 'Người chơi bóng bàn, CLB bóng bàn',
+    mainKeyword: row.name,
+    subKeyword: [row.brand_slug, row.category_slug, findSpec('ITTF', 'công nghệ', 'loại')].filter(Boolean).join(', '),
+    images: parseJSON(row.images, []),
+  };
+}
+
+function matchShopeeKnowledge(productName) {
+  ensureShopeeKnowledgeDb();
+  const q = normalizeText(productName);
+  const tokens = q.split(/\s+/).filter(t => t.length > 1);
+  if (!tokens.length) return null;
+  const rows = db.prepare('SELECT * FROM shopee_product_knowledge').all();
+  let best = null;
+  for (const row of rows) {
+    const name = normalizeText(row.name);
+    const search = row.search_text || normalizeText([row.name, row.description, row.specs].join(' '));
+    let score = 0;
+    if (name === q) score += 100;
+    if (name.includes(q) || q.includes(name)) score += 45;
+    for (const t of tokens) {
+      if (name.includes(t)) score += 8;
+      else if (search.includes(t)) score += 3;
+    }
+    score = score / Math.max(25, tokens.length * 8 + 45);
+    if (!best || score > best.score) best = { ...row, score: Math.min(score, 1) };
+  }
+  if (!best || best.score < 0.18) return null;
+  return inferKnowledgeFields(best);
+}
+
 function buildShopeePrompt(data) {
   const productName = data.productName || '';
   const features = data.features || data.facts || '';
@@ -1528,6 +1666,17 @@ app.post('/api/shopee/find-images', requireAuth, async (req, res) => {
   });
 });
 
+app.post('/api/shopee/rebuild-knowledge', requireAuth, (req, res) => {
+  const count = rebuildShopeeKnowledgeDb();
+  res.json({ ok: true, count });
+});
+
+app.post('/api/shopee/match-knowledge', requireAuth, (req, res) => {
+  const { productName } = req.body || {};
+  if (!productName) return res.status(400).json({ error: 'Thiếu tên sản phẩm' });
+  res.json({ match: matchShopeeKnowledge(productName) });
+});
+
 app.get('/api/shopee/ai-config', requireAuth, (req, res) => {
   const cfg = readShopeeAiConfig();
   res.json({
@@ -1570,8 +1719,21 @@ app.post('/api/shopee/generate-copy', requireAuth, async (req, res) => {
   const { productName, pack, facts, provider = 'openai' } = req.body || {};
   if (!productName) return res.status(400).json({ error: 'Thiếu tên sản phẩm' });
 
-  const prompt = buildShopeePrompt(req.body || {});
-  const fallback = fallbackShopeeContent({ productName, pack, facts });
+  const match = matchShopeeKnowledge(productName);
+  const enriched = {
+    ...(req.body || {}),
+    shortDesc: req.body.shortDesc || match?.shortDesc || match?.description || '',
+    features: req.body.features || match?.features || '',
+    material: req.body.material || match?.material || '',
+    size: req.body.size || match?.size || pack || '',
+    color: req.body.color || match?.color || '',
+    customer: req.body.customer || match?.customer || '',
+    mainKeyword: req.body.mainKeyword || match?.mainKeyword || productName,
+    subKeyword: req.body.subKeyword || match?.subKeyword || '',
+    facts: req.body.facts || match?.specsText || facts || '',
+  };
+  const prompt = buildShopeePrompt(enriched);
+  const fallback = fallbackShopeeContent({ productName, pack, facts: enriched.facts });
 
   try {
     let raw = '';
