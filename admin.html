@@ -3798,6 +3798,13 @@ function bgUpdateComputedCells(tr, row) {
   if (shopeeTd) shopeeTd.textContent = bgFmt(bgShopeePrice(row.retail, row.dealer));
 }
 
+function bgPreviewComputedCells(inp, rowNum, field) {
+  const row = bgData.find(r => r.rowNum === rowNum);
+  const tr = inp.closest('tr');
+  if (!row || !tr) return;
+  bgUpdateComputedCells(tr, { ...row, [field]: parseInt(inp.value, 10) || 0 });
+}
+
 async function bgLoadData() {
   document.getElementById('bgBody').innerHTML =
     '<tr><td colspan="10" style="text-align:center;padding:40px;color:var(--muted)">Đang tải…</td></tr>';
@@ -3922,11 +3929,15 @@ function bgEditCell(td, rowNum, field) {
   inp.type  = 'number';
   inp.step  = '1000';
   inp.value = val;
+  inp.addEventListener('input', () => bgPreviewComputedCells(inp, rowNum, field));
   inp.addEventListener('keydown', e => {
     if (e.key === 'Enter')  { e.preventDefault(); inp.blur(); }
-    if (e.key === 'Escape') { bgCancelEdit(inp, rowNum, field); }
+    if (e.key === 'Escape') { e.preventDefault(); bgCancelEdit(inp, rowNum, field); }
   });
-  inp.addEventListener('blur', () => bgCommitEdit(inp, rowNum, field));
+  inp.addEventListener('blur', () => {
+    if (inp.dataset.cancelled === '1') return;
+    bgCommitEdit(inp, rowNum, field);
+  });
   td.textContent = '';
   td.appendChild(inp);
   inp.focus();
@@ -3934,17 +3945,20 @@ function bgEditCell(td, rowNum, field) {
 }
 
 async function bgCommitEdit(inp, rowNum, field) {
-  const newVal = parseInt(inp.value) || 0;
+  const td = inp.parentElement;
+  if (!td) return;
+
+  const newVal = parseInt(inp.value, 10) || 0;
   const row = bgData.find(r => r.rowNum === rowNum);
   if (!row) return;
 
   const oldVal = row[field];
 
-  // Save td ref BEFORE textContent wipes inp from the DOM (inp.parentElement becomes null after)
-  const td = inp.parentElement;
+  const tr = td.closest('tr');
   td.textContent = bgFmt(newVal);
   td.dataset.val = String(newVal);
 
+  if (tr) bgUpdateComputedCells(tr, row);
   if (newVal === oldVal) return; // no change
 
   const saveData = {};
@@ -3953,7 +3967,6 @@ async function bgCommitEdit(inp, rowNum, field) {
   // Optimistic update
   row[field] = newVal;
 
-  const tr = td.closest('tr');
   if (tr) {
     bgUpdateComputedCells(tr, row);
     const actTd = tr.querySelector('.bg-td-act');
@@ -3992,8 +4005,12 @@ function bgCancelEdit(inp, rowNum, field) {
   const row = bgData.find(r => r.rowNum === rowNum);
   const val = row?.[field] ?? 0;
   const td = inp.parentElement;
+  if (!td) return;
+  inp.dataset.cancelled = '1';
   td.textContent = bgFmt(val);
   td.dataset.val = val;
+  const tr = td.closest('tr');
+  if (tr && row) bgUpdateComputedCells(tr, row);
 }
 
 async function bgRetry(rowNum, field, newVal) {
