@@ -1979,6 +1979,7 @@ Có chủ đề nào bạn muốn chúng tôi cover? Comment nhé!
             <div class="sp-field">
               <label class="sp-label">Công cụ AI</label>
               <select id="spProvider" class="sp-select">
+                <option value="auto">Tự động (ChatGPT → Gemini)</option>
                 <option value="openai">ChatGPT / OpenAI</option>
                 <option value="gemini">Gemini</option>
                 <option value="claude">Claude</option>
@@ -2036,7 +2037,7 @@ Có chủ đề nào bạn muốn chúng tôi cover? Comment nhé!
           <div class="sp-status" id="spStatus"></div>
           <div class="sp-note">
             <strong>Thông tin sản phẩm</strong><br>
-            Luồng chuẩn: nhập tên sản phẩm, bổ sung thông số thật, chọn AI. Hệ thống ưu tiên gọi API nếu server có key; nếu chưa có key sẽ trả về nội dung mẫu để chỉnh thủ công.
+            Luồng chuẩn: nhập tên sản phẩm, bổ sung thông số thật, chọn AI. Chế độ tự động sẽ gọi ChatGPT/OpenAI trước, nếu không khả dụng sẽ chuyển sang Gemini; nếu chưa có key sẽ trả về nội dung mẫu để chỉnh thủ công.
           </div>
           <div class="sp-note">
             <strong>Cấu hình API key</strong>
@@ -3050,7 +3051,7 @@ function spInput() {
     tone: document.getElementById('spTone')?.value.trim() || '',
     style: document.getElementById('spStyle')?.value.trim() || '',
     facts: document.getElementById('spFacts')?.value.trim() || '',
-    provider: document.getElementById('spProvider')?.value || 'openai',
+    provider: document.getElementById('spProvider')?.value || 'auto',
   };
 }
 function spSetStatus(msg, type) {
@@ -3227,7 +3228,7 @@ Keyword chính: ${data.mainKeyword || data.productName || '[Keyword]'}
 Keyword phụ: ${data.subKeyword || '[Keyword phụ]'}`;
 }
 function spBuildManualPrompt() {
-  spSetStatus('Đã tạo prompt thủ công để copy sang Gemini, ChatGPT hoặc Claude.', 'ok');
+  spSetStatus('Đã tạo prompt thủ công để copy sang ChatGPT hoặc Gemini.', 'ok');
 }
 async function spGenerateCopy() {
   const data = spInput();
@@ -3239,7 +3240,12 @@ async function spGenerateCopy() {
     const res = await api('/api/shopee/generate-copy', 'POST', data);
     document.getElementById('spTitleOut').textContent = res.title || '';
     document.getElementById('spDescOut').textContent = res.description || '';
-    spSetStatus(res.usedFallback ? 'Chưa có API key, đã tạo prompt thủ công.' : 'Đã tạo nội dung bằng AI.', 'ok');
+    if (res.usedFallback) {
+      spSetStatus(res.providerError || 'Chưa có API key, đã tạo nội dung mẫu để chỉnh thủ công.', res.providerError ? 'err' : 'ok');
+    } else {
+      const switchedToGemini = data.provider === 'auto' && res.provider === 'gemini' && (res.triedProviders || [])[0] === 'openai';
+      spSetStatus(switchedToGemini ? 'ChatGPT/OpenAI không khả dụng, đã chuyển sang Gemini và tạo nội dung.' : `Đã tạo nội dung bằng ${res.providerLabel || 'AI'}.`, 'ok');
+    }
   } catch (e) {
     spSetStatus('Không gọi được API AI. Đã tạo prompt thủ công để copy.', 'err');
   } finally {
@@ -3326,11 +3332,11 @@ async function spGenerateImages() {
   const prompts = spGenerateImagePrompts();
   const btn = document.getElementById('spImgBtn');
   if (btn) btn.disabled = true;
-  spSetStatus('Đang gửi ảnh gốc và tạo ảnh AI nếu đã có OpenAI API key...');
+  spSetStatus('Đang gửi ảnh gốc và tạo ảnh AI...');
   try {
     const fd = new FormData();
     fd.append('prompts', JSON.stringify(prompts));
-    fd.append('provider', document.getElementById('spProvider')?.value || 'openai');
+    fd.append('provider', document.getElementById('spProvider')?.value || 'auto');
     const sourceUrls = [];
     document.querySelectorAll('#spPreviews .sp-preview').forEach(slot => {
       const file = slot.querySelector('.sp-image-input')?.files?.[0];

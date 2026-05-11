@@ -57,6 +57,88 @@ function getAiKey(provider) {
   return '';
 }
 
+function shopeeProviderLabel(provider) {
+  if (provider === 'openai') return 'ChatGPT / OpenAI';
+  if (provider === 'gemini') return 'Gemini';
+  if (provider === 'claude') return 'Claude';
+  return 'AI';
+}
+
+function shopeeCopyProviderPlan(requestedProvider = 'auto') {
+  const plan = [];
+  const pushIfReady = (provider) => {
+    if (getAiKey(provider) && !plan.includes(provider)) plan.push(provider);
+  };
+
+  if (requestedProvider === 'auto') {
+    pushIfReady('openai');
+    pushIfReady('gemini');
+    return plan;
+  }
+
+  pushIfReady(requestedProvider);
+
+  if (requestedProvider === 'openai') {
+    pushIfReady('gemini');
+  }
+
+  return plan;
+}
+
+async function callShopeeTextProvider(provider, prompt) {
+  if (provider === 'gemini') {
+    const geminiKey = getAiKey('gemini');
+    const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+      signal: AbortSignal.timeout(45000),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error?.message || `Gemini HTTP ${r.status}`);
+    return data.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('\n') || '';
+  }
+
+  if (provider === 'claude') {
+    const claudeKey = getAiKey('claude');
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': claudeKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: process.env.CLAUDE_MODEL || 'claude-sonnet-4-5',
+        max_tokens: 2200,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+      signal: AbortSignal.timeout(45000),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error?.message || `Claude HTTP ${r.status}`);
+    return data.content?.map(p => p.text || '').join('\n') || '';
+  }
+
+  const openaiKey = getAiKey('openai');
+  const r = await fetch('https://api.openai.com/v1/responses', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${openaiKey}`,
+    },
+    body: JSON.stringify({
+      model: process.env.OPENAI_TEXT_MODEL || 'gpt-5.4-mini',
+      input: prompt,
+    }),
+    signal: AbortSignal.timeout(45000),
+  });
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error?.message || `OpenAI HTTP ${r.status}`);
+  return data.output_text || data.output?.flatMap(o => o.content || []).map(c => c.text || '').join('\n') || '';
+}
+
 function requireAuth(req, res, next) {
   const token = req.headers['x-admin-token'];
   if (token && adminTokens.has(token)) return next();
@@ -369,18 +451,20 @@ Bạn là chuyên gia SEO Shopee và tối ưu chuyển đổi bán hàng TMĐT.
 Hãy tạo tiêu đề sản phẩm chuyên nghiệp cho sản phẩm dưới đây theo chuẩn SEO Shopee Việt Nam.
 
 Yêu cầu:
-- Tối đa 100 ký tự
-- Keyword chính đặt đầu câu
+- Độ dài 20-120 ký tự, ưu tiên 80-115 ký tự nếu thông tin đủ rõ
+- Keyword chính đặt đầu câu, đi kèm thương hiệu/mẫu mã/quy cách nếu có
 - Tự nhiên, dễ đọc, không spam keyword
 - Không được chỉ trả về tên sản phẩm + “chính hãng”
 - Bắt buộc khai thác mô tả/thông số kỹ thuật để thêm ít nhất 2 yếu tố bán hàng cụ thể
 - Ưu tiên yếu tố kỹ thuật như: chất liệu, cấu tạo, lối chơi, độ kiểm soát, tốc độ, đối tượng sử dụng, quy cách
 - Không viết IN HOA toàn bộ
-- Không dùng từ bị cấm như: “số 1”, “tốt nhất”, “cam kết khỏi”, “100% hiệu quả”, “vĩnh viễn”, “chính hãng tuyệt đối”
+- Không dùng emoji, HTML, ký tự lạ, tên shop, số điện thoại, Zalo/Facebook/website, tên sàn khác
+- Không dùng từ khuyến mãi hoặc phóng đại như: “số 1”, “tốt nhất”, “rẻ nhất”, “hot”, “bán chạy nhất”, “giảm giá”, “freeship”, “cam kết khỏi”, “100% hiệu quả”, “vĩnh viễn”, “chính hãng tuyệt đối”
 - Không chứa thông tin vi phạm chính sách Shopee
+- Tiêu đề phải khớp với mô tả, ảnh và thông số được cung cấp; không tự bịa chứng nhận/thông số
 - Tập trung tăng CTR và tỷ lệ tìm kiếm
 - Ưu tiên cấu trúc:
-  [Tên sản phẩm] + [Đặc điểm nổi bật] + [Công dụng] + [Đối tượng]
+  [Thương hiệu/Tên sản phẩm] + [Thông số/quy cách] + [Đặc điểm nổi bật] + [Đối tượng]
 
 Thông tin sản phẩm:
 ${productName}
@@ -412,7 +496,12 @@ Yêu cầu:
 - Không dùng từ ngữ vi phạm chính sách Shopee
 - Không hứa hẹn quá mức
 - Không dùng các từ tuyệt đối như:
-  “100%”, “cam kết”, “đảm bảo khỏi”, “tốt nhất thị trường”, “hiệu quả ngay”
+  “100%”, “cam kết”, “đảm bảo khỏi”, “tốt nhất thị trường”, “hiệu quả ngay”, “trị dứt điểm”, “rẻ nhất”
+- Không đưa số điện thoại, Zalo, Facebook, website, địa chỉ shop, hoặc nội dung kéo khách giao dịch ngoài Shopee
+- Không nhắc sàn thương mại điện tử khác, không dùng từ khóa thương hiệu không liên quan
+- Thông tin trong mô tả phải nhất quán với tiêu đề; chỉ viết thông số đã được cung cấp, thông tin thiếu thì ghi trung tính
+- Độ dài phù hợp đăng Shopee: tối thiểu 100 ký tự, tối đa 3000 ký tự
+- Có thể thêm 5-10 hashtag liên quan ở cuối, không quá 18 hashtag và không dùng hashtag gây nhiễu
 - Có icon nhẹ để dễ đọc
 - Format rõ ràng
 
@@ -422,8 +511,9 @@ Cấu trúc:
 3. Đặc điểm chi tiết
 4. Hướng dẫn sử dụng
 5. Thông tin sản phẩm
-6. Chính sách hỗ trợ khách hàng
+6. Chính sách hỗ trợ khách hàng trong sàn Shopee
 7. CTA mềm thúc đẩy mua hàng
+8. Hashtag liên quan nếu phù hợp
 
 Thông tin sản phẩm:
 ${productName}
@@ -460,12 +550,68 @@ Yêu cầu SEO:
 Chỉ trả về JSON hợp lệ.`;
 }
 
+const SHOPEE_TITLE_MAX = 120;
+const SHOPEE_DESCRIPTION_MAX = 3000;
+const SHOPEE_RISKY_PHRASES = [
+  'số 1',
+  'tốt nhất',
+  'tốt nhất thị trường',
+  'rẻ nhất',
+  'hot',
+  'hot nhất',
+  'bán chạy',
+  'bán chạy nhất',
+  'giảm giá',
+  'sale sốc',
+  'freeship',
+  'miễn phí vận chuyển',
+  'cam kết khỏi',
+  '100% hiệu quả',
+  'hiệu quả ngay',
+  'đảm bảo khỏi',
+  'trị dứt điểm',
+  'vĩnh viễn',
+  'chính hãng tuyệt đối',
+];
+
+function escapeRegExp(s) {
+  return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function cleanShopeeTitle(title) {
-  return String(title || '')
+  let result = String(title || '')
     .replace(/["“”]/g, '')
-    .replace(/\b(số 1|tốt nhất|cam kết khỏi|100% hiệu quả|vĩnh viễn|chính hãng tuyệt đối|rẻ nhất)\b/gi, '')
+    .replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, '')
+    .replace(/<[^>]*>/g, '')
+    .replace(/https?:\/\/\S+|www\.\S+/gi, '')
+    .replace(/\b(?:zalo|facebook|fb\.com|instagram|tiktok|hotline|số điện thoại|website)\b/gi, '')
     .replace(/\s+/g, ' ')
     .trim();
+  for (const phrase of SHOPEE_RISKY_PHRASES) {
+    result = result.replace(new RegExp(escapeRegExp(phrase), 'gi'), '');
+  }
+  return result.replace(/\s+/g, ' ').trim();
+}
+
+function sanitizeShopeeDescription(description) {
+  let result = String(description || '')
+    .replace(/<[^>]*>/g, '')
+    .replace(/https?:\/\/\S+|www\.\S+/gi, '')
+    .split(/\r?\n/)
+    .filter(line => !/\b(zalo|facebook|fb\.com|instagram|tiktok|hotline|số điện thoại|website|địa chỉ shop)\b/i.test(line))
+    .join('\n')
+    .replace(/\b\d{3,4}[ .-]?\d{3,4}[ .-]?\d{3,4}\b/g, '')
+    .replace(/\s+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+  for (const phrase of SHOPEE_RISKY_PHRASES) {
+    result = result.replace(new RegExp(escapeRegExp(phrase), 'gi'), '');
+  }
+  if (result.length > SHOPEE_DESCRIPTION_MAX) {
+    const cut = result.slice(0, SHOPEE_DESCRIPTION_MAX);
+    result = cut.slice(0, Math.max(cut.lastIndexOf('\n'), cut.lastIndexOf('. '), 2600)).trim();
+  }
+  return result.replace(/[ \t]{2,}/g, ' ').trim();
 }
 
 function inferTitlePhrases(data) {
@@ -475,6 +621,8 @@ function inferTitlePhrases(data) {
   add(/carbon|alc|arylate/.test(text), 'Carbon kiểm soát tốt');
   add(/gỗ|go |wood/.test(text), 'Gỗ ổn định');
   add(/abs|40\+/.test(text), 'ABS 40+ ổn định');
+  add(/tập luyện|tap luyen/.test(text), 'tập luyện hằng ngày');
+  add(/thi đấu|thi dau/.test(text), 'thi đấu phong trào');
   add(/ittf/.test(text), 'chuẩn ITTF');
   add(/gai dài|gai dai/.test(text), 'gai dài phòng thủ');
   add(/gai ngắn|gai ngan/.test(text), 'gai ngắn tấn công');
@@ -490,16 +638,21 @@ function inferTitlePhrases(data) {
 function buildSeoTitleFallback(data) {
   const productName = cleanShopeeTitle(data.productName || data.mainKeyword || 'Sản phẩm bóng bàn');
   const keyword = cleanShopeeTitle(data.mainKeyword || productName);
-  const base = productName.toLowerCase().startsWith(keyword.toLowerCase()) ? productName : `${keyword} ${productName}`;
+  const productNorm = normalizeText(productName);
+  const keywordNorm = normalizeText(keyword);
+  const keywordTokens = keywordNorm.split(/\s+/).filter(t => t.length > 1);
+  const coveredTokens = keywordTokens.filter(t => productNorm.includes(t)).length;
+  const keywordAlreadyCovered = keywordTokens.length && coveredTokens / keywordTokens.length >= 0.75;
+  const base = keywordAlreadyCovered || productNorm.startsWith(keywordNorm) ? productName : `${keyword} ${productName}`;
   const phrases = inferTitlePhrases(data);
   const customer = data.customer ? cleanShopeeTitle(data.customer).replace(/^người chơi\s*/i, 'cho ') : '';
-  const pieces = [base, ...phrases.slice(0, 2), customer].filter(Boolean);
+  const pieces = [base, ...phrases.slice(0, 3), customer].filter(Boolean);
   let title = '';
   for (const piece of pieces) {
     const next = title ? `${title} ${piece}` : piece;
-    if (next.length <= 100) title = next;
+    if (next.length <= SHOPEE_TITLE_MAX) title = next;
   }
-  return cleanShopeeTitle(title || base).slice(0, 100).trim();
+  return cleanShopeeTitle(title || base).slice(0, SHOPEE_TITLE_MAX).trim();
 }
 
 function normalizeShopeeTitle(aiTitle, data) {
@@ -509,12 +662,12 @@ function normalizeShopeeTitle(aiTitle, data) {
   const genericOnly = /chính hãng$/i.test(title) && title.length <= productName.length + 18;
   const missingProduct = productName && !normalizeText(title).includes(normalizeText(productName).split(/\s+/)[0]);
   if (!title || tooShort || genericOnly || missingProduct) title = buildSeoTitleFallback(data);
-  if (title.length > 100) {
+  if (title.length > SHOPEE_TITLE_MAX) {
     const words = title.split(/\s+/);
     title = '';
     for (const word of words) {
       const next = title ? `${title} ${word}` : word;
-      if (next.length > 100) break;
+      if (next.length > SHOPEE_TITLE_MAX) break;
       title = next;
     }
   }
@@ -525,12 +678,12 @@ function fallbackShopeeContent({ productName, pack, facts }) {
   const name = productName || 'Sản phẩm bóng bàn';
   const specLines = String(facts || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean);
   const specs = specLines.length ? specLines.map(s => `• ${s}`).join('\n') : `• Tên sản phẩm: ${name}\n${pack ? `• Quy cách: ${pack}` : '• Quy cách: Theo thông tin shop'}`;
-  const title = `${name}${pack ? ` (${pack})` : ''} Chính Hãng`.replace(/\s+/g, ' ').trim();
+  const title = buildSeoTitleFallback({ productName: name, mainKeyword: name, facts, size: pack, pack });
   const description = `🏓 ${name.toUpperCase()} – CHUẨN CHO TẬP LUYỆN VÀ THI ĐẤU
 
 Độ ổn định cao • Cảm giác sử dụng chắc chắn • Phù hợp người chơi bóng bàn
 
-${name} phù hợp cho người chơi bóng bàn đang cần sản phẩm chính hãng, dễ sử dụng và có độ ổn định tốt trong tập luyện hằng ngày.
+${name} phù hợp cho người chơi bóng bàn đang cần sản phẩm dễ chọn, đúng mô tả và có độ ổn định tốt trong tập luyện hằng ngày.
 
 ━━━━━━━━━━━━━━━
 
@@ -554,7 +707,7 @@ ${specs}
 • Người chơi bóng bàn phong trào
 • CLB bóng bàn
 • Người tập luyện nâng cao
-• Người cần sản phẩm chính hãng, dễ chọn mua
+• Người cần sản phẩm rõ thông tin, dễ chọn mua
 
 ━━━━━━━━━━━━━━━
 
@@ -564,17 +717,17 @@ ${specs}
 
 ━━━━━━━━━━━━━━━
 
-🛡 CAM KẾT TỪ BÓNG BÀN VIỆT
+🛡 HỖ TRỢ TỪ BÓNG BÀN VIỆT
 
-• Hàng chính hãng
 • Đóng gói cẩn thận
-• Hỗ trợ nhanh chóng khi cần tư vấn`;
+• Hỗ trợ tư vấn chọn sản phẩm phù hợp
+• Nội dung đăng bán không chứa link hoặc thông tin giao dịch ngoài Shopee`;
   const imagePrompts = [
     `Ảnh thumbnail Shopee 1:1 cho ${name}, nền sáng sạch, sản phẩm lớn ở trung tâm, ánh sáng studio, badge "Chính hãng", text ngắn dễ đọc mobile.`,
     `Ảnh lợi ích Shopee 1:1 cho ${name}, bố cục chuyên nghiệp, 3 điểm nổi bật dạng callout, màu sắc thể thao, không rối mắt.`,
     `Ảnh thông số Shopee 1:1 cho ${name}, có bảng thông tin sản phẩm gọn gàng, nền sạch, cảm giác chính hãng và đáng tin cậy.`
   ];
-  return { title, description, imagePrompts };
+  return { title, description: sanitizeShopeeDescription(description), imagePrompts };
 }
 
 function parseAiJson(text, fallback) {
@@ -597,6 +750,7 @@ function parseAiJsonWithTitleData(text, fallback, titleData) {
   return {
     ...parsed,
     title: normalizeShopeeTitle(parsed.title, titleData),
+    description: sanitizeShopeeDescription(parsed.description || fallback.description),
   };
 }
 
@@ -1809,70 +1963,53 @@ app.post('/api/shopee/generate-copy', requireAuth, async (req, res) => {
   };
   const prompt = buildShopeePrompt(enriched);
   const fallbackRaw = fallbackShopeeContent({ productName, pack, facts: enriched.facts });
-  const fallback = { ...fallbackRaw, title: normalizeShopeeTitle(fallbackRaw.title, enriched) };
+  const fallback = {
+    ...fallbackRaw,
+    title: normalizeShopeeTitle(fallbackRaw.title, enriched),
+    description: sanitizeShopeeDescription(fallbackRaw.description),
+  };
 
   try {
-    let raw = '';
-    const geminiKey = getAiKey('gemini');
-    const claudeKey = getAiKey('claude');
-    const openaiKey = getAiKey('openai');
-    if (provider === 'gemini' && geminiKey) {
-      const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
-      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
-        signal: AbortSignal.timeout(45000),
+    const plan = shopeeCopyProviderPlan(provider);
+    if (!plan.length) {
+      return res.json({
+        ...fallback,
+        prompt,
+        usedFallback: true,
+        providerError: 'Chưa có API key OpenAI/Gemini phù hợp. Hệ thống đã tạo nội dung mẫu để chỉnh thủ công.',
       });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data.error?.message || `Gemini HTTP ${r.status}`);
-      raw = data.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('\n') || '';
-    } else if (provider === 'claude' && claudeKey) {
-      const r = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': claudeKey,
-          'anthropic-version': '2023-06-01',
-        },
-        body: JSON.stringify({
-          model: process.env.CLAUDE_MODEL || 'claude-sonnet-4-5',
-          max_tokens: 2200,
-          messages: [{ role: 'user', content: prompt }],
-        }),
-        signal: AbortSignal.timeout(45000),
-      });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data.error?.message || `Claude HTTP ${r.status}`);
-      raw = data.content?.map(p => p.text || '').join('\n') || '';
-    } else if (provider === 'openai' && openaiKey) {
-      const r = await fetch('https://api.openai.com/v1/responses', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${openaiKey}`,
-        },
-        body: JSON.stringify({
-          model: process.env.OPENAI_TEXT_MODEL || 'gpt-5.4-mini',
-          input: prompt,
-        }),
-        signal: AbortSignal.timeout(45000),
-      });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data.error?.message || `OpenAI HTTP ${r.status}`);
-      raw = data.output_text || data.output?.flatMap(o => o.content || []).map(c => c.text || '').join('\n') || '';
-    } else {
-      return res.json({ ...fallback, prompt, usedFallback: true });
     }
 
-    res.json({ ...parseAiJsonWithTitleData(raw, fallback, enriched), usedFallback: false });
+    const errors = [];
+    for (const aiProvider of plan) {
+      try {
+        const raw = await callShopeeTextProvider(aiProvider, prompt);
+        return res.json({
+          ...parseAiJsonWithTitleData(raw, fallback, enriched),
+          usedFallback: false,
+          provider: aiProvider,
+          providerLabel: shopeeProviderLabel(aiProvider),
+          triedProviders: plan,
+        });
+      } catch (providerError) {
+        errors.push(`${shopeeProviderLabel(aiProvider)}: ${providerError.message}`);
+      }
+    }
+
+    res.json({
+      ...fallback,
+      prompt,
+      usedFallback: true,
+      providerError: errors.join(' | '),
+      triedProviders: plan,
+    });
   } catch (e) {
     res.json({ ...fallback, prompt, usedFallback: true, providerError: e.message });
   }
 });
 
 app.post('/api/shopee/generate-images', requireAuth, upload.array('images', 3), async (req, res) => {
-  const provider = req.body?.provider || 'openai';
+  let provider = req.body?.provider || 'openai';
   let prompts = [];
   if (Array.isArray(req.body?.prompts)) prompts = req.body.prompts;
   else {
@@ -1887,6 +2024,7 @@ app.post('/api/shopee/generate-images', requireAuth, upload.array('images', 3), 
   }
   const openaiKey = getAiKey('openai');
   const geminiKey = getAiKey('gemini');
+  if (provider === 'auto') provider = openaiKey ? 'openai' : (geminiKey ? 'gemini' : 'openai');
   if (provider === 'openai' && !openaiKey) return res.json({ images: [], usedFallback: true, providerError: 'Chưa có OpenAI API key. Hãy nhập key OpenAI hoặc chọn Gemini.' });
   if (provider === 'gemini' && !geminiKey) return res.json({ images: [], usedFallback: true, providerError: 'Chưa có Gemini API key. Hãy nhập key Gemini hoặc chọn ChatGPT/OpenAI.' });
 
