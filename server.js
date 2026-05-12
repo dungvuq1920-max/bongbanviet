@@ -2107,6 +2107,87 @@ function startTracker() {
   console.log(`🤖 Telegram bot started | 🔄 Tracker polling every 10s`);
 }
 
+// ─── Tạo Ảnh Website / FB / IG ──────────────────────────────────────────────
+function buildWebsiteImagePrompt(productName) {
+  const headline = productName
+    ? `If adding product text, use only this short clean headline: "${productName}", placed with generous spacing and not overlapping the product.`
+    : 'If adding product text, use only one short clean headline based on the product name, placed with generous spacing and not overlapping the product.';
+  return `Use the uploaded product image as the exact reference. Create one professional square product image, 800 x 800 px, suitable for BongBanViet.com, Facebook, and Instagram.
+
+Keep the product 100% accurate: exact shape, proportions, colors, material texture, printed text, labels, packaging, and logos from the input image. Do not redesign, replace, simplify, or invent any part of the product.
+
+Visual style: premium table tennis equipment retail photography, consistent with BongBanViet.com. Use a clean warm off-white background #FAFAF8, refined black #1A1A1A contrast, and subtle red #D62B2B / coral #E8503A accents. The image should feel professional, trustworthy, official, sporty, modern, and high-end.
+
+Composition: square 1:1, product centered and dominant, occupying about 70–85% of the frame, fully visible, not cropped. Use realistic studio lighting, sharp focus, natural reflections, and a soft realistic shadow. Add only very subtle background details such as minimal grid lines, light motion accents, or table-tennis-inspired shapes, keeping the layout clean and uncluttered.
+
+Branding: add a small tasteful brand mark "BÓNG BÀN VIỆT" with the slogan "Tư Vấn Chuẩn · Hàng Chính Hãng" in a clean modern sans-serif style similar to Lexend. Place it subtly in a corner or footer area, using black/red brand colors, without covering the product. Do not make it look like a sale banner.
+
+Text rules: no price, no phone number, no Zalo, no QR code, no external link, no large promotional text. ${headline}
+
+Output: photorealistic premium e-commerce and social media product image, crisp detail, balanced margins, clean composition, 800 x 800 px.
+Do not change the product, do not alter logos or printed text, no fake branding, no extra products, no people, no clutter, no discount badge, no loud sale graphics, no watermark, no QR code, no phone number, no Zalo, no website URL, no distorted perspective, no blur, no overexposure, no cartoon style, no AI artifacts, no text covering the product.`;
+}
+
+app.post('/api/generate-website-image', requireAuth, upload.single('image'), async (req, res) => {
+  const productName = (req.body?.productName || '').trim();
+  // API key: prefer key sent from frontend (stored in browser localStorage), fallback to server stored key
+  const apiKey = (req.body?.apiKey || '').trim() || getAiKey('openai');
+
+  if (!apiKey) {
+    if (req.file?.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+    return res.json({ success: false, error: 'Chưa có OpenAI API key. Nhập key trong ô "OpenAI API Key" và bấm Lưu key.' });
+  }
+
+  const prompt = buildWebsiteImagePrompt(productName);
+  const source = req.file;
+
+  try {
+    let r;
+    if (source) {
+      const fd = new FormData();
+      fd.append('model', process.env.OPENAI_IMAGE_MODEL || 'gpt-image-1');
+      fd.append('prompt', prompt);
+      fd.append('size', '1024x1024');
+      fd.append('image',
+        new Blob([fs.readFileSync(source.path)], { type: source.mimetype || 'image/png' }),
+        source.originalname || 'product.png'
+      );
+      r = await fetch('https://api.openai.com/v1/images/edits', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${apiKey}` },
+        body: fd,
+        signal: AbortSignal.timeout(120000),
+      });
+    } else {
+      r = await fetch('https://api.openai.com/v1/images/generations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+        body: JSON.stringify({ model: process.env.OPENAI_IMAGE_MODEL || 'gpt-image-1', prompt, size: '1024x1024' }),
+        signal: AbortSignal.timeout(120000),
+      });
+    }
+
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error?.message || `OpenAI HTTP ${r.status}`);
+
+    const b64 = data.data?.[0]?.b64_json;
+    if (!b64) throw new Error('OpenAI không trả về ảnh. Kiểm tra model, quota hoặc API key.');
+
+    const safeSlug = productName ? productName.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 20) + '-' : '';
+    const filename = `${Date.now().toString(36)}-website-${safeSlug}img.png`;
+    fs.writeFileSync(path.join(imgDir, filename), Buffer.from(b64, 'base64'));
+
+    if (source?.path && fs.existsSync(source.path)) fs.unlinkSync(source.path);
+
+    res.json({ success: true, url: '/images/products/' + filename });
+  } catch (e) {
+    if (source?.path && fs.existsSync(source.path)) {
+      try { fs.unlinkSync(source.path); } catch {}
+    }
+    res.json({ success: false, error: e.message });
+  }
+});
+
 // ─── Global Error Handler cho API ───────────────────────────────────────────
 app.use((err, req, res, next) => {
   if (req.path.startsWith('/api/')) {

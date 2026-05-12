@@ -738,6 +738,46 @@
   .bg-btn-retry { padding:3px 8px; font-size:10px; background:#FEF2F2; border:1px solid #FECACA; color:#DC2626; border-radius:3px; cursor:pointer; margin-left:4px; font-family:inherit; }
   .bg-btn-retry:hover { background:#FEE2E2; }
   .bg-row-err td { background:#FEF2F2 !important; }
+
+  /* ─── Tạo Ảnh Website / FB / IG ────────────────────────── */
+  .aiimg-layout { display:grid; grid-template-columns:360px 1fr; gap:16px; align-items:start; }
+  .aiimg-panel { background:#fff; border:1px solid var(--border); border-radius:6px; padding:18px; display:flex; flex-direction:column; gap:14px; }
+  .aiimg-panel h3 { font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin:0; }
+  .aiimg-upload-zone { border:2px dashed #CBD5E1; border-radius:8px; background:#F8FAFC; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:20px; cursor:pointer; transition:border-color .2s,background .2s; min-height:160px; position:relative; }
+  .aiimg-upload-zone:hover { border-color:var(--red); background:#FFF5F5; }
+  .aiimg-upload-zone input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+  .aiimg-upload-zone svg { opacity:.35; }
+  .aiimg-upload-label { font-size:12px; font-weight:600; color:var(--muted); text-align:center; pointer-events:none; }
+  .aiimg-upload-sub { font-size:10px; color:#94A3B8; pointer-events:none; }
+  .aiimg-preview-img { width:100%; border-radius:6px; object-fit:contain; max-height:200px; background:#f0f0f0; display:block; margin-top:4px; }
+  .aiimg-field label { display:block; font-size:10px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+  .aiimg-field input, .aiimg-field textarea { width:100%; border:1.5px solid var(--border); border-radius:5px; padding:9px 11px; font-family:'Inter',sans-serif; font-size:13px; outline:none; background:#fff; resize:vertical; }
+  .aiimg-field input:focus, .aiimg-field textarea:focus { border-color:var(--dark); }
+  .aiimg-prompt-box { background:#F8FAFC; border:1px solid var(--border); border-radius:6px; overflow:hidden; }
+  .aiimg-prompt-head { display:flex; align-items:center; justify-content:space-between; padding:9px 12px; border-bottom:1px solid var(--border); background:#F1F5F9; }
+  .aiimg-prompt-head b { font-size:11px; font-weight:800; letter-spacing:.04em; color:var(--dark); }
+  .aiimg-prompt-text { font-size:11px; line-height:1.6; color:#475569; padding:10px 12px; white-space:pre-wrap; max-height:180px; overflow-y:auto; }
+  .aiimg-key-row { display:grid; grid-template-columns:1fr auto auto; gap:7px; align-items:center; }
+  .aiimg-actions { display:flex; gap:8px; flex-wrap:wrap; }
+  .aiimg-btn { border:none; border-radius:5px; padding:10px 16px; font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; cursor:pointer; font-family:'Inter',sans-serif; transition:opacity .15s; display:inline-flex; align-items:center; gap:6px; }
+  .aiimg-btn.primary { background:#D62B2B; color:#fff; }
+  .aiimg-btn.dark { background:#0F172A; color:#fff; }
+  .aiimg-btn.outline { background:#fff; color:#0F172A; border:1.5px solid var(--border); }
+  .aiimg-btn:disabled { opacity:.45; cursor:wait; }
+  .aiimg-status { font-size:12px; color:var(--muted); min-height:16px; }
+  .aiimg-status.ok { color:#059669; }
+  .aiimg-status.err { color:#DC2626; }
+  .aiimg-output { background:#fff; border:1px solid var(--border); border-radius:6px; overflow:hidden; }
+  .aiimg-out-head { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:#F8FAFC; border-bottom:1px solid var(--border); }
+  .aiimg-out-head b { font-size:13px; font-weight:700; }
+  .aiimg-out-body { padding:20px; min-height:300px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; }
+  .aiimg-result-img { width:100%; max-width:600px; border-radius:8px; display:block; box-shadow:0 4px 20px rgba(0,0,0,.12); }
+  .aiimg-empty { text-align:center; color:#94A3B8; }
+  .aiimg-empty svg { opacity:.25; margin:0 auto 12px; display:block; }
+  .aiimg-empty p { font-size:13px; }
+  .aiimg-download-row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:4px; }
+  .aiimg-note { font-size:11px; line-height:1.65; color:#475569; background:#EFF6FF; border:1px solid #BFDBFE; padding:10px 12px; border-radius:5px; }
+  .aiimg-gpt-tip { font-size:11px; line-height:1.65; color:#7C3AED; background:#F5F3FF; border:1px solid #DDD6FE; padding:10px 12px; border-radius:5px; }
   </style>
 </head>
 <body>
@@ -843,6 +883,10 @@
     <button class="sb-item" id="nav-shopee" onclick="nav('shopee')">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 7V6a6 6 0 0 1 12 0v1"/><path d="M4 7h16l-1 14H5L4 7z"/><path d="M9 11c.8.7 1.8 1 3 1s2.2-.3 3-1"/></svg>
       Shopee
+    </button>
+    <button class="sb-item" id="nav-ai-image" onclick="nav('ai-image')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="13" rx="2"/><path d="m3 13 4-4 4 4 4-5 4 5"/><circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"/><path d="M8 21h8M12 17v4"/></svg>
+      Tạo Ảnh AI
     </button>
     <button class="sb-item" id="nav-banners" onclick="nav('banners')">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
@@ -2127,6 +2171,95 @@ Có chủ đề nào bạn muốn chúng tôi cover? Comment nhé!
       </div>
     </div>
 
+    <!-- ── Tạo Ảnh Website / FB / IG ──────────── -->
+    <div class="page" id="page-ai-image">
+      <div class="sec-head">
+        <span class="sec-title">Tạo Ảnh Website / FB / IG</span>
+        <div class="sec-head-right">
+          <button class="btn-red" onclick="aiImgGenerate()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="vertical-align:middle;margin-right:4px"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+            Tạo ảnh AI
+          </button>
+        </div>
+      </div>
+
+      <div class="aiimg-layout">
+        <!-- ─ Left: input panel ─ -->
+        <div class="aiimg-panel">
+          <h3>Ảnh tham chiếu sản phẩm</h3>
+
+          <div class="aiimg-upload-zone" id="aiImgUploadZone">
+            <input type="file" id="aiImgFile" accept="image/*" onchange="aiImgPreview(this)">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.5"><rect x="3" y="3" width="18" height="13" rx="2"/><path d="m3 13 4-4 4 4 4-5 4 5"/><circle cx="8" cy="8" r="1.5"/></svg>
+            <span class="aiimg-upload-label">Kéo thả hoặc click để chọn ảnh sản phẩm</span>
+            <span class="aiimg-upload-sub">JPG / PNG / WEBP &nbsp;·&nbsp; khuyến nghị &ge; 800&times;800</span>
+          </div>
+          <img id="aiImgPreviewImg" class="aiimg-preview-img" style="display:none">
+
+          <div class="aiimg-field">
+            <label>Tên sản phẩm <span style="font-weight:400;color:#94A3B8">(tuỳ chọn – dùng làm headline)</span></label>
+            <input id="aiImgProductName" type="text" placeholder="VD: Cốt vợt Butterfly Viscaria Pro" oninput="aiImgUpdatePromptPreview()">
+          </div>
+
+          <!-- Prompt preview -->
+          <div class="aiimg-prompt-box">
+            <div class="aiimg-prompt-head">
+              <b>Prompt gửi GPT</b>
+              <button class="sp-copy" onclick="aiImgCopyPrompt()">Copy prompt</button>
+            </div>
+            <div class="aiimg-prompt-text" id="aiImgPromptPreview"></div>
+          </div>
+
+          <!-- API key -->
+          <div>
+            <div class="sp-label" style="margin-bottom:8px">OpenAI API Key</div>
+            <div class="aiimg-key-row">
+              <input id="aiImgApiKey" class="sp-input" type="password" autocomplete="off" placeholder="sk-proj-...">
+              <a class="sp-key-link" href="https://platform.openai.com/api-keys" target="_blank">Lấy key</a>
+              <button class="sp-key-del" onclick="aiImgClearKey()">Xóa</button>
+            </div>
+            <div style="font-size:10px;color:var(--muted);margin-top:5px">Key chỉ lưu trên trình duyệt, chỉ gửi lên server khi nhấn Tạo ảnh AI.</div>
+          </div>
+
+          <div class="aiimg-actions">
+            <button class="aiimg-btn primary" id="aiImgGenBtn" onclick="aiImgGenerate()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/></svg>
+              Tạo ảnh AI
+            </button>
+            <button class="aiimg-btn dark" onclick="aiImgOpenChatGPT()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Mở ChatGPT
+            </button>
+            <button class="aiimg-btn outline" onclick="aiImgSaveKey()">Lưu key</button>
+          </div>
+
+          <div class="aiimg-status" id="aiImgStatus"></div>
+
+          <div class="aiimg-note">
+            <strong>Luồng dùng API:</strong> Chọn ảnh sản phẩm → nhập tên (tuỳ chọn) → nhập / lưu OpenAI API key → bấm <em>Tạo ảnh AI</em>. Ảnh lưu vào <code>/images/products/</code> và hiện bên phải. Cần tài khoản OpenAI có quyền dùng <code>gpt-image-1</code>.
+          </div>
+
+          <div class="aiimg-gpt-tip">
+            <strong>Không có API key?</strong> Bấm <em>Mở ChatGPT</em> — prompt tự copy vào clipboard, mở ChatGPT → paste prompt → đính kèm ảnh sản phẩm → gửi.
+          </div>
+        </div>
+
+        <!-- ─ Right: output ─ -->
+        <div class="aiimg-output">
+          <div class="aiimg-out-head">
+            <b>Ảnh đã tạo</b>
+            <span style="font-size:11px;color:var(--muted)">1024 × 1024 px &nbsp;·&nbsp; phù hợp Website / Facebook / Instagram</span>
+          </div>
+          <div class="aiimg-out-body" id="aiImgOutBody">
+            <div class="aiimg-empty">
+              <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1"><rect x="3" y="3" width="18" height="13" rx="2"/><path d="m3 13 4-4 4 4 4-5 4 5"/><circle cx="8" cy="8" r="1.5"/><path d="M8 21h8M12 17v4"/></svg>
+              <p>Chưa có ảnh. Upload ảnh sản phẩm và bấm <strong>Tạo ảnh AI</strong>.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ── Ảnh & Banner ──────────────────────────── -->
     <div class="page" id="page-banners">
       <div class="sec-head">
@@ -2299,6 +2432,7 @@ const CAT_LBL = {
 const PAGE_TITLES = { ...CAT_LBL, dashboard:'Dashboard', banners:'Ảnh & Banner', settings:'Cài Đặt', 'bang-gia':'Bảng Giá Đại Lý' };
 const loaded = {};
 PAGE_TITLES.shopee = 'Shopee AI';
+PAGE_TITLES['ai-image'] = 'Tạo Ảnh Website / FB / IG';
 let siteSettings = {};
 
 /* ─── Helpers ──────────────────────────────────────────────── */
@@ -2755,6 +2889,7 @@ async function loadSection(cat) {
   if (cat === 'settings')  { loadSettings(); return; }
   if (cat === 'bang-gia')  { bgLoadData(); return; }
   if (cat === 'shopee')    { spLoadAiConfig(); return; }
+  if (cat === 'ai-image')  { initAiImageTab(); return; }
   if (loaded[cat]) return;
   loaded[cat] = true;
   if (cat === 'combo-vot')  return loadCombos();
@@ -4052,6 +4187,153 @@ async function bgRetry(rowNum, field, newVal) {
     }
     toast('Lỗi: ' + e.message, 'err');
   }
+}
+
+/* ─── Tạo Ảnh Website / FB / IG ──────────────────────────── */
+
+const AI_IMG_LS_KEY = 'aiimg_openai_key';
+
+function aiImgBuildPrompt(productName) {
+  const headline = productName
+    ? `If adding product text, use only this short clean headline: "${productName}", placed with generous spacing and not overlapping the product.`
+    : 'If adding product text, use only one short clean headline based on the product name, placed with generous spacing and not overlapping the product.';
+  return `Use the uploaded product image as the exact reference. Create one professional square product image, 800 x 800 px, suitable for BongBanViet.com, Facebook, and Instagram.
+
+Keep the product 100% accurate: exact shape, proportions, colors, material texture, printed text, labels, packaging, and logos from the input image. Do not redesign, replace, simplify, or invent any part of the product.
+
+Visual style: premium table tennis equipment retail photography, consistent with BongBanViet.com. Use a clean warm off-white background #FAFAF8, refined black #1A1A1A contrast, and subtle red #D62B2B / coral #E8503A accents. The image should feel professional, trustworthy, official, sporty, modern, and high-end.
+
+Composition: square 1:1, product centered and dominant, occupying about 70–85% of the frame, fully visible, not cropped. Use realistic studio lighting, sharp focus, natural reflections, and a soft realistic shadow. Add only very subtle background details such as minimal grid lines, light motion accents, or table-tennis-inspired shapes, keeping the layout clean and uncluttered.
+
+Branding: add a small tasteful brand mark "BÓNG BÀN VIỆT" with the slogan "Tư Vấn Chuẩn · Hàng Chính Hãng" in a clean modern sans-serif style similar to Lexend. Place it subtly in a corner or footer area, using black/red brand colors, without covering the product. Do not make it look like a sale banner.
+
+Text rules: no price, no phone number, no Zalo, no QR code, no external link, no large promotional text. ${headline}
+
+Output: photorealistic premium e-commerce and social media product image, crisp detail, balanced margins, clean composition, 800 x 800 px.
+Do not change the product, do not alter logos or printed text, no fake branding, no extra products, no people, no clutter, no discount badge, no loud sale graphics, no watermark, no QR code, no phone number, no Zalo, no website URL, no distorted perspective, no blur, no overexposure, no cartoon style, no AI artifacts, no text covering the product.`;
+}
+
+function aiImgUpdatePromptPreview() {
+  const name = (document.getElementById('aiImgProductName')?.value || '').trim();
+  const el = document.getElementById('aiImgPromptPreview');
+  if (el) el.textContent = aiImgBuildPrompt(name);
+}
+
+function aiImgPreview(input) {
+  const file = input.files?.[0];
+  const prev = document.getElementById('aiImgPreviewImg');
+  if (!prev) return;
+  if (file) {
+    prev.src = URL.createObjectURL(file);
+    prev.style.display = 'block';
+  } else {
+    prev.style.display = 'none';
+  }
+}
+
+function aiImgSetStatus(msg, type) {
+  const el = document.getElementById('aiImgStatus');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'aiimg-status' + (type ? ' ' + type : '');
+}
+
+function aiImgSaveKey() {
+  const key = document.getElementById('aiImgApiKey')?.value.trim();
+  if (key) {
+    localStorage.setItem(AI_IMG_LS_KEY, key);
+    aiImgSetStatus('Đã lưu API key vào trình duyệt.', 'ok');
+  } else {
+    aiImgSetStatus('Chưa nhập key.', 'err');
+  }
+}
+
+function aiImgClearKey() {
+  localStorage.removeItem(AI_IMG_LS_KEY);
+  const inp = document.getElementById('aiImgApiKey');
+  if (inp) inp.value = '';
+  aiImgSetStatus('Đã xóa API key.', '');
+}
+
+function aiImgCopyPrompt() {
+  const name = (document.getElementById('aiImgProductName')?.value || '').trim();
+  const prompt = aiImgBuildPrompt(name);
+  navigator.clipboard.writeText(prompt).then(() => {
+    aiImgSetStatus('Đã copy prompt vào clipboard!', 'ok');
+    setTimeout(() => aiImgSetStatus('', ''), 2500);
+  }).catch(() => {
+    aiImgSetStatus('Không copy được. Hãy chọn text trong khung Prompt và copy thủ công.', 'err');
+  });
+}
+
+function aiImgOpenChatGPT() {
+  aiImgCopyPrompt();
+  setTimeout(() => window.open('https://chatgpt.com/?model=gpt-4o', '_blank'), 400);
+}
+
+async function aiImgGenerate() {
+  const fileInput = document.getElementById('aiImgFile');
+  const nameInput = document.getElementById('aiImgProductName');
+  const keyInput  = document.getElementById('aiImgApiKey');
+  const btn       = document.getElementById('aiImgGenBtn');
+  const outBody   = document.getElementById('aiImgOutBody');
+
+  const productName = (nameInput?.value || '').trim();
+  const apiKey = (keyInput?.value || localStorage.getItem(AI_IMG_LS_KEY) || '').trim();
+
+  if (!apiKey) {
+    aiImgSetStatus('Cần nhập OpenAI API key trước khi tạo ảnh.', 'err');
+    return;
+  }
+
+  // Save key if typed
+  if (keyInput?.value.trim()) localStorage.setItem(AI_IMG_LS_KEY, keyInput.value.trim());
+
+  if (btn) btn.disabled = true;
+  aiImgSetStatus('Đang gửi ảnh lên server và tạo ảnh AI… (có thể mất 30–90 giây)', '');
+  if (outBody) outBody.innerHTML = '<div style="text-align:center;padding:60px 20px"><span class="spinner" style="display:inline-block"></span><p style="margin-top:16px;color:var(--muted);font-size:13px">Đang tạo ảnh…</p></div>';
+
+  try {
+    const fd = new FormData();
+    fd.append('productName', productName);
+    fd.append('apiKey', apiKey);
+    if (fileInput?.files?.[0]) fd.append('image', fileInput.files[0]);
+
+    const raw = await fetch('/api/generate-website-image', { method: 'POST', body: fd });
+    const res = await raw.json();
+
+    if (!raw.ok || !res.success) throw new Error(res.error || `HTTP ${raw.status}`);
+
+    const imgUrl = res.url;
+    if (outBody) {
+      outBody.innerHTML = `
+        <img src="${esc(imgUrl)}" class="aiimg-result-img" alt="Ảnh đã tạo">
+        <div class="aiimg-download-row">
+          <a href="${esc(imgUrl)}" download class="aiimg-btn primary" style="text-decoration:none">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Tải ảnh
+          </a>
+          <a href="${esc(imgUrl)}" target="_blank" class="aiimg-btn outline" style="text-decoration:none">Xem full size</a>
+          <span style="font-size:11px;color:var(--muted)">Đã lưu: <code>${esc(imgUrl)}</code></span>
+        </div>`;
+    }
+    aiImgSetStatus('Tạo ảnh thành công!', 'ok');
+  } catch (e) {
+    if (outBody) outBody.innerHTML = `<div class="aiimg-empty"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><p>${esc(e.message)}</p></div>`;
+    aiImgSetStatus('Lỗi: ' + e.message, 'err');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+// Init ai-image tab
+function initAiImageTab() {
+  const savedKey = localStorage.getItem(AI_IMG_LS_KEY);
+  if (savedKey) {
+    const inp = document.getElementById('aiImgApiKey');
+    if (inp && !inp.value) inp.value = savedKey;
+  }
+  aiImgUpdatePromptPreview();
 }
 
 /* ─── Init ─────────────────────────────────────────────────── */
