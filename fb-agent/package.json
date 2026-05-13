@@ -1,0 +1,23 @@
+{
+  "name": "fb-agent",
+  "version": "1.0.0",
+  "description": "AI Agent tự động tạo và lên lịch đăng bài Facebook Page cho BÓNG BÀN VIỆT",
+  "main": "main.js",
+  "scripts": {
+    "agent":     "node main.js agent",
+    "scheduler": "node main.js scheduler",
+    "both":      "node main.js both",
+    "verify":    "node main.js verify",
+    "status":    "node main.js status"
+  },
+  "dependencies": {
+    "axios":      "^1.7.0",
+    "csv-parser": "^3.0.0",
+    "dotenv":     "^16.4.0",
+    "node-cron":  "^3.0.3",
+    "openai":     "^4.52.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
