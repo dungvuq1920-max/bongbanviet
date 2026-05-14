@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Lý Vận Đơn | BÓNG BÀN VIỆT</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <style>
+    * { font-family: 'Be Vietnam Pro', sans-serif; }
+
+    /* Label: 100mm x 150mm → at 96dpi = 378px × 567px */
+    .label {
+      width: 378px;
+      min-height: 567px;
+      background: #fff;
+      color: #000;
+      font-family: 'Be Vietnam Pro', Arial, sans-serif;
+      font-size: 11px;
+      box-sizing: border-box;
+      position: relative;
+    }
+    .label * { font-family: 'Be Vietnam Pro', Arial, sans-serif; color: #000; }
+
+    .tab-btn.active { background: #111; color: #fff; }
+
+    input:focus, textarea:focus {
+      outline: 2px solid #111;
+      outline-offset: -1px;
+    }
+
+    .hist-row:hover { background: #f8f8f8; cursor: pointer; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
+
+    /* ── PRINT ─────────────────────────────── */
+    @media print {
+      @page { size: 100mm 150mm; margin: 0; }
+
+      /* hide everything, show only print frame */
+      body * { visibility: hidden !important; }
+      #printFrame, #printFrame * { visibility: visible !important; }
+
+      #printFrame {
+        position: fixed !important;
+        top: 0; left: 0;
+        width: 100mm !important;
+        height: 150mm !important;
+        display: block !important;
+        overflow: hidden;
+        background: #fff;
+      }
+
+      #printFrame .label {
+        width: 100mm !important;
+        min-height: 0 !important;
+        height: 150mm !important;
+        padding: 4mm 3.5mm !important;
+        border: none !important;
+        font-size: 7.5pt !important;
+        overflow: hidden;
+        box-sizing: border-box !important;
+      }
+      #printFrame .label * { font-size: inherit; }
+      #printFrame .lbl-shop-name { font-size: 9pt !important; }
+      #printFrame .lbl-receiver  { font-size: 9.5pt !important; }
+      #printFrame .lbl-phone     { font-size: 9pt !important; }
+      #printFrame .lbl-order-id  { font-size: 8.5pt !important; }
+      #printFrame .lbl-section-title { font-size: 6pt !important; }
+      #printFrame .lbl-address   { font-size: 7.5pt !important; }
+      #printFrame .lbl-product   { font-size: 7.5pt !important; }
+      #printFrame .lbl-note      { font-size: 7pt !important; }
+      #printFrame .lbl-footer    { font-size: 6pt !important; }
+      #printFrame .lbl-logo      { width: 14mm !important; height: 14mm !important; }
+      #printFrame .lbl-qr        { width: 19mm !important; height: 19mm !important; }
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+<!-- ── HEADER ───────────────────────────────────────────────────────── -->
+<header class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <a href="/index.html">
+        <img src="/logo_bongbanviet.png" alt="BBV" class="w-8 h-8" style="border-radius:50%;">
+      </a>
+      <div>
+        <div class="font-bold text-gray-900 text-sm leading-tight tracking-wide">BÓNG BÀN VIỆT</div>
+        <div class="text-xs text-gray-500">Quản lý vận đơn in nhiệt A6</div>
+      </div>
+    </div>
+    <div class="flex gap-1.5">
+      <button onclick="showTab('create')" id="tab-create"
+        class="tab-btn active text-xs px-3 py-1.5 border border-gray-300 rounded font-semibold transition-colors">
+        + Tạo đơn
+      </button>
+      <button onclick="showTab('history')" id="tab-history"
+        class="tab-btn text-xs px-3 py-1.5 border border-gray-300 rounded font-semibold text-gray-600 transition-colors">
+        Lịch sử <span id="histBadge" class="ml-1 text-gray-400"></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ── TAB: TẠO ĐƠN ──────────────────────────────────────────────── -->
+<div id="tab-create-content">
+  <div class="max-w-7xl mx-auto px-4 py-5">
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-5">
+
+      <!-- LEFT: FORM -->
+      <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+        <h2 class="font-bold text-gray-900 mb-4 flex items-center gap-2 text-sm">
+          <span class="w-5 h-5 bg-gray-900 text-white rounded text-xs flex items-center justify-center">1</span>
+          Thông Tin Đơn Hàng
+        </h2>
+
+        <div class="space-y-3">
+          <!-- Mã đơn + Ngày -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Mã đơn hàng *</label>
+              <div class="flex gap-1">
+                <input id="orderId" type="text" placeholder="BBV-260514-001"
+                  class="flex-1 border border-gray-300 rounded-lg px-2.5 py-1.5 text-sm font-mono">
+                <button onclick="genId()" title="Tạo tự động"
+                  class="px-2.5 py-1.5 border border-gray-300 rounded-lg text-gray-500 hover:bg-gray-100 text-sm">↺</button>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Ngày tạo đơn</label>
+              <input id="orderDate" type="date"
+                class="w-full border border-gray-300 rounded-lg px-2.5 py-1.5 text-sm">
+            </div>
+          </div>
+
+          <!-- Tên khách -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Tên khách hàng *</label>
+            <input id="customerName" type="text" placeholder="Nguyễn Văn A"
+              class="w-full border border-gray-300 rounded-lg px-2.5 py-1.5 text-sm">
+          </div>
+
+          <!-- SĐT -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Số điện thoại</label>
+            <input id="phone" type="tel" placeholder="0912 345 678"
+              class="w-full border border-gray-300 rounded-lg px-2.5 py-1.5 text-sm">
+          </div>
+
+          <!-- Địa chỉ -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Địa chỉ giao hàng *</label>
+            <textarea id="address" rows="2" placeholder="123 Đường ABC, Phường XYZ, Quận 1, TP. HCM"
+              class="w-full border border-gray-300 rounded-lg px-2.5 py-1.5 text-sm resize-none"></textarea>
+          </div>
+
+          <!-- Mã vận đơn -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Mã vận đơn (tracking)</label>
+            <input id="trackingCode" type="text" placeholder="VNPOST1234567890 / GHTK123..."
+              class="w-full border border-gray-300 rounded-lg px-2.5 py-1.5 text-sm font-mono">
+          </div>
+
+          <!-- Sản phẩm -->
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="text-xs font-semibold text-gray-600">Sản phẩm</label>
+              <button onclick="addProduct()"
+                class="text-xs text-gray-500 hover:text-gray-900 border border-dashed border-gray-300 px-2 py-0.5 rounded hover:border-gray-500 transition-colors">
+                + Thêm sản phẩm
+              </button>
+            </div>
+            <div id="productList" class="space-y-2"></div>
+          </div>
+
+          <!-- Ghi chú -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Ghi chú</label>
+            <textarea id="notes" rows="2" placeholder="Giao giờ hành chính, gọi trước 30 phút, không giao buổi tối..."
+              class="w-full border border-gray-300 rounded-lg px-2.5 py-1.5 text-sm resize-none"></textarea>
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex gap-2 mt-5 flex-wrap">
+          <button onclick="saveOrder()"
+            class="flex-1 bg-gray-900 text-white rounded-lg px-3 py-2 text-sm font-semibold hover:bg-gray-700 transition-colors">
+            Lưu đơn
+          </button>
+          <button onclick="printOrder()"
+            class="flex-1 border-2 border-gray-900 text-gray-900 rounded-lg px-3 py-2 text-sm font-semibold hover:bg-gray-50 transition-colors">
+            🖨 In đơn
+          </button>
+          <button onclick="exportPNG()"
+            class="px-3 py-2 border border-gray-300 text-gray-600 rounded-lg text-xs font-medium hover:bg-gray-50 transition-colors">
+            PNG
+          </button>
+          <button onclick="exportPDF()"
+            class="px-3 py-2 border border-gray-300 text-gray-600 rounded-lg text-xs font-medium hover:bg-gray-50 transition-colors">
+            PDF
+          </button>
+          <button onclick="newOrder()"
+            class="px-3 py-2 border border-gray-300 text-gray-600 rounded-lg text-xs font-medium hover:bg-gray-50 transition-colors">
+            Mới
+          </button>
+        </div>
+      </div>
+
+      <!-- RIGHT: PREVIEW -->
+      <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-bold text-gray-900 flex items-center gap-2 text-sm">
+            <span class="w-5 h-5 bg-gray-900 text-white rounded text-xs flex items-center justify-center">2</span>
+            Xem Trước — A6 (100×150mm)
+          </h2>
+          <button onclick="updatePreview()"
+            class="text-xs text-gray-500 hover:text-gray-900 border border-gray-200 px-2 py-1 rounded hover:border-gray-400 transition-colors">
+            ↻ Cập nhật
+          </button>
+        </div>
+
+        <div class="flex justify-center overflow-x-auto pb-2">
+          <div style="transform:scale(0.88);transform-origin:top center;margin-bottom:-46px;">
+            <div class="label border border-gray-300 shadow-md" id="labelPreview" style="padding:8mm 6mm;">
+              <div class="text-center text-gray-300 text-xs" style="padding-top:60px;">
+                Nhập thông tin và nhấn <strong>Cập nhật</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p class="text-xs text-center text-gray-400 mt-3">Tối ưu in nhiệt Xprinter XP-420B · 203dpi · đen trắng</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── TAB: LỊCH SỬ ────────────────────────────────────────────────── -->
+<div id="tab-history-content" class="hidden">
+  <div class="max-w-7xl mx-auto px-4 py-5">
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div class="p-4 border-b border-gray-200 flex gap-3 items-center">
+        <input id="searchInput" type="text" placeholder="Tìm theo mã đơn hoặc tên khách..."
+          class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" oninput="renderHistory()">
+        <span id="histCount" class="text-xs text-gray-400 whitespace-nowrap"></span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-gray-50 border-b border-gray-200">
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Mã đơn</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Khách hàng</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">SĐT</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden md:table-cell">Địa chỉ</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden lg:table-cell">Sản phẩm</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Ngày</th>
+              <th class="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+      </div>
+      <div id="historyEmpty" class="hidden text-center py-16 text-gray-400 text-sm">
+        <div class="text-3xl mb-2">📦</div>
+        Chưa có đơn nào được lưu
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── PRINT FRAME (ẩn, chỉ hiện khi in) ───────────────────────────── -->
+<div id="printFrame" style="display:none;">
+  <div class="label" id="printLabel" style="padding:8mm 6mm;"></div>
+</div>
+
+<!-- ── TOAST ────────────────────────────────────────────────────────── -->
+<div id="toast"
+  class="fixed bottom-5 right-5 bg-gray-900 text-white px-4 py-2.5 rounded-lg text-sm font-medium z-50
+         opacity-0 translate-y-2 transition-all duration-300 pointer-events-none shadow-lg">
+  Đã lưu!
+</div>
+
+<script>
+// ════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════
+let orders = JSON.parse(localStorage.getItem('bbv_vandon_v2') || '[]');
+let productRows = [];
+
+// ════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('orderDate').value = todayISO();
+  addProduct();
+  genId();
+  renderHistory();
+  updateHistBadge();
+
+  // Live preview on input
+  ['orderId','orderDate','customerName','phone','address','trackingCode','notes'].forEach(id => {
+    document.getElementById(id).addEventListener('input', debounce(updatePreview, 600));
+  });
+});
+
+// ════════════════════════════════════════════
+// UTILS
+// ════════════════════════════════════════════
+function todayISO() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function fmtDate(s) {
+  if (!s) return '';
+  const [y,m,d] = s.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function esc(s) {
+  return String(s||'')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function debounce(fn, ms) {
+  let t;
+  return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.remove('opacity-0','translate-y-2');
+  el.classList.add('opacity-100','translate-y-0');
+  setTimeout(() => {
+    el.classList.remove('opacity-100','translate-y-0');
+    el.classList.add('opacity-0','translate-y-2');
+  }, 2600);
+}
+
+function genId() {
+  const d = new Date();
+  const yy = String(d.getFullYear()).slice(2);
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  const seq = String(orders.length + 1).padStart(3,'0');
+  document.getElementById('orderId').value = `BBV-${yy}${mm}${dd}-${seq}`;
+}
+
+// ════════════════════════════════════════════
+// TABS
+// ════════════════════════════════════════════
+function showTab(tab) {
+  document.getElementById('tab-create-content').classList.toggle('hidden', tab !== 'create');
+  document.getElementById('tab-history-content').classList.toggle('hidden', tab !== 'history');
+  document.getElementById('tab-create').classList.toggle('active', tab === 'create');
+  document.getElementById('tab-history').classList.toggle('active', tab === 'history');
+  if (tab === 'history') renderHistory();
+}
+
+// ════════════════════════════════════════════
+// PRODUCT ROWS
+// ════════════════════════════════════════════
+function addProduct() {
+  productRows.push({ id: Date.now() + Math.random(), name: '', qty: 1 });
+  renderProductList();
+}
+
+function removeProduct(id) {
+  if (productRows.length <= 1) return;
+  productRows = productRows.filter(r => r.id !== id);
+  renderProductList();
+  updatePreview();
+}
+
+function updateProd(id, field, val) {
+  const row = productRows.find(r => r.id === id);
+  if (row) { row[field] = val; updatePreview(); }
+}
+
+function renderProductList() {
+  document.getElementById('productList').innerHTML = productRows.map(r => `
+    <div class="flex gap-2 items-center">
+      <input type="text" placeholder="Tên sản phẩm" value="${esc(r.name)}"
+        class="flex-1 border border-gray-300 rounded-lg px-2.5 py-1.5 text-sm"
+        oninput="updateProd(${r.id},'name',this.value)">
+      <input type="number" value="${r.qty}" min="1" max="99"
+        class="w-14 border border-gray-300 rounded-lg px-2 py-1.5 text-sm text-center"
+        oninput="updateProd(${r.id},'qty',parseInt(this.value)||1)">
+      <button onclick="removeProduct(${r.id})"
+        class="w-7 h-7 flex items-center justify-center text-gray-400 hover:text-red-500 rounded hover:bg-red-50 transition-colors text-lg leading-none flex-shrink-0"
+        ${productRows.length<=1?'disabled style="opacity:.3"':''}>×</button>
+    </div>
+  `).join('');
+}
+
+// ════════════════════════════════════════════
+// FORM DATA
+// ════════════════════════════════════════════
+function getForm() {
+  return {
+    orderId:      document.getElementById('orderId').value.trim(),
+    orderDate:    document.getElementById('orderDate').value,
+    customerName: document.getElementById('customerName').value.trim(),
+    phone:        document.getElementById('phone').value.trim(),
+    address:      document.getElementById('address').value.trim(),
+    trackingCode: document.getElementById('trackingCode').value.trim(),
+    products:     productRows.filter(r => r.name.trim()),
+    notes:        document.getElementById('notes').value.trim(),
+    savedAt:      new Date().toISOString()
+  };
+}
+
+function fillForm(o) {
+  document.getElementById('orderId').value      = o.orderId || '';
+  document.getElementById('orderDate').value    = o.orderDate || todayISO();
+  document.getElementById('customerName').value = o.customerName || '';
+  document.getElementById('phone').value        = o.phone || '';
+  document.getElementById('address').value      = o.address || '';
+  document.getElementById('trackingCode').value = o.trackingCode || '';
+  document.getElementById('notes').value        = o.notes || '';
+  productRows = (o.products && o.products.length)
+    ? o.products.map((p,i) => ({ id: Date.now()+i, name: p.name, qty: p.qty }))
+    : [{ id: Date.now(), name: '', qty: 1 }];
+  renderProductList();
+  updatePreview();
+}
+
+// ════════════════════════════════════════════
+// SAVE / NEW / DELETE
+// ════════════════════════════════════════════
+function saveOrder() {
+  const o = getForm();
+  if (!o.orderId)      { alert('Vui lòng nhập mã đơn hàng'); return; }
+  if (!o.customerName) { alert('Vui lòng nhập tên khách hàng'); return; }
+  const idx = orders.findIndex(x => x.orderId === o.orderId);
+  if (idx >= 0) orders[idx] = o; else orders.unshift(o);
+  localStorage.setItem('bbv_vandon_v2', JSON.stringify(orders));
+  updateHistBadge();
+  toast('✓ Đã lưu đơn hàng!');
+}
+
+function newOrder() {
+  productRows = [{ id: Date.now(), name: '', qty: 1 }];
+  renderProductList();
+  ['customerName','phone','address','trackingCode','notes'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('orderDate').value = todayISO();
+  genId();
+  document.getElementById('labelPreview').innerHTML =
+    '<div class="text-center text-gray-300 text-xs" style="padding-top:60px;">Nhập thông tin để xem trước</div>';
+}
+
+function deleteOrder(orderId) {
+  if (!confirm(`Xóa đơn "${orderId}"?`)) return;
+  orders = orders.filter(o => o.orderId !== orderId);
+  localStorage.setItem('bbv_vandon_v2', JSON.stringify(orders));
+  updateHistBadge();
+  renderHistory();
+  toast('Đã xóa đơn!');
+}
+
+function loadOrder(orderId) {
+  const o = orders.find(x => x.orderId === orderId);
+  if (!o) return;
+  fillForm(o);
+  showTab('create');
+}
+
+function updateHistBadge() {
+  const el = document.getElementById('histBadge');
+  if (el) el.textContent = orders.length ? `(${orders.length})` : '';
+}
+
+// ════════════════════════════════════════════
+// HISTORY
+// ════════════════════════════════════════════
+function renderHistory() {
+  const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
+  const list = orders.filter(o =>
+    !q || o.orderId.toLowerCase().includes(q) || o.customerName.toLowerCase().includes(q)
+  );
+  document.getElementById('histCount').textContent = `${list.length} đơn`;
+  const body  = document.getElementById('historyBody');
+  const empty = document.getElementById('historyEmpty');
+  if (!list.length) { body.innerHTML = ''; empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden');
+  body.innerHTML = list.map(o => {
+    const prods = (o.products||[]).slice(0,2).map(p=>`${p.qty}×${p.name}`).join(', ');
+    const more  = (o.products||[]).length > 2 ? ` +${(o.products||[]).length-2}` : '';
+    const addr  = (o.address||'').length > 45 ? o.address.slice(0,45)+'…' : (o.address||'—');
+    return `
+      <tr class="hist-row border-b border-gray-100" onclick="loadOrder('${esc(o.orderId)}')">
+        <td class="px-4 py-2.5 text-xs font-mono font-bold text-gray-800">${esc(o.orderId)}</td>
+        <td class="px-4 py-2.5 text-sm font-semibold">${esc(o.customerName)}</td>
+        <td class="px-4 py-2.5 text-sm text-gray-600">${esc(o.phone||'—')}</td>
+        <td class="px-4 py-2.5 text-xs text-gray-500 hidden md:table-cell max-w-xs">${esc(addr)}</td>
+        <td class="px-4 py-2.5 text-xs text-gray-500 hidden lg:table-cell">${esc(prods)}${esc(more)}</td>
+        <td class="px-4 py-2.5 text-xs text-gray-500 whitespace-nowrap">${fmtDate(o.orderDate)}</td>
+        <td class="px-4 py-2.5 text-right" onclick="event.stopPropagation()">
+          <div class="flex gap-1 justify-end">
+            <button onclick="loadOrder('${esc(o.orderId)}')"
+              class="text-xs px-2 py-1 border border-gray-300 rounded hover:bg-gray-50">Sửa</button>
+            <button onclick="loadAndPrint('${esc(o.orderId)}')"
+              class="text-xs px-2 py-1 border border-gray-300 rounded hover:bg-gray-50">🖨 In</button>
+            <button onclick="deleteOrder('${esc(o.orderId)}')"
+              class="text-xs px-2 py-1 border border-red-200 text-red-600 rounded hover:bg-red-50">Xóa</button>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+// ════════════════════════════════════════════
+// LABEL HTML BUILDER
+// ════════════════════════════════════════════
+function buildLabel(o, prefix) {
+  const prods = (o.products||[]).filter(p=>p.name.trim());
+  const trackCode = o.trackingCode || o.orderId || 'BBV000';
+
+  const prodHtml = prods.length
+    ? prods.map(p=>`
+        <div class="lbl-product" style="display:flex;justify-content:space-between;padding:1.5px 0;">
+          <span style="flex:1;padding-right:4px;">• ${esc(p.name)}</span>
+          <span style="font-weight:700;flex-shrink:0;">×${p.qty}</span>
+        </div>`).join('')
+    : `<span style="color:#aaa;">—</span>`;
+
+  return `
+    <div style="width:100%;box-sizing:border-box;">
+
+      <!-- HEADER: logo + shop info -->
+      <div style="display:flex;align-items:center;gap:7px;padding-bottom:5px;border-bottom:2px solid #000;margin-bottom:5px;">
+        <img src="/logo_bongbanviet.png" alt="BBV" class="lbl-logo"
+          style="width:28px;height:28px;border-radius:50%;flex-shrink:0;border:1px solid #eee;">
+        <div>
+          <div class="lbl-shop-name" style="font-weight:800;font-size:13px;letter-spacing:0.04em;line-height:1.1;">
+            BÓNG BÀN VIỆT
+          </div>
+          <div class="lbl-footer" style="font-size:9px;color:#444;margin-top:1px;">
+            Tư Vấn Chuẩn · Hàng Chính Hãng
+          </div>
+          <div class="lbl-footer" style="font-size:9px;color:#444;">
+            286 Nguyễn Xiển, Hà Nội &nbsp;|&nbsp; 096.1269.386
+          </div>
+        </div>
+      </div>
+
+      <!-- ORDER ID + DATE -->
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:5px;border-bottom:1px dashed #999;margin-bottom:5px;">
+        <div>
+          <div class="lbl-section-title" style="font-size:8px;text-transform:uppercase;letter-spacing:0.1em;color:#888;margin-bottom:1px;">Mã đơn hàng</div>
+          <div class="lbl-order-id" style="font-weight:800;font-size:12px;letter-spacing:0.03em;font-family:monospace;">${esc(o.orderId)}</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="lbl-section-title" style="font-size:8px;text-transform:uppercase;letter-spacing:0.1em;color:#888;margin-bottom:1px;">Ngày</div>
+          <div style="font-weight:600;font-size:11px;">${fmtDate(o.orderDate)}</div>
+        </div>
+      </div>
+
+      <!-- NGƯỜI NHẬN -->
+      <div style="padding-bottom:5px;border-bottom:1px dashed #999;margin-bottom:5px;">
+        <div class="lbl-section-title" style="font-size:8px;text-transform:uppercase;letter-spacing:0.1em;color:#888;margin-bottom:2px;">Người Nhận</div>
+        <div class="lbl-receiver" style="font-weight:800;font-size:13px;line-height:1.2;">${esc(o.customerName)}</div>
+        <div class="lbl-phone" style="font-weight:700;font-size:12px;margin:2px 0;">${esc(o.phone||'')}</div>
+        <div class="lbl-address" style="font-size:11px;line-height:1.4;color:#111;">${esc(o.address||'')}</div>
+      </div>
+
+      <!-- SẢN PHẨM -->
+      <div style="padding-bottom:5px;border-bottom:1px dashed #999;margin-bottom:5px;">
+        <div class="lbl-section-title" style="font-size:8px;text-transform:uppercase;letter-spacing:0.1em;color:#888;margin-bottom:3px;">Sản Phẩm</div>
+        <div>${prodHtml}</div>
+      </div>
+
+      ${o.notes ? `
+      <!-- GHI CHÚ -->
+      <div style="padding-bottom:5px;border-bottom:1px dashed #999;margin-bottom:5px;">
+        <div class="lbl-section-title" style="font-size:8px;text-transform:uppercase;letter-spacing:0.1em;color:#888;margin-bottom:1px;">Ghi Chú</div>
+        <div class="lbl-note" style="font-size:10px;font-style:italic;line-height:1.4;">${esc(o.notes)}</div>
+      </div>` : ''}
+
+      <!-- BARCODE -->
+      <div style="margin-bottom:4px;">
+        <svg id="${prefix}Barcode" style="width:100%;display:block;"></svg>
+      </div>
+
+      <!-- QR + footer -->
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+        <div id="${prefix}QR" class="lbl-qr" style="width:52px;height:52px;flex-shrink:0;"></div>
+        <div style="text-align:right;">
+          <div class="lbl-footer" style="font-size:8px;color:#666;">bongbanviet.com</div>
+          <div class="lbl-footer" style="font-size:8px;color:#666;margin-top:1px;">096.1269.386</div>
+          <div class="lbl-footer" style="font-size:7px;color:#aaa;margin-top:2px;">${esc(trackCode)}</div>
+        </div>
+      </div>
+
+    </div>`;
+}
+
+// ════════════════════════════════════════════
+// GENERATE BARCODE & QR
+// ════════════════════════════════════════════
+function renderBarcode(svgId, code, opts) {
+  const el = document.getElementById(svgId);
+  if (!el) return;
+  try {
+    JsBarcode(el, code || 'BBV000', {
+      format: 'CODE128',
+      width: opts.width || 1.5,
+      height: opts.height || 35,
+      displayValue: true,
+      fontSize: opts.fontSize || 9,
+      margin: 2,
+      background: '#ffffff',
+      lineColor: '#000000'
+    });
+  } catch(e) { /* ignore invalid code */ }
+}
+
+async function renderQR(containerId, text, size) {
+  const el = document.getElementById(containerId);
+  if (!el || !text) return;
+  el.innerHTML = '';
+  try {
+    const canvas = document.createElement('canvas');
+    await QRCode.toCanvas(canvas, text, {
+      width: size || 52,
+      margin: 1,
+      color: { dark: '#000000', light: '#ffffff' }
+    });
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    el.appendChild(canvas);
+  } catch(e) {
+    el.innerHTML = `<div style="font-size:8px;color:#ccc;text-align:center;padding-top:16px;">QR</div>`;
+  }
+}
+
+// ════════════════════════════════════════════
+// PREVIEW
+// ════════════════════════════════════════════
+async function updatePreview() {
+  const o = getForm();
+  if (!o.orderId && !o.customerName) return;
+
+  const preview = document.getElementById('labelPreview');
+  preview.innerHTML = buildLabel(o, 'prev');
+
+  const code = o.trackingCode || o.orderId || 'BBV000';
+  renderBarcode('prevBarcode', code, { width: 1.5, height: 35, fontSize: 9 });
+  await renderQR('prevQR', o.orderId || code, 52);
+}
+
+// ════════════════════════════════════════════
+// PRINT
+// ════════════════════════════════════════════
+async function doPrint(order) {
+  const printLabel = document.getElementById('printLabel');
+  printLabel.innerHTML = buildLabel(order, 'prt');
+
+  const code = order.trackingCode || order.orderId || 'BBV000';
+  renderBarcode('prtBarcode', code, { width: 2, height: 40, fontSize: 10 });
+  await renderQR('prtQR', order.orderId || code, 76);
+
+  document.getElementById('printFrame').style.display = 'block';
+  await new Promise(r => setTimeout(r, 350));
+  window.print();
+  setTimeout(() => { document.getElementById('printFrame').style.display = 'none'; }, 1200);
+}
+
+async function printOrder() {
+  const o = getForm();
+  if (!o.orderId || !o.customerName) {
+    alert('Vui lòng nhập đầy đủ mã đơn và tên khách trước khi in');
+    return;
+  }
+  await doPrint(o);
+}
+
+async function loadAndPrint(orderId) {
+  const o = orders.find(x => x.orderId === orderId);
+  if (o) await doPrint(o);
+}
+
+// ════════════════════════════════════════════
+// EXPORT PNG
+// ════════════════════════════════════════════
+async function exportPNG() {
+  const o = getForm();
+  if (!o.orderId) { alert('Vui lòng nhập mã đơn hàng'); return; }
+  await updatePreview();
+  await new Promise(r => setTimeout(r, 400));
+  try {
+    const canvas = await html2canvas(document.getElementById('labelPreview'), {
+      scale: 2.11,   // 203dpi / 96dpi
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      logging: false
+    });
+    const a = document.createElement('a');
+    a.download = `vandon-${o.orderId}.png`;
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+    toast('✓ Đã xuất PNG!');
+  } catch(e) { alert('Lỗi xuất PNG: ' + e.message); }
+}
+
+// ════════════════════════════════════════════
+// EXPORT PDF
+// ════════════════════════════════════════════
+async function exportPDF() {
+  const o = getForm();
+  if (!o.orderId) { alert('Vui lòng nhập mã đơn hàng'); return; }
+  await updatePreview();
+  await new Promise(r => setTimeout(r, 400));
+  try {
+    const canvas = await html2canvas(document.getElementById('labelPreview'), {
+      scale: 2.11,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      logging: false
+    });
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [100, 150] });
+    pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 100, 150);
+    pdf.save(`vandon-${o.orderId}.pdf`);
+    toast('✓ Đã xuất PDF!');
+  } catch(e) { alert('Lỗi xuất PDF: ' + e.message); }
+}
+</script>
+</body>
+</html>

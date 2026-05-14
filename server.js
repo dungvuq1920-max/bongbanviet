@@ -223,6 +223,11 @@ app.get(['/lichtap', '/lichtap/'], (req, res) => {
   res.type('html').send(html);
 });
 app.use('/lichtap', express.static(path.join(__dirname, 'lichtap')));
+// Serve vandon order management page
+app.get(['/vandon', '/vandon/'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'vandon', 'index.html'));
+});
+app.use('/vandon', express.static(path.join(__dirname, 'vandon')));
 app.use(express.static(__dirname, { extensions: ['html'] }));
 
 // ─── DexScreener Proxy ────────────────────────────────────────────────────────
