@@ -110,6 +110,27 @@ db.exec(`
   "ALTER TABLE combos ADD COLUMN in_stock INTEGER DEFAULT 1",
 ].forEach(sql => { try { db.exec(sql); } catch {} });
 
+// Orders table (added later, created via migration)
+db.exec(`
+  CREATE TABLE IF NOT EXISTS orders (
+    id TEXT PRIMARY KEY,
+    customer_name TEXT DEFAULT '',
+    customer_phone TEXT DEFAULT '',
+    customer_address TEXT DEFAULT '',
+    customer_province TEXT DEFAULT '',
+    customer_district TEXT DEFAULT '',
+    customer_ward TEXT DEFAULT '',
+    carrier TEXT DEFAULT '',
+    tracking_code TEXT DEFAULT '',
+    status TEXT DEFAULT 'pending',
+    items TEXT DEFAULT '[]',
+    notes TEXT DEFAULT '',
+    total_amount INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  )
+`);
+
 // Legacy one-off catalog backfill. Keep disabled by default so products deleted
 // from admin are not recreated on every server restart/redeploy.
 if (process.env.BBV_RUN_LEGACY_PRODUCT_MIGRATIONS === '1') {

@@ -1189,6 +1189,56 @@ app.delete('/api/articles/:id', requireAuth, (req, res) => {
   res.json({ success: true });
 });
 
+// ─── Orders ──────────────────────────────────────────────────────────────────
+
+app.get('/api/orders', requireAuth, (req, res) => {
+  const { status, q, limit = 500 } = req.query;
+  let sql = 'SELECT * FROM orders WHERE 1=1';
+  const params = [];
+  if (status && status !== 'all') { sql += ' AND status = ?'; params.push(status); }
+  if (q) {
+    sql += ' AND (customer_name LIKE ? OR customer_phone LIKE ? OR id LIKE ?)';
+    const p = `%${q}%`; params.push(p, p, p);
+  }
+  sql += ' ORDER BY created_at DESC LIMIT ?';
+  params.push(Number(limit));
+  const rows = db.prepare(sql).all(...params);
+  res.json(rows.map(r => ({ ...r, items: JSON.parse(r.items || '[]') })));
+});
+
+app.get('/api/orders/:id', requireAuth, (req, res) => {
+  const r = db.prepare('SELECT * FROM orders WHERE id = ?').get(req.params.id);
+  if (!r) return res.status(404).json({ error: 'Không tìm thấy đơn hàng' });
+  res.json({ ...r, items: JSON.parse(r.items || '[]') });
+});
+
+app.post('/api/orders', requireAuth, (req, res) => {
+  const o = req.body;
+  const id = (o.id || '').trim() || `BBV-${Date.now()}`;
+  try {
+    db.prepare(`INSERT INTO orders (id,customer_name,customer_phone,customer_address,customer_province,customer_district,customer_ward,carrier,tracking_code,status,items,notes,total_amount,created_at,updated_at)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'),datetime('now'))`)
+      .run(id, o.customer_name||'', o.customer_phone||'', o.customer_address||'', o.customer_province||'', o.customer_district||'', o.customer_ward||'', o.carrier||'', o.tracking_code||'', o.status||'pending', JSON.stringify(o.items||[]), o.notes||'', Number(o.total_amount)||0);
+    res.json({ id });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+app.put('/api/orders/:id', requireAuth, (req, res) => {
+  const o = req.body;
+  const info = db.prepare(`UPDATE orders SET customer_name=?,customer_phone=?,customer_address=?,customer_province=?,customer_district=?,customer_ward=?,carrier=?,tracking_code=?,status=?,items=?,notes=?,total_amount=?,updated_at=datetime('now') WHERE id=?`)
+    .run(o.customer_name||'', o.customer_phone||'', o.customer_address||'', o.customer_province||'', o.customer_district||'', o.customer_ward||'', o.carrier||'', o.tracking_code||'', o.status||'pending', JSON.stringify(o.items||[]), o.notes||'', Number(o.total_amount)||0, req.params.id);
+  if (info.changes === 0) return res.status(404).json({ error: 'Không tìm thấy đơn hàng' });
+  res.json({ ok: true });
+});
+
+app.delete('/api/orders/:id', requireAuth, (req, res) => {
+  const info = db.prepare('DELETE FROM orders WHERE id = ?').run(req.params.id);
+  if (info.changes === 0) return res.status(404).json({ error: 'Không tìm thấy đơn hàng' });
+  res.json({ ok: true });
+});
+
 // ─── Stats ───────────────────────────────────────────────────────────────────
 
 app.get('/api/stats', (req, res) => {

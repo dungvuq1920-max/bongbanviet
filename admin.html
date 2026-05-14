@@ -778,6 +778,67 @@
   .aiimg-download-row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:4px; }
   .aiimg-note { font-size:11px; line-height:1.65; color:#475569; background:#EFF6FF; border:1px solid #BFDBFE; padding:10px 12px; border-radius:5px; }
   .aiimg-gpt-tip { font-size:11px; line-height:1.65; color:#7C3AED; background:#F5F3FF; border:1px solid #DDD6FE; padding:10px 12px; border-radius:5px; }
+
+  /* ─── Orders ───────────────────────────────────────────────── */
+  .ord-stats { display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:20px; }
+  .ord-stat { background:var(--card); border:1px solid var(--border); border-left:3px solid transparent; padding:14px 16px; }
+  .ord-stat.s-all    { border-left-color:#64748B; }
+  .ord-stat.s-pend   { border-left-color:var(--yellow); }
+  .ord-stat.s-proc   { border-left-color:#3B82F6; }
+  .ord-stat.s-done   { border-left-color:var(--green); }
+  .ord-stat .os-num  { font-size:28px; font-weight:800; line-height:1; }
+  .ord-stat .os-lbl  { font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-top:3px; }
+
+  .ord-form-card { background:var(--card); border:1.5px solid var(--border); padding:20px; }
+  .ord-section-lbl { font-size:10px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin:14px 0 8px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+
+  /* Product item rows */
+  .ord-items-head { display:grid; grid-template-columns:1fr 110px 60px 130px 100px 30px; gap:8px; margin-bottom:4px; }
+  .ord-items-head span { font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+  .ord-item-row { display:grid; grid-template-columns:1fr 110px 60px 130px 100px 30px; gap:8px; align-items:center; margin-bottom:5px; position:relative; }
+  .ord-item-row .fi { padding:7px 9px; font-size:13px; }
+  .ord-row-total { font-size:13px; font-weight:700; color:var(--red); text-align:right; white-space:nowrap; }
+  .ord-total-row { display:flex; justify-content:flex-end; align-items:center; gap:12px; margin-top:10px; padding-top:10px; border-top:2px solid var(--border); }
+  .ord-total-lbl { font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+  .ord-total-val { font-size:20px; font-weight:800; color:var(--red); }
+
+  /* Autocomplete dropdown */
+  .prod-ac-wrap { position:relative; }
+  .prod-ac-drop { position:absolute; top:100%; left:0; right:0; background:var(--card); border:1.5px solid var(--dark); border-top:none; z-index:200; max-height:220px; overflow-y:auto; display:none; }
+  .prod-ac-drop.open { display:block; }
+  .prod-ac-item { padding:8px 11px; cursor:pointer; font-size:13px; border-bottom:1px solid var(--border); transition:background .12s; }
+  .prod-ac-item:hover, .prod-ac-item.focused { background:#F1F5F9; }
+  .prod-ac-item .pa-name { font-weight:600; color:var(--dark); }
+  .prod-ac-item .pa-meta { font-size:11px; color:var(--muted); margin-top:1px; }
+  .prod-ac-item .pa-price { font-size:12px; font-weight:700; color:var(--red); float:right; }
+
+  /* Order list table */
+  .ord-filters { display:flex; gap:10px; align-items:center; margin-bottom:16px; flex-wrap:wrap; }
+  .ord-status-pills { display:flex; gap:6px; flex-wrap:wrap; }
+  .ord-pill { font-size:11px; font-weight:700; letter-spacing:.06em; padding:5px 12px; border:1.5px solid var(--border); background:var(--card); color:var(--muted); cursor:pointer; transition:all .15s; }
+  .ord-pill.active { border-color:var(--red); background:var(--red); color:#fff; }
+  .ord-table-wrap { overflow-x:auto; }
+  .ord-table { width:100%; border-collapse:collapse; }
+  .ord-table th { font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); padding:8px 12px; text-align:left; border-bottom:2px solid var(--border); background:var(--bg); white-space:nowrap; }
+  .ord-table td { padding:10px 12px; border-bottom:1px solid var(--border); font-size:13px; vertical-align:middle; }
+  .ord-table tr:hover td { background:#F8FAFC; }
+  .ord-status-badge { font-size:10px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; padding:3px 8px; display:inline-block; }
+  .os-pending    { background:#FEF9C3; color:#92400E; }
+  .os-processing { background:#EFF6FF; color:#1D4ED8; }
+  .os-shipped    { background:#F0FDF4; color:#15803D; }
+  .os-done       { background:#ECFDF5; color:#059669; }
+  .os-cancelled  { background:#FEF2F2; color:#DC2626; }
+  .ord-act-btn { background:none; border:1px solid var(--border); color:var(--muted); font-size:11px; padding:4px 8px; cursor:pointer; transition:all .15s; font-family:inherit; }
+  .ord-act-btn:hover { border-color:var(--dark); color:var(--dark); }
+  .ord-act-btn.del:hover { border-color:#DC2626; color:#DC2626; }
+
+  /* Print label */
+  @media print {
+    @page { size: 100mm 150mm; margin: 0; }
+    body * { visibility: hidden !important; }
+    #ordPrintFrame, #ordPrintFrame * { visibility: visible !important; }
+    #ordPrintFrame { position: fixed; inset: 0; width: 100mm; height: 150mm; overflow: hidden; }
+  }
   </style>
 </head>
 <body>
@@ -872,6 +933,11 @@
 
     <div class="sb-group">Quản Lý</div>
 
+    <button class="sb-item" id="nav-don-hang" onclick="nav('don-hang')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
+      Đơn Hàng
+      <span class="sb-count" id="nc-don-hang">…</span>
+    </button>
     <button class="sb-item" id="nav-facebook" onclick="nav('facebook')">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
       Kế Hoạch Facebook
@@ -1079,6 +1145,173 @@
       </div>
       <div id="list-kien-thuc"></div>
     </div>
+
+    <!-- ── Đơn Hàng ──────────────────────────────── -->
+    <div class="page" id="page-don-hang">
+
+      <!-- Stats -->
+      <div class="ord-stats" id="ordStats">
+        <div class="ord-stat s-all"><div class="os-num" id="os-all">—</div><div class="os-lbl">Tổng đơn</div></div>
+        <div class="ord-stat s-pend"><div class="os-num" id="os-pending">—</div><div class="os-lbl">Chờ xử lý</div></div>
+        <div class="ord-stat s-proc"><div class="os-num" id="os-processing">—</div><div class="os-lbl">Đang giao</div></div>
+        <div class="ord-stat s-done"><div class="os-num" id="os-done">—</div><div class="os-lbl">Hoàn thành</div></div>
+      </div>
+
+      <div class="sub-tabs">
+        <button class="sub-tab active" data-sub="ord-create" onclick="ordTab(this,'ord-create')">Tạo Đơn Mới</button>
+        <button class="sub-tab" data-sub="ord-list" onclick="ordTab(this,'ord-list')">Danh Sách Đơn</button>
+      </div>
+
+      <!-- ── Tạo đơn ── -->
+      <div class="sub-section active" id="ord-create">
+        <div class="ord-form-card">
+          <div class="f-row3">
+            <div class="fld">
+              <label class="fld-label">Mã đơn hàng</label>
+              <input id="ordId" class="fi fi-slug" placeholder="Tự động tạo…" readonly>
+            </div>
+            <div class="fld">
+              <label class="fld-label">Ngày đặt</label>
+              <input id="ordDate" class="fi" type="date">
+            </div>
+            <div class="fld">
+              <label class="fld-label">Trạng thái</label>
+              <select id="ordStatus" class="fi fs">
+                <option value="pending">Chờ xử lý</option>
+                <option value="processing">Đang giao</option>
+                <option value="shipped">Đã gửi hàng</option>
+                <option value="done">Hoàn thành</option>
+                <option value="cancelled">Đã hủy</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="ord-section-lbl">Thông tin khách hàng</div>
+          <div class="f-row2">
+            <div class="fld">
+              <label class="fld-label">Tên khách hàng</label>
+              <input id="ordCustName" class="fi" placeholder="Nguyễn Văn A">
+            </div>
+            <div class="fld">
+              <label class="fld-label">Số điện thoại</label>
+              <input id="ordCustPhone" class="fi" type="tel" placeholder="0912 345 678">
+            </div>
+          </div>
+          <div class="f-row3" style="margin-top:8px">
+            <div class="fld">
+              <label class="fld-label">Tỉnh / Thành phố</label>
+              <input id="ordProvince" class="fi" placeholder="Hà Nội">
+            </div>
+            <div class="fld">
+              <label class="fld-label">Quận / Huyện</label>
+              <input id="ordDistrict" class="fi" placeholder="Thanh Trì">
+            </div>
+            <div class="fld">
+              <label class="fld-label">Phường / Xã</label>
+              <input id="ordWard" class="fi" placeholder="Thanh Liệt">
+            </div>
+          </div>
+          <div class="fld" style="margin-top:8px">
+            <label class="fld-label">Địa chỉ chi tiết</label>
+            <input id="ordCustAddr" class="fi" placeholder="Số nhà, tên đường…">
+          </div>
+
+          <div class="ord-section-lbl">Vận chuyển</div>
+          <div class="f-row2">
+            <div class="fld">
+              <label class="fld-label">Đơn vị vận chuyển</label>
+              <select id="ordCarrier" class="fi fs">
+                <option value="">-- Chọn ĐVVC --</option>
+                <option value="GHN">GHN – Giao Hàng Nhanh</option>
+                <option value="GHTK">GHTK – Giao Hàng Tiết Kiệm</option>
+                <option value="VTP">VTP – ViettelPost</option>
+                <option value="VNPT">VNPT Express</option>
+                <option value="JT">J&amp;T Express</option>
+                <option value="Grab">GrabExpress</option>
+                <option value="Self">Tự giao</option>
+                <option value="Other">Khác</option>
+              </select>
+            </div>
+            <div class="fld">
+              <label class="fld-label">Mã vận đơn</label>
+              <input id="ordTracking" class="fi" placeholder="Nhập mã tracking…">
+            </div>
+          </div>
+
+          <div class="ord-section-lbl" style="display:flex;align-items:center;justify-content:space-between">
+            <span>Sản phẩm</span>
+            <button class="btn-add-var" onclick="addOrdRow()">+ Thêm sản phẩm</button>
+          </div>
+
+          <div class="ord-items-head">
+            <span>Tên sản phẩm</span>
+            <span>SKU</span>
+            <span style="text-align:center">SL</span>
+            <span>Đơn giá</span>
+            <span style="text-align:right">Thành tiền</span>
+            <span></span>
+          </div>
+          <div id="ordItemsWrap"></div>
+
+          <div class="ord-total-row">
+            <span class="ord-total-lbl">Tổng cộng:</span>
+            <span class="ord-total-val" id="ordTotalDisplay">0 đ</span>
+          </div>
+
+          <div class="fld" style="margin-top:12px">
+            <label class="fld-label">Ghi chú</label>
+            <input id="ordNotes" class="fi" placeholder="Ghi chú nội bộ…">
+          </div>
+
+          <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+            <button class="btn-dark" id="ordSaveBtn" onclick="saveOrd()">Lưu Đơn Hàng</button>
+            <button class="btn-outline" onclick="resetOrdForm()">Làm Mới</button>
+            <button class="btn-outline" id="ordPrintBtn" style="display:none" onclick="printOrd()">🖨 In Nhãn A6</button>
+          </div>
+          <input type="hidden" id="ordEditId">
+        </div>
+      </div>
+
+      <!-- ── Danh sách ── -->
+      <div class="sub-section" id="ord-list">
+        <div class="ord-filters">
+          <div class="ord-status-pills">
+            <button class="ord-pill active" data-status="all" onclick="setOrdFilter(this)">Tất cả</button>
+            <button class="ord-pill" data-status="pending" onclick="setOrdFilter(this)">Chờ xử lý</button>
+            <button class="ord-pill" data-status="processing" onclick="setOrdFilter(this)">Đang giao</button>
+            <button class="ord-pill" data-status="shipped" onclick="setOrdFilter(this)">Đã gửi</button>
+            <button class="ord-pill" data-status="done" onclick="setOrdFilter(this)">Hoàn thành</button>
+            <button class="ord-pill" data-status="cancelled" onclick="setOrdFilter(this)">Đã hủy</button>
+          </div>
+          <div class="admin-search-wrap" style="margin-left:auto">
+            <svg class="admin-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input class="admin-search" id="ordSearch" placeholder="Tên, SĐT, mã đơn…" oninput="loadOrdList()">
+          </div>
+        </div>
+        <div class="ord-table-wrap">
+          <table class="ord-table">
+            <thead>
+              <tr>
+                <th>Mã đơn</th>
+                <th>Khách hàng</th>
+                <th>Sản phẩm</th>
+                <th>Tổng tiền</th>
+                <th>ĐVVC</th>
+                <th>Trạng thái</th>
+                <th>Ngày tạo</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="ordTableBody">
+              <tr><td colspan="8" class="loading-state">Đang tải…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Print frame for A6 label -->
+    <div id="ordPrintFrame" style="display:none"></div>
 
     <!-- ── Facebook Plan ─────────────────────────── -->
     <div class="page" id="page-facebook">
@@ -2429,7 +2662,7 @@ const CAT_LBL = {
   'cot-vot':'Cốt Vợt','mat-vot':'Mặt Vợt','bong':'Bóng','ban':'Bàn',
   'do-thi-dau':'Đồ Thi Đấu','combo-vot':'Combo Vợt','do-cu':'Đồ Cũ','kien-thuc':'Kiến Thức',
 };
-const PAGE_TITLES = { ...CAT_LBL, dashboard:'Dashboard', banners:'Ảnh & Banner', settings:'Cài Đặt', 'bang-gia':'Bảng Giá Đại Lý' };
+const PAGE_TITLES = { ...CAT_LBL, dashboard:'Dashboard', banners:'Ảnh & Banner', settings:'Cài Đặt', 'bang-gia':'Bảng Giá Đại Lý', 'don-hang':'Quản Lý Đơn Hàng' };
 const loaded = {};
 PAGE_TITLES.shopee = 'Shopee AI';
 PAGE_TITLES['ai-image'] = 'Tạo Ảnh Website / FB / IG';
@@ -2502,6 +2735,8 @@ function updateTopbarActions(page) {
     el.innerHTML = `<button class="btn-red" onclick="${addMap[page]}">+ Thêm ${label||'mới'}</button>`;
   } else if (page === 'do-thi-dau') {
     el.innerHTML = `<button class="btn-red" onclick="addCard('do-thi-dau', document.querySelector('#page-do-thi-dau .sub-tab.active')?.dataset.sub||'giay')">+ Thêm mới</button>`;
+  } else if (page === 'don-hang') {
+    el.innerHTML = `<button class="btn-red" onclick="ordTab(document.querySelector('#page-don-hang .sub-tab'),'ord-create');resetOrdForm()">+ Tạo đơn mới</button>`;
   } else {
     el.innerHTML = '';
   }
@@ -2890,6 +3125,7 @@ async function loadSection(cat) {
   if (cat === 'bang-gia')  { bgLoadData(); return; }
   if (cat === 'shopee')    { spLoadAiConfig(); return; }
   if (cat === 'ai-image')  { initAiImageTab(); return; }
+  if (cat === 'don-hang')  { initOrders(); return; }
   if (loaded[cat]) return;
   loaded[cat] = true;
   if (cat === 'combo-vot')  return loadCombos();
@@ -4334,6 +4570,367 @@ function initAiImageTab() {
     if (inp && !inp.value) inp.value = savedKey;
   }
   aiImgUpdatePromptPreview();
+}
+
+/* ─── Orders ───────────────────────────────────────────────── */
+
+let allProducts = [];      // cache for autocomplete
+let ordFilterStatus = 'all';
+let ordInited = false;
+
+async function initOrders() {
+  if (!ordInited) {
+    ordInited = true;
+    // Load products for autocomplete
+    try {
+      allProducts = await api('/api/products?limit=1000');
+    } catch { allProducts = []; }
+    // Seed form date
+    document.getElementById('ordDate').value = new Date().toISOString().slice(0,10);
+    genOrdId();
+    addOrdRow();
+  }
+  loadOrdStats();
+  loadOrdList();
+}
+
+function genOrdId() {
+  const el = document.getElementById('ordId');
+  if (!el.value) el.value = 'BBV-' + Date.now();
+}
+
+function ordTab(btn, sub) {
+  document.querySelectorAll('#page-don-hang .sub-tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('#page-don-hang .sub-section').forEach(s=>s.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(sub).classList.add('active');
+  if (sub === 'ord-list') loadOrdList();
+}
+
+/* ── Order form item rows ── */
+function addOrdRow(name='', sku='', qty=1, price='') {
+  const wrap = document.getElementById('ordItemsWrap');
+  const div = document.createElement('div');
+  div.className = 'ord-item-row';
+  div.innerHTML = `
+    <div class="prod-ac-wrap">
+      <input type="text" class="fi ord-prod-name" placeholder="Tên sản phẩm…" value="${esc(name)}"
+        oninput="filterProdAC(this)" onblur="hideProdAC(this,200)" onkeydown="navProdAC(event,this)">
+      <div class="prod-ac-drop"></div>
+    </div>
+    <input type="text" class="fi ord-sku" placeholder="SKU" value="${esc(sku)}">
+    <input type="number" class="fi ord-qty" value="${qty}" min="1" style="text-align:center" oninput="calcOrdTotal()">
+    <input type="text" class="fi ord-price" placeholder="0" value="${esc(price)}" oninput="calcOrdTotal()">
+    <span class="ord-row-total">0 đ</span>
+    <button class="btn-rm-var" onclick="this.closest('.ord-item-row').remove();calcOrdTotal()">✕</button>`;
+  wrap.appendChild(div);
+  calcOrdTotal();
+}
+
+function filterProdAC(input) {
+  const q = input.value.trim().toLowerCase();
+  const drop = input.closest('.prod-ac-wrap').querySelector('.prod-ac-drop');
+  if (!q || allProducts.length === 0) { drop.classList.remove('open'); return; }
+  const matches = allProducts.filter(p => p.name.toLowerCase().includes(q)).slice(0, 12);
+  if (matches.length === 0) { drop.classList.remove('open'); return; }
+  drop.innerHTML = matches.map((p, i) => {
+    const price = getProdDisplayPrice(p);
+    return `<div class="prod-ac-item" data-idx="${i}" data-name="${esc(p.name)}" data-sku="${esc(p.slug)}" data-price="${esc(getFirstPrice(p))}">
+      <span class="pa-price">${price}</span>
+      <div class="pa-name">${esc(p.name)}</div>
+      <div class="pa-meta">${esc(p.brand_slug||'')} · ${esc(p.category_slug||'')}</div>
+    </div>`;
+  }).join('');
+  drop.querySelectorAll('.prod-ac-item').forEach(item => {
+    item.addEventListener('mousedown', () => selectProdAC(input, item));
+  });
+  drop.classList.add('open');
+}
+
+function navProdAC(e, input) {
+  const drop = input.closest('.prod-ac-wrap').querySelector('.prod-ac-drop');
+  const items = drop.querySelectorAll('.prod-ac-item');
+  if (!items.length) return;
+  const focused = drop.querySelector('.focused');
+  let idx = focused ? Array.from(items).indexOf(focused) : -1;
+  if (e.key === 'ArrowDown') { e.preventDefault(); idx = Math.min(idx+1, items.length-1); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); idx = Math.max(idx-1, 0); }
+  else if (e.key === 'Enter' && focused) { e.preventDefault(); selectProdAC(input, focused); return; }
+  else if (e.key === 'Escape') { drop.classList.remove('open'); return; }
+  else return;
+  items.forEach(i=>i.classList.remove('focused'));
+  if (items[idx]) items[idx].classList.add('focused');
+}
+
+function selectProdAC(input, item) {
+  input.value = item.dataset.name;
+  const row = input.closest('.ord-item-row');
+  row.querySelector('.ord-sku').value = item.dataset.sku;
+  const priceField = row.querySelector('.ord-price');
+  if (!priceField.value) priceField.value = item.dataset.price;
+  input.closest('.prod-ac-wrap').querySelector('.prod-ac-drop').classList.remove('open');
+  calcOrdTotal();
+}
+
+function hideProdAC(input, delay) {
+  setTimeout(() => {
+    const drop = input.closest('.prod-ac-wrap')?.querySelector('.prod-ac-drop');
+    if (drop) drop.classList.remove('open');
+  }, delay);
+}
+
+function getProdDisplayPrice(p) {
+  if (p.variants && JSON.parse(p.variants||'[]').length > 0) {
+    const v = JSON.parse(p.variants);
+    const prices = v.map(x=>Number(String(x.price||'').replace(/\D/g,''))).filter(Boolean);
+    if (prices.length) return fmtNum(Math.min(...prices)) + ' đ';
+  }
+  const raw = String(p.price||'').replace(/\D/g,'');
+  return raw ? fmtNum(Number(raw)) + ' đ' : 'Liên hệ';
+}
+
+function getFirstPrice(p) {
+  if (p.variants) {
+    const v = JSON.parse(p.variants||'[]');
+    if (v.length > 0) {
+      const pr = String(v[0].price||'').replace(/\D/g,'');
+      if (pr) return pr;
+    }
+  }
+  return String(p.price||'').replace(/\D/g,'');
+}
+
+function calcOrdTotal() {
+  let total = 0;
+  document.querySelectorAll('#ordItemsWrap .ord-item-row').forEach(row => {
+    const qty = Number(row.querySelector('.ord-qty').value)||0;
+    const price = Number(String(row.querySelector('.ord-price').value).replace(/\D/g,''))||0;
+    const sub = qty * price;
+    row.querySelector('.ord-row-total').textContent = fmtNum(sub) + ' đ';
+    total += sub;
+  });
+  document.getElementById('ordTotalDisplay').textContent = fmtNum(total) + ' đ';
+}
+
+/* ── Save / Reset / Load ── */
+async function saveOrd() {
+  const editId = document.getElementById('ordEditId').value;
+  const items = [];
+  document.querySelectorAll('#ordItemsWrap .ord-item-row').forEach(row => {
+    const name = row.querySelector('.ord-prod-name').value.trim();
+    if (!name) return;
+    items.push({
+      name,
+      sku: row.querySelector('.ord-sku').value.trim(),
+      qty: Number(row.querySelector('.ord-qty').value)||1,
+      price: Number(String(row.querySelector('.ord-price').value).replace(/\D/g,''))||0,
+    });
+  });
+  const totalAmount = items.reduce((s,i)=>s+i.qty*i.price, 0);
+  const body = {
+    id: document.getElementById('ordId').value.trim(),
+    customer_name: document.getElementById('ordCustName').value.trim(),
+    customer_phone: document.getElementById('ordCustPhone').value.trim(),
+    customer_address: document.getElementById('ordCustAddr').value.trim(),
+    customer_province: document.getElementById('ordProvince').value.trim(),
+    customer_district: document.getElementById('ordDistrict').value.trim(),
+    customer_ward: document.getElementById('ordWard').value.trim(),
+    carrier: document.getElementById('ordCarrier').value,
+    tracking_code: document.getElementById('ordTracking').value.trim(),
+    status: document.getElementById('ordStatus').value,
+    notes: document.getElementById('ordNotes').value.trim(),
+    items,
+    total_amount: totalAmount,
+  };
+  try {
+    const btn = document.getElementById('ordSaveBtn');
+    btn.disabled = true; btn.textContent = 'Đang lưu…';
+    if (editId) {
+      await api('/api/orders/' + encodeURIComponent(editId), 'PUT', body);
+      toast('Đã cập nhật đơn hàng');
+    } else {
+      const r = await api('/api/orders', 'POST', body);
+      document.getElementById('ordId').value = r.id;
+      document.getElementById('ordEditId').value = r.id;
+      toast('Đã tạo đơn hàng ' + r.id);
+    }
+    document.getElementById('ordPrintBtn').style.display = '';
+    document.getElementById('nc-don-hang').textContent = '…';
+    loadOrdStats();
+  } catch(e) { toast('Lỗi: ' + e.message, 'err'); }
+  finally {
+    const btn = document.getElementById('ordSaveBtn');
+    btn.disabled = false; btn.textContent = 'Lưu Đơn Hàng';
+  }
+}
+
+function resetOrdForm() {
+  document.getElementById('ordId').value = '';
+  document.getElementById('ordEditId').value = '';
+  document.getElementById('ordDate').value = new Date().toISOString().slice(0,10);
+  document.getElementById('ordStatus').value = 'pending';
+  document.getElementById('ordCustName').value = '';
+  document.getElementById('ordCustPhone').value = '';
+  document.getElementById('ordCustAddr').value = '';
+  document.getElementById('ordProvince').value = '';
+  document.getElementById('ordDistrict').value = '';
+  document.getElementById('ordWard').value = '';
+  document.getElementById('ordCarrier').value = '';
+  document.getElementById('ordTracking').value = '';
+  document.getElementById('ordNotes').value = '';
+  document.getElementById('ordItemsWrap').innerHTML = '';
+  document.getElementById('ordPrintBtn').style.display = 'none';
+  genOrdId();
+  addOrdRow();
+  calcOrdTotal();
+}
+
+function loadOrdIntoForm(o) {
+  document.getElementById('ordId').value = o.id;
+  document.getElementById('ordEditId').value = o.id;
+  document.getElementById('ordDate').value = (o.created_at||'').slice(0,10);
+  document.getElementById('ordStatus').value = o.status||'pending';
+  document.getElementById('ordCustName').value = o.customer_name||'';
+  document.getElementById('ordCustPhone').value = o.customer_phone||'';
+  document.getElementById('ordCustAddr').value = o.customer_address||'';
+  document.getElementById('ordProvince').value = o.customer_province||'';
+  document.getElementById('ordDistrict').value = o.customer_district||'';
+  document.getElementById('ordWard').value = o.customer_ward||'';
+  document.getElementById('ordCarrier').value = o.carrier||'';
+  document.getElementById('ordTracking').value = o.tracking_code||'';
+  document.getElementById('ordNotes').value = o.notes||'';
+  document.getElementById('ordItemsWrap').innerHTML = '';
+  (o.items||[]).forEach(item => addOrdRow(item.name, item.sku, item.qty, item.price));
+  if (!o.items || o.items.length === 0) addOrdRow();
+  calcOrdTotal();
+  document.getElementById('ordPrintBtn').style.display = '';
+  ordTab(document.querySelector('#page-don-hang .sub-tab'), 'ord-create');
+}
+
+/* ── Stats ── */
+async function loadOrdStats() {
+  try {
+    const all = await api('/api/orders');
+    document.getElementById('os-all').textContent = all.length;
+    document.getElementById('os-pending').textContent = all.filter(o=>o.status==='pending').length;
+    document.getElementById('os-processing').textContent = all.filter(o=>o.status==='processing').length;
+    document.getElementById('os-done').textContent = all.filter(o=>o.status==='done').length;
+    document.getElementById('nc-don-hang').textContent = all.length;
+  } catch { }
+}
+
+/* ── List ── */
+function setOrdFilter(btn) {
+  document.querySelectorAll('.ord-status-pills .ord-pill').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  ordFilterStatus = btn.dataset.status;
+  loadOrdList();
+}
+
+async function loadOrdList() {
+  const tbody = document.getElementById('ordTableBody');
+  tbody.innerHTML = '<tr><td colspan="8" class="loading-state">Đang tải…</td></tr>';
+  try {
+    const q = document.getElementById('ordSearch')?.value.trim() || '';
+    let url = '/api/orders?limit=500';
+    if (ordFilterStatus !== 'all') url += '&status=' + encodeURIComponent(ordFilterStatus);
+    if (q) url += '&q=' + encodeURIComponent(q);
+    const orders = await api(url);
+    if (orders.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Không có đơn hàng nào.</td></tr>'; return;
+    }
+    tbody.innerHTML = orders.map(o => {
+      const items = o.items||[];
+      const itemSummary = items.length === 0 ? '—' : items.slice(0,2).map(i=>`${esc(i.name)} x${i.qty}`).join(', ') + (items.length>2?`…`:``);
+      const statusClass = { pending:'os-pending', processing:'os-processing', shipped:'os-shipped', done:'os-done', cancelled:'os-cancelled' }[o.status]||'';
+      const statusLabel = { pending:'Chờ xử lý', processing:'Đang giao', shipped:'Đã gửi', done:'Hoàn thành', cancelled:'Đã hủy' }[o.status]||o.status;
+      const dateStr = (o.created_at||'').slice(0,10);
+      return `<tr>
+        <td><strong>${esc(o.id)}</strong></td>
+        <td>
+          <div style="font-weight:600">${esc(o.customer_name||'—')}</div>
+          <div style="font-size:11px;color:var(--muted)">${esc(o.customer_phone||'')}</div>
+        </td>
+        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px">${itemSummary}</td>
+        <td style="font-weight:700;color:var(--red)">${fmtNum(o.total_amount)} đ</td>
+        <td>${esc(o.carrier||'—')}</td>
+        <td><span class="ord-status-badge ${statusClass}">${statusLabel}</span></td>
+        <td style="font-size:12px;color:var(--muted)">${dateStr}</td>
+        <td style="white-space:nowrap">
+          <button class="ord-act-btn" onclick="editOrd('${esc(o.id)}')">Sửa</button>
+          <button class="ord-act-btn del" onclick="delOrd('${esc(o.id)}',this)">Xóa</button>
+        </td>
+      </tr>`;
+    }).join('');
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Lỗi tải dữ liệu: ${esc(e.message)}</td></tr>`;
+  }
+}
+
+async function editOrd(id) {
+  try {
+    const o = await api('/api/orders/' + encodeURIComponent(id));
+    loadOrdIntoForm(o);
+  } catch(e) { toast('Lỗi: ' + e.message, 'err'); }
+}
+
+async function delOrd(id, btn) {
+  if (!confirm('Xóa đơn hàng ' + id + '?')) return;
+  try {
+    btn.disabled = true;
+    await api('/api/orders/' + encodeURIComponent(id), 'DELETE');
+    toast('Đã xóa đơn ' + id);
+    loadOrdList(); loadOrdStats();
+    document.getElementById('nc-don-hang').textContent = '…';
+  } catch(e) { toast('Lỗi: ' + e.message, 'err'); btn.disabled = false; }
+}
+
+/* ── Print A6 label ── */
+function printOrd() {
+  const id = document.getElementById('ordEditId').value || document.getElementById('ordId').value;
+  if (!id) { toast('Chưa lưu đơn hàng', 'err'); return; }
+
+  const name = document.getElementById('ordCustName').value || '—';
+  const phone = document.getElementById('ordCustPhone').value || '';
+  const province = document.getElementById('ordProvince').value || '';
+  const district = document.getElementById('ordDistrict').value || '';
+  const ward = document.getElementById('ordWard').value || '';
+  const addr = document.getElementById('ordCustAddr').value || '';
+  const carrier = document.getElementById('ordCarrier').value || '';
+  const tracking = document.getElementById('ordTracking').value || '';
+  const items = [];
+  document.querySelectorAll('#ordItemsWrap .ord-item-row').forEach(row => {
+    const n = row.querySelector('.ord-prod-name').value.trim();
+    if (n) items.push({ name: n, qty: row.querySelector('.ord-qty').value, price: row.querySelector('.ord-price').value });
+  });
+  const total = document.getElementById('ordTotalDisplay').textContent;
+  const fullAddr = [ward, district, province].filter(Boolean).join(', ');
+
+  const frame = document.getElementById('ordPrintFrame');
+  frame.style.display = 'block';
+  frame.innerHTML = `<div style="width:100mm;height:150mm;box-sizing:border-box;padding:6mm;font-family:Arial,sans-serif;font-size:10pt;background:#fff">
+    <div style="text-align:center;border-bottom:1.5pt solid #000;padding-bottom:3mm;margin-bottom:3mm">
+      <div style="font-size:13pt;font-weight:900;letter-spacing:.05em">BÓNG BÀN VIỆT</div>
+      <div style="font-size:8pt;color:#555">286 Nguyễn Xiển · 096.1269.386 · bongbanviet.com</div>
+      ${carrier ? `<div style="font-size:9pt;font-weight:700;margin-top:2mm">ĐVVC: ${esc(carrier)}${tracking?' · '+esc(tracking):''}</div>` : ''}
+    </div>
+    <div style="margin-bottom:3mm">
+      <div style="font-size:8.5pt;color:#555">NGƯỜI NHẬN</div>
+      <div style="font-size:14pt;font-weight:900;margin:1mm 0">${esc(name)}</div>
+      <div style="font-size:10.5pt;font-weight:700">${esc(phone)}</div>
+      <div style="font-size:9pt;margin-top:1.5mm">${esc(addr)}${addr && fullAddr ? ', ' : ''}${esc(fullAddr)}</div>
+    </div>
+    <div style="border-top:1pt dashed #999;margin-bottom:2mm;padding-top:2mm">
+      <div style="font-size:8pt;color:#555;margin-bottom:1.5mm">SẢN PHẨM</div>
+      ${items.map(i=>`<div style="display:flex;justify-content:space-between;font-size:9pt;margin-bottom:1mm"><span>${esc(i.name)}</span><span>x${esc(i.qty)}</span></div>`).join('')}
+    </div>
+    <div style="border-top:1.5pt solid #000;padding-top:2mm;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:9pt;color:#555">Mã đơn: <strong>${esc(id)}</strong></div>
+      <div style="font-size:11pt;font-weight:900">Tổng: ${esc(total)}</div>
+    </div>
+  </div>`;
+
+  setTimeout(() => { window.print(); frame.style.display = 'none'; }, 200);
 }
 
 /* ─── Init ─────────────────────────────────────────────────── */
