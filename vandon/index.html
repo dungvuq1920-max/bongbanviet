@@ -185,6 +185,23 @@
     /* low stock highlight */
     .low-stock-row td { background: #fff7ed !important; }
     .dark .low-stock-row td { background: #2d1a00 !important; }
+
+    /* ── PRODUCT AUTOCOMPLETE ────────────────── */
+    .ac-wrap { position: relative; }
+    .ac-drop { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1.5px solid #111; border-top: none; z-index: 300; max-height: 200px; overflow-y: auto; border-radius: 0 0 8px 8px; display: none; }
+    .ac-drop.open { display: block; }
+    .ac-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px; cursor: pointer; border-bottom: 1px solid #f3f4f6; font-size: 13px; }
+    .ac-item:last-child { border-bottom: none; }
+    .ac-item:hover, .ac-item.focused { background: #f9fafb; }
+    .ac-iname { flex: 1; font-weight: 500; color: #111; }
+    .ac-iprice { font-weight: 700; font-size: 12px; color: #b91c1c; white-space: nowrap; }
+    .ac-isrc { font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 10px; white-space: nowrap; }
+    .ac-src-web { background: #dcfce7; color: #15803d; }
+    .ac-src-bg  { background: #fef3c7; color: #92400e; }
+    .ac-src-inv { background: #dbeafe; color: #1d4ed8; }
+    .dark .ac-drop { background: #1e1e1e; border-color: #555; }
+    .dark .ac-item:hover { background: #2a2a2a; }
+    .dark .ac-iname { color: #f3f4f6; }
   </style>
 </head>
 <body>
@@ -741,6 +758,7 @@ let settings  = JSON.parse(localStorage.getItem('bbv_settings_v3')  || '{}');
 let orderItems = [];    // current form product rows
 let editOrderId = null; // id of order being edited
 let selectedOrders = new Set();
+let catalog = [];       // merged product catalog from server
 
 // Default settings
 settings = Object.assign({
@@ -1076,6 +1094,64 @@ function setOrderStatus(id, status) {
 }
 
 // ════════════════════════════════════════════
+// PRODUCT CATALOG (from server, for autocomplete)
+// ════════════════════════════════════════════
+async function loadCatalog() {
+  try {
+    const res = await fetch('/api/product-catalog');
+    if (res.ok) catalog = await res.json();
+  } catch { catalog = []; }
+}
+
+function filterAC(input, itemId) {
+  const q = input.value.trim().toLowerCase();
+  const drop = input.parentElement.querySelector('.ac-drop');
+  if (!q) { drop.classList.remove('open'); return; }
+  // Merge catalog (server) + inventory (local), deduplicate by name
+  const combined = [...catalog, ...inventory.map(p => ({ name:p.name, price:p.price||0, sku:p.sku||'', brand:'', source:'inv' }))];
+  const seen = new Set();
+  const matches = combined
+    .filter(p => {
+      if (!p.name.toLowerCase().includes(q)) return false;
+      if (seen.has(p.name.toLowerCase())) return false;
+      seen.add(p.name.toLowerCase());
+      return true;
+    })
+    .slice(0, 12);
+  if (!matches.length) { drop.classList.remove('open'); return; }
+  drop.innerHTML = matches.map(p => {
+    const priceStr = p.price ? fmtMoney(p.price) + '₫' : '';
+    const srcLabel = p.source === 'price-list' ? 'Bảng giá' : p.source === 'web' ? 'Web' : 'Kho';
+    const srcCls   = p.source === 'price-list' ? 'ac-src-bg' : p.source === 'web' ? 'ac-src-web' : 'ac-src-inv';
+    return `<div class="ac-item" data-name="${esc(p.name)}" data-sku="${esc(p.sku||'')}" data-price="${p.price||0}"
+      onmousedown="selectAC(this,'${itemId}')">
+      <span class="ac-iname">${esc(p.name)}</span>
+      <span class="ac-isrc ${srcCls}">${srcLabel}</span>
+      ${priceStr ? `<span class="ac-iprice">${priceStr}</span>` : ''}
+    </div>`;
+  }).join('');
+  drop.classList.add('open');
+}
+
+function selectAC(el, itemId) {
+  const row = orderItems.find(r => r.id === itemId);
+  if (row) {
+    row.name = el.dataset.name;
+    row.sku  = el.dataset.sku;
+    if (!row.price) row.price = Number(el.dataset.price) || 0;
+  }
+  renderItems();
+  updatePreviewDebounced();
+}
+
+function hideAC(input, delay) {
+  setTimeout(() => {
+    const drop = input.parentElement?.querySelector('.ac-drop');
+    if (drop) drop.classList.remove('open');
+  }, delay);
+}
+
+// ════════════════════════════════════════════
 // PRODUCT ROWS IN FORM
 // ════════════════════════════════════════════
 function addItemRow(name='', sku='', qty=1, price=0) {
@@ -1115,10 +1191,14 @@ function renderItems() {
   tbody.innerHTML = orderItems.map(r => `
     <tr>
       <td style="padding:5px 6px;">
-        <input class="inp inp-sm" placeholder="Tên sản phẩm" value="${esc(r.name)}"
-          list="invNameList"
-          oninput="updateItem('${r.id}','name',this.value)"
-          style="width:100%;">
+        <div class="ac-wrap">
+          <input class="inp inp-sm" placeholder="Tên sản phẩm" value="${esc(r.name)}"
+            autocomplete="off"
+            oninput="updateItem('${r.id}','name',this.value);filterAC(this,'${r.id}')"
+            onblur="hideAC(this,200)"
+            style="width:100%;">
+          <div class="ac-drop"></div>
+        </div>
       </td>
       <td style="padding:5px 6px;">
         <input class="inp inp-sm" placeholder="SKU" value="${esc(r.sku)}"
@@ -1144,12 +1224,6 @@ function renderItems() {
           ${orderItems.length<=1?'disabled style="opacity:.3"':''}>×</button>
       </td>
     </tr>`).join('');
-
-  // Datalist for inventory names
-  const names = inventory.map(p => `<option value="${esc(p.name)}">`).join('');
-  let dl = document.getElementById('invNameList');
-  if (!dl) { dl = document.createElement('datalist'); dl.id = 'invNameList'; document.body.appendChild(dl); }
-  dl.innerHTML = names;
 
   updateTotals();
 }
@@ -1719,6 +1793,9 @@ document.addEventListener('keydown', e => {
     if (el) el.addEventListener('input', updatePreviewDebounced);
     if (el) el.addEventListener('change', updatePreviewDebounced);
   });
+
+  // Load product catalog from server for autocomplete
+  loadCatalog();
 
   // Initial dashboard
   refreshDashboard();

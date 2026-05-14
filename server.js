@@ -1319,6 +1319,68 @@ app.put('/api/price-list/:rowNum', requireAuth, async (req, res) => {
   }
 });
 
+// ─── Product Catalog (merged SQLite + price-list for autocomplete) ───────────
+
+let _catalogCache = null;
+let _catalogCacheTime = 0;
+const CATALOG_TTL = 30_000;
+
+app.get('/api/product-catalog', async (req, res) => {
+  try {
+    const now = Date.now();
+    if (_catalogCache && now - _catalogCacheTime < CATALOG_TTL) {
+      return res.json(_catalogCache);
+    }
+
+    // 1. Products from SQLite (retail price, normalize to number)
+    const webProducts = db.prepare(
+      'SELECT name, price, variants, brand_slug, slug FROM products ORDER BY sort_order, name'
+    ).all().map(p => {
+      let price = 0;
+      if (p.variants) {
+        const v = JSON.parse(p.variants || '[]');
+        if (v.length > 0) {
+          const pr = Number(String(v[0].price || '').replace(/\D/g, ''));
+          if (pr) price = pr;
+        }
+      }
+      if (!price) price = Number(String(p.price || '').replace(/\D/g, '')) || 0;
+      return { name: p.name, price, brand: p.brand_slug || '', sku: p.slug || '', source: 'web' };
+    });
+
+    // 2. Products from price-list Excel (retail column)
+    const plProducts = [];
+    if (fs.existsSync(PRICE_LIST_FILE)) {
+      const wb = new ExcelJS.Workbook();
+      await wb.xlsx.readFile(PRICE_LIST_FILE);
+      const ws = wb.worksheets[0];
+      let lastBrand = '';
+      ws.eachRow((row, rowNum) => {
+        if (rowNum < 27) return;
+        const brandCell = String(row.getCell(2).value || '').trim();
+        const name = String(row.getCell(3).value || '').trim();
+        if (!name) return;
+        if (brandCell) lastBrand = brandCell;
+        const retail = cellNum(row.getCell(4));
+        const dealer = cellNum(row.getCell(5));
+        if (retail === 0 && dealer === 0) return; // skip header rows
+        plProducts.push({ name, price: retail, brand: lastBrand, sku: '', source: 'price-list' });
+      });
+    }
+
+    // 3. Deduplicate: SQLite products take priority
+    const webNames = new Set(webProducts.map(p => p.name.toLowerCase().trim()));
+    const uniquePL = plProducts.filter(p => !webNames.has(p.name.toLowerCase().trim()));
+
+    _catalogCache = [...webProducts, ...uniquePL];
+    _catalogCacheTime = now;
+    res.json(_catalogCache);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ─── Settings (Banner / Homepage images) ────────────────────────────────────
 
 app.get('/api/settings', (req, res) => {
