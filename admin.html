@@ -7,6 +7,10 @@
   <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="apple-touch-icon" href="/favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <style>
     :root {
       --sb: #0F172A; --sb-border: rgba(255,255,255,.07);
@@ -779,68 +783,132 @@
   .aiimg-note { font-size:11px; line-height:1.65; color:#475569; background:#EFF6FF; border:1px solid #BFDBFE; padding:10px 12px; border-radius:5px; }
   .aiimg-gpt-tip { font-size:11px; line-height:1.65; color:#7C3AED; background:#F5F3FF; border:1px solid #DDD6FE; padding:10px 12px; border-radius:5px; }
 
-  /* ─── Orders ───────────────────────────────────────────────── */
-  .ord-stats { display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:20px; }
-  .ord-stat { background:var(--card); border:1px solid var(--border); border-left:3px solid transparent; padding:14px 16px; }
-  .ord-stat.s-all    { border-left-color:#64748B; }
-  .ord-stat.s-pend   { border-left-color:var(--yellow); }
-  .ord-stat.s-proc   { border-left-color:#3B82F6; }
-  .ord-stat.s-done   { border-left-color:var(--green); }
-  .ord-stat .os-num  { font-size:28px; font-weight:800; line-height:1; }
-  .ord-stat .os-lbl  { font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-top:3px; }
+  /* ─── Order Manager (Vận Đơn) ──────────────────────────────── */
 
-  .ord-form-card { background:var(--card); border:1.5px solid var(--border); padding:20px; }
-  .ord-section-lbl { font-size:10px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin:14px 0 8px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+  /* Mini navigation bar */
+  #page-don-hang .vd-mini-nav {
+    display: flex; gap: 2px; margin-bottom: 20px; flex-wrap: wrap;
+    background: #f1f5f9; padding: 4px; border-radius: 8px;
+  }
+  #page-don-hang .vd-mini-nav-item {
+    padding: 7px 14px; border-radius: 6px; font-size: 12px; font-weight: 600;
+    cursor: pointer; border: none; background: none; color: #64748b;
+    font-family: 'Be Vietnam Pro', sans-serif; transition: all .15s; display: inline-flex; align-items: center; gap: 5px;
+  }
+  #page-don-hang .vd-mini-nav-item:hover { background: #e2e8f0; color: #1a1a1a; }
+  #page-don-hang .vd-mini-nav-item.active { background: #1a1a1a; color: #fff; }
 
-  /* Product item rows */
-  .ord-items-head { display:grid; grid-template-columns:1fr 110px 60px 130px 100px 30px; gap:8px; margin-bottom:4px; }
-  .ord-items-head span { font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
-  .ord-item-row { display:grid; grid-template-columns:1fr 110px 60px 130px 100px 30px; gap:8px; align-items:center; margin-bottom:5px; position:relative; }
-  .ord-item-row .fi { padding:7px 9px; font-size:13px; }
-  .ord-row-total { font-size:13px; font-weight:700; color:var(--red); text-align:right; white-space:nowrap; }
-  .ord-total-row { display:flex; justify-content:flex-end; align-items:center; gap:12px; margin-top:10px; padding-top:10px; border-top:2px solid var(--border); }
-  .ord-total-lbl { font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
-  .ord-total-val { font-size:20px; font-weight:800; color:var(--red); }
+  /* Sections */
+  #page-don-hang .vd-sec { display: none; }
+  #page-don-hang .vd-sec.active { display: block; }
+  #page-don-hang .vd-sec-title { font-size: 21px; font-weight: 800; color: #111; }
+  #page-don-hang .vd-sec-sub { font-size: 13px; color: #6b7280; margin-top: 2px; }
 
-  /* Autocomplete dropdown */
-  .prod-ac-wrap { position:relative; }
-  .prod-ac-drop { position:absolute; top:100%; left:0; right:0; background:var(--card); border:1.5px solid var(--dark); border-top:none; z-index:200; max-height:220px; overflow-y:auto; display:none; }
-  .prod-ac-drop.open { display:block; }
-  .prod-ac-item { padding:8px 11px; cursor:pointer; font-size:13px; border-bottom:1px solid var(--border); transition:background .12s; }
-  .prod-ac-item:hover, .prod-ac-item.focused { background:#F1F5F9; }
-  .prod-ac-item .pa-name { font-weight:600; color:var(--dark); }
-  .prod-ac-item .pa-meta { font-size:11px; color:var(--muted); margin-top:1px; }
-  .prod-ac-item .pa-price { font-size:12px; font-weight:700; color:var(--red); float:right; }
-  .pa-src { display:inline-block; padding:1px 6px; border-radius:10px; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
-  .pa-src-web { background:#DCFCE7; color:#15803D; }
-  .pa-src-bg  { background:#FEF3C7; color:#92400E; }
+  /* Cards */
+  #page-don-hang .vd-card { background: #fff; border: 1px solid #e5e5e5; border-radius: 10px; }
+  #page-don-hang .vd-card-p { padding: 20px; }
 
-  /* Order list table */
-  .ord-filters { display:flex; gap:10px; align-items:center; margin-bottom:16px; flex-wrap:wrap; }
-  .ord-status-pills { display:flex; gap:6px; flex-wrap:wrap; }
-  .ord-pill { font-size:11px; font-weight:700; letter-spacing:.06em; padding:5px 12px; border:1.5px solid var(--border); background:var(--card); color:var(--muted); cursor:pointer; transition:all .15s; }
-  .ord-pill.active { border-color:var(--red); background:var(--red); color:#fff; }
-  .ord-table-wrap { overflow-x:auto; }
-  .ord-table { width:100%; border-collapse:collapse; }
-  .ord-table th { font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); padding:8px 12px; text-align:left; border-bottom:2px solid var(--border); background:var(--bg); white-space:nowrap; }
-  .ord-table td { padding:10px 12px; border-bottom:1px solid var(--border); font-size:13px; vertical-align:middle; }
-  .ord-table tr:hover td { background:#F8FAFC; }
-  .ord-status-badge { font-size:10px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; padding:3px 8px; display:inline-block; }
-  .os-pending    { background:#FEF9C3; color:#92400E; }
-  .os-processing { background:#EFF6FF; color:#1D4ED8; }
-  .os-shipped    { background:#F0FDF4; color:#15803D; }
-  .os-done       { background:#ECFDF5; color:#059669; }
-  .os-cancelled  { background:#FEF2F2; color:#DC2626; }
-  .ord-act-btn { background:none; border:1px solid var(--border); color:var(--muted); font-size:11px; padding:4px 8px; cursor:pointer; transition:all .15s; font-family:inherit; }
-  .ord-act-btn:hover { border-color:var(--dark); color:var(--dark); }
-  .ord-act-btn.del:hover { border-color:#DC2626; color:#DC2626; }
+  /* Stat cards */
+  #page-don-hang .vd-stat-card { background: #fff; border: 1px solid #e5e5e5; border-radius: 10px; padding: 16px 18px; }
+  #page-don-hang .vd-stat-val { font-size: 26px; font-weight: 800; color: #111; line-height: 1; }
+  #page-don-hang .vd-stat-lbl { font-size: 12px; color: #6b7280; margin-top: 4px; font-weight: 500; }
+  #page-don-hang .vd-stat-icon { font-size: 22px; line-height: 1; }
 
-  /* Print label */
+  /* Form inputs */
+  #page-don-hang .inp {
+    width: 100%; border: 1px solid #d1d5db; border-radius: 8px;
+    padding: 8px 11px; font-size: 13.5px; color: #111; background: #fff;
+    transition: border-color .15s, box-shadow .15s; font-family: 'Be Vietnam Pro', sans-serif;
+  }
+  #page-don-hang .inp:focus { outline: none; border-color: #111; box-shadow: 0 0 0 3px rgba(17,17,17,.07); }
+  #page-don-hang .inp-sm { padding: 6px 9px; font-size: 13px; }
+  #page-don-hang label.lbl { display: block; font-size: 11px; font-weight: 700; color: #6b7280; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .05em; }
+
+  /* Buttons (scoped to avoid conflict) */
+  #page-don-hang .btn { display: inline-flex; align-items: center; gap: 5px; padding: 8px 15px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s; border: none; white-space: nowrap; font-family: 'Be Vietnam Pro', sans-serif; }
+  #page-don-hang .btn-sm { padding: 5px 10px; font-size: 12px; border-radius: 6px; }
+  #page-don-hang .btn-xs { padding: 3px 8px; font-size: 11px; border-radius: 5px; }
+  #page-don-hang .btn-primary { background: #111; color: #fff; }
+  #page-don-hang .btn-primary:hover { background: #333; }
+  #page-don-hang .btn-outline { background: #fff; color: #111; border: 1.5px solid #d1d5db; }
+  #page-don-hang .btn-outline:hover { border-color: #111; background: #f9fafb; }
+  #page-don-hang .btn-ghost { background: transparent; color: #555; border: 1.5px solid #e5e5e5; }
+  #page-don-hang .btn-ghost:hover { background: #f3f4f6; }
+  #page-don-hang .btn-danger { background: #fff; color: #ef4444; border: 1.5px solid #fca5a5; }
+  #page-don-hang .btn-danger:hover { background: #fef2f2; }
+  #page-don-hang .btn-success { background: #dcfce7; color: #15803d; border: none; }
+  #page-don-hang .btn-warning { background: #fef9c3; color: #a16207; border: none; }
+
+  /* Status badges */
+  #page-don-hang .vd-badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  #page-don-hang .s-pending   { background:#fef9c3; color:#a16207; }
+  #page-don-hang .s-printed   { background:#dbeafe; color:#1d4ed8; }
+  #page-don-hang .s-shipping  { background:#ffedd5; color:#c2410c; }
+  #page-don-hang .s-completed { background:#dcfce7; color:#15803d; }
+  #page-don-hang .s-returned  { background:#fee2e2; color:#b91c1c; }
+
+  /* Table */
+  #page-don-hang .tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+  #page-don-hang .tbl th { text-align: left; padding: 10px 12px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #6b7280; background: #f9fafb; border-bottom: 1px solid #e5e5e5; }
+  #page-don-hang .tbl td { padding: 10px 12px; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
+  #page-don-hang .tbl tbody tr:hover td { background: #fafafa; cursor: pointer; }
+  #page-don-hang .tbl tbody tr:last-child td { border-bottom: none; }
+
+  /* Autosave indicator */
+  #autosave { font-size: 11px; color: #10b981; opacity: 0; transition: opacity .3s; }
+  #autosave.show { opacity: 1; }
+
+  /* Low stock */
+  #page-don-hang .low-stock-row td { background: #fff7ed !important; }
+
+  /* Product autocomplete */
+  #page-don-hang .ac-wrap { position: relative; }
+  #page-don-hang .ac-drop { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1.5px solid #111; border-top: none; z-index: 300; max-height: 200px; overflow-y: auto; border-radius: 0 0 8px 8px; display: none; }
+  #page-don-hang .ac-drop.open { display: block; }
+  #page-don-hang .ac-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px; cursor: pointer; border-bottom: 1px solid #f3f4f6; font-size: 13px; }
+  #page-don-hang .ac-item:last-child { border-bottom: none; }
+  #page-don-hang .ac-item:hover, #page-don-hang .ac-item.focused { background: #f9fafb; }
+  #page-don-hang .ac-iname { flex: 1; font-weight: 500; color: #111; }
+  #page-don-hang .ac-iprice { font-weight: 700; font-size: 12px; color: #b91c1c; white-space: nowrap; }
+  #page-don-hang .ac-isrc { font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 10px; white-space: nowrap; }
+  #page-don-hang .ac-src-web { background: #dcfce7; color: #15803d; }
+  #page-don-hang .ac-src-bg  { background: #fef3c7; color: #92400e; }
+  #page-don-hang .ac-src-inv { background: #dbeafe; color: #1d4ed8; }
+
+  /* Shipping label (100×150mm preview) */
+  #page-don-hang .label {
+    width: 378px; min-height: 567px; background: #fff; color: #000;
+    font-family: 'Be Vietnam Pro', Arial, sans-serif; font-size: 11px; box-sizing: border-box;
+  }
+  #page-don-hang .label * { font-family: 'Be Vietnam Pro', Arial, sans-serif !important; color: #000 !important; }
+
+  /* Inventory modal (renamed to avoid conflict with admin import modal) */
+  .vd-modal { display: none; position: fixed; inset: 0; z-index: 9500; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,.45); }
+  .vd-modal.open { display: flex; }
+  .vd-modal-box { background: #fff; border-radius: 12px; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+
+  /* Charts row responsive */
+  @media (max-width: 900px) {
+    #page-don-hang .charts-row { grid-template-columns: 1fr !important; }
+    #page-don-hang #orderLayout { grid-template-columns: 1fr !important; }
+    #page-don-hang .preview-wrapper { display: none !important; }
+  }
+
+  /* Print label (for vandon print, not admin ordPrintFrame) */
   @media print {
     @page { size: 100mm 150mm; margin: 0; }
     body * { visibility: hidden !important; }
-    #ordPrintFrame, #ordPrintFrame * { visibility: visible !important; }
-    #ordPrintFrame { position: fixed; inset: 0; width: 100mm; height: 150mm; overflow: hidden; }
+    #printFrame, #printFrame * { visibility: visible !important; }
+    #printFrame {
+      position: fixed !important; top: 0; left: 0;
+      width: 100mm !important; height: 150mm !important;
+      display: block !important; overflow: hidden; background: #fff;
+    }
+    #printLabel {
+      width: 100mm !important; height: 150mm !important;
+      padding: 4mm 3.5mm !important; font-size: 7.5pt !important;
+      overflow: hidden; box-sizing: border-box !important;
+    }
   }
   </style>
 </head>
@@ -1152,169 +1220,366 @@
     <!-- ── Đơn Hàng ──────────────────────────────── -->
     <div class="page" id="page-don-hang">
 
-      <!-- Stats -->
-      <div class="ord-stats" id="ordStats">
-        <div class="ord-stat s-all"><div class="os-num" id="os-all">—</div><div class="os-lbl">Tổng đơn</div></div>
-        <div class="ord-stat s-pend"><div class="os-num" id="os-pending">—</div><div class="os-lbl">Chờ xử lý</div></div>
-        <div class="ord-stat s-proc"><div class="os-num" id="os-processing">—</div><div class="os-lbl">Đang giao</div></div>
-        <div class="ord-stat s-done"><div class="os-num" id="os-done">—</div><div class="os-lbl">Hoàn thành</div></div>
+      <!-- Mini navigation -->
+      <div class="vd-mini-nav">
+        <button class="vd-mini-nav-item active" data-sec="vd-sec-dashboard" onclick="vdNavTo('dashboard')">📊 Dashboard</button>
+        <button class="vd-mini-nav-item" data-sec="vd-sec-new-order" onclick="vdNavTo('new-order')">✚ Tạo Đơn</button>
+        <button class="vd-mini-nav-item" data-sec="vd-sec-orders" onclick="vdNavTo('orders')">📦 Đơn Hàng <span id="vdOrderBadge" style="background:#333;color:#ccc;font-size:10px;padding:1px 6px;border-radius:10px;display:none;margin-left:4px;"></span></button>
+        <button class="vd-mini-nav-item" data-sec="vd-sec-inventory" onclick="vdNavTo('inventory')">🗃 Kho Hàng</button>
+        <button class="vd-mini-nav-item" data-sec="vd-sec-settings" onclick="vdNavTo('settings')">⚙ Cài Đặt</button>
+        <span id="autosave" style="margin-left:auto;">✓ Đã lưu nháp</span>
       </div>
 
-      <div class="sub-tabs">
-        <button class="sub-tab active" data-sub="ord-create" onclick="ordTab(this,'ord-create')">Tạo Đơn Mới</button>
-        <button class="sub-tab" data-sub="ord-list" onclick="ordTab(this,'ord-list')">Danh Sách Đơn</button>
+      <!-- ── DASHBOARD ── -->
+      <div class="vd-sec active" id="vd-sec-dashboard">
+        <div style="margin-bottom:20px;">
+          <div class="vd-sec-title">Dashboard</div>
+          <div class="vd-sec-sub">Tổng quan hoạt động kinh doanh</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:24px;" id="statsGrid"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;" class="charts-row">
+          <div class="vd-card vd-card-p">
+            <div style="font-weight:700;font-size:14px;margin-bottom:12px;color:#111;">Đơn hàng 7 ngày qua</div>
+            <div id="chartOrders" style="overflow-x:auto;"></div>
+          </div>
+          <div class="vd-card vd-card-p">
+            <div style="font-weight:700;font-size:14px;margin-bottom:12px;color:#111;">Top sản phẩm bán chạy</div>
+            <div id="chartTopProducts"></div>
+          </div>
+        </div>
+        <div class="vd-card" style="overflow:hidden;">
+          <div style="padding:16px 20px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;">
+            <div style="font-weight:700;font-size:14px;color:#111;">Đơn hàng gần đây</div>
+            <button class="btn btn-sm btn-outline" onclick="vdNavTo('orders')">Xem tất cả →</button>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="tbl">
+              <thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>SĐT</th><th>Tổng tiền</th><th>Trạng thái</th><th>Ngày</th></tr></thead>
+              <tbody id="recentOrdersBody"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
-      <!-- ── Tạo đơn ── -->
-      <div class="sub-section active" id="ord-create">
-        <div class="ord-form-card">
-          <div class="f-row3">
-            <div class="fld">
-              <label class="fld-label">Mã đơn hàng</label>
-              <input id="ordId" class="fi fi-slug" placeholder="Tự động tạo…" readonly>
+      <!-- ── TẠO ĐƠN HÀNG ── -->
+      <div class="vd-sec" id="vd-sec-new-order">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+          <div>
+            <div class="vd-sec-title" id="formTitle">Tạo đơn hàng mới</div>
+            <div class="vd-sec-sub">Nhập thông tin đơn hàng và xem trước tem in</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <button class="btn btn-ghost btn-sm" onclick="newOrder()">+ Đơn mới</button>
+            <button class="btn btn-outline btn-sm" onclick="copyOrder()" id="btnCopy" style="display:none;">Nhân bản</button>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 380px;gap:20px;align-items:start;" id="orderLayout">
+          <!-- LEFT: Form -->
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <div class="vd-card vd-card-p">
+              <div style="font-weight:700;font-size:13px;color:#111;margin-bottom:14px;">
+                <span style="background:#111;color:#fff;width:20px;height:20px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;margin-right:6px;">1</span>
+                Thông tin đơn hàng
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div><label class="lbl">Mã đơn hàng *</label>
+                  <div style="display:flex;gap:6px;">
+                    <input id="fOrderId" class="inp" placeholder="BBV-260514-001">
+                    <button onclick="genOrderId()" class="btn btn-outline btn-sm" style="flex-shrink:0;padding:8px 10px;">↺</button>
+                  </div>
+                </div>
+                <div><label class="lbl">Ngày tạo đơn</label><input id="fDate" type="date" class="inp"></div>
+                <div><label class="lbl">Đơn vị vận chuyển</label>
+                  <select id="fCarrier" class="inp">
+                    <option value="">-- Chọn --</option>
+                    <option>GHTK</option><option>GHN</option><option>VNPost</option>
+                    <option>Viettel Post</option><option>JT Express</option>
+                    <option>Shopee Express</option><option>Ninja Van</option>
+                    <option>Best Express</option><option>Khác</option>
+                  </select>
+                </div>
+                <div><label class="lbl">Mã vận đơn (tracking)</label>
+                  <input id="fTracking" class="inp" placeholder="GHTK-123456789" style="font-family:monospace;">
+                </div>
+              </div>
             </div>
-            <div class="fld">
-              <label class="fld-label">Ngày đặt</label>
-              <input id="ordDate" class="fi" type="date">
+            <div class="vd-card vd-card-p">
+              <div style="font-weight:700;font-size:13px;color:#111;margin-bottom:14px;">
+                <span style="background:#111;color:#fff;width:20px;height:20px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;margin-right:6px;">2</span>
+                Thông tin khách hàng
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div style="grid-column:1/-1;"><label class="lbl">Tên khách hàng *</label><input id="fName" class="inp" placeholder="Nguyễn Văn A"></div>
+                <div><label class="lbl">Số điện thoại</label><input id="fPhone" type="tel" class="inp" placeholder="0912 345 678"></div>
+                <div><label class="lbl">Tỉnh / Thành phố</label>
+                  <select id="fProvince" class="inp" onchange="updatePreview()"><option value="">-- Chọn tỉnh/TP --</option></select>
+                </div>
+                <div><label class="lbl">Quận / Huyện</label><input id="fDistrict" class="inp" placeholder="Quận 1 / Thanh Liệt"></div>
+                <div><label class="lbl">Phường / Xã</label><input id="fWard" class="inp" placeholder="Phường Bến Nghé"></div>
+                <div style="grid-column:1/-1;"><label class="lbl">Địa chỉ chi tiết *</label>
+                  <textarea id="fAddress" class="inp" rows="2" placeholder="Số nhà, tên đường, hẻm..." style="resize:none;"></textarea>
+                </div>
+              </div>
             </div>
-            <div class="fld">
-              <label class="fld-label">Trạng thái</label>
-              <select id="ordStatus" class="fi fs">
+            <div class="vd-card vd-card-p">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                <div style="font-weight:700;font-size:13px;color:#111;">
+                  <span style="background:#111;color:#fff;width:20px;height:20px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;margin-right:6px;">3</span>
+                  Sản phẩm
+                </div>
+                <div style="display:flex;gap:6px;align-items:center;">
+                  <input id="scanInput" class="inp inp-sm" placeholder="🔍 Quét barcode / nhập SKU + Enter"
+                    style="width:240px;" onkeydown="handleScanInput(event)">
+                  <button class="btn btn-outline btn-sm" onclick="addItemRow()">+ Thêm</button>
+                </div>
+              </div>
+              <div style="overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                  <thead><tr style="border-bottom:1px solid #e5e5e5;">
+                    <th style="text-align:left;padding:6px 8px;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;width:35%;">Sản phẩm</th>
+                    <th style="text-align:left;padding:6px 8px;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;width:15%;">SKU</th>
+                    <th style="text-align:center;padding:6px 8px;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;width:10%;">SL</th>
+                    <th style="text-align:right;padding:6px 8px;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;width:18%;">Đơn giá</th>
+                    <th style="text-align:right;padding:6px 8px;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;width:15%;">Thành tiền</th>
+                    <th style="width:5%;"></th>
+                  </tr></thead>
+                  <tbody id="itemsBody"></tbody>
+                  <tfoot><tr style="border-top:2px solid #111;">
+                    <td colspan="2" style="padding:8px;font-size:12px;color:#6b7280;">Tổng cộng</td>
+                    <td style="padding:8px;text-align:center;font-weight:700;" id="totalQty">0</td>
+                    <td></td>
+                    <td style="padding:8px;text-align:right;font-weight:800;font-size:14px;color:#111;" id="totalAmt">0₫</td>
+                    <td></td>
+                  </tr></tfoot>
+                </table>
+              </div>
+            </div>
+            <div class="vd-card vd-card-p">
+              <label class="lbl">Ghi chú đơn hàng</label>
+              <textarea id="fNotes" class="inp" rows="2" placeholder="Giao giờ hành chính, gọi trước 30 phút..." style="resize:none;"></textarea>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;padding-bottom:8px;">
+              <button class="btn btn-primary" onclick="saveOrder()" style="flex:1;justify-content:center;">💾 Lưu đơn</button>
+              <button class="btn btn-outline" onclick="printCurrentOrder()" style="flex:1;justify-content:center;">🖨 In đơn</button>
+              <button class="btn btn-ghost btn-sm" onclick="exportPNG()">PNG</button>
+              <button class="btn btn-ghost btn-sm" onclick="exportPDF()">PDF</button>
+            </div>
+          </div>
+          <!-- RIGHT: Label Preview -->
+          <div class="preview-wrapper" style="display:flex;flex-direction:column;gap:12px;position:sticky;top:24px;">
+            <div class="vd-card vd-card-p" style="padding:14px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                <div style="font-weight:700;font-size:13px;color:#111;">Xem trước tem in</div>
+                <button class="btn btn-ghost btn-sm" onclick="updatePreview()">↻</button>
+              </div>
+              <div style="transform:scale(0.84);transform-origin:top center;margin-bottom:-46px;">
+                <div class="label" id="labelPreview" style="padding:8mm 6mm;border:1px solid #e5e5e5;box-shadow:0 2px 12px rgba(0,0,0,.08);">
+                  <div style="text-align:center;color:#ccc;padding-top:60px;font-size:12px;">Nhập thông tin để xem trước</div>
+                </div>
+              </div>
+              <div style="text-align:center;margin-top:10px;">
+                <span style="font-size:11px;color:#9ca3af;">A6 · 100×150mm · Xprinter XP-420B</span>
+              </div>
+            </div>
+            <div class="vd-card" style="padding:12px 14px;font-size:11px;color:#9ca3af;line-height:1.8;">
+              <div style="font-weight:700;color:#6b7280;margin-bottom:4px;">Phím tắt</div>
+              <div><kbd style="background:#f3f4f6;border:1px solid #d1d5db;border-radius:3px;padding:1px 5px;font-size:10px;">Ctrl+S</kbd> Lưu đơn</div>
+              <div><kbd style="background:#f3f4f6;border:1px solid #d1d5db;border-radius:3px;padding:1px 5px;font-size:10px;">Ctrl+P</kbd> In đơn</div>
+              <div><kbd style="background:#f3f4f6;border:1px solid #d1d5db;border-radius:3px;padding:1px 5px;font-size:10px;">Ctrl+N</kbd> Đơn mới</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── DANH SÁCH ĐƠN HÀNG ── -->
+      <div class="vd-sec" id="vd-sec-orders">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+          <div>
+            <div class="vd-sec-title">Đơn hàng</div>
+            <div class="vd-sec-sub">Quản lý và theo dõi tất cả đơn hàng</div>
+          </div>
+          <button class="btn btn-primary" onclick="vdNavTo('new-order');newOrder()">+ Tạo đơn mới</button>
+        </div>
+        <div class="vd-card vd-card-p" style="margin-bottom:16px;">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+            <div style="flex:1;min-width:200px;"><label class="lbl">Tìm kiếm</label>
+              <input id="orderSearch" class="inp inp-sm" placeholder="Mã đơn, tên khách, SĐT..." oninput="renderOrders()">
+            </div>
+            <div style="min-width:150px;"><label class="lbl">Trạng thái</label>
+              <select id="orderStatusFilter" class="inp inp-sm" onchange="renderOrders()">
+                <option value="">Tất cả</option>
                 <option value="pending">Chờ xử lý</option>
-                <option value="processing">Đang giao</option>
-                <option value="shipped">Đã gửi hàng</option>
-                <option value="done">Hoàn thành</option>
-                <option value="cancelled">Đã hủy</option>
+                <option value="printed">Đã in</option>
+                <option value="shipping">Đang giao</option>
+                <option value="completed">Hoàn thành</option>
+                <option value="returned">Hoàn đơn</option>
               </select>
             </div>
+            <div style="min-width:140px;"><label class="lbl">Từ ngày</label>
+              <input id="orderDateFrom" type="date" class="inp inp-sm" onchange="renderOrders()">
+            </div>
+            <div style="min-width:140px;"><label class="lbl">Đến ngày</label>
+              <input id="orderDateTo" type="date" class="inp inp-sm" onchange="renderOrders()">
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="clearOrderFilters()">Xóa lọc</button>
           </div>
-
-          <div class="ord-section-lbl">Thông tin khách hàng</div>
-          <div class="f-row2">
-            <div class="fld">
-              <label class="fld-label">Tên khách hàng</label>
-              <input id="ordCustName" class="fi" placeholder="Nguyễn Văn A">
-            </div>
-            <div class="fld">
-              <label class="fld-label">Số điện thoại</label>
-              <input id="ordCustPhone" class="fi" type="tel" placeholder="0912 345 678">
-            </div>
-          </div>
-          <div class="f-row3" style="margin-top:8px">
-            <div class="fld">
-              <label class="fld-label">Tỉnh / Thành phố</label>
-              <input id="ordProvince" class="fi" placeholder="Hà Nội">
-            </div>
-            <div class="fld">
-              <label class="fld-label">Quận / Huyện</label>
-              <input id="ordDistrict" class="fi" placeholder="Thanh Trì">
-            </div>
-            <div class="fld">
-              <label class="fld-label">Phường / Xã</label>
-              <input id="ordWard" class="fi" placeholder="Thanh Liệt">
+        </div>
+        <div class="vd-card" style="overflow:hidden;">
+          <div style="padding:12px 16px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;gap:8px;">
+            <span id="orderCount" style="font-size:13px;color:#6b7280;"></span>
+            <div style="margin-left:auto;display:flex;gap:6px;">
+              <button class="btn btn-ghost btn-xs" onclick="bulkPrint()" id="btnBulkPrint" style="display:none;">🖨 In đã chọn</button>
+              <button class="btn btn-ghost btn-xs" onclick="exportOrdersCSV()">↓ CSV</button>
             </div>
           </div>
-          <div class="fld" style="margin-top:8px">
-            <label class="fld-label">Địa chỉ chi tiết</label>
-            <input id="ordCustAddr" class="fi" placeholder="Số nhà, tên đường…">
+          <div style="overflow-x:auto;">
+            <table class="tbl">
+              <thead><tr>
+                <th><input type="checkbox" id="chkAll" onchange="toggleAllOrders(this.checked)"></th>
+                <th>Mã đơn</th><th>Khách hàng</th><th>SĐT</th>
+                <th>Sản phẩm</th><th>Tổng tiền</th><th>Trạng thái</th>
+                <th>Ngày</th><th style="text-align:right;">Thao tác</th>
+              </tr></thead>
+              <tbody id="ordersTableBody"></tbody>
+            </table>
           </div>
-
-          <div class="ord-section-lbl">Vận chuyển</div>
-          <div class="f-row2">
-            <div class="fld">
-              <label class="fld-label">Đơn vị vận chuyển</label>
-              <select id="ordCarrier" class="fi fs">
-                <option value="">-- Chọn ĐVVC --</option>
-                <option value="GHN">GHN – Giao Hàng Nhanh</option>
-                <option value="GHTK">GHTK – Giao Hàng Tiết Kiệm</option>
-                <option value="VTP">VTP – ViettelPost</option>
-                <option value="VNPT">VNPT Express</option>
-                <option value="JT">J&amp;T Express</option>
-                <option value="Grab">GrabExpress</option>
-                <option value="Self">Tự giao</option>
-                <option value="Other">Khác</option>
-              </select>
-            </div>
-            <div class="fld">
-              <label class="fld-label">Mã vận đơn</label>
-              <input id="ordTracking" class="fi" placeholder="Nhập mã tracking…">
-            </div>
+          <div id="ordersEmpty" style="display:none;text-align:center;padding:48px;color:#9ca3af;">
+            <div style="font-size:32px;margin-bottom:8px;">📦</div>
+            <div>Chưa có đơn hàng nào</div>
           </div>
-
-          <div class="ord-section-lbl" style="display:flex;align-items:center;justify-content:space-between">
-            <span>Sản phẩm</span>
-            <button class="btn-add-var" onclick="addOrdRow()">+ Thêm sản phẩm</button>
-          </div>
-
-          <div class="ord-items-head">
-            <span>Tên sản phẩm</span>
-            <span>SKU</span>
-            <span style="text-align:center">SL</span>
-            <span>Đơn giá</span>
-            <span style="text-align:right">Thành tiền</span>
-            <span></span>
-          </div>
-          <div id="ordItemsWrap"></div>
-
-          <div class="ord-total-row">
-            <span class="ord-total-lbl">Tổng cộng:</span>
-            <span class="ord-total-val" id="ordTotalDisplay">0 đ</span>
-          </div>
-
-          <div class="fld" style="margin-top:12px">
-            <label class="fld-label">Ghi chú</label>
-            <input id="ordNotes" class="fi" placeholder="Ghi chú nội bộ…">
-          </div>
-
-          <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
-            <button class="btn-dark" id="ordSaveBtn" onclick="saveOrd()">Lưu Đơn Hàng</button>
-            <button class="btn-outline" onclick="resetOrdForm()">Làm Mới</button>
-            <button class="btn-outline" id="ordPrintBtn" style="display:none" onclick="printOrd()">🖨 In Nhãn A6</button>
-          </div>
-          <input type="hidden" id="ordEditId">
         </div>
       </div>
 
-      <!-- ── Danh sách ── -->
-      <div class="sub-section" id="ord-list">
-        <div class="ord-filters">
-          <div class="ord-status-pills">
-            <button class="ord-pill active" data-status="all" onclick="setOrdFilter(this)">Tất cả</button>
-            <button class="ord-pill" data-status="pending" onclick="setOrdFilter(this)">Chờ xử lý</button>
-            <button class="ord-pill" data-status="processing" onclick="setOrdFilter(this)">Đang giao</button>
-            <button class="ord-pill" data-status="shipped" onclick="setOrdFilter(this)">Đã gửi</button>
-            <button class="ord-pill" data-status="done" onclick="setOrdFilter(this)">Hoàn thành</button>
-            <button class="ord-pill" data-status="cancelled" onclick="setOrdFilter(this)">Đã hủy</button>
+      <!-- ── KHO HÀNG ── -->
+      <div class="vd-sec" id="vd-sec-inventory">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+          <div>
+            <div class="vd-sec-title">Kho hàng</div>
+            <div class="vd-sec-sub">Quản lý sản phẩm và tồn kho</div>
           </div>
-          <div class="admin-search-wrap" style="margin-left:auto">
-            <svg class="admin-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input class="admin-search" id="ordSearch" placeholder="Tên, SĐT, mã đơn…" oninput="loadOrdList()">
+          <button class="btn btn-primary" onclick="openInvModal()">+ Thêm sản phẩm</button>
+        </div>
+        <div class="vd-card vd-card-p" style="margin-bottom:16px;">
+          <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">
+            <div style="flex:1;min-width:200px;"><label class="lbl">Tìm kiếm</label>
+              <input id="invSearch" class="inp inp-sm" placeholder="Tên, SKU, barcode..." oninput="renderInventory()">
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;padding-bottom:1px;">
+              <input type="checkbox" id="invLowStock" onchange="renderInventory()">
+              <label for="invLowStock" style="font-size:13px;color:#c2410c;font-weight:600;cursor:pointer;">⚠ Sắp hết hàng</label>
+            </div>
           </div>
         </div>
-        <div class="ord-table-wrap">
-          <table class="ord-table">
-            <thead>
-              <tr>
-                <th>Mã đơn</th>
-                <th>Khách hàng</th>
-                <th>Sản phẩm</th>
-                <th>Tổng tiền</th>
-                <th>ĐVVC</th>
-                <th>Trạng thái</th>
-                <th>Ngày tạo</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="ordTableBody">
-              <tr><td colspan="8" class="loading-state">Đang tải…</td></tr>
-            </tbody>
-          </table>
+        <div class="vd-card" style="overflow:hidden;">
+          <div style="overflow-x:auto;">
+            <table class="tbl">
+              <thead><tr>
+                <th>Tên sản phẩm</th><th>SKU</th><th>Barcode</th>
+                <th style="text-align:right;">Tồn kho</th><th style="text-align:right;">Giá bán</th>
+                <th style="text-align:right;">Giá nhập</th><th style="text-align:right;">Thao tác</th>
+              </tr></thead>
+              <tbody id="invTableBody"></tbody>
+            </table>
+          </div>
+          <div id="invEmpty" style="display:none;text-align:center;padding:48px;color:#9ca3af;">
+            <div style="font-size:32px;margin-bottom:8px;">📦</div>
+            <div>Chưa có sản phẩm nào trong kho</div>
+          </div>
         </div>
       </div>
+
+      <!-- ── CÀI ĐẶT ── -->
+      <div class="vd-sec" id="vd-sec-settings">
+        <div style="margin-bottom:20px;">
+          <div class="vd-sec-title">Cài đặt</div>
+          <div class="vd-sec-sub">Thông tin shop và cấu hình máy in</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="vd-card vd-card-p">
+            <div style="font-weight:700;font-size:14px;margin-bottom:16px;color:#111;">Thông tin shop</div>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <div><label class="lbl">Tên shop</label><input id="sTenShop" class="inp" placeholder="BÓNG BÀN VIỆT"></div>
+              <div><label class="lbl">Địa chỉ</label><input id="sDiaChi" class="inp" placeholder="286 Nguyễn Xiển, Hà Nội"></div>
+              <div><label class="lbl">Số điện thoại</label><input id="sSdt" class="inp" placeholder="096.1269.386"></div>
+              <div><label class="lbl">Website</label><input id="sWebsite" class="inp" placeholder="bongbanviet.com"></div>
+              <div><label class="lbl">Tiền tố mã đơn</label><input id="sPrefix" class="inp" placeholder="BBV" style="max-width:120px;"></div>
+              <button class="btn btn-primary" onclick="saveSettings()">Lưu cài đặt</button>
+            </div>
+          </div>
+          <div class="vd-card vd-card-p">
+            <div style="font-weight:700;font-size:14px;margin-bottom:16px;color:#111;">Cài đặt máy in</div>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <div style="padding:12px;background:#f9fafb;border-radius:8px;border:1px solid #e5e5e5;">
+                <div style="font-weight:600;font-size:13px;margin-bottom:4px;">Xprinter XP-420B</div>
+                <div style="font-size:12px;color:#6b7280;line-height:1.6;">Khổ giấy: A6 (100×150mm)<br>Độ phân giải: 203 DPI<br>In nhiệt đen trắng</div>
+              </div>
+              <div style="padding:12px;background:#fffbeb;border-radius:8px;border:1px solid #fde68a;">
+                <div style="font-size:12px;color:#92400e;line-height:1.6;">
+                  💡 Khi in, chọn khổ giấy <strong>A6 (100×150mm)</strong><br>
+                  Bỏ tick "Header &amp; Footer" trong trình duyệt<br>
+                  Đặt lề = 0 để in sát biên decal
+                </div>
+              </div>
+              <div><label class="lbl">ĐVVC mặc định</label>
+                <select id="sCarrierDefault" class="inp">
+                  <option value="">-- Không chọn --</option>
+                  <option>GHTK</option><option>GHN</option><option>VNPost</option>
+                  <option>Viettel Post</option><option>JT Express</option>
+                </select>
+              </div>
+              <div><label class="lbl">Cảnh báo hết hàng khi tồn kho ≤</label>
+                <input id="sLowStock" type="number" class="inp" value="5" min="0" style="max-width:120px;">
+              </div>
+              <button class="btn btn-primary" onclick="saveSettings()">Lưu cài đặt</button>
+            </div>
+          </div>
+          <div class="vd-card vd-card-p" style="grid-column:1/-1;">
+            <div style="font-weight:700;font-size:14px;margin-bottom:16px;color:#111;">Quản lý dữ liệu</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <button class="btn btn-outline btn-sm" onclick="backupData()">↓ Backup JSON</button>
+              <button class="btn btn-outline btn-sm" onclick="document.getElementById('restoreFile').click()">↑ Restore JSON</button>
+              <input type="file" id="restoreFile" accept=".json" style="display:none" onchange="restoreData(this)">
+              <button class="btn btn-danger btn-sm" onclick="clearAllData()">🗑 Xóa tất cả dữ liệu</button>
+            </div>
+            <div id="dataStats" style="margin-top:12px;font-size:12px;color:#9ca3af;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Print frame (A6 label) -->
+      <div id="printFrame" style="display:none;">
+        <div id="printLabel" class="label" style="padding:8mm 6mm;"></div>
+      </div>
+
+      <!-- Inventory modal -->
+      <div class="vd-modal" id="invModal">
+        <div class="vd-modal-box">
+          <div style="padding:20px;border-bottom:1px solid #e5e5e5;display:flex;align-items:center;justify-content:space-between;">
+            <div style="font-weight:800;font-size:16px;color:#111;" id="invModalTitle">Thêm sản phẩm</div>
+            <button onclick="closeInvModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:#9ca3af;line-height:1;">×</button>
+          </div>
+          <div style="padding:20px;display:flex;flex-direction:column;gap:12px;">
+            <input type="hidden" id="invId">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div style="grid-column:1/-1;"><label class="lbl">Tên sản phẩm *</label><input id="invName" class="inp" placeholder="Cốt Vợt Butterfly TBS-65"></div>
+              <div><label class="lbl">SKU</label><input id="invSku" class="inp" placeholder="CV-BTF-001"></div>
+              <div><label class="lbl">Barcode</label><input id="invBarcode" class="inp" placeholder="8901234567890" style="font-family:monospace;"></div>
+              <div><label class="lbl">Giá bán (₫)</label><input id="invPrice" type="number" class="inp" placeholder="1500000" min="0"></div>
+              <div><label class="lbl">Giá nhập (₫)</label><input id="invCost" type="number" class="inp" placeholder="1200000" min="0"></div>
+              <div><label class="lbl">Tồn kho</label><input id="invStock" type="number" class="inp" value="0" min="0"></div>
+              <div><label class="lbl">Cảnh báo hết hàng ≤</label><input id="invLowAlert" type="number" class="inp" value="5" min="0"></div>
+              <div><label class="lbl">Đơn vị</label><input id="invUnit" class="inp" placeholder="cái / bộ / chiếc"></div>
+            </div>
+          </div>
+          <div style="padding:16px 20px;border-top:1px solid #f3f4f6;display:flex;gap:8px;justify-content:flex-end;">
+            <button class="btn btn-ghost" onclick="closeInvModal()">Hủy</button>
+            <button class="btn btn-primary" onclick="saveInvItem()">Lưu sản phẩm</button>
+          </div>
+        </div>
+      </div>
+      <div id="modalOverlay" onclick="closeInvModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9499;"></div>
+
     </div>
-
-    <!-- Print frame for A6 label -->
-    <div id="ordPrintFrame" style="display:none"></div>
 
     <!-- ── Facebook Plan ─────────────────────────── -->
     <div class="page" id="page-facebook">
@@ -2739,7 +3004,7 @@ function updateTopbarActions(page) {
   } else if (page === 'do-thi-dau') {
     el.innerHTML = `<button class="btn-red" onclick="addCard('do-thi-dau', document.querySelector('#page-do-thi-dau .sub-tab.active')?.dataset.sub||'giay')">+ Thêm mới</button>`;
   } else if (page === 'don-hang') {
-    el.innerHTML = `<button class="btn-red" onclick="ordTab(document.querySelector('#page-don-hang .sub-tab'),'ord-create');resetOrdForm()">+ Tạo đơn mới</button>`;
+    el.innerHTML = `<button class="btn-red" onclick="vdNavTo('new-order');newOrder()">+ Tạo đơn mới</button>`;
   } else {
     el.innerHTML = '';
   }
@@ -3128,7 +3393,7 @@ async function loadSection(cat) {
   if (cat === 'bang-gia')  { bgLoadData(); return; }
   if (cat === 'shopee')    { spLoadAiConfig(); return; }
   if (cat === 'ai-image')  { initAiImageTab(); return; }
-  if (cat === 'don-hang')  { initOrders(); return; }
+  if (cat === 'don-hang')  { vdInit(); return; }
   if (loaded[cat]) return;
   loaded[cat] = true;
   if (cat === 'combo-vot')  return loadCombos();
@@ -4575,357 +4840,791 @@ function initAiImageTab() {
   aiImgUpdatePromptPreview();
 }
 
-/* ─── Orders ───────────────────────────────────────────────── */
+/* ─── Orders (vandon) ──────────────────────────────────────── */
 
-let allProducts = [];      // cache for autocomplete
-let ordFilterStatus = 'all';
-let ordInited = false;
+const VD_PROVINCES = ['Hà Nội','TP. Hồ Chí Minh','Đà Nẵng','Hải Phòng','Cần Thơ','An Giang','Bà Rịa - Vũng Tàu','Bắc Giang','Bắc Kạn','Bạc Liêu','Bắc Ninh','Bến Tre','Bình Định','Bình Dương','Bình Phước','Bình Thuận','Cà Mau','Cao Bằng','Đắk Lắk','Đắk Nông','Điện Biên','Đồng Nai','Đồng Tháp','Gia Lai','Hà Giang','Hà Nam','Hà Tĩnh','Hải Dương','Hậu Giang','Hòa Bình','Hưng Yên','Khánh Hòa','Kiên Giang','Kon Tum','Lai Châu','Lâm Đồng','Lạng Sơn','Lào Cai','Long An','Nam Định','Nghệ An','Ninh Bình','Ninh Thuận','Phú Thọ','Phú Yên','Quảng Bình','Quảng Nam','Quảng Ngãi','Quảng Ninh','Quảng Trị','Sóc Trăng','Sơn La','Tây Ninh','Thái Bình','Thái Nguyên','Thanh Hóa','Thừa Thiên Huế','Tiền Giang','Trà Vinh','Tuyên Quang','Vĩnh Long','Vĩnh Phúc','Yên Bái'];
 
-async function initOrders() {
-  if (!ordInited) {
-    ordInited = true;
-    // Load products for autocomplete
-    try {
-      allProducts = await api('/api/product-catalog');
-    } catch { allProducts = []; }
-    // Seed form date
-    document.getElementById('ordDate').value = new Date().toISOString().slice(0,10);
-    genOrdId();
-    addOrdRow();
+const VD_STATUS_MAP = {
+  pending:   { label: 'Chờ xử lý',   cls: 's-pending'   },
+  printed:   { label: 'Đã in',        cls: 's-printed'   },
+  shipping:  { label: 'Đang giao',    cls: 's-shipping'  },
+  completed: { label: 'Hoàn thành',   cls: 's-completed' },
+  returned:  { label: 'Hoàn đơn',     cls: 's-returned'  }
+};
+
+let vdOrders    = JSON.parse(localStorage.getItem('bbv_orders_v3')    || '[]');
+let vdInventory = JSON.parse(localStorage.getItem('bbv_inventory_v3') || '[]');
+let vdSettings  = JSON.parse(localStorage.getItem('bbv_settings_v3')  || '{}');
+let vdOrderItems  = [];
+let vdEditOrderId = null;
+let vdSelectedOrders = new Set();
+let vdCatalog = [];
+let vdInited  = false;
+
+vdSettings = Object.assign({
+  shopName: 'BÓNG BÀN VIỆT', shopAddress: '286 Nguyễn Xiển, Hà Nội',
+  shopPhone: '096.1269.386',  shopWebsite: 'bongbanviet.com',
+  orderPrefix: 'BBV', defaultCarrier: '', lowStockAlert: 5
+}, vdSettings);
+
+function vdUid()           { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function vdTodayISO()      { return new Date().toISOString().split('T')[0]; }
+function vdFmtDate(s)      { if(!s) return ''; const [y,m,d]=s.split('-'); return `${d}/${m}/${y}`; }
+function vdFmtDateShort(s) { if(!s) return ''; const [y,m,d]=s.split('-'); return `${d}/${m}`; }
+function vdDebounce(fn,ms) { let t; return (...a) => { clearTimeout(t); t=setTimeout(()=>fn(...a),ms); }; }
+function vdSave() {
+  localStorage.setItem('bbv_orders_v3',    JSON.stringify(vdOrders));
+  localStorage.setItem('bbv_inventory_v3', JSON.stringify(vdInventory));
+  localStorage.setItem('bbv_settings_v3',  JSON.stringify(vdSettings));
+}
+const fmtMoney = fmtNum;
+
+function vdNavTo(secId) {
+  document.querySelectorAll('#page-don-hang .vd-sec').forEach(s => s.classList.remove('active'));
+  document.getElementById('vd-sec-' + secId)?.classList.add('active');
+  document.querySelectorAll('#page-don-hang .vd-mini-nav-item').forEach(n =>
+    n.classList.toggle('active', n.dataset.sec === 'vd-sec-' + secId));
+  if (secId === 'dashboard') refreshDashboard();
+  if (secId === 'orders')    renderOrders();
+  if (secId === 'inventory') renderInventory();
+  if (secId === 'settings')  loadSettingsForm();
+}
+
+function refreshDashboard() {
+  const today = vdTodayISO(), thisMonth = today.slice(0,7);
+  const todayOrders = vdOrders.filter(o => o.date === today);
+  const monthOrders = vdOrders.filter(o => (o.date||'').startsWith(thisMonth));
+  const pending   = vdOrders.filter(o => o.status === 'pending').length;
+  const printed   = vdOrders.filter(o => o.status === 'printed').length;
+  const completed = vdOrders.filter(o => o.status === 'completed').length;
+  const totalRev  = monthOrders.reduce((s,o) => s+(o.totalAmount||0), 0);
+  const totalProds= vdOrders.reduce((s,o) => s+(o.totalQty||0), 0);
+  const stats = [
+    {icon:'📦',val:todayOrders.length,  lbl:'Đơn hôm nay'},
+    {icon:'📋',val:monthOrders.length,   lbl:'Đơn tháng này'},
+    {icon:'🟡',val:pending,              lbl:'Chờ xử lý'},
+    {icon:'🔵',val:printed,              lbl:'Đã in'},
+    {icon:'✅',val:completed,            lbl:'Hoàn thành'},
+    {icon:'📊',val:totalProds,           lbl:'SP đã bán'},
+    {icon:'💰',val:fmtMoney(totalRev)+'₫',lbl:'Doanh thu tháng'},
+    {icon:'🗃', val:vdOrders.length,     lbl:'Tổng đơn'}
+  ];
+  document.getElementById('statsGrid').innerHTML = stats.map(s => `
+    <div class="vd-stat-card">
+      <div class="vd-stat-icon">${s.icon}</div>
+      <div class="vd-stat-val" style="margin-top:8px;">${s.val}</div>
+      <div class="vd-stat-lbl">${s.lbl}</div>
+    </div>`).join('');
+  drawOrderChart();
+  drawTopProducts();
+  const recent = [...vdOrders].sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||'')).slice(0,5);
+  const tbody = document.getElementById('recentOrdersBody');
+  tbody.innerHTML = !recent.length
+    ? '<tr><td colspan="6" style="text-align:center;padding:24px;color:#9ca3af;">Chưa có đơn nào</td></tr>'
+    : recent.map(o => `
+        <tr onclick="editOrder('${esc(o.id)}')" style="cursor:pointer;">
+          <td style="font-family:monospace;font-weight:700;font-size:12px;">${esc(o.id)}</td>
+          <td style="font-weight:600;">${esc(o.customer?.name||'')}</td>
+          <td style="color:#6b7280;">${esc(o.customer?.phone||'')}</td>
+          <td style="font-weight:700;">${fmtMoney(o.totalAmount)}${o.totalAmount?'₫':''}</td>
+          <td><span class="vd-badge ${VD_STATUS_MAP[o.status]?.cls||'s-pending'}">${VD_STATUS_MAP[o.status]?.label||'Chờ xử lý'}</span></td>
+          <td style="color:#9ca3af;">${vdFmtDate(o.date)}</td>
+        </tr>`).join('');
+  const badge = document.getElementById('vdOrderBadge');
+  if (badge) { badge.textContent = pending; badge.style.display = pending>0?'inline':'none'; }
+  const dsEl = document.getElementById('dataStats');
+  if (dsEl) dsEl.textContent = `${vdOrders.length} đơn hàng · ${vdInventory.length} sản phẩm kho`;
+}
+
+function drawOrderChart() {
+  const days = [];
+  for (let i=6; i>=0; i--) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const iso = d.toISOString().split('T')[0];
+    days.push({ label: vdFmtDateShort(iso), value: vdOrders.filter(o=>o.date===iso).length });
   }
-  loadOrdStats();
-  loadOrdList();
+  const max = Math.max(...days.map(d=>d.value),1);
+  const W=36, G=8, H=80, totalW=days.length*(W+G)-G;
+  const bars = days.map((d,i) => {
+    const bh = Math.max(Math.round((d.value/max)*H), d.value>0?4:0);
+    const x=i*(W+G), y=H-bh;
+    return `<g>
+      <rect x="${x}" y="${y}" width="${W}" height="${bh}" fill="#111" rx="3"/>
+      ${d.value>0?`<text x="${x+W/2}" y="${y-4}" text-anchor="middle" font-size="10" fill="#111" font-weight="700" font-family="Be Vietnam Pro,sans-serif">${d.value}</text>`:''}
+      <text x="${x+W/2}" y="${H+16}" text-anchor="middle" font-size="10" fill="#9ca3af" font-family="Be Vietnam Pro,sans-serif">${d.label}</text>
+    </g>`;
+  }).join('');
+  document.getElementById('chartOrders').innerHTML =
+    `<svg width="${totalW}" height="${H+28}" style="overflow:visible;min-width:100%;">${bars}</svg>`;
 }
 
-function genOrdId() {
-  const el = document.getElementById('ordId');
-  if (!el.value) el.value = 'BBV-' + Date.now();
+function drawTopProducts() {
+  const counts = {};
+  vdOrders.forEach(o => (o.items||[]).forEach(it => { const k=it.name||'?'; counts[k]=(counts[k]||0)+(it.qty||1); }));
+  const top = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  if (!top.length) {
+    document.getElementById('chartTopProducts').innerHTML = '<div style="color:#9ca3af;font-size:12px;padding:12px 0;">Chưa có dữ liệu</div>';
+    return;
+  }
+  const maxV = top[0][1]||1;
+  document.getElementById('chartTopProducts').innerHTML = top.map(([name,cnt]) => `
+    <div style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;">
+        <span style="font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(name)}">${esc(name)}</span>
+        <span style="font-weight:700;flex-shrink:0;margin-left:8px;">${cnt} sp</span>
+      </div>
+      <div style="background:#f3f4f6;border-radius:3px;height:6px;overflow:hidden;">
+        <div style="background:#111;height:100%;width:${Math.round(cnt/maxV*100)}%;border-radius:3px;transition:width .3s;"></div>
+      </div>
+    </div>`).join('');
 }
 
-function ordTab(btn, sub) {
-  document.querySelectorAll('#page-don-hang .sub-tab').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('#page-don-hang .sub-section').forEach(s=>s.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById(sub).classList.add('active');
-  if (sub === 'ord-list') loadOrdList();
+const vdAutoSaveDebounced = vdDebounce(() => {
+  const draft = collectForm();
+  localStorage.setItem('bbv_draft_v3', JSON.stringify(draft));
+  const el = document.getElementById('autosave');
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 1500);
+}, 1200);
+
+function genOrderId() {
+  const d = new Date();
+  const yy=String(d.getFullYear()).slice(2), mm=String(d.getMonth()+1).padStart(2,'0'), dd=String(d.getDate()).padStart(2,'0');
+  document.getElementById('fOrderId').value = `${vdSettings.orderPrefix||'BBV'}-${yy}${mm}${dd}-${String(vdOrders.length+1).padStart(3,'0')}`;
 }
 
-/* ── Order form item rows ── */
-function addOrdRow(name='', sku='', qty=1, price='') {
-  const wrap = document.getElementById('ordItemsWrap');
-  const div = document.createElement('div');
-  div.className = 'ord-item-row';
-  div.innerHTML = `
-    <div class="prod-ac-wrap">
-      <input type="text" class="fi ord-prod-name" placeholder="Tên sản phẩm…" value="${esc(name)}"
-        oninput="filterProdAC(this)" onblur="hideProdAC(this,200)" onkeydown="navProdAC(event,this)">
-      <div class="prod-ac-drop"></div>
-    </div>
-    <input type="text" class="fi ord-sku" placeholder="SKU" value="${esc(sku)}">
-    <input type="number" class="fi ord-qty" value="${qty}" min="1" style="text-align:center" oninput="calcOrdTotal()">
-    <input type="text" class="fi ord-price" placeholder="0" value="${esc(price)}" oninput="calcOrdTotal()">
-    <span class="ord-row-total">0 đ</span>
-    <button class="btn-rm-var" onclick="this.closest('.ord-item-row').remove();calcOrdTotal()">✕</button>`;
-  wrap.appendChild(div);
-  calcOrdTotal();
+function collectForm() {
+  return {
+    id:      document.getElementById('fOrderId').value.trim(),
+    date:    document.getElementById('fDate').value,
+    status:  vdEditOrderId ? (vdOrders.find(o=>o.id===vdEditOrderId)?.status||'pending') : 'pending',
+    customer: {
+      name:     document.getElementById('fName').value.trim(),
+      phone:    document.getElementById('fPhone').value.trim(),
+      address:  document.getElementById('fAddress').value.trim(),
+      province: document.getElementById('fProvince').value,
+      district: document.getElementById('fDistrict').value.trim(),
+      ward:     document.getElementById('fWard').value.trim()
+    },
+    carrier:      document.getElementById('fCarrier').value,
+    trackingCode: document.getElementById('fTracking').value.trim(),
+    items:        vdOrderItems.map(r=>({name:r.name,sku:r.sku,qty:r.qty,price:r.price})).filter(r=>r.name.trim()),
+    notes:        document.getElementById('fNotes').value.trim(),
+    totalQty:     vdOrderItems.reduce((s,r)=>s+(r.qty||0),0),
+    totalAmount:  vdOrderItems.reduce((s,r)=>s+((r.qty||0)*(r.price||0)),0),
+    createdAt:    vdEditOrderId ? (vdOrders.find(o=>o.id===vdEditOrderId)?.createdAt||new Date().toISOString()) : new Date().toISOString()
+  };
 }
 
-function filterProdAC(input) {
+function fillForm(o) {
+  document.getElementById('fOrderId').value  = o.id||'';
+  document.getElementById('fDate').value     = o.date||vdTodayISO();
+  document.getElementById('fCarrier').value  = o.carrier||vdSettings.defaultCarrier||'';
+  document.getElementById('fTracking').value = o.trackingCode||'';
+  document.getElementById('fName').value     = o.customer?.name||'';
+  document.getElementById('fPhone').value    = o.customer?.phone||'';
+  document.getElementById('fAddress').value  = o.customer?.address||'';
+  document.getElementById('fProvince').value = o.customer?.province||'';
+  document.getElementById('fDistrict').value = o.customer?.district||'';
+  document.getElementById('fWard').value     = o.customer?.ward||'';
+  document.getElementById('fNotes').value    = o.notes||'';
+  vdOrderItems = (o.items||[]).length
+    ? o.items.map(it=>({id:vdUid(),name:it.name||'',sku:it.sku||'',qty:it.qty||1,price:it.price||0}))
+    : [{id:vdUid(),name:'',sku:'',qty:1,price:0}];
+  renderItems();
+  updatePreview();
+}
+
+function newOrder() {
+  vdEditOrderId = null;
+  vdOrderItems = [{id:vdUid(),name:'',sku:'',qty:1,price:0}];
+  ['fName','fPhone','fAddress','fDistrict','fWard','fTracking','fNotes'].forEach(id => { document.getElementById(id).value=''; });
+  document.getElementById('fDate').value     = vdTodayISO();
+  document.getElementById('fCarrier').value  = vdSettings.defaultCarrier||'';
+  document.getElementById('fProvince').value = '';
+  document.getElementById('formTitle').textContent = 'Tạo đơn hàng mới';
+  document.getElementById('btnCopy').style.display = 'none';
+  genOrderId();
+  renderItems();
+  document.getElementById('labelPreview').innerHTML = '<div style="text-align:center;color:#ccc;padding-top:60px;font-size:12px;">Nhập thông tin để xem trước</div>';
+}
+
+function saveOrder() {
+  const o = collectForm();
+  if (!o.id)               { toast('Vui lòng nhập mã đơn hàng','err'); return; }
+  if (!o.customer.name)    { toast('Vui lòng nhập tên khách hàng','err'); return; }
+  if (!o.customer.address) { toast('Vui lòng nhập địa chỉ giao hàng','err'); return; }
+  if (!vdEditOrderId) {
+    o.items.forEach(it => {
+      const inv = vdInventory.find(p=>p.name===it.name||p.sku===it.sku);
+      if (inv&&inv.stock>0) inv.stock = Math.max(0,inv.stock-it.qty);
+    });
+  }
+  const idx = vdOrders.findIndex(x=>x.id===o.id);
+  if (idx>=0) vdOrders[idx]=o; else vdOrders.unshift(o);
+  vdSave();
+  localStorage.removeItem('bbv_draft_v3');
+  toast('✓ Đã lưu đơn hàng '+o.id);
+  vdEditOrderId = o.id;
+  document.getElementById('formTitle').textContent = 'Chỉnh sửa đơn hàng';
+  document.getElementById('btnCopy').style.display = 'inline-flex';
+  updatePreview();
+}
+
+function editOrder(id) {
+  const o = vdOrders.find(x=>x.id===id);
+  if (!o) return;
+  vdEditOrderId = id;
+  fillForm(o);
+  document.getElementById('formTitle').textContent = 'Chỉnh sửa đơn hàng';
+  document.getElementById('btnCopy').style.display = 'inline-flex';
+  vdNavTo('new-order');
+}
+
+function copyOrder() {
+  vdEditOrderId = null;
+  genOrderId();
+  document.getElementById('formTitle').textContent = 'Tạo đơn hàng mới (nhân bản)';
+  document.getElementById('btnCopy').style.display = 'none';
+  toast('Đã nhân bản đơn — hãy chỉnh sửa và lưu lại');
+}
+
+function deleteOrder(id) {
+  if (!confirm(`Xóa đơn "${id}"?`)) return;
+  vdOrders = vdOrders.filter(o=>o.id!==id);
+  vdSave();
+  renderOrders();
+  toast('Đã xóa đơn!');
+}
+
+function setOrderStatus(id, status) {
+  const o = vdOrders.find(x=>x.id===id);
+  if (o) { o.status=status; vdSave(); renderOrders(); }
+}
+
+async function loadCatalog() {
+  try {
+    const res = await fetch('/api/product-catalog');
+    if (res.ok) vdCatalog = await res.json();
+  } catch { vdCatalog = []; }
+}
+
+function filterAC(input, itemId) {
   const q = input.value.trim().toLowerCase();
-  const drop = input.closest('.prod-ac-wrap').querySelector('.prod-ac-drop');
-  if (!q || allProducts.length === 0) { drop.classList.remove('open'); return; }
-  const matches = allProducts.filter(p => p.name.toLowerCase().includes(q)).slice(0, 12);
-  if (matches.length === 0) { drop.classList.remove('open'); return; }
-  drop.innerHTML = matches.map((p, i) => {
-    const priceDisp = p.price ? fmtNum(p.price) + ' đ' : 'Liên hệ';
-    const srcLabel = p.source === 'price-list' ? 'Bảng giá' : 'Web';
-    const srcCls   = p.source === 'price-list' ? 'pa-src-bg' : 'pa-src-web';
-    return `<div class="prod-ac-item" data-idx="${i}" data-name="${esc(p.name)}" data-sku="${esc(p.sku||'')}" data-price="${p.price||''}">
-      <span class="pa-price">${priceDisp}</span>
-      <div class="pa-name">${esc(p.name)}</div>
-      <div class="pa-meta"><span class="pa-src ${srcCls}">${srcLabel}</span>${p.brand ? ' · ' + esc(p.brand) : ''}</div>
+  const drop = input.parentElement.querySelector('.ac-drop');
+  if (!q) { drop.classList.remove('open'); return; }
+  const combined = [...vdCatalog, ...vdInventory.map(p=>({name:p.name,price:p.price||0,sku:p.sku||'',brand:'',source:'inv'}))];
+  const seen = new Set();
+  const matches = combined.filter(p => {
+    if (!p.name.toLowerCase().includes(q)) return false;
+    if (seen.has(p.name.toLowerCase())) return false;
+    seen.add(p.name.toLowerCase()); return true;
+  }).slice(0,12);
+  if (!matches.length) { drop.classList.remove('open'); return; }
+  drop.innerHTML = matches.map(p => {
+    const priceStr = p.price ? fmtMoney(p.price)+'₫' : '';
+    const srcLabel = p.source==='price-list'?'Bảng giá':p.source==='web'?'Web':'Kho';
+    const srcCls   = p.source==='price-list'?'ac-src-bg':p.source==='web'?'ac-src-web':'ac-src-inv';
+    return `<div class="ac-item" data-name="${esc(p.name)}" data-sku="${esc(p.sku||'')}" data-price="${p.price||0}"
+      onmousedown="selectAC(this,'${itemId}')">
+      <span class="ac-iname">${esc(p.name)}</span>
+      <span class="ac-isrc ${srcCls}">${srcLabel}</span>
+      ${priceStr?`<span class="ac-iprice">${priceStr}</span>`:''}
     </div>`;
   }).join('');
-  drop.querySelectorAll('.prod-ac-item').forEach(item => {
-    item.addEventListener('mousedown', () => selectProdAC(input, item));
-  });
   drop.classList.add('open');
 }
 
-function navProdAC(e, input) {
-  const drop = input.closest('.prod-ac-wrap').querySelector('.prod-ac-drop');
-  const items = drop.querySelectorAll('.prod-ac-item');
-  if (!items.length) return;
-  const focused = drop.querySelector('.focused');
-  let idx = focused ? Array.from(items).indexOf(focused) : -1;
-  if (e.key === 'ArrowDown') { e.preventDefault(); idx = Math.min(idx+1, items.length-1); }
-  else if (e.key === 'ArrowUp') { e.preventDefault(); idx = Math.max(idx-1, 0); }
-  else if (e.key === 'Enter' && focused) { e.preventDefault(); selectProdAC(input, focused); return; }
-  else if (e.key === 'Escape') { drop.classList.remove('open'); return; }
-  else return;
-  items.forEach(i=>i.classList.remove('focused'));
-  if (items[idx]) items[idx].classList.add('focused');
+function selectAC(el, itemId) {
+  const row = vdOrderItems.find(r=>r.id===itemId);
+  if (row) { row.name=el.dataset.name; row.sku=el.dataset.sku; if(!row.price) row.price=Number(el.dataset.price)||0; }
+  renderItems();
+  vdUpdatePreviewDebounced();
 }
 
-function selectProdAC(input, item) {
-  input.value = item.dataset.name;
-  const row = input.closest('.ord-item-row');
-  row.querySelector('.ord-sku').value = item.dataset.sku;
-  const priceField = row.querySelector('.ord-price');
-  if (!priceField.value) priceField.value = item.dataset.price;
-  input.closest('.prod-ac-wrap').querySelector('.prod-ac-drop').classList.remove('open');
-  calcOrdTotal();
+function hideAC(input, delay) {
+  setTimeout(() => { const drop=input.parentElement?.querySelector('.ac-drop'); if(drop) drop.classList.remove('open'); }, delay);
 }
 
-function hideProdAC(input, delay) {
-  setTimeout(() => {
-    const drop = input.closest('.prod-ac-wrap')?.querySelector('.prod-ac-drop');
-    if (drop) drop.classList.remove('open');
-  }, delay);
+function addItemRow(name='', sku='', qty=1, price=0) {
+  vdOrderItems.push({id:vdUid(),name,sku,qty,price});
+  renderItems();
+  vdUpdatePreviewDebounced();
 }
 
-function getProdDisplayPrice(p) {
-  return p.price ? fmtNum(p.price) + ' đ' : 'Liên hệ';
+function removeItemRow(id) {
+  if (vdOrderItems.length<=1) return;
+  vdOrderItems = vdOrderItems.filter(r=>r.id!==id);
+  renderItems();
+  vdUpdatePreviewDebounced();
 }
 
-function getFirstPrice(p) {
-  return p.price ? String(p.price) : '';
-}
-
-function calcOrdTotal() {
-  let total = 0;
-  document.querySelectorAll('#ordItemsWrap .ord-item-row').forEach(row => {
-    const qty = Number(row.querySelector('.ord-qty').value)||0;
-    const price = Number(String(row.querySelector('.ord-price').value).replace(/\D/g,''))||0;
-    const sub = qty * price;
-    row.querySelector('.ord-row-total').textContent = fmtNum(sub) + ' đ';
-    total += sub;
-  });
-  document.getElementById('ordTotalDisplay').textContent = fmtNum(total) + ' đ';
-}
-
-/* ── Save / Reset / Load ── */
-async function saveOrd() {
-  const editId = document.getElementById('ordEditId').value;
-  const items = [];
-  document.querySelectorAll('#ordItemsWrap .ord-item-row').forEach(row => {
-    const name = row.querySelector('.ord-prod-name').value.trim();
-    if (!name) return;
-    items.push({
-      name,
-      sku: row.querySelector('.ord-sku').value.trim(),
-      qty: Number(row.querySelector('.ord-qty').value)||1,
-      price: Number(String(row.querySelector('.ord-price').value).replace(/\D/g,''))||0,
-    });
-  });
-  const totalAmount = items.reduce((s,i)=>s+i.qty*i.price, 0);
-  const body = {
-    id: document.getElementById('ordId').value.trim(),
-    customer_name: document.getElementById('ordCustName').value.trim(),
-    customer_phone: document.getElementById('ordCustPhone').value.trim(),
-    customer_address: document.getElementById('ordCustAddr').value.trim(),
-    customer_province: document.getElementById('ordProvince').value.trim(),
-    customer_district: document.getElementById('ordDistrict').value.trim(),
-    customer_ward: document.getElementById('ordWard').value.trim(),
-    carrier: document.getElementById('ordCarrier').value,
-    tracking_code: document.getElementById('ordTracking').value.trim(),
-    status: document.getElementById('ordStatus').value,
-    notes: document.getElementById('ordNotes').value.trim(),
-    items,
-    total_amount: totalAmount,
-  };
-  try {
-    const btn = document.getElementById('ordSaveBtn');
-    btn.disabled = true; btn.textContent = 'Đang lưu…';
-    if (editId) {
-      await api('/api/orders/' + encodeURIComponent(editId), 'PUT', body);
-      toast('Đã cập nhật đơn hàng');
-    } else {
-      const r = await api('/api/orders', 'POST', body);
-      document.getElementById('ordId').value = r.id;
-      document.getElementById('ordEditId').value = r.id;
-      toast('Đã tạo đơn hàng ' + r.id);
-    }
-    document.getElementById('ordPrintBtn').style.display = '';
-    document.getElementById('nc-don-hang').textContent = '…';
-    loadOrdStats();
-  } catch(e) { toast('Lỗi: ' + e.message, 'err'); }
-  finally {
-    const btn = document.getElementById('ordSaveBtn');
-    btn.disabled = false; btn.textContent = 'Lưu Đơn Hàng';
+function updateItem(id, field, val) {
+  const row = vdOrderItems.find(r=>r.id===id);
+  if (!row) return;
+  row[field] = field==='qty'||field==='price' ? (Number(val)||0) : val;
+  if (field==='name'||field==='sku') {
+    const inv = vdInventory.find(p=>field==='name'?p.name===val:p.sku===val);
+    if (inv) { row.name=inv.name; row.sku=inv.sku||''; row.price=inv.price||0; }
   }
+  updateTotals();
+  vdUpdatePreviewDebounced();
 }
 
-function resetOrdForm() {
-  document.getElementById('ordId').value = '';
-  document.getElementById('ordEditId').value = '';
-  document.getElementById('ordDate').value = new Date().toISOString().slice(0,10);
-  document.getElementById('ordStatus').value = 'pending';
-  document.getElementById('ordCustName').value = '';
-  document.getElementById('ordCustPhone').value = '';
-  document.getElementById('ordCustAddr').value = '';
-  document.getElementById('ordProvince').value = '';
-  document.getElementById('ordDistrict').value = '';
-  document.getElementById('ordWard').value = '';
-  document.getElementById('ordCarrier').value = '';
-  document.getElementById('ordTracking').value = '';
-  document.getElementById('ordNotes').value = '';
-  document.getElementById('ordItemsWrap').innerHTML = '';
-  document.getElementById('ordPrintBtn').style.display = 'none';
-  genOrdId();
-  addOrdRow();
-  calcOrdTotal();
+function renderItems() {
+  document.getElementById('itemsBody').innerHTML = vdOrderItems.map(r => `
+    <tr>
+      <td style="padding:5px 6px;">
+        <div class="ac-wrap">
+          <input class="inp inp-sm" placeholder="Tên sản phẩm" value="${esc(r.name)}" autocomplete="off"
+            oninput="updateItem('${r.id}','name',this.value);filterAC(this,'${r.id}')"
+            onblur="hideAC(this,200)" style="width:100%;">
+          <div class="ac-drop"></div>
+        </div>
+      </td>
+      <td style="padding:5px 6px;">
+        <input class="inp inp-sm" placeholder="SKU" value="${esc(r.sku)}"
+          oninput="updateItem('${r.id}','sku',this.value)"
+          style="width:100%;font-family:monospace;font-size:12px;">
+      </td>
+      <td style="padding:5px 6px;text-align:center;">
+        <input class="inp inp-sm" type="number" min="1" value="${r.qty}"
+          oninput="updateItem('${r.id}','qty',this.value)" style="width:55px;text-align:center;">
+      </td>
+      <td style="padding:5px 6px;text-align:right;">
+        <input class="inp inp-sm" type="number" min="0" value="${r.price||''}" placeholder="0"
+          oninput="updateItem('${r.id}','price',this.value)" style="width:110px;text-align:right;">
+      </td>
+      <td style="padding:5px 6px;text-align:right;font-weight:700;font-size:13px;white-space:nowrap;">
+        ${r.qty&&r.price ? fmtMoney(r.qty*r.price)+'₫' : '—'}
+      </td>
+      <td style="padding:5px 2px;text-align:center;">
+        <button onclick="removeItemRow('${r.id}')"
+          style="background:none;border:none;cursor:pointer;color:#d1d5db;font-size:18px;line-height:1;padding:2px;"
+          ${vdOrderItems.length<=1?'disabled':''}>×</button>
+      </td>
+    </tr>`).join('');
+  updateTotals();
 }
 
-function loadOrdIntoForm(o) {
-  document.getElementById('ordId').value = o.id;
-  document.getElementById('ordEditId').value = o.id;
-  document.getElementById('ordDate').value = (o.created_at||'').slice(0,10);
-  document.getElementById('ordStatus').value = o.status||'pending';
-  document.getElementById('ordCustName').value = o.customer_name||'';
-  document.getElementById('ordCustPhone').value = o.customer_phone||'';
-  document.getElementById('ordCustAddr').value = o.customer_address||'';
-  document.getElementById('ordProvince').value = o.customer_province||'';
-  document.getElementById('ordDistrict').value = o.customer_district||'';
-  document.getElementById('ordWard').value = o.customer_ward||'';
-  document.getElementById('ordCarrier').value = o.carrier||'';
-  document.getElementById('ordTracking').value = o.tracking_code||'';
-  document.getElementById('ordNotes').value = o.notes||'';
-  document.getElementById('ordItemsWrap').innerHTML = '';
-  (o.items||[]).forEach(item => addOrdRow(item.name, item.sku, item.qty, item.price));
-  if (!o.items || o.items.length === 0) addOrdRow();
-  calcOrdTotal();
-  document.getElementById('ordPrintBtn').style.display = '';
-  ordTab(document.querySelector('#page-don-hang .sub-tab'), 'ord-create');
+function updateTotals() {
+  const qty = vdOrderItems.reduce((s,r)=>s+(r.qty||0),0);
+  const amt = vdOrderItems.reduce((s,r)=>s+((r.qty||0)*(r.price||0)),0);
+  document.getElementById('totalQty').textContent = qty;
+  document.getElementById('totalAmt').textContent = amt ? fmtMoney(amt)+'₫' : '0₫';
 }
 
-/* ── Stats ── */
-async function loadOrdStats() {
-  try {
-    const all = await api('/api/orders');
-    document.getElementById('os-all').textContent = all.length;
-    document.getElementById('os-pending').textContent = all.filter(o=>o.status==='pending').length;
-    document.getElementById('os-processing').textContent = all.filter(o=>o.status==='processing').length;
-    document.getElementById('os-done').textContent = all.filter(o=>o.status==='done').length;
-    document.getElementById('nc-don-hang').textContent = all.length;
-  } catch { }
+function handleScanInput(e) {
+  if (e.key!=='Enter') return;
+  const val = e.target.value.trim();
+  if (!val) return;
+  const prod = vdInventory.find(p=>p.barcode===val||p.sku===val||p.name===val);
+  if (prod) {
+    const existing = vdOrderItems.find(r=>r.sku===prod.sku||r.name===prod.name);
+    if (existing) { existing.qty=(existing.qty||1)+1; toast(`+1 "${prod.name}" (${existing.qty})`); }
+    else { addItemRow(prod.name,prod.sku,1,prod.price||0); toast(`✓ Thêm "${prod.name}"`); }
+    renderItems();
+  } else { addItemRow(val,'',1,0); toast(`Thêm sản phẩm: ${val}`); }
+  e.target.value = '';
+  vdUpdatePreviewDebounced();
 }
 
-/* ── List ── */
-function setOrdFilter(btn) {
-  document.querySelectorAll('.ord-status-pills .ord-pill').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  ordFilterStatus = btn.dataset.status;
-  loadOrdList();
-}
-
-async function loadOrdList() {
-  const tbody = document.getElementById('ordTableBody');
-  tbody.innerHTML = '<tr><td colspan="8" class="loading-state">Đang tải…</td></tr>';
-  try {
-    const q = document.getElementById('ordSearch')?.value.trim() || '';
-    let url = '/api/orders?limit=500';
-    if (ordFilterStatus !== 'all') url += '&status=' + encodeURIComponent(ordFilterStatus);
-    if (q) url += '&q=' + encodeURIComponent(q);
-    const orders = await api(url);
-    if (orders.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Không có đơn hàng nào.</td></tr>'; return;
-    }
-    tbody.innerHTML = orders.map(o => {
-      const items = o.items||[];
-      const itemSummary = items.length === 0 ? '—' : items.slice(0,2).map(i=>`${esc(i.name)} x${i.qty}`).join(', ') + (items.length>2?`…`:``);
-      const statusClass = { pending:'os-pending', processing:'os-processing', shipped:'os-shipped', done:'os-done', cancelled:'os-cancelled' }[o.status]||'';
-      const statusLabel = { pending:'Chờ xử lý', processing:'Đang giao', shipped:'Đã gửi', done:'Hoàn thành', cancelled:'Đã hủy' }[o.status]||o.status;
-      const dateStr = (o.created_at||'').slice(0,10);
-      return `<tr>
-        <td><strong>${esc(o.id)}</strong></td>
-        <td>
-          <div style="font-weight:600">${esc(o.customer_name||'—')}</div>
-          <div style="font-size:11px;color:var(--muted)">${esc(o.customer_phone||'')}</div>
-        </td>
-        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px">${itemSummary}</td>
-        <td style="font-weight:700;color:var(--red)">${fmtNum(o.total_amount)} đ</td>
-        <td>${esc(o.carrier||'—')}</td>
-        <td><span class="ord-status-badge ${statusClass}">${statusLabel}</span></td>
-        <td style="font-size:12px;color:var(--muted)">${dateStr}</td>
-        <td style="white-space:nowrap">
-          <button class="ord-act-btn" onclick="editOrd('${esc(o.id)}')">Sửa</button>
-          <button class="ord-act-btn del" onclick="delOrd('${esc(o.id)}',this)">Xóa</button>
-        </td>
-      </tr>`;
-    }).join('');
-  } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Lỗi tải dữ liệu: ${esc(e.message)}</td></tr>`;
-  }
-}
-
-async function editOrd(id) {
-  try {
-    const o = await api('/api/orders/' + encodeURIComponent(id));
-    loadOrdIntoForm(o);
-  } catch(e) { toast('Lỗi: ' + e.message, 'err'); }
-}
-
-async function delOrd(id, btn) {
-  if (!confirm('Xóa đơn hàng ' + id + '?')) return;
-  try {
-    btn.disabled = true;
-    await api('/api/orders/' + encodeURIComponent(id), 'DELETE');
-    toast('Đã xóa đơn ' + id);
-    loadOrdList(); loadOrdStats();
-    document.getElementById('nc-don-hang').textContent = '…';
-  } catch(e) { toast('Lỗi: ' + e.message, 'err'); btn.disabled = false; }
-}
-
-/* ── Print A6 label ── */
-function printOrd() {
-  const id = document.getElementById('ordEditId').value || document.getElementById('ordId').value;
-  if (!id) { toast('Chưa lưu đơn hàng', 'err'); return; }
-
-  const name = document.getElementById('ordCustName').value || '—';
-  const phone = document.getElementById('ordCustPhone').value || '';
-  const province = document.getElementById('ordProvince').value || '';
-  const district = document.getElementById('ordDistrict').value || '';
-  const ward = document.getElementById('ordWard').value || '';
-  const addr = document.getElementById('ordCustAddr').value || '';
-  const carrier = document.getElementById('ordCarrier').value || '';
-  const tracking = document.getElementById('ordTracking').value || '';
-  const items = [];
-  document.querySelectorAll('#ordItemsWrap .ord-item-row').forEach(row => {
-    const n = row.querySelector('.ord-prod-name').value.trim();
-    if (n) items.push({ name: n, qty: row.querySelector('.ord-qty').value, price: row.querySelector('.ord-price').value });
-  });
-  const total = document.getElementById('ordTotalDisplay').textContent;
-  const fullAddr = [ward, district, province].filter(Boolean).join(', ');
-
-  const frame = document.getElementById('ordPrintFrame');
-  frame.style.display = 'block';
-  frame.innerHTML = `<div style="width:100mm;height:150mm;box-sizing:border-box;padding:6mm;font-family:Arial,sans-serif;font-size:10pt;background:#fff">
-    <div style="text-align:center;border-bottom:1.5pt solid #000;padding-bottom:3mm;margin-bottom:3mm">
-      <div style="font-size:13pt;font-weight:900;letter-spacing:.05em">BÓNG BÀN VIỆT</div>
-      <div style="font-size:8pt;color:#555">286 Nguyễn Xiển · 096.1269.386 · bongbanviet.com</div>
-      ${carrier ? `<div style="font-size:9pt;font-weight:700;margin-top:2mm">ĐVVC: ${esc(carrier)}${tracking?' · '+esc(tracking):''}</div>` : ''}
+function buildLabelHTML(o, pfx) {
+  const items = (o.items||[]).filter(i=>i.name&&i.name.trim());
+  const totalQty = items.reduce((s,i)=>s+(i.qty||1),0);
+  const totalAmt = items.reduce((s,i)=>s+((i.qty||1)*(i.price||0)),0);
+  const trackCode = o.trackingCode||o.id||'BBV000';
+  const cust = o.customer||{};
+  const fullAddr = [cust.address,cust.ward,cust.district,cust.province].filter(Boolean).join(', ');
+  const prodRows = items.length
+    ? items.map(it=>`<div style="display:flex;justify-content:space-between;padding:1.5px 0;font-size:9px;">
+        <span style="flex:1;padding-right:4px;">• ${esc(it.name)}</span>
+        <span style="font-weight:700;flex-shrink:0;white-space:nowrap;">×${it.qty||1}${it.price?` · ${fmtMoney((it.qty||1)*it.price)}₫`:''}</span>
+      </div>`).join('')
+    : `<div style="color:#aaa;font-size:9px;">—</div>`;
+  return `<div style="font-family:'Be Vietnam Pro',Arial,sans-serif;color:#000;width:100%;">
+    <div style="display:flex;align-items:center;gap:7px;padding-bottom:6px;border-bottom:2.5px solid #000;margin-bottom:6px;">
+      <img src="/logo_bongbanviet.png" alt="BBV" style="width:30px;height:30px;border-radius:50%;flex-shrink:0;">
+      <div>
+        <div style="font-weight:800;font-size:12.5px;letter-spacing:.04em;line-height:1.1;">${esc(vdSettings.shopName||'BÓNG BÀN VIỆT')}</div>
+        <div style="font-size:8.5px;color:#444;margin-top:1px;">Tư Vấn Chuẩn - Hàng Chính Hãng</div>
+        <div style="font-size:8px;color:#666;">${esc(vdSettings.shopWebsite||'bongbanviet.com')} · ${esc(vdSettings.shopPhone||'096.1269.386')}</div>
+      </div>
     </div>
-    <div style="margin-bottom:3mm">
-      <div style="font-size:8.5pt;color:#555">NGƯỜI NHẬN</div>
-      <div style="font-size:14pt;font-weight:900;margin:1mm 0">${esc(name)}</div>
-      <div style="font-size:10.5pt;font-weight:700">${esc(phone)}</div>
-      <div style="font-size:9pt;margin-top:1.5mm">${esc(addr)}${addr && fullAddr ? ', ' : ''}${esc(fullAddr)}</div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:5px;border-bottom:1px dashed #aaa;margin-bottom:5px;">
+      <div>
+        <div style="font-size:7.5px;text-transform:uppercase;letter-spacing:.1em;color:#888;margin-bottom:1.5px;">Mã đơn hàng</div>
+        <div style="font-weight:800;font-size:12px;letter-spacing:.03em;font-family:monospace;">${esc(o.id)}</div>
+        ${o.carrier?`<div style="font-size:9px;font-weight:600;color:#444;margin-top:2px;">✈ ${esc(o.carrier)}</div>`:''}
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:7.5px;text-transform:uppercase;letter-spacing:.08em;color:#888;margin-bottom:1.5px;">Ngày</div>
+        <div style="font-weight:600;font-size:11px;">${vdFmtDate(o.date)}</div>
+      </div>
     </div>
-    <div style="border-top:1pt dashed #999;margin-bottom:2mm;padding-top:2mm">
-      <div style="font-size:8pt;color:#555;margin-bottom:1.5mm">SẢN PHẨM</div>
-      ${items.map(i=>`<div style="display:flex;justify-content:space-between;font-size:9pt;margin-bottom:1mm"><span>${esc(i.name)}</span><span>x${esc(i.qty)}</span></div>`).join('')}
+    <div style="padding-bottom:5px;border-bottom:1px dashed #aaa;margin-bottom:5px;">
+      <div style="font-size:7.5px;text-transform:uppercase;letter-spacing:.1em;color:#888;margin-bottom:2px;">Người Nhận</div>
+      <div style="font-weight:800;font-size:13px;line-height:1.2;margin-bottom:2px;">${esc(cust.name||'')}</div>
+      ${cust.phone?`<div style="font-weight:700;font-size:12px;margin-bottom:3px;">${esc(cust.phone)}</div>`:''}
+      <div style="font-size:10.5px;line-height:1.45;color:#111;">${esc(fullAddr)}</div>
     </div>
-    <div style="border-top:1.5pt solid #000;padding-top:2mm;display:flex;justify-content:space-between;align-items:center">
-      <div style="font-size:9pt;color:#555">Mã đơn: <strong>${esc(id)}</strong></div>
-      <div style="font-size:11pt;font-weight:900">Tổng: ${esc(total)}</div>
+    <div style="padding-bottom:5px;border-bottom:1px dashed #aaa;margin-bottom:5px;">
+      <div style="font-size:7.5px;text-transform:uppercase;letter-spacing:.1em;color:#888;margin-bottom:3px;">Sản Phẩm</div>
+      ${prodRows}
+      <div style="display:flex;justify-content:space-between;border-top:1px solid #ddd;margin-top:3px;padding-top:2px;font-size:9px;font-weight:700;">
+        <span>Tổng</span><span>${totalQty} sp${totalAmt?' — '+fmtMoney(totalAmt)+'₫':''}</span>
+      </div>
+    </div>
+    ${o.notes?`<div style="padding-bottom:5px;border-bottom:1px dashed #aaa;margin-bottom:5px;">
+      <div style="font-size:7.5px;text-transform:uppercase;letter-spacing:.1em;color:#888;margin-bottom:1px;">Ghi Chú</div>
+      <div style="font-size:9.5px;font-style:italic;line-height:1.4;">${esc(o.notes)}</div>
+    </div>`:''}
+    <div style="margin-bottom:4px;overflow:hidden;"><svg id="${pfx}Barcode" style="width:100%;display:block;"></svg></div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+      <img id="${pfx}QR" style="width:50px;height:50px;display:block;" src="" alt="QR">
+      <div style="text-align:right;">
+        <div style="font-size:8px;color:#888;">${esc(vdSettings.shopWebsite||'bongbanviet.com')}</div>
+        <div style="font-size:7.5px;color:#aaa;margin-top:1px;font-family:monospace;">${esc(trackCode)}</div>
+      </div>
     </div>
   </div>`;
-
-  setTimeout(() => { window.print(); frame.style.display = 'none'; }, 200);
 }
 
-/* ─── Init ─────────────────────────────────────────────────── */
+async function applyLabelCode(o, pfx) {
+  const trackCode = o.trackingCode||o.id||'BBV000';
+  const barcodeEl = document.getElementById(pfx+'Barcode');
+  if (barcodeEl) {
+    try {
+      JsBarcode(barcodeEl, trackCode, {
+        format:'CODE128', width:pfx==='prt'?2:1.5, height:pfx==='prt'?42:32,
+        displayValue:true, fontSize:pfx==='prt'?10:8, margin:2, background:'#ffffff', lineColor:'#000000'
+      });
+    } catch(e) {}
+  }
+  const qrEl = document.getElementById(pfx+'QR');
+  if (qrEl&&o.id) {
+    try {
+      qrEl.src = await QRCode.toDataURL(o.id, {width:pfx==='prt'?76:50,margin:1,color:{dark:'#000',light:'#fff'}});
+    } catch(e) {}
+  }
+}
+
+const vdUpdatePreviewDebounced = vdDebounce(updatePreview, 600);
+
+async function updatePreview() {
+  const o = collectForm();
+  if (!o.id&&!o.customer?.name) return;
+  const el = document.getElementById('labelPreview');
+  el.innerHTML = buildLabelHTML(o,'prv');
+  await applyLabelCode(o,'prv');
+}
+
+async function doPrint(order) {
+  const prtEl = document.getElementById('printLabel');
+  prtEl.innerHTML = buildLabelHTML(order,'prt');
+  await applyLabelCode(order,'prt');
+  document.getElementById('printFrame').style.display = 'block';
+  await new Promise(r=>setTimeout(r,400));
+  window.print();
+  setTimeout(()=>{ document.getElementById('printFrame').style.display='none'; },1500);
+  const o = vdOrders.find(x=>x.id===order.id);
+  if (o&&o.status==='pending') { o.status='printed'; vdSave(); }
+}
+
+async function printCurrentOrder() {
+  const o = collectForm();
+  if (!o.id||!o.customer?.name) { toast('Nhập đủ mã đơn và tên khách trước khi in','err'); return; }
+  await doPrint(o);
+}
+
+async function printOrder(id) {
+  const o = vdOrders.find(x=>x.id===id);
+  if (o) await doPrint(o);
+}
+
+async function exportPNG() {
+  const o = collectForm();
+  if (!o.id) { toast('Nhập mã đơn hàng trước','err'); return; }
+  await updatePreview();
+  await new Promise(r=>setTimeout(r,400));
+  try {
+    const canvas = await html2canvas(document.getElementById('labelPreview'),{scale:2.11,useCORS:true,backgroundColor:'#ffffff',logging:false});
+    const a = document.createElement('a');
+    a.download = `tem-${o.id}.png`; a.href = canvas.toDataURL('image/png'); a.click();
+    toast('✓ Đã xuất PNG');
+  } catch(e) { toast('Lỗi xuất PNG: '+e.message,'err'); }
+}
+
+async function exportPDF() {
+  const o = collectForm();
+  if (!o.id) { toast('Nhập mã đơn hàng trước','err'); return; }
+  await updatePreview();
+  await new Promise(r=>setTimeout(r,400));
+  try {
+    const canvas = await html2canvas(document.getElementById('labelPreview'),{scale:2.11,useCORS:true,backgroundColor:'#ffffff',logging:false});
+    const {jsPDF} = window.jspdf;
+    const pdf = new jsPDF({orientation:'portrait',unit:'mm',format:[100,150]});
+    pdf.addImage(canvas.toDataURL('image/png'),'PNG',0,0,100,150);
+    pdf.save(`tem-${o.id}.pdf`);
+    toast('✓ Đã xuất PDF');
+  } catch(e) { toast('Lỗi xuất PDF: '+e.message,'err'); }
+}
+
+async function bulkPrint() {
+  const ids = [...vdSelectedOrders];
+  if (!ids.length) return;
+  for (const id of ids) { const o=vdOrders.find(x=>x.id===id); if(o) await doPrint(o); }
+}
+
+function renderOrders() {
+  const q      = (document.getElementById('orderSearch')?.value||'').toLowerCase();
+  const status = document.getElementById('orderStatusFilter')?.value||'';
+  const from   = document.getElementById('orderDateFrom')?.value||'';
+  const to     = document.getElementById('orderDateTo')?.value||'';
+  const filtered = vdOrders.filter(o => {
+    if (q && !o.id.toLowerCase().includes(q) && !o.customer?.name.toLowerCase().includes(q) && !(o.customer?.phone||'').includes(q)) return false;
+    if (status && o.status!==status) return false;
+    if (from && (o.date||'')<from) return false;
+    if (to   && (o.date||'')>to)   return false;
+    return true;
+  }).sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+  document.getElementById('orderCount').textContent = `${filtered.length} đơn`;
+  const tbody = document.getElementById('ordersTableBody');
+  const empty = document.getElementById('ordersEmpty');
+  if (!filtered.length) { tbody.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display = 'none';
+  tbody.innerHTML = filtered.map(o => {
+    const st = VD_STATUS_MAP[o.status]||VD_STATUS_MAP.pending;
+    const prodList = (o.items||[]).slice(0,2).map(i=>`${i.qty||1}×${i.name}`).join(', ');
+    const more = (o.items||[]).length>2 ? ` +${(o.items||[]).length-2}` : '';
+    const checked = vdSelectedOrders.has(o.id)?'checked':'';
+    return `<tr onclick="editOrder('${esc(o.id)}')" style="cursor:pointer;">
+      <td onclick="event.stopPropagation()"><input type="checkbox" ${checked} onchange="toggleOrderSelect('${esc(o.id)}',this.checked)"></td>
+      <td style="font-family:monospace;font-weight:700;font-size:12px;">${esc(o.id)}</td>
+      <td style="font-weight:600;">${esc(o.customer?.name||'')}</td>
+      <td style="color:#6b7280;">${esc(o.customer?.phone||'')}</td>
+      <td style="font-size:12px;color:#6b7280;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(prodList+more)}">${esc(prodList)}${esc(more)}</td>
+      <td style="font-weight:700;white-space:nowrap;">${o.totalAmount?fmtMoney(o.totalAmount)+'₫':'—'}</td>
+      <td>
+        <select class="vd-badge ${st.cls}" onclick="event.stopPropagation()"
+          onchange="setOrderStatus('${esc(o.id)}',this.value)"
+          style="border:none;background:inherit;color:inherit;font-weight:600;font-size:11px;cursor:pointer;padding:2px 6px;border-radius:20px;">
+          ${Object.entries(VD_STATUS_MAP).map(([v,s])=>`<option value="${v}" ${o.status===v?'selected':''}>${s.label}</option>`).join('')}
+        </select>
+      </td>
+      <td style="color:#9ca3af;font-size:12px;">${vdFmtDate(o.date)}</td>
+      <td onclick="event.stopPropagation()">
+        <div style="display:flex;gap:4px;justify-content:flex-end;">
+          <button onclick="printOrder('${esc(o.id)}')" class="btn btn-xs btn-outline" title="In đơn">🖨</button>
+          <button onclick="editOrder('${esc(o.id)}')" class="btn btn-xs btn-outline">Sửa</button>
+          <button onclick="deleteOrder('${esc(o.id)}')" class="btn btn-xs btn-danger">Xóa</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function toggleOrderSelect(id, checked) {
+  if (checked) vdSelectedOrders.add(id); else vdSelectedOrders.delete(id);
+  document.getElementById('btnBulkPrint').style.display = vdSelectedOrders.size>0?'inline-flex':'none';
+}
+
+function toggleAllOrders(checked) {
+  document.querySelectorAll('#ordersTableBody input[type=checkbox]').forEach(cb => {
+    const id = cb.closest('tr')?.querySelector('td:nth-child(2)')?.textContent?.trim();
+    if (checked) vdSelectedOrders.add(id); else vdSelectedOrders.delete(id);
+    cb.checked = checked;
+  });
+}
+
+function clearOrderFilters() {
+  ['orderSearch','orderStatusFilter','orderDateFrom','orderDateTo'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  renderOrders();
+}
+
+function exportOrdersCSV() {
+  const rows = [['Mã đơn','Khách hàng','SĐT','Địa chỉ','Sản phẩm','Tổng tiền','Trạng thái','Ngày']];
+  vdOrders.forEach(o => {
+    rows.push([
+      o.id, o.customer?.name||'', o.customer?.phone||'',
+      [o.customer?.address,o.customer?.district,o.customer?.province].filter(Boolean).join(', '),
+      (o.items||[]).map(i=>`${i.qty}x${i.name}`).join('; '),
+      o.totalAmount||0, VD_STATUS_MAP[o.status]?.label||'', o.date||''
+    ]);
+  });
+  const csv = rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,﻿'+encodeURIComponent(csv);
+  a.download = `don-hang-${vdTodayISO()}.csv`;
+  a.click();
+  toast('✓ Đã xuất CSV');
+}
+
+function openInvModal(id) {
+  document.getElementById('invModalTitle').textContent = id?'Chỉnh sửa sản phẩm':'Thêm sản phẩm';
+  const item = id ? vdInventory.find(p=>p.id===id) : null;
+  document.getElementById('invId').value       = item?.id||'';
+  document.getElementById('invName').value     = item?.name||'';
+  document.getElementById('invSku').value      = item?.sku||'';
+  document.getElementById('invBarcode').value  = item?.barcode||'';
+  document.getElementById('invPrice').value    = item?.price||'';
+  document.getElementById('invCost').value     = item?.costPrice||'';
+  document.getElementById('invStock').value    = item?.stock??0;
+  document.getElementById('invLowAlert').value = item?.lowStockAlert??vdSettings.lowStockAlert??5;
+  document.getElementById('invUnit').value     = item?.unit||'cái';
+  document.getElementById('invModal').classList.add('open');
+  document.getElementById('modalOverlay').style.display = 'block';
+  setTimeout(()=>document.getElementById('invName').focus(),100);
+}
+
+function closeInvModal() {
+  document.getElementById('invModal').classList.remove('open');
+  document.getElementById('modalOverlay').style.display = 'none';
+}
+
+function saveInvItem() {
+  const name = document.getElementById('invName').value.trim();
+  if (!name) { toast('Vui lòng nhập tên sản phẩm','err'); return; }
+  const id = document.getElementById('invId').value||vdUid();
+  const item = {
+    id, name,
+    sku:           document.getElementById('invSku').value.trim(),
+    barcode:       document.getElementById('invBarcode').value.trim(),
+    price:         Number(document.getElementById('invPrice').value)||0,
+    costPrice:     Number(document.getElementById('invCost').value)||0,
+    stock:         Number(document.getElementById('invStock').value)||0,
+    lowStockAlert: Number(document.getElementById('invLowAlert').value)||5,
+    unit:          document.getElementById('invUnit').value||'cái'
+  };
+  const idx = vdInventory.findIndex(p=>p.id===id);
+  if (idx>=0) vdInventory[idx]=item; else vdInventory.push(item);
+  vdSave(); closeInvModal(); renderInventory();
+  toast(`✓ Đã lưu "${name}"`);
+}
+
+function deleteInvItem(id) {
+  const item = vdInventory.find(p=>p.id===id);
+  if (!confirm(`Xóa sản phẩm "${item?.name}"?`)) return;
+  vdInventory = vdInventory.filter(p=>p.id!==id);
+  vdSave(); renderInventory();
+  toast('Đã xóa sản phẩm!');
+}
+
+function renderInventory() {
+  const q = (document.getElementById('invSearch')?.value||'').toLowerCase();
+  const lowOnly = document.getElementById('invLowStock')?.checked;
+  const list = vdInventory.filter(p => {
+    if (q && !p.name.toLowerCase().includes(q) && !(p.sku||'').toLowerCase().includes(q) && !(p.barcode||'').includes(q)) return false;
+    if (lowOnly && p.stock>(p.lowStockAlert??vdSettings.lowStockAlert??5)) return false;
+    return true;
+  }).sort((a,b)=>a.name.localeCompare(b.name,'vi'));
+  const tbody=document.getElementById('invTableBody'), empty=document.getElementById('invEmpty');
+  if (!list.length) { tbody.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display = 'none';
+  tbody.innerHTML = list.map(p => {
+    const isLow = p.stock<=(p.lowStockAlert??vdSettings.lowStockAlert??5);
+    return `<tr class="${isLow?'low-stock-row':''}">
+      <td style="font-weight:600;">${esc(p.name)}${isLow?' <span style="color:#c2410c;font-size:10px;">⚠ Sắp hết</span>':''}</td>
+      <td style="font-family:monospace;font-size:12px;color:#6b7280;">${esc(p.sku||'—')}</td>
+      <td style="font-family:monospace;font-size:11px;color:#9ca3af;">${esc(p.barcode||'—')}</td>
+      <td style="text-align:right;font-weight:700;${isLow?'color:#c2410c':''}">${p.stock} ${esc(p.unit||'cái')}</td>
+      <td style="text-align:right;font-weight:600;">${p.price?fmtMoney(p.price)+'₫':'—'}</td>
+      <td style="text-align:right;color:#9ca3af;">${p.costPrice?fmtMoney(p.costPrice)+'₫':'—'}</td>
+      <td><div style="display:flex;gap:4px;justify-content:flex-end;">
+        <button onclick="openInvModal('${p.id}')" class="btn btn-xs btn-outline">Sửa</button>
+        <button onclick="deleteInvItem('${p.id}')" class="btn btn-xs btn-danger">Xóa</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function loadSettingsForm() {
+  document.getElementById('sTenShop').value        = vdSettings.shopName||'';
+  document.getElementById('sDiaChi').value         = vdSettings.shopAddress||'';
+  document.getElementById('sSdt').value            = vdSettings.shopPhone||'';
+  document.getElementById('sWebsite').value        = vdSettings.shopWebsite||'';
+  document.getElementById('sPrefix').value         = vdSettings.orderPrefix||'BBV';
+  document.getElementById('sCarrierDefault').value = vdSettings.defaultCarrier||'';
+  document.getElementById('sLowStock').value       = vdSettings.lowStockAlert??5;
+  document.getElementById('dataStats').textContent = `${vdOrders.length} đơn hàng · ${vdInventory.length} sản phẩm kho`;
+}
+
+function saveSettings() {
+  vdSettings.shopName       = document.getElementById('sTenShop').value.trim()||'BÓNG BÀN VIỆT';
+  vdSettings.shopAddress    = document.getElementById('sDiaChi').value.trim();
+  vdSettings.shopPhone      = document.getElementById('sSdt').value.trim();
+  vdSettings.shopWebsite    = document.getElementById('sWebsite').value.trim();
+  vdSettings.orderPrefix    = document.getElementById('sPrefix').value.trim()||'BBV';
+  vdSettings.defaultCarrier = document.getElementById('sCarrierDefault').value;
+  vdSettings.lowStockAlert  = Number(document.getElementById('sLowStock').value)||5;
+  vdSave();
+  toast('✓ Đã lưu cài đặt');
+}
+
+function backupData() {
+  const data = {orders:vdOrders,inventory:vdInventory,settings:vdSettings,exportedAt:new Date().toISOString()};
+  const a = document.createElement('a');
+  a.href = 'data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(data,null,2));
+  a.download = `bbv-backup-${vdTodayISO()}.json`;
+  a.click(); toast('✓ Đã tải backup JSON');
+}
+
+function restoreData(input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!confirm('Restore sẽ ghi đè toàn bộ dữ liệu hiện tại. Tiếp tục?')) return;
+      if (data.orders)    vdOrders    = data.orders;
+      if (data.inventory) vdInventory = data.inventory;
+      if (data.settings)  vdSettings  = data.settings;
+      vdSave(); toast('✓ Restore thành công!'); refreshDashboard();
+    } catch(err) { toast('Lỗi đọc file backup','err'); }
+  };
+  reader.readAsText(file); input.value='';
+}
+
+function clearAllData() {
+  if (!confirm('XÓA TẤT CẢ DỮ LIỆU? Hành động này không thể hoàn tác!')) return;
+  if (!confirm('Xác nhận lần 2: Xóa toàn bộ đơn hàng và kho hàng?')) return;
+  vdOrders=[]; vdInventory=[]; vdSave();
+  toast('Đã xóa tất cả dữ liệu'); refreshDashboard();
+}
+
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('page-don-hang')?.classList.contains('active')) return;
+  if (!(e.ctrlKey||e.metaKey)) return;
+  const inNew = document.getElementById('vd-sec-new-order')?.classList.contains('active');
+  if (e.key==='s') { e.preventDefault(); saveOrder(); }
+  if (e.key==='p'&&inNew) { e.preventDefault(); printCurrentOrder(); }
+  if (e.key==='n') { e.preventDefault(); vdNavTo('new-order'); newOrder(); }
+});
+
+function vdInit() {
+  if (!vdInited) {
+    vdInited = true;
+    const sel = document.getElementById('fProvince');
+    if (sel) VD_PROVINCES.forEach(p => { const o=document.createElement('option'); o.value=o.textContent=p; sel.appendChild(o); });
+    document.getElementById('fDate').value    = vdTodayISO();
+    document.getElementById('fCarrier').value = vdSettings.defaultCarrier||'';
+    genOrderId();
+    addItemRow();
+    const draft = localStorage.getItem('bbv_draft_v3');
+    if (draft) { try { const d=JSON.parse(draft); if(d.id&&d.customer?.name) fillForm(d); } catch(e){} }
+    const formEls = ['fOrderId','fDate','fCarrier','fTracking','fName','fPhone','fAddress','fProvince','fDistrict','fWard','fNotes'];
+    formEls.forEach(id => {
+      const el = document.getElementById(id); if(!el) return;
+      el.addEventListener('input',  vdAutoSaveDebounced);
+      el.addEventListener('change', vdAutoSaveDebounced);
+      el.addEventListener('input',  vdUpdatePreviewDebounced);
+      el.addEventListener('change', vdUpdatePreviewDebounced);
+    });
+    loadCatalog();
+  }
+  refreshDashboard();
+}
+
 checkServer();
 loadDashboard();
 
