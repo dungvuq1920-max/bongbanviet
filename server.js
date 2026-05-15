@@ -449,10 +449,20 @@ app.get('/api/douyin-login/qr', async (_req, res) => {
     const r = await fetch(
       `${DY_SSO}/get_qrcode/?service=${DY_SVC}&need_logo=false&redirect_url=${encodeURIComponent('https://www.douyin.com/')}&next=%2F&aid=6383&language=zh`,
       {
-        headers: { 'User-Agent': dy.DEFAULT_UA, 'Referer': 'https://www.douyin.com/' },
+        headers: {
+          'User-Agent': dy.DEFAULT_UA,
+          'Referer': 'https://www.douyin.com/',
+          'Accept': 'application/json, */*',
+        },
         signal: AbortSignal.timeout(12000),
       }
     );
+    const ct = r.headers.get('content-type') || '';
+    if (!ct.includes('json')) {
+      const text = await r.text();
+      console.error('[douyin-qr] SSO non-JSON response HTTP', r.status, text.slice(0, 300));
+      return res.status(502).json({ error: `Douyin SSO trả về HTML (HTTP ${r.status}). Có thể API đã thay đổi hoặc bị chặn theo địa lý.` });
+    }
     const d = await r.json();
     if (d.error_code !== 0) return res.status(400).json({ error: d.description || 'QR generation failed' });
     const qr = d.data || {};

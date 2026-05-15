@@ -125,11 +125,20 @@
     .btn-more:hover{background:var(--line)}
     .btn-more:disabled{opacity:.45;cursor:not-allowed}
 
+    /* Auth bar */
+    .auth-bar{margin:8px 48px 0;padding:8px 14px;border-radius:8px;display:flex;align-items:center;justify-content:space-between;font-size:12px;background:#F9FAFB;border:1px solid var(--line)}
+    .auth-btn-login{padding:4px 12px;background:var(--accent);color:#fff;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;display:none}
+    .auth-btn-logout{padding:4px 12px;background:transparent;color:var(--mid);border:1px solid var(--line);border-radius:5px;font-size:11px;cursor:pointer;display:none}
+    /* QR Modal */
+    .dy-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:center;justify-content:center}
+    .dy-modal.open{display:flex}
+    .dy-modal-box{background:#fff;border-radius:16px;padding:32px 28px 28px;max-width:340px;width:90%;text-align:center;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.25)}
     @media(max-width:600px){
       body{padding:0;align-items:flex-start}
       .card{border-radius:0;min-height:100vh;box-shadow:none}
       .header,.tabs,.panel{padding-left:20px;padding-right:20px}
       .tabs{margin-left:20px;margin-right:20px}
+      .auth-bar{margin-left:20px;margin-right:20px}
       .preview-row{flex-direction:column}
       .thumb-wrap{width:100%;height:200px}
       .preview-info{padding:16px}
@@ -153,6 +162,15 @@
     <button class="tab active" id="tabS" onclick="sw('single')">Video Đơn</button>
     <button class="tab" id="tabB" onclick="sw('batch')">Hàng Loạt</button>
     <button class="tab" id="tabU" onclick="sw('user')">Video Kênh</button>
+  </div>
+
+  <!-- Auth status bar -->
+  <div class="auth-bar" id="authBar">
+    <span id="authStatusText" style="color:var(--mid)">Đang kiểm tra...</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <button class="auth-btn-login" id="authLoginBtn" onclick="dyStartLogin()">Đăng nhập Douyin</button>
+      <button class="auth-btn-logout" id="authLogoutBtn" onclick="dyLogout()">Đăng xuất</button>
+    </div>
   </div>
 
   <!-- ── SINGLE ─────────────────────────────────────────────────────── -->
@@ -228,6 +246,20 @@
     <div class="msg msg-err" id="uErr"></div>
     <div class="msg msg-load" id="uLoad"><div class="spinner"></div><span>Đang tải danh sách video...</span></div>
     <div id="uResults"></div>
+  </div>
+</div>
+
+<!-- QR Login Modal -->
+<div class="dy-modal" id="dyModal" onclick="if(event.target===this)dyCloseModal()">
+  <div class="dy-modal-box">
+    <button onclick="dyCloseModal()" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:22px;line-height:1;cursor:pointer;color:#9CA3AF;padding:0 4px">×</button>
+    <p style="font-size:17px;font-weight:700;color:var(--dark);margin-bottom:4px">Đăng nhập Douyin</p>
+    <p style="font-size:12px;color:var(--mid);margin-bottom:20px">Quét mã QR bằng app Douyin trên điện thoại</p>
+    <div id="dyQrWrap" style="display:inline-block;padding:10px;border:2px solid var(--line);border-radius:8px;background:#fff;margin-bottom:12px;min-width:200px;min-height:200px;display:flex;align-items:center;justify-content:center">
+      <img id="dyQrImg" src="" width="180" height="180" alt="QR Code" style="display:block">
+    </div>
+    <p id="dyQrMsg" style="font-size:12px;color:var(--mid);margin-bottom:6px">Đang tạo mã QR...</p>
+    <p id="dyQrStatusTxt" style="font-size:13px;font-weight:600;color:var(--mid);min-height:20px"></p>
   </div>
 </div>
 
@@ -437,6 +469,94 @@ function renderUser(d,first){
 }
 
 $('uUrl').addEventListener('keydown',function(e){if(e.key==='Enter')doUser();});
+
+// ── Douyin Auth ───────────────────────────────────────────────────────────────
+(function(){
+  var dyPollTimer=null, dyCountdown=120;
+
+  async function dyCheckStatus(){
+    try{
+      var r=await fetch('/api/douyin-login/status');
+      var d=await r.json();
+      if(d.logged_in){
+        $('authStatusText').innerHTML='<span style="color:var(--green)">✓ Đã đăng nhập Douyin — tải không watermark</span>';
+        $('authLoginBtn').style.display='none';
+        $('authLogoutBtn').style.display='';
+      }else{
+        $('authStatusText').innerHTML='<span style="color:#92400E">⚠ Chưa đăng nhập — video có thể bị chặn</span>';
+        $('authLoginBtn').style.display='';
+        $('authLogoutBtn').style.display='none';
+      }
+    }catch(e){
+      $('authStatusText').textContent='Không kiểm tra được trạng thái';
+      $('authLoginBtn').style.display='';
+    }
+  }
+
+  function dyCloseModal(){
+    if(dyPollTimer){clearInterval(dyPollTimer);dyPollTimer=null;}
+    $('dyModal').classList.remove('open');
+  }
+
+  async function dyStartLogin(){
+    $('dyModal').classList.add('open');
+    $('dyQrImg').src='';
+    $('dyQrMsg').textContent='Đang tạo mã QR...';
+    $('dyQrStatusTxt').textContent='';
+    $('dyQrStatusTxt').style.color='var(--mid)';
+    if(dyPollTimer){clearInterval(dyPollTimer);dyPollTimer=null;}
+    try{
+      var r=await fetch('/api/douyin-login/qr');
+      var d=await r.json();
+      if(d.error)throw new Error(d.error);
+      $('dyQrImg').src=d.qr_url;
+      dyCountdown=120;
+      $('dyQrMsg').textContent='Còn '+dyCountdown+' giây';
+      var token=d.token;
+      dyPollTimer=setInterval(async function(){
+        dyCountdown--;
+        $('dyQrMsg').textContent='Còn '+Math.max(0,dyCountdown)+' giây';
+        if(dyCountdown<=0){
+          clearInterval(dyPollTimer);dyPollTimer=null;
+          $('dyQrStatusTxt').textContent='Mã QR đã hết hạn. Đóng và thử lại.';
+          $('dyQrStatusTxt').style.color='var(--red)';
+          return;
+        }
+        try{
+          var pr=await fetch('/api/douyin-login/poll?token='+encodeURIComponent(token));
+          var pd=await pr.json();
+          if(pd.status==='scanned'){
+            $('dyQrStatusTxt').textContent='✓ Đã quét — xác nhận trên điện thoại';
+            $('dyQrStatusTxt').style.color='var(--green)';
+          }else if(pd.status==='confirmed'){
+            clearInterval(dyPollTimer);dyPollTimer=null;
+            $('dyQrStatusTxt').textContent='✓ Đăng nhập thành công!';
+            $('dyQrStatusTxt').style.color='var(--green)';
+            setTimeout(function(){dyCloseModal();dyCheckStatus();},1500);
+          }else if(pd.status==='expired'){
+            clearInterval(dyPollTimer);dyPollTimer=null;
+            $('dyQrStatusTxt').textContent='Mã QR đã hết hạn. Đóng và thử lại.';
+            $('dyQrStatusTxt').style.color='var(--red)';
+          }
+        }catch(pe){/* ignore poll errors */}
+      },2000);
+    }catch(e){
+      $('dyQrMsg').textContent='';
+      $('dyQrStatusTxt').textContent='Lỗi: '+e.message;
+      $('dyQrStatusTxt').style.color='var(--red)';
+    }
+  }
+
+  async function dyLogout(){
+    await fetch('/api/douyin-login',{method:'DELETE'});
+    dyCheckStatus();
+  }
+
+  window.dyStartLogin=dyStartLogin;
+  window.dyCloseModal=dyCloseModal;
+  window.dyLogout=dyLogout;
+  dyCheckStatus();
+})();
 </script>
 </body>
 </html>
