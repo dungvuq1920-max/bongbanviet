@@ -291,6 +291,36 @@ app.get('/api/douyin/stream/:aweme_id', async (req, res) => {
   }
 });
 
+app.post('/api/douyin/resolve-batch', async (req, res) => {
+  try {
+    const r = await fetch(`${DOUYIN_API}/api/v1/resolve-batch`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body),
+      signal: AbortSignal.timeout(120000),
+    });
+    const data = await r.json();
+    res.status(r.status).json(data);
+  } catch (err) {
+    res.status(500).json({ detail: err.message });
+  }
+});
+
+app.post('/api/douyin/user-posts', async (req, res) => {
+  try {
+    const r = await fetch(`${DOUYIN_API}/api/v1/user-posts`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body),
+      signal: AbortSignal.timeout(30000),
+    });
+    const data = await r.json();
+    res.status(r.status).json(data);
+  } catch (err) {
+    res.status(500).json({ detail: err.message });
+  }
+});
+
 // ─── DexScreener Proxy ────────────────────────────────────────────────────────
 app.get('/api/dex/tokens', async (req, res) => {
   const { addresses } = req.query;
