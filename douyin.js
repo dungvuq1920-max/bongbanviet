@@ -217,6 +217,10 @@ function parseUrl(url) {
 
 async function resolveUrl(rawUrl) {
   let url = rawUrl.trim();
+  // Add https:// if a known domain is present but protocol is missing
+  if (url && !url.startsWith('http') && /(?:douyin\.com|tiktok\.com)/.test(url)) {
+    url = 'https://' + url;
+  }
   if (isShortUrl(url)) {
     const resolved = await resolveShortUrl(url);
     if (!resolved) throw new Error('Failed to resolve short URL');
@@ -310,8 +314,7 @@ function extractVideoUrl(aweme) {
 }
 
 // ── TikWM public API (works from any IP, supports Douyin + TikTok) ─────────────
-async function fetchTikwm(awemeId) {
-  const videoUrl = `${BASE_URL}/video/${awemeId}`;
+async function fetchTikwm(videoUrl) {
   const resp = await fetch(`https://www.tikwm.com/api/?url=${encodeURIComponent(videoUrl)}&hd=1`, {
     headers: {
       'User-Agent': DEFAULT_UA,
@@ -345,7 +348,7 @@ async function fetchTikwm(awemeId) {
 }
 
 // ── Public API methods ────────────────────────────────────────────────────────
-async function getVideoDetail(awemeId) {
+async function getVideoDetail(awemeId, originalUrl) {
   // Primary: main web API (1 attempt each — fail fast if geo-blocked)
   for (const aid of ['6383', '1128']) {
     try {
@@ -354,11 +357,17 @@ async function getVideoDetail(awemeId) {
       if (detail) return detail;
     } catch {}
   }
-  // Fallback: TikWM public API (bypasses geo-block, works from any server)
-  try {
-    const item = await fetchTikwm(awemeId);
-    if (item) return item;
-  } catch {}
+  // Fallback: TikWM — try original URL first (short URLs work better), then constructed aweme URL
+  const tikwmUrls = [];
+  if (originalUrl) tikwmUrls.push(originalUrl);
+  const longUrl = `${BASE_URL}/video/${awemeId}`;
+  if (!tikwmUrls.includes(longUrl)) tikwmUrls.push(longUrl);
+  for (const u of tikwmUrls) {
+    try {
+      const item = await fetchTikwm(u);
+      if (item) return item;
+    } catch {}
+  }
   return null;
 }
 

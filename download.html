@@ -300,10 +300,13 @@ function thumbUrl(u){ return '/api/douyin/image?url='+encodeURIComponent(u); }
 
 // Extract first Douyin/TikTok URL from pasted share text
 function extractDouyinUrl(text){
-  var m=text.match(/https?:\/\/(?:www\.douyin\.com|v\.douyin\.com|vm\.tiktok\.com|vt\.tiktok\.com|www\.tiktok\.com)\/[^\s，，。！？]*/i)
-          ||text.match(/v\.douyin\.com\/[A-Za-z0-9]+/i)
-          ||text.match(/vm\.tiktok\.com\/[A-Za-z0-9]+/i);
-  return m ? m[0].replace(/[，。！？\.,!?]+$/, '') : text.trim();
+  var m=text.match(/https?:\/\/(?:www\.douyin\.com|v\.douyin\.com|vm\.tiktok\.com|vt\.tiktok\.com|www\.tiktok\.com)\/[^\s，，。！？]*/i);
+  if(m) return m[0].replace(/[，。！？\.,!?]+$/, '');
+  m=text.match(/v\.douyin\.com\/[A-Za-z0-9_\-]+/i);
+  if(m) return 'https://'+m[0];
+  m=text.match(/vm\.tiktok\.com\/[A-Za-z0-9_\-]+/i);
+  if(m) return 'https://'+m[0];
+  return text.trim();
 }
 
 // ── SINGLE ────────────────────────────────────────────────────────────────────

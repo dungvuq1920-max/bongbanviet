@@ -250,7 +250,7 @@ app.post('/api/douyin/resolve', async (req, res) => {
     const awemeId = parsed.aweme_id;
     if (!awemeId) return res.status(400).json({ detail: 'Could not extract video ID from URL' });
 
-    const aweme = await dy.getVideoDetail(awemeId);
+    const aweme = await dy.getVideoDetail(awemeId, url);
     if (!aweme) return res.status(404).json({ detail: 'Video not found or unavailable' });
 
     const isGallery = !!(aweme.image_post_info || aweme.images || aweme.image_list);
@@ -338,7 +338,7 @@ app.post('/api/douyin/resolve-batch', async (req, res) => {
         const awemeId = parsed.aweme_id;
         if (!awemeId) return { url: rawUrl, error: 'Could not extract video ID' };
 
-        const aweme = await dy.getVideoDetail(awemeId);
+        const aweme = await dy.getVideoDetail(awemeId, rawUrl);
         if (!aweme) return { url: rawUrl, error: 'Video not found' };
 
         const isGallery = !!(aweme.image_post_info || aweme.images || aweme.image_list);
