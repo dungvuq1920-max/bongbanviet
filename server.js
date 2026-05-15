@@ -253,6 +253,22 @@ app.get('/ffmpeg-proxy/:file', async (req, res) => {
   }
 });
 
+// ─── Audio Proxy (fixes CORS for external music URLs) ────────────────────
+app.get('/api/proxy-audio', async (req, res) => {
+  const url = req.query.url;
+  if (!url || !/^https?:\/\//i.test(url)) return res.status(400).json({ error: 'Invalid URL' });
+  try {
+    const r = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(15000) });
+    if (!r.ok) return res.status(r.status).end();
+    res.setHeader('Content-Type', r.headers.get('content-type') || 'audio/mpeg');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.end(Buffer.from(await r.arrayBuffer()));
+  } catch (e) {
+    res.status(502).json({ error: e.message });
+  }
+});
+
 // ─── TikTok Integration ───────────────────────────────────────────────────
 app.get('/api/tiktok/status', (req, res) => {
   const cfg = readShopeeAiConfig();
@@ -313,7 +329,9 @@ app.post('/api/tiktok/upload', ttMulter.single('video'), async (req, res) => {
   if (!cfg.tiktokAccessToken) return res.status(401).json({ error: 'Chưa kết nối TikTok' });
   if (!req.file) return res.status(400).json({ error: 'Không có file video' });
   const filePath = req.file.path;
-  const title = (req.body.title || 'Bóng bàn').slice(0, 150);
+  const title = (req.body.title || 'Bóng bàn').slice(0, 2200);
+  const validPrivacy = ['PUBLIC_TO_EVERYONE', 'MUTUAL_FOLLOW_FRIENDS', 'SELF_ONLY'];
+  const privacy = validPrivacy.includes(req.body.privacy) ? req.body.privacy : 'SELF_ONLY';
   const token = cfg.tiktokAccessToken;
   try {
     const fileSize = fs.statSync(filePath).size;
@@ -321,7 +339,7 @@ app.post('/api/tiktok/upload', ttMulter.single('video'), async (req, res) => {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json; charset=UTF-8' },
       body: JSON.stringify({
-        post_info: { title, privacy_level: 'SELF_ONLY', disable_duet: false, disable_comment: false, disable_stitch: false, video_cover_timestamp_ms: 1000 },
+        post_info: { title, privacy_level: privacy, disable_duet: false, disable_comment: false, disable_stitch: false, video_cover_timestamp_ms: 1000 },
         source_info: { source: 'FILE_UPLOAD', video_size: fileSize, chunk_size: fileSize, total_chunk_count: 1 }
       })
     });

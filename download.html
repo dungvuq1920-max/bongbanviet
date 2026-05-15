@@ -150,6 +150,17 @@
     .dy-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:center;justify-content:center}
     .dy-modal.open{display:flex}
     .dy-modal-box{background:#fff;border-radius:16px;padding:32px 28px 28px;max-width:340px;width:90%;text-align:center;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+    /* TikTok Upload Modal */
+    .tt-up-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:2100;align-items:center;justify-content:center;padding:16px}
+    .tt-up-modal.open{display:flex}
+    .tt-up-box{background:var(--card);border-radius:16px;max-width:420px;width:100%;position:relative;box-shadow:0 24px 64px rgba(0,0,0,.4);max-height:90vh;overflow-y:auto}
+    .tt-up-inner{padding:24px 24px 20px}
+    .tt-tag-chip{display:inline-flex;align-items:center;padding:3px 9px;background:#F3F4F6;border:1.5px solid var(--line);border-radius:100px;font-size:11px;font-weight:600;color:var(--dark);cursor:pointer;transition:all .15s;user-select:none}
+    .tt-tag-chip:hover{background:#FEE2E2;border-color:#FECACA;color:#991B1B}
+    .tt-field-lbl{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--mid);display:block;margin-bottom:5px}
+    .tt-input{width:100%;padding:9px 12px;border:1.5px solid var(--line);border-radius:8px;font-family:'Inter',sans-serif;font-size:13px;color:var(--dark);outline:none;transition:border-color .2s;background:#fff}
+    .tt-input:focus{border-color:#9CA3AF}
+
     @media(max-width:600px){
       body{padding:0;align-items:flex-start}
       .card{border-radius:0;min-height:100vh;box-shadow:none}
@@ -176,7 +187,13 @@
       <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-right:4px"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V9.41a8.16 8.16 0 004.77 1.52V7.49a4.85 4.85 0 01-1-.8z"/></svg>
       TikTok
     </span>
-    <button class="tt-btn" id="ttConnBtn" onclick="ttConnect()">Kết nối TikTok</button>
+    <div style="display:flex;align-items:center;gap:10px">
+      <label id="ttAutoLabel" style="display:none;align-items:center;gap:5px;font-size:11px;cursor:pointer;color:var(--mid);user-select:none">
+        <input type="checkbox" id="ttAutoChk" onchange="autoUpload=this.checked" style="cursor:pointer;width:13px;height:13px">
+        Tự động upload sau khi xử lý
+      </label>
+      <button class="tt-btn" id="ttConnBtn" onclick="ttConnect()">Kết nối TikTok</button>
+    </div>
   </div>
 
   <!-- FFmpeg status bar -->
@@ -295,6 +312,57 @@
   </div>
 </div>
 
+<!-- TikTok Upload Modal -->
+<div class="tt-up-modal" id="ttUpModal" onclick="if(event.target===this)closeTtUp()">
+  <div class="tt-up-box">
+    <button class="pv-close-btn" onclick="closeTtUp()">×</button>
+    <div class="tt-up-inner">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:20px">
+        <div style="width:36px;height:36px;background:#111;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V9.41a8.16 8.16 0 004.77 1.52V7.49a4.85 4.85 0 01-1-.8z"/></svg>
+        </div>
+        <div>
+          <p style="font-size:16px;font-weight:700;color:var(--dark);line-height:1.2">Upload lên TikTok</p>
+          <p style="font-size:11px;color:var(--mid)">Video đã đổi nhạc nền</p>
+        </div>
+      </div>
+
+      <label class="tt-field-lbl">Tiêu đề / Caption</label>
+      <div style="position:relative;margin-bottom:14px">
+        <textarea id="ttUpCaption" class="tt-input" maxlength="2200" rows="3"
+          style="resize:vertical;line-height:1.5;padding-right:48px"
+          oninput="ttUpCapCount()" onfocus="this.style.borderColor='#9CA3AF'" onblur="this.style.borderColor='var(--line)'"></textarea>
+        <span id="ttUpCharCount" style="position:absolute;bottom:7px;right:10px;font-size:10px;color:#9CA3AF;pointer-events:none">0/2200</span>
+      </div>
+
+      <label class="tt-field-lbl">Hashtag <span style="text-transform:none;font-weight:400">(bấm để xóa)</span></label>
+      <div id="ttUpTagChips" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;min-height:24px"></div>
+      <div style="display:flex;gap:6px;margin-bottom:16px">
+        <input id="ttUpTagInput" type="text" class="tt-input" placeholder="Thêm hashtag rồi Enter..."
+          style="flex:1;padding:8px 10px"
+          onkeydown="addTtTag(event)" onfocus="this.style.borderColor='#9CA3AF'" onblur="this.style.borderColor='var(--line)'">
+        <button onclick="addTtTag({type:'click'})"
+          style="padding:8px 14px;background:var(--dark);color:#fff;border:none;border-radius:8px;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">+ Thêm</button>
+      </div>
+
+      <label class="tt-field-lbl">Quyền riêng tư</label>
+      <select id="ttUpPrivacy" class="tt-input" style="margin-bottom:18px;cursor:pointer">
+        <option value="PUBLIC_TO_EVERYONE">🌐 Công khai</option>
+        <option value="MUTUAL_FOLLOW_FRIENDS">👥 Bạn bè</option>
+        <option value="SELF_ONLY">🔒 Chỉ mình tôi</option>
+      </select>
+
+      <p id="ttUpStatus" style="font-size:12px;min-height:18px;margin-bottom:10px;font-weight:600"></p>
+
+      <button id="ttUpBtn" onclick="doTtUpload()"
+        style="width:100%;padding:13px;background:#111;color:#fff;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;border:none;border-radius:10px;transition:background .2s;display:flex;align-items:center;justify-content:center;gap:8px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V9.41a8.16 8.16 0 004.77 1.52V7.49a4.85 4.85 0 01-1-.8z"/></svg>
+        Upload lên TikTok ↑
+      </button>
+    </div>
+  </div>
+</div>
+
 <script src="/ffmpeg-proxy/ffmpeg.js"></script>
 <script src="/ffmpeg-proxy/util.js"></script>
 <script>
@@ -326,7 +394,7 @@ var MUSIC_LIB = [
   {t:'Orchestral Drama',g:'Cinematic'},
   {t:'Rock Anthem',     g:'Rock'},
 ];
-MUSIC_LIB.forEach(function(t,i){ t.url='https://www.soundhelix.com/examples/mp3/SoundHelix-Song-'+(i+1)+'.mp3'; });
+MUSIC_LIB.forEach(function(t,i){ t.url='/api/proxy-audio?url='+encodeURIComponent('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-'+(i+1)+'.mp3'); });
 
 // Build options HTML grouped by genre
 var _mOptHtml = (function(){
@@ -465,10 +533,10 @@ async function processCard(type, idx, btn){
       btn.innerHTML=pct+'%';
     });
     var cardKey=type+'_'+idx;
-    _procResults[cardKey]={url:url,name:outFn};
+    _procResults[cardKey]={url:url,name:outFn,title:v.title||''};
     $('acts_'+type+'_'+idx).innerHTML=
       '<a class="btn-sm done-dl" href="'+url+'" download="'+esc(outFn)+'">⬇ Tải</a>'+
-      '<button class="btn-sm tt-up" onclick="uploadTikTok(\''+cardKey+'\',this)">TikTok ↑</button>';
+      '<button class="btn-sm tt-up" onclick="openTtUp(\''+cardKey+'\')">TikTok ↑</button>';
   }catch(e){
     btn.disabled=false; btn.innerHTML='▶';
     if(sel) sel.disabled=false;
@@ -490,47 +558,141 @@ async function pvProcess(){
   var mFile={name:track.t+'.mp3',_url:track.url};
   try{
     var url=await processOneVideo(vFile,mFile,0.8,true,function(pct){ procBtn.textContent=pct+'%'; });
+    _procResults['pv_tmp']={url:url,name:outFn,title:$('pvTitle').textContent||''};
     $('pvProcArea').innerHTML='<a class="btn-full" href="'+url+'" download="'+esc(outFn)+'" style="background:#7C3AED;color:#fff;padding:11px;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:6px;text-decoration:none">⬇ Tải video đã xử lý</a>'+
-      '<button class="btn-full" onclick="_pvTtKey=\'pv_tmp\';_procResults[_pvTtKey]={url:\''+url+'\',name:\''+esc(outFn)+'\'};uploadTikTok(_pvTtKey,this)" style="background:#111">TikTok ↑ Upload</button>';
+      '<button class="btn-full" onclick="openTtUp(\'pv_tmp\')" style="background:#111;display:flex;align-items:center;justify-content:center;gap:6px">TikTok ↑ Upload</button>';
   }catch(e){
     procBtn.disabled=false;
     procBtn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg> Đổi Nhạc Nền';
     alert('Lỗi: '+(e.message||e));
   }
 }
-var _pvTtKey='';
 
 // ── TikTok upload ─────────────────────────────────────────────────────────────
 var ttStatus={connected:false,configured:false,username:''};
+var autoUpload=false;
 
-async function uploadTikTok(cardKey, btn){
-  var result=_procResults[cardKey];
-  if(!result||!result.url) return;
-  // Check status
-  var st=ttStatus;
-  if(!st.connected){
-    if(st.configured){
-      if(confirm('Chưa kết nối TikTok. Kết nối ngay?')) ttConnect();
+// ── Hashtag generator ─────────────────────────────────────────────────────────
+function genHashtags(title){
+  var base=['#bóngbàn','#tabletennis','#pingpong'];
+  var lc=(title||'').toLowerCase();
+  var map=[
+    [['butterfly'],'#Butterfly'],
+    [['tibhar'],'#Tibhar'],
+    [['dhs','红双喜'],'#DHS'],
+    [['xu xin','许昕'],'#XuXin'],
+    [['fan zhendong','樊振东'],'#FanZhendong'],
+    [['ma long','马龙'],'#MaLong'],
+    [['wang manyu','王曼昱'],'#WangManyu'],
+    [['chen meng','陈梦'],'#ChenMeng'],
+    [['sun yingsha','孙颖莎'],'#SunYingsha'],
+    [['olympic'],'#Olympics'],
+    [['world championship','wttt'],'#WorldChampionships'],
+    [['training','tập luyện','练习'],'#training'],
+    [['highlight','amazing','incredible'],'#highlight'],
+    [['london','伦敦'],'#London2026'],
+    [['2026'],'#2026'],
+    [['bongbanviet'],'#BongBanViet'],
+    [['tips','trick','kỹ thuật'],'#tableTennisTips'],
+    [['forehand','thuận tay'],'#forehand'],
+    [['backhand','trái tay'],'#backhand'],
+    [['serve','giao bóng'],'#serve'],
+  ];
+  map.forEach(function(p){
+    if(p[0].some(function(k){return lc.includes(k);})) base.push(p[1]);
+  });
+  var seen={};
+  return base.filter(function(t){ if(seen[t])return false; seen[t]=1; return true; });
+}
+
+// ── TikTok Upload Modal ───────────────────────────────────────────────────────
+var _ttUpKey='', _ttUpTags=[];
+
+function openTtUp(cardKey){
+  var r=_procResults[cardKey];
+  if(!r||!r.url) return;
+  _ttUpKey=cardKey;
+  var rawTitle=(r.title||r.name||'').replace(/_bgnhac\.mp4$/i,'').replace(/\.mp4$/i,'').replace(/_/g,' ').trim();
+  _ttUpTags=genHashtags(rawTitle).slice();
+  $('ttUpCaption').value=rawTitle;
+  ttUpCapCount();
+  renderTtTags();
+  $('ttUpPrivacy').value='PUBLIC_TO_EVERYONE';
+  $('ttUpStatus').textContent='';
+  $('ttUpStatus').style.color='';
+  var btn=$('ttUpBtn'); btn.disabled=false; btn.textContent='Upload lên TikTok ↑'; btn.style.background='#111';
+  $('ttUpModal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function closeTtUp(){
+  $('ttUpModal').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+function ttUpCapCount(){
+  var v=$('ttUpCaption').value;
+  $('ttUpCharCount').textContent=v.length+'/2200';
+}
+
+function renderTtTags(){
+  $('ttUpTagChips').innerHTML=_ttUpTags.map(function(t,i){
+    return '<span class="tt-tag-chip" onclick="removeTtTag('+i+')" title="Bấm để xóa">'+esc(t)+' ×</span>';
+  }).join('');
+}
+
+function removeTtTag(i){
+  _ttUpTags.splice(i,1);
+  renderTtTags();
+}
+
+function addTtTag(e){
+  if(e.key!=='Enter'&&e.type!=='click') return;
+  var inp=$('ttUpTagInput');
+  var val=inp.value.trim().replace(/\s+/g,'');
+  if(!val) return;
+  if(!val.startsWith('#')) val='#'+val;
+  if(!_ttUpTags.includes(val)) _ttUpTags.push(val);
+  inp.value='';
+  renderTtTags();
+}
+
+async function doTtUpload(){
+  var r=_procResults[_ttUpKey];
+  if(!r||!r.url) return;
+  if(!ttStatus.connected){
+    if(ttStatus.configured){
+      if(confirm('Chưa kết nối TikTok. Kết nối ngay?')){ closeTtUp(); ttConnect(); }
     }else{
       window.open('https://www.tiktok.com/upload','_blank');
     }
     return;
   }
-  var origTxt=btn.textContent;
-  btn.disabled=true; btn.textContent='Đang up...';
+  var caption=$('ttUpCaption').value.trim()||'Bóng bàn';
+  var tagsStr=_ttUpTags.join(' ');
+  var fullTitle=(caption+'\n'+tagsStr).trim().slice(0,2200);
+  var privacy=$('ttUpPrivacy').value;
+  var btn=$('ttUpBtn');
+  btn.disabled=true; btn.textContent='Đang upload...';
+  $('ttUpStatus').textContent=''; $('ttUpStatus').style.color='';
   try{
-    var resp=await fetch(result.url);
+    var resp=await fetch(r.url);
+    if(!resp.ok) throw new Error('Không thể đọc video đã xử lý');
     var blob=await resp.blob();
     var fd=new FormData();
-    fd.append('video',blob,result.name);
-    fd.append('title',result.name.replace('_bgnhac.mp4',''));
-    var r=await fetch('/api/tiktok/upload',{method:'POST',body:fd});
-    var d=await r.json();
-    if(!r.ok) throw new Error(d.error||'Upload thất bại');
-    btn.textContent='✓ Đã up'; btn.style.background='#16a34a';
+    fd.append('video',blob,r.name);
+    fd.append('title',fullTitle);
+    fd.append('privacy',privacy);
+    var res=await fetch('/api/tiktok/upload',{method:'POST',body:fd});
+    var d=await res.json();
+    if(!res.ok) throw new Error(d.error||'Upload thất bại');
+    btn.textContent='✓ Đã upload!'; btn.style.background='#16a34a';
+    $('ttUpStatus').textContent='Video đã được upload lên TikTok thành công!';
+    $('ttUpStatus').style.color='var(--green)';
   }catch(e){
-    btn.disabled=false; btn.textContent=origTxt;
-    alert('Upload TikTok thất bại: '+e.message);
+    btn.disabled=false; btn.textContent='Upload lên TikTok ↑'; btn.style.background='#111';
+    $('ttUpStatus').textContent='Lỗi: '+e.message;
+    $('ttUpStatus').style.color='var(--red)';
   }
 }
 
