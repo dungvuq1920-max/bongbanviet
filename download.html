@@ -488,23 +488,44 @@ function pvDownload(){
 // ── Inline processing (replaces redirect to /process) ────────────────────────
 function ext(n){ var d=n.lastIndexOf('.'); return d>0?n.slice(d+1).toLowerCase():'mp4'; }
 
+// fetch URL with HTTP-status check — prevents passing error JSON to FFmpeg
+async function safeFFetch(urlOrFile){
+  if(typeof urlOrFile==='string'){
+    var r=await fetch(urlOrFile);
+    if(!r.ok){
+      var t=await r.text().catch(function(){return '';});
+      throw new Error('Tải thất bại HTTP '+r.status+(t?' ('+t.slice(0,120)+')':''));
+    }
+    return new Uint8Array(await r.arrayBuffer());
+  }
+  return _ffetch(urlOrFile);
+}
+
 async function processOneVideo(vFile, mFile, volume, doLoop, onPct){
   var uid=Date.now()+'_'+Math.random().toString(36).slice(2,7);
   var vn='v'+uid+'.'+ext(vFile.name), mn='m'+uid+'.mp3', on='o'+uid+'.mp4';
   var progH=function(p){ if(onPct) onPct(Math.round((p.progress||0)*100)); };
+  var ffLogs=[];
+  var logH=function(e){ ffLogs.push(e.message||''); };
   ffInst.on('progress',progH);
+  ffInst.on('log',logH);
   try{
-    await ffInst.writeFile(vn, await (vFile.isUrl ? _ffetch(vFile.proxyUrl) : _ffetch(vFile)));
-    await ffInst.writeFile(mn, await (mFile._url  ? _ffetch(mFile._url)    : _ffetch(mFile)));
-    var args=['-i',vn];
-    if(doLoop) args.push('-stream_loop','-1');
-    args.push('-i',mn,'-map','0:v','-map','1:a','-af','volume='+volume.toFixed(2),'-c:v','copy','-shortest','-y',on);
+    await ffInst.writeFile(vn, await safeFFetch(vFile.isUrl ? vFile.proxyUrl : vFile));
+    await ffInst.writeFile(mn, await safeFFetch(mFile._url || mFile));
+    var args=['-i',vn,'-stream_loop','-1','-i',mn,'-map','0:v','-map','1:a',
+              '-af','volume='+volume.toFixed(2),'-c:v','copy','-c:a','aac',
+              '-shortest','-movflags','+faststart','-y',on];
     var code=await ffInst.exec(args);
-    if(code!==0) throw new Error('FFmpeg lỗi (code '+code+')');
+    if(code!==0){
+      var errLines=ffLogs.filter(function(l){return /error|invalid|no such|cannot|unsupported|failed/i.test(l);}).slice(-3);
+      var detail=errLines.length?errLines.join(' | '):'';
+      throw new Error('FFmpeg lỗi (code '+code+')'+(detail?' — '+detail:''));
+    }
     var data=await ffInst.readFile(on);
     return URL.createObjectURL(new Blob([data.buffer],{type:'video/mp4'}));
   }finally{
     ffInst.off('progress',progH);
+    ffInst.off('log',logH);
     try{await ffInst.deleteFile(vn);}catch(e){}
     try{await ffInst.deleteFile(mn);}catch(e){}
     try{await ffInst.deleteFile(on);}catch(e){}
