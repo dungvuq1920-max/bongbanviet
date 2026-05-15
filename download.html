@@ -287,9 +287,17 @@ function fmtDur(s){ if(!s)return''; var m=Math.floor(s/60); return m+':'+String(
 function dl(awemeId){ var a=document.createElement('a'); a.href='/api/douyin/stream/'+encodeURIComponent(awemeId); a.download=''; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
 function thumbUrl(u){ return '/api/douyin/image?url='+encodeURIComponent(u); }
 
+// Extract first Douyin/TikTok URL from pasted share text
+function extractDouyinUrl(text){
+  var m=text.match(/https?:\/\/(?:www\.douyin\.com|v\.douyin\.com|vm\.tiktok\.com|vt\.tiktok\.com|www\.tiktok\.com)\/[^\s，，。！？]*/i)
+          ||text.match(/v\.douyin\.com\/[A-Za-z0-9]+/i)
+          ||text.match(/vm\.tiktok\.com\/[A-Za-z0-9]+/i);
+  return m ? m[0].replace(/[，。！？\.,!?]+$/, '') : text.trim();
+}
+
 // ── SINGLE ────────────────────────────────────────────────────────────────────
 async function doResolve(){
-  var url=$('sUrl').value.trim(); if(!url)return;
+  var url=extractDouyinUrl($('sUrl').value.trim()); if(!url)return;
   hide('sErr'); hide('sPrev'); show('sLoad',true); $('sBtn').disabled=true; _awemeId=null;
   try{
     var r=await fetch('/api/douyin/resolve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:url})});
@@ -481,10 +489,10 @@ $('uUrl').addEventListener('keydown',function(e){if(e.key==='Enter')doUser();});
       if(d.logged_in){
         $('authStatusText').innerHTML='<span style="color:var(--green)">✓ Đã đăng nhập Douyin — tải không watermark</span>';
         $('authLoginBtn').style.display='none';
-        $('authLogoutBtn').style.display='';
+        $('authLogoutBtn').style.display='inline-block';
       }else{
         $('authStatusText').innerHTML='<span style="color:#92400E">⚠ Chưa đăng nhập — video có thể bị chặn</span>';
-        $('authLoginBtn').style.display='';
+        $('authLoginBtn').style.display='inline-block';
         $('authLogoutBtn').style.display='none';
       }
     }catch(e){
