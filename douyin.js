@@ -358,41 +358,51 @@ async function fetchTikwm(videoUrl) {
   };
 }
 
-// ── Tiklydown fallback API ────────────────────────────────────────────────────
-async function fetchTiklydown(videoUrl) {
-  const resp = await fetch(`https://api.tiklydown.eu.org/api/download?url=${encodeURIComponent(videoUrl)}`, {
+// ── douyin.wtf fallback API ───────────────────────────────────────────────────
+async function fetchDouyinWtf(videoUrl) {
+  const resp = await fetch(`https://api.douyin.wtf/api?url=${encodeURIComponent(videoUrl)}&minimal=false`, {
     headers: {
       'User-Agent': DEFAULT_UA,
       'Accept': 'application/json',
-      'Referer': 'https://tiklydown.eu.org/',
+      'Referer': 'https://douyin.wtf/',
     },
     signal: AbortSignal.timeout(25000),
   });
   if (!resp.ok) {
-    console.error('[Tiklydown] HTTP', resp.status, videoUrl);
+    console.error('[DouyinWtf] HTTP', resp.status, videoUrl);
     return null;
   }
   const d = await resp.json().catch(() => null);
-  if (!d || !d.id) {
-    console.error('[Tiklydown] Bad response:', JSON.stringify(d)?.slice(0, 200), '| url:', videoUrl);
+  if (!d || d.status !== 'success') {
+    console.error('[DouyinWtf] Bad response:', JSON.stringify(d)?.slice(0, 200), '| url:', videoUrl);
     return null;
   }
-  const playUrls = [d.hdplay, d.play, d.wmplay].filter(Boolean);
-  const coverUrls = [d.cover, d.origin_cover].filter(Boolean);
-  const images = Array.isArray(d.images)
-    ? d.images.map(img => ({ display_image: { url_list: [typeof img === 'string' ? img : (img.url || img)] } }))
-    : undefined;
+  if (d.type === 'image') {
+    const images = Array.isArray(d.images)
+      ? d.images.map(url => ({ display_image: { url_list: [url] } }))
+      : undefined;
+    return {
+      aweme_id: String(d.aweme_id || ''),
+      desc: d.title || '',
+      video: { play_addr: { url_list: [] }, origin_cover: { url_list: [] }, cover: { url_list: [] }, duration: 0 },
+      author: { nickname: (d.author || {}).name || '', unique_id: (d.author || {}).id || '' },
+      images,
+    };
+  }
+  const vd = d.video_data || {};
+  const playUrls = [vd.nwm_video_url_HQ, vd.nwm_video_url, vd.wm_video_url_HQ, vd.wm_video_url].filter(Boolean);
+  const coverUrls = [d.cover].filter(Boolean);
   return {
-    aweme_id: String(d.id),
+    aweme_id: String(d.aweme_id || ''),
     desc: d.title || '',
     video: {
       play_addr: { url_list: playUrls },
       origin_cover: { url_list: coverUrls },
       cover: { url_list: coverUrls },
-      duration: (d.duration || 0) * 1000,
+      duration: 0,
     },
-    author: { nickname: (d.author || {}).nickname || '', unique_id: (d.author || {}).unique_id || '' },
-    images,
+    author: { nickname: (d.author || {}).name || '', unique_id: (d.author || {}).id || '' },
+    images: undefined,
   };
 }
 
@@ -408,8 +418,9 @@ async function getVideoDetail(awemeId, originalUrl) {
   }
 
   const longUrl = `${BASE_URL}/video/${awemeId}`;
+  // TikWM rejects v.douyin.com short URLs — try long URL first, then short as fallback
   const urlsToTry = originalUrl && originalUrl !== longUrl
-    ? [originalUrl, longUrl]
+    ? [longUrl, originalUrl]
     : [longUrl];
 
   // Fallback 1: TikWM
@@ -420,10 +431,10 @@ async function getVideoDetail(awemeId, originalUrl) {
     } catch {}
   }
 
-  // Fallback 2: Tiklydown
+  // Fallback 2: douyin.wtf
   for (const u of urlsToTry) {
     try {
-      const item = await fetchTiklydown(u);
+      const item = await fetchDouyinWtf(u);
       if (item) return item;
     } catch {}
   }

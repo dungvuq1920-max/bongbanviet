@@ -242,11 +242,15 @@ app.post('/api/douyin/debug', async (req, res) => {
   const url = (req.body.url || '').trim();
   if (!url) return res.status(400).json({ error: 'url required' });
   const out = {};
+  let longUrl = url;
   try {
     const r = await dy.resolveUrl(url);
     out.resolved_url = r.url;
     out.parsed = r.parsed;
+    if (r.parsed && r.parsed.aweme_id) longUrl = `https://www.douyin.com/video/${r.parsed.aweme_id}`;
   } catch (e) { out.resolve_error = e.message; }
+
+  // Test TikWM with original URL
   try {
     const body = new URLSearchParams({ url, hd: '1' });
     const r = await fetch('https://www.tikwm.com/api/', {
@@ -255,17 +259,35 @@ app.post('/api/douyin/debug', async (req, res) => {
       body: body.toString(),
       signal: AbortSignal.timeout(20000),
     });
-    out.tikwm_status = r.status;
-    out.tikwm_data = await r.json().catch(() => null);
-  } catch (e) { out.tikwm_error = e.message; }
+    out.tikwm_short_status = r.status;
+    out.tikwm_short_data = await r.json().catch(() => null);
+  } catch (e) { out.tikwm_short_error = e.message; }
+
+  // Test TikWM with long URL (clean www.douyin.com/video/{id})
+  if (longUrl !== url) {
+    try {
+      const body = new URLSearchParams({ url: longUrl, hd: '1' });
+      const r = await fetch('https://www.tikwm.com/api/', {
+        method: 'POST',
+        headers: { 'User-Agent': dy.DEFAULT_UA, 'Content-Type': 'application/x-www-form-urlencoded', 'Referer': 'https://www.tikwm.com/' },
+        body: body.toString(),
+        signal: AbortSignal.timeout(20000),
+      });
+      out.tikwm_long_status = r.status;
+      out.tikwm_long_data = await r.json().catch(() => null);
+    } catch (e) { out.tikwm_long_error = e.message; }
+  }
+
+  // Test douyin.wtf with long URL
   try {
-    const r = await fetch(`https://api.tiklydown.eu.org/api/download?url=${encodeURIComponent(url)}`, {
-      headers: { 'User-Agent': dy.DEFAULT_UA, 'Accept': 'application/json' },
+    const r = await fetch(`https://api.douyin.wtf/api?url=${encodeURIComponent(longUrl)}&minimal=false`, {
+      headers: { 'User-Agent': dy.DEFAULT_UA, 'Accept': 'application/json', 'Referer': 'https://douyin.wtf/' },
       signal: AbortSignal.timeout(20000),
     });
-    out.tiklydown_status = r.status;
-    out.tiklydown_data = await r.json().catch(() => null);
-  } catch (e) { out.tiklydown_error = e.message; }
+    out.douyinwtf_status = r.status;
+    out.douyinwtf_data = await r.json().catch(() => null);
+  } catch (e) { out.douyinwtf_error = e.message; }
+
   res.json(out);
 });
 
