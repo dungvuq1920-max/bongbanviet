@@ -79,6 +79,8 @@
     .btn-sm:disabled{opacity:.45;cursor:not-allowed;background:#9CA3AF}
     .btn-sm.album{background:#FEF3C7;color:#92400E}
     .btn-sm.album:hover{background:#FDE68A}
+    .btn-sm.proc{background:#EDE9FE;color:#7C3AED;padding:7px 10px}
+    .btn-sm.proc:hover{background:#DDD6FE}
 
     .dl-all-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
     .dl-all-count{font-size:12px;color:var(--mid)}
@@ -225,6 +227,10 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Tải Video
       </button>
+      <button class="btn-full" onclick="pvProcess()" style="background:#7C3AED;margin-top:8px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        Đổi Nhạc Nền
+      </button>
     </div>
   </div>
 </div>
@@ -330,6 +336,23 @@ function pvDownload(){
   },3000);
 }
 
+function sendToProcessIdx(type, i){
+  var v;
+  if(type==='b') v=_bResolved[i]&&_bResolved[i].video;
+  else if(type==='u') v=_uVideos[i];
+  else if(type==='sr') v=_srResults[i];
+  if(!v||!v.play_url) return;
+  var fn=v.filename||((v.title||'video').slice(0,60).replace(/[\\/:*?"<>|#\r\n]/g,'_')+'.mp4');
+  sessionStorage.setItem('processVideo',JSON.stringify({url:v.play_url,filename:fn,title:v.title,author:v.author}));
+  window.location.href='/process';
+}
+
+function pvProcess(){
+  if(!_pvUrl) return;
+  sessionStorage.setItem('processVideo',JSON.stringify({url:_pvUrl,filename:_pvFn,title:$('pvTitle').textContent}));
+  window.location.href='/process';
+}
+
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closePv();});
 
 // Download via stream-url proxy (avoids re-fetching video details)
@@ -404,7 +427,9 @@ function renderBatch(results){
       var titleCls=pvClick?' clickable':'', titleClick=pvClick?' onclick="'+pvClick+'"':'';
       var btnH=alb
         ?'<button class="btn-sm album" onclick="dlAlbumBatch('+i+')">Xem Ảnh</button>'
-        :(v.play_url?'<button class="btn-sm" onclick="dlBatchItem('+i+',this)">Tải</button>':'<span class="badge-sm">No URL</span>');
+        :(v.play_url
+          ?'<button class="btn-sm" onclick="dlBatchItem('+i+',this)">Tải</button><button class="btn-sm proc" onclick="sendToProcessIdx(\'b\','+i+')" title="Đổi nhạc nền">♫</button>'
+          :'<span class="badge-sm">No URL</span>');
       div.innerHTML=th+'<div class="r-info"><p class="r-title'+titleCls+'"'+titleClick+'>'+esc(v.title||'Không có tiêu đề')+'</p>'+
         '<p class="r-sub">@'+esc(v.author||'')+(v.duration?' · '+fmtDur(v.duration):'')+'</p></div>'+
         '<span class="badge-sm'+(alb?' album':'')+'">'+( alb?'Album':'Video')+'</span>'+btnH;
@@ -486,7 +511,9 @@ function renderUser(d,first,startIdx){
     var th=mkThumb(v.cover_url, pvClick);
     var titleCls=pvClick?' clickable':'', titleClick=pvClick?' onclick="'+pvClick+'"':'';
     var btnH=alb?'<button class="btn-sm album">Album</button>':
-      (v.play_url?'<button class="btn-sm" onclick="dlUserItem('+idx+',this)">Tải</button>':'<span class="badge-sm">No URL</span>');
+      (v.play_url
+        ?'<button class="btn-sm" onclick="dlUserItem('+idx+',this)">Tải</button><button class="btn-sm proc" onclick="sendToProcessIdx(\'u\','+idx+')" title="Đổi nhạc nền">♫</button>'
+        :'<span class="badge-sm">No URL</span>');
     div.innerHTML=th+'<div class="r-info"><p class="r-title'+titleCls+'"'+titleClick+'>'+esc(v.title||'Không có tiêu đề')+'</p>'+
       '<p class="r-sub">@'+esc(v.author||'')+(v.duration?' · '+fmtDur(v.duration):'')+'</p></div>'+
       '<span class="badge-sm'+(alb?' album':'')+'">'+( alb?'Album':'Video')+'</span>'+btnH;
@@ -560,7 +587,9 @@ function renderSearchResults(videos,startIdx,first){
     var pvClick=v.play_url?'openPvIdx("sr",'+idx+')':null;
     var th=mkThumb(v.cover_url, pvClick);
     var titleCls=pvClick?' clickable':'', titleClick=pvClick?' onclick="'+pvClick+'"':'';
-    var btnH=v.play_url?'<button class="btn-sm" onclick="dlSrItem('+idx+',this)">Tải</button>':'<span class="badge-sm">No URL</span>';
+    var btnH=v.play_url
+      ?'<button class="btn-sm" onclick="dlSrItem('+idx+',this)">Tải</button><button class="btn-sm proc" onclick="sendToProcessIdx(\'sr\','+idx+')" title="Đổi nhạc nền">♫</button>'
+      :'<span class="badge-sm">No URL</span>';
     div.innerHTML=th+'<div class="r-info"><p class="r-title'+titleCls+'"'+titleClick+'>'+esc(v.title||'Không có tiêu đề')+'</p>'+
       '<p class="r-sub">@'+esc(v.author||'')+(v.duration?' · '+fmtDur(v.duration):'')+'</p></div>'+
       '<span class="badge-sm">Video</span>'+btnH;

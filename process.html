@@ -69,6 +69,30 @@
     .music-rm{width:26px;height:26px;border:none;background:none;cursor:pointer;color:#9CA3AF;font-size:18px;display:flex;align-items:center;justify-content:center;border-radius:4px;flex-shrink:0;padding:0}
     .music-rm:hover{background:#EDE9FE;color:var(--purple)}
 
+    /* Music tabs */
+    .mtabs{display:flex;gap:6px;margin-bottom:12px}
+    .mtab{padding:7px 18px;border-radius:8px;border:1.5px solid var(--line);background:#fff;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:var(--mid);cursor:pointer;transition:all .2s}
+    .mtab.active{background:var(--purple);color:#fff;border-color:var(--purple)}
+    .mtab:hover:not(.active){border-color:#9CA3AF;color:var(--dark)}
+    /* Library */
+    .sel-track{align-items:center;gap:10px;padding:10px 12px;border:1.5px solid var(--purple);border-radius:10px;background:#F5F3FF;margin-bottom:10px}
+    .lib-genres{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+    .lib-pill{padding:4px 12px;border-radius:20px;border:1.5px solid var(--line);background:#fff;font-family:'Inter',sans-serif;font-size:11px;font-weight:600;color:var(--mid);cursor:pointer;transition:all .15s;white-space:nowrap}
+    .lib-pill.active{background:var(--purple);color:#fff;border-color:var(--purple)}
+    .lib-list{border:1.5px solid var(--line);border-radius:10px;overflow:hidden;max-height:220px;overflow-y:auto}
+    .lib-track{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--line);transition:background .15s}
+    .lib-track:last-child{border-bottom:none}
+    .lib-track:hover{background:#F9FAFB}
+    .lib-track.selected{background:#F5F3FF}
+    .lib-play{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:all .15s;padding:0}
+    .lib-play:hover,.lib-play.playing{border-color:var(--purple);background:var(--purple-light)}
+    .lib-track-name{flex:1;font-size:12px;font-weight:600;color:var(--dark)}
+    .lib-genre-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:2px 7px;border-radius:4px;background:#F3F4F6;color:var(--mid);flex-shrink:0}
+    .lib-choose{padding:4px 10px;background:var(--purple);color:#fff;border:none;border-radius:5px;font-family:'Inter',sans-serif;font-size:11px;font-weight:600;cursor:pointer;flex-shrink:0;transition:opacity .15s}
+    .lib-choose:hover{opacity:.8}
+    .lib-track.selected .lib-choose{background:var(--green)}
+    .chip-url-badge{font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;background:#DBEAFE;color:#1D4ED8}
+
     /* Settings */
     .settings{display:flex;align-items:center;gap:20px;margin-top:12px;flex-wrap:wrap}
     .vol-row{display:flex;align-items:center;gap:8px;flex:1;min-width:160px}
@@ -161,16 +185,30 @@
   <!-- Step 2: Music -->
   <div class="sec">
     <div class="sec-lbl"><span class="sec-num p">2</span>Nhạc Nền</div>
-    <div class="music-row" id="musicRow" onclick="gi('musicIn').click()">
-      <input type="file" id="musicIn" accept="audio/*" onchange="setMusic(this.files[0]); this.value=''">
-      <div class="music-ico">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
-        </svg>
+    <div class="mtabs">
+      <button class="mtab active" id="mtLibBtn" onclick="switchMTab('lib')">Thư Viện Miễn Phí</button>
+      <button class="mtab" id="mtUpBtn" onclick="switchMTab('up')">Upload File</button>
+    </div>
+    <!-- Library panel -->
+    <div id="mtLibPanel">
+      <div class="sel-track" id="selTrack" style="display:none">
+        <div class="music-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+        <span class="music-txt name" id="selTrackName" style="flex:1"></span>
+        <span class="lib-genre-tag" id="selTrackGenre" style="margin-right:4px"></span>
+        <button class="music-rm" onclick="clearMusic(event)" title="Bỏ chọn">×</button>
       </div>
-      <span class="music-txt hint" id="musicHint">Click để chọn nhạc nền (MP3, M4A, WAV, FLAC...)</span>
-      <span class="music-txt name" id="musicName" style="display:none"></span>
-      <button class="music-rm" id="musicRm" style="display:none" onclick="clearMusic(event)" title="Xóa">×</button>
+      <div class="lib-genres" id="libGenres"></div>
+      <div class="lib-list" id="libList"><p style="font-size:12px;color:var(--mid);text-align:center;padding:20px">Đang tải...</p></div>
+    </div>
+    <!-- Upload panel -->
+    <div id="mtUpPanel" style="display:none">
+      <div class="music-row" id="musicRow" onclick="gi('musicIn').click()">
+        <input type="file" id="musicIn" accept="audio/*" onchange="setMusic(this.files[0]); this.value=''">
+        <div class="music-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+        <span class="music-txt hint" id="musicHint">Click để chọn nhạc nền (MP3, M4A, WAV, FLAC...)</span>
+        <span class="music-txt name" id="musicName" style="display:none"></span>
+        <button class="music-rm" id="musicRm" style="display:none" onclick="clearMusic(event)" title="Xóa">×</button>
+      </div>
     </div>
     <div class="settings">
       <div class="vol-row">
@@ -211,6 +249,11 @@ var ffInst     = null;
 var _fetch     = null;
 var _blobURL   = null;
 var _curIdx    = -1;
+var _musicMode  = 'lib';
+var _libSelIdx  = -1;
+var _libPlayIdx = -1;
+var _libAudio   = null;
+var _libGenre   = 'all';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function gi(id){ return document.getElementById(id); }
@@ -218,6 +261,135 @@ function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
 function fmt(b){ return b<1048576?(b/1024).toFixed(0)+'KB':(b/1048576).toFixed(1)+'MB'; }
 function ext(n){ var d=n.lastIndexOf('.'); return d>0?n.slice(d+1).toLowerCase():'mp4'; }
 function outName(n){ var d=n.lastIndexOf('.'); return(d>0?n.slice(0,d):n)+'_processed.mp4'; }
+
+// ── Music Library ─────────────────────────────────────────────────────────────
+var MUSIC_LIB = [
+  {t:'Electronic Beat',  g:'EDM',       url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'},
+  {t:'Synth Pop',        g:'Pop',       url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3'},
+  {t:'Dance Floor',      g:'EDM',       url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3'},
+  {t:'Acoustic Breeze',  g:'Acoustic',  url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3'},
+  {t:'Chill Vibes',      g:'Chill',     url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3'},
+  {t:'Cinematic Rise',   g:'Cinematic', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3'},
+  {t:'Happy Day',        g:'Pop',       url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3'},
+  {t:'Indie Folk',       g:'Acoustic',  url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3'},
+  {t:'Tech House',       g:'EDM',       url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3'},
+  {t:'Hip Hop Beat',     g:'Hip-hop',   url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3'},
+  {t:'Summer Pop',       g:'Pop',       url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3'},
+  {t:'Jazz Lounge',      g:'Jazz',      url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-12.mp3'},
+  {t:'Lo-fi Study',      g:'Chill',     url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-13.mp3'},
+  {t:'Trap Flow',        g:'Hip-hop',   url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-14.mp3'},
+  {t:'Epic Score',       g:'Cinematic', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3'},
+  {t:'Orchestral Drama', g:'Cinematic', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-16.mp3'},
+  {t:'Rock Anthem',      g:'Rock',      url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-17.mp3'},
+];
+
+function initLib(){
+  var genres=['Tất cả','EDM','Pop','Chill','Hip-hop','Cinematic','Acoustic','Jazz','Rock'];
+  var gEl=gi('libGenres'); gEl.innerHTML='';
+  genres.forEach(function(g){
+    var btn=document.createElement('button'); btn.className='lib-pill';
+    btn.textContent=g;
+    btn.onclick=function(){ filterLib(g==='Tất cả'?'all':g); };
+    gEl.appendChild(btn);
+  });
+  filterLib('all');
+}
+
+function filterLib(g){
+  _libGenre=g;
+  gi('libGenres').querySelectorAll('.lib-pill').forEach(function(p){
+    var match=(g==='all'&&p.textContent==='Tất cả')||(p.textContent===g);
+    p.classList.toggle('active',match);
+  });
+  renderLibTracks();
+}
+
+function renderLibTracks(){
+  var filtered=MUSIC_LIB.filter(function(t){ return _libGenre==='all'||t.g===_libGenre; });
+  var el=gi('libList'); el.innerHTML='';
+  if(!filtered.length){
+    el.innerHTML='<p style="font-size:12px;color:var(--mid);text-align:center;padding:16px">Không có track</p>';
+    return;
+  }
+  filtered.forEach(function(track){
+    var idx=MUSIC_LIB.indexOf(track);
+    var isSel=idx===_libSelIdx, isPlay=idx===_libPlayIdx;
+    var row=document.createElement('div');
+    row.className='lib-track'+(isSel?' selected':'');
+    row.id='ltrack_'+idx;
+    var playIco=isPlay
+      ?'<svg width="9" height="9" viewBox="0 0 24 24" fill="#7C3AED" stroke="none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>'
+      :'<svg width="9" height="9" viewBox="0 0 24 24" fill="#6B7280" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
+    row.innerHTML=
+      '<button class="lib-play'+(isPlay?' playing':'')+'" onclick="toggleLibPlay('+idx+',event)" title="Nghe thử">'+playIco+'</button>'+
+      '<span class="lib-track-name">'+esc(track.t)+'</span>'+
+      '<span class="lib-genre-tag">'+esc(track.g)+'</span>'+
+      '<button class="lib-choose" onclick="chooseLibTrack('+idx+',event)">'+(isSel?'✓ Đang dùng':'Chọn')+'</button>';
+    el.appendChild(row);
+  });
+}
+
+function toggleLibPlay(idx, e){
+  if(e) e.stopPropagation();
+  if(_libPlayIdx===idx){
+    if(_libAudio){_libAudio.pause();_libAudio=null;}
+    _libPlayIdx=-1;
+  } else {
+    if(_libAudio){_libAudio.pause();_libAudio=null;}
+    _libPlayIdx=idx;
+    _libAudio=new Audio(MUSIC_LIB[idx].url);
+    _libAudio.volume=0.6;
+    _libAudio.play().catch(function(){});
+    _libAudio.onended=function(){_libPlayIdx=-1;_libAudio=null;renderLibTracks();};
+  }
+  renderLibTracks();
+}
+
+function chooseLibTrack(idx, e){
+  if(e) e.stopPropagation();
+  // Clear upload selection
+  gi('musicIn').value='';
+  gi('musicHint').style.display='block';
+  gi('musicName').style.display='none';
+  gi('musicRm').style.display='none';
+  gi('musicRow').classList.remove('on');
+  gi('musicRow').onclick=function(){gi('musicIn').click();};
+  // Set library track
+  var track=MUSIC_LIB[idx];
+  _libSelIdx=idx;
+  musicFile={name:track.t+'.mp3', _url:track.url, size:null};
+  gi('selTrackName').textContent=track.t;
+  gi('selTrackGenre').textContent=track.g;
+  gi('selTrack').style.display='flex';
+  renderLibTracks();
+  updateGoBtn();
+}
+
+function switchMTab(tab){
+  _musicMode=tab;
+  gi('mtLibBtn').classList.toggle('active',tab==='lib');
+  gi('mtUpBtn').classList.toggle('active',tab==='up');
+  gi('mtLibPanel').style.display=tab==='lib'?'block':'none';
+  gi('mtUpPanel').style.display=tab==='up'?'block':'none';
+}
+
+function checkPassedVideo(){
+  var stored=sessionStorage.getItem('processVideo');
+  if(!stored) return;
+  try{
+    var info=JSON.parse(stored);
+    sessionStorage.removeItem('processVideo');
+    var proxyUrl='/api/douyin/stream-url?url='+encodeURIComponent(info.url)+'&filename='+encodeURIComponent(info.filename||'video.mp4');
+    var fakeFile={
+      name: info.filename||(info.title||'video').slice(0,60)+'.mp4',
+      isUrl: true,
+      proxyUrl: proxyUrl,
+      title: info.title
+    };
+    videoFiles.push(fakeFile);
+    renderChips(); updateGoBtn();
+  }catch(e){}
+}
 
 // ── FFmpeg init ───────────────────────────────────────────────────────────────
 (function init(){
@@ -240,6 +412,9 @@ function outName(n){ var d=n.lastIndexOf('.'); return(d>0?n.slice(0,d):n)+'_proc
 
   loadFF();
 })();
+
+initLib();
+checkPassedVideo();
 
 async function loadFF(){
   setFFBar('loading','Đang tải FFmpeg WASM (~30MB, sẽ được cache sau lần đầu)...');
@@ -289,7 +464,7 @@ function renderChips(){
         '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>'+
       '</div>'+
       '<span class="chip-name" title="'+esc(f.name)+'">'+esc(f.name)+'</span>'+
-      '<span class="chip-sz">'+fmt(f.size)+'</span>'+
+      '<span class="chip-sz">'+(f.isUrl?'<span class="chip-url-badge">Douyin</span>':fmt(f.size))+'</span>'+
       '<button class="chip-rm" onclick="removeFile('+i+')" title="Bỏ">×</button>';
     el.appendChild(d);
   });
@@ -303,19 +478,26 @@ function onDrop(e){ e.preventDefault(); gi('dropZone').classList.remove('over');
 // ── Music management ──────────────────────────────────────────────────────────
 function setMusic(f){
   if(!f) return;
+  // Clear lib selection
+  if(_libSelIdx>=0){ _libSelIdx=-1; gi('selTrack').style.display='none'; renderLibTracks(); }
   musicFile=f;
   gi('musicHint').style.display='none';
   gi('musicName').style.display='block';
   gi('musicName').textContent=f.name+' · '+fmt(f.size);
   gi('musicRm').style.display='flex';
   gi('musicRow').classList.add('on');
-  gi('musicRow').onclick=null; // disable click-to-open when music chosen
+  gi('musicRow').onclick=null;
   updateGoBtn();
 }
 
 function clearMusic(e){
-  e.stopPropagation();
+  if(e) e.stopPropagation();
   musicFile=null;
+  // Clear lib
+  _libSelIdx=-1;
+  gi('selTrack').style.display='none';
+  renderLibTracks();
+  // Clear upload
   gi('musicIn').value='';
   gi('musicHint').style.display='block';
   gi('musicName').style.display='none';
@@ -376,8 +558,8 @@ async function processOne(vFile, mFile, volume, doLoop, idx){
   var mn='m'+idx+'.'+mExt;
   var on='o'+idx+'.mp4';
 
-  await ffInst.writeFile(vn, await _fetch(vFile));
-  await ffInst.writeFile(mn, await _fetch(mFile));
+  await ffInst.writeFile(vn, await (vFile.isUrl ? _fetch(vFile.proxyUrl) : _fetch(vFile)));
+  await ffInst.writeFile(mn, await (mFile._url  ? _fetch(mFile._url)    : _fetch(mFile)));
 
   var args=['-i', vn];
   if(doLoop) args.push('-stream_loop','-1');
