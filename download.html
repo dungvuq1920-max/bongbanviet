@@ -249,17 +249,28 @@
   </div>
 </div>
 
-<!-- QR Login Modal -->
+<!-- Cookie Login Modal -->
 <div class="dy-modal" id="dyModal" onclick="if(event.target===this)dyCloseModal()">
-  <div class="dy-modal-box">
+  <div class="dy-modal-box" style="max-width:420px;text-align:left">
     <button onclick="dyCloseModal()" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:22px;line-height:1;cursor:pointer;color:#9CA3AF;padding:0 4px">×</button>
-    <p style="font-size:17px;font-weight:700;color:var(--dark);margin-bottom:4px">Đăng nhập Douyin</p>
-    <p style="font-size:12px;color:var(--mid);margin-bottom:20px">Quét mã QR bằng app Douyin trên điện thoại</p>
-    <div id="dyQrWrap" style="display:inline-block;padding:10px;border:2px solid var(--line);border-radius:8px;background:#fff;margin-bottom:12px;min-width:200px;min-height:200px;display:flex;align-items:center;justify-content:center">
-      <img id="dyQrImg" src="" width="180" height="180" alt="QR Code" style="display:block">
+    <p style="font-size:17px;font-weight:700;color:var(--dark);margin-bottom:6px">Đăng nhập Douyin</p>
+    <p style="font-size:12px;color:var(--mid);margin-bottom:14px">Dán cookie từ trình duyệt để xác thực tài khoản</p>
+
+    <div style="background:#F9FAFB;border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:12px;line-height:1.7;color:#374151">
+      <strong style="display:block;margin-bottom:4px">Cách lấy cookie:</strong>
+      1. Mở <strong>douyin.com</strong> → đăng nhập tài khoản<br>
+      2. Nhấn <strong>F12</strong> → tab <strong>Application</strong> → <strong>Cookies</strong> → <code style="background:#E5E7EB;padding:1px 4px;border-radius:3px">https://www.douyin.com</code><br>
+      3. Tìm dòng <strong>sessionid</strong> → click chuột phải → <em>Copy all as header value</em><br>
+      <span style="color:#6B7280;font-size:11px">Hoặc dùng extension <strong>Cookie Editor</strong> → Export → Paste bên dưới</span>
     </div>
-    <p id="dyQrMsg" style="font-size:12px;color:var(--mid);margin-bottom:6px">Đang tạo mã QR...</p>
-    <p id="dyQrStatusTxt" style="font-size:13px;font-weight:600;color:var(--mid);min-height:20px"></p>
+
+    <textarea id="dyCookieInput" placeholder="Dán cookie vào đây (dạng: key=value; key2=value2; ...)" style="width:100%;min-height:90px;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;font-family:monospace;font-size:12px;outline:none;resize:vertical;line-height:1.5;color:var(--dark);transition:border-color .2s" onfocus="this.style.borderColor='#9CA3AF'" onblur="this.style.borderColor='var(--line)'"></textarea>
+
+    <p id="dyCookieErr" style="font-size:12px;color:var(--red);margin:6px 0 0;min-height:18px;font-weight:600"></p>
+
+    <button onclick="dySaveCookies()" id="dySaveBtn" style="width:100%;margin-top:12px;padding:11px;background:var(--accent);color:#fff;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border:none;border-radius:8px;transition:background .2s">
+      Lưu &amp; Đăng nhập
+    </button>
   </div>
 </div>
 
@@ -480,8 +491,6 @@ $('uUrl').addEventListener('keydown',function(e){if(e.key==='Enter')doUser();});
 
 // ── Douyin Auth ───────────────────────────────────────────────────────────────
 (function(){
-  var dyPollTimer=null, dyCountdown=120;
-
   async function dyCheckStatus(){
     try{
       var r=await fetch('/api/douyin-login/status');
@@ -497,61 +506,43 @@ $('uUrl').addEventListener('keydown',function(e){if(e.key==='Enter')doUser();});
       }
     }catch(e){
       $('authStatusText').textContent='Không kiểm tra được trạng thái';
-      $('authLoginBtn').style.display='';
+      $('authLoginBtn').style.display='inline-block';
     }
   }
 
   function dyCloseModal(){
-    if(dyPollTimer){clearInterval(dyPollTimer);dyPollTimer=null;}
     $('dyModal').classList.remove('open');
+    $('dyCookieInput').value='';
+    $('dyCookieErr').textContent='';
+    $('dySaveBtn').disabled=false;
+    $('dySaveBtn').textContent='Lưu & Đăng nhập';
   }
 
-  async function dyStartLogin(){
+  function dyStartLogin(){
+    $('dyCookieInput').value='';
+    $('dyCookieErr').textContent='';
+    $('dySaveBtn').disabled=false;
+    $('dySaveBtn').textContent='Lưu & Đăng nhập';
     $('dyModal').classList.add('open');
-    $('dyQrImg').src='';
-    $('dyQrMsg').textContent='Đang tạo mã QR...';
-    $('dyQrStatusTxt').textContent='';
-    $('dyQrStatusTxt').style.color='var(--mid)';
-    if(dyPollTimer){clearInterval(dyPollTimer);dyPollTimer=null;}
+    setTimeout(function(){$('dyCookieInput').focus();},100);
+  }
+
+  async function dySaveCookies(){
+    var raw=$('dyCookieInput').value.trim();
+    if(!raw){$('dyCookieErr').textContent='Vui lòng dán cookie vào ô trên';return;}
+    $('dySaveBtn').disabled=true;
+    $('dySaveBtn').textContent='Đang lưu...';
+    $('dyCookieErr').textContent='';
     try{
-      var r=await fetch('/api/douyin-login/qr');
+      var r=await fetch('/api/douyin-login/cookies',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cookies:raw})});
       var d=await r.json();
-      if(d.error)throw new Error(d.error);
-      $('dyQrImg').src=d.qr_url;
-      dyCountdown=120;
-      $('dyQrMsg').textContent='Còn '+dyCountdown+' giây';
-      var token=d.token;
-      dyPollTimer=setInterval(async function(){
-        dyCountdown--;
-        $('dyQrMsg').textContent='Còn '+Math.max(0,dyCountdown)+' giây';
-        if(dyCountdown<=0){
-          clearInterval(dyPollTimer);dyPollTimer=null;
-          $('dyQrStatusTxt').textContent='Mã QR đã hết hạn. Đóng và thử lại.';
-          $('dyQrStatusTxt').style.color='var(--red)';
-          return;
-        }
-        try{
-          var pr=await fetch('/api/douyin-login/poll?token='+encodeURIComponent(token));
-          var pd=await pr.json();
-          if(pd.status==='scanned'){
-            $('dyQrStatusTxt').textContent='✓ Đã quét — xác nhận trên điện thoại';
-            $('dyQrStatusTxt').style.color='var(--green)';
-          }else if(pd.status==='confirmed'){
-            clearInterval(dyPollTimer);dyPollTimer=null;
-            $('dyQrStatusTxt').textContent='✓ Đăng nhập thành công!';
-            $('dyQrStatusTxt').style.color='var(--green)';
-            setTimeout(function(){dyCloseModal();dyCheckStatus();},1500);
-          }else if(pd.status==='expired'){
-            clearInterval(dyPollTimer);dyPollTimer=null;
-            $('dyQrStatusTxt').textContent='Mã QR đã hết hạn. Đóng và thử lại.';
-            $('dyQrStatusTxt').style.color='var(--red)';
-          }
-        }catch(pe){/* ignore poll errors */}
-      },2000);
+      if(!r.ok||d.error)throw new Error(d.error||'Lưu thất bại');
+      dyCloseModal();
+      dyCheckStatus();
     }catch(e){
-      $('dyQrMsg').textContent='';
-      $('dyQrStatusTxt').textContent='Lỗi: '+e.message;
-      $('dyQrStatusTxt').style.color='var(--red)';
+      $('dyCookieErr').textContent=e.message;
+      $('dySaveBtn').disabled=false;
+      $('dySaveBtn').textContent='Lưu & Đăng nhập';
     }
   }
 
@@ -562,6 +553,7 @@ $('uUrl').addEventListener('keydown',function(e){if(e.key==='Enter')doUser();});
 
   window.dyStartLogin=dyStartLogin;
   window.dyCloseModal=dyCloseModal;
+  window.dySaveCookies=dySaveCookies;
   window.dyLogout=dyLogout;
   dyCheckStatus();
 })();

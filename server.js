@@ -515,6 +515,27 @@ app.get('/api/douyin-login/status', (_req, res) => {
   }
 });
 
+app.post('/api/douyin-login/cookies', (req, res) => {
+  try {
+    const raw = (req.body.cookies || '').trim();
+    if (!raw) return res.status(400).json({ error: 'cookies required' });
+    const parsed = {};
+    raw.split(';').forEach(part => {
+      const idx = part.indexOf('=');
+      if (idx > 0) {
+        const k = part.slice(0, idx).trim();
+        const v = part.slice(idx + 1).trim();
+        if (k) parsed[k] = v;
+      }
+    });
+    if (!parsed.sessionid) return res.status(400).json({ error: 'Cookie thiếu sessionid — hãy kiểm tra lại đã copy đúng chưa' });
+    db.prepare("INSERT OR REPLACE INTO settings(key, value, updated_at) VALUES('douyin_cookies', ?, datetime('now'))").run(JSON.stringify(parsed));
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.delete('/api/douyin-login', (_req, res) => {
   db.prepare("DELETE FROM settings WHERE key = 'douyin_cookies'").run();
   res.json({ ok: true });
