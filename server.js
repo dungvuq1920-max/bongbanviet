@@ -230,6 +230,67 @@ app.get(['/vandon', '/vandon/'], (req, res) => {
 app.use('/vandon', express.static(path.join(__dirname, 'vandon')));
 app.use(express.static(__dirname, { extensions: ['html'] }));
 
+// ─── Douyin Downloader Proxy ──────────────────────────────────────────────────
+const DOUYIN_API = process.env.DOUYIN_API_URL || 'http://localhost:8000';
+const { Readable: _StreamReadable } = require('stream');
+
+app.get('/api/douyin/health', async (req, res) => {
+  try {
+    const r = await fetch(`${DOUYIN_API}/api/v1/health`, { signal: AbortSignal.timeout(4000) });
+    res.json(await r.json());
+  } catch {
+    res.status(503).json({ status: 'offline' });
+  }
+});
+
+app.post('/api/douyin/resolve', async (req, res) => {
+  try {
+    const r = await fetch(`${DOUYIN_API}/api/v1/resolve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body),
+      signal: AbortSignal.timeout(30000),
+    });
+    const data = await r.json();
+    res.status(r.status).json(data);
+  } catch (err) {
+    res.status(500).json({ detail: err.message });
+  }
+});
+
+app.get('/api/douyin/image', async (req, res) => {
+  const { url } = req.query;
+  if (!url) return res.status(400).json({ detail: 'url required' });
+  try {
+    const r = await fetch(`${DOUYIN_API}/api/v1/image?url=${encodeURIComponent(url)}`, {
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!r.ok) return res.status(r.status).end();
+    res.setHeader('Content-Type', r.headers.get('content-type') || 'image/jpeg');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    _StreamReadable.fromWeb(r.body).pipe(res);
+  } catch {
+    if (!res.headersSent) res.status(502).end();
+  }
+});
+
+app.get('/api/douyin/stream/:aweme_id', async (req, res) => {
+  const { aweme_id } = req.params;
+  try {
+    const r = await fetch(`${DOUYIN_API}/api/v1/stream/${encodeURIComponent(aweme_id)}`);
+    if (!r.ok) return res.status(r.status).json({ detail: 'stream failed' });
+    const ct = r.headers.get('content-type');
+    if (ct) res.setHeader('Content-Type', ct);
+    const cd = r.headers.get('content-disposition');
+    if (cd) res.setHeader('Content-Disposition', cd);
+    const cl = r.headers.get('content-length');
+    if (cl) res.setHeader('Content-Length', cl);
+    _StreamReadable.fromWeb(r.body).pipe(res);
+  } catch (err) {
+    if (!res.headersSent) res.status(502).json({ detail: err.message });
+  }
+});
+
 // ─── DexScreener Proxy ────────────────────────────────────────────────────────
 app.get('/api/dex/tokens', async (req, res) => {
   const { addresses } = req.query;

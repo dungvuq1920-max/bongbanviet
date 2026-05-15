@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tải Video Douyin | BÓNG BÀN VIỆT</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--red:#D62B2B;--coral:#E8503A;--bg:#FAFAF8;--white:#FFFFFF;--dark:#1A1A1A;--mid:#6B6B6B;--line:#E5E5E3;--warm:#F2EDE7;--green:#16a34a}
+    body{background:var(--bg);color:var(--dark);font-family:'Lexend',sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+    a{text-decoration:none;color:inherit} img{display:block;width:100%}
+
+    .ann{background:#111;color:rgba(255,255,255,.85);text-align:center;padding:11px 24px;font-size:12.5px;font-weight:500;letter-spacing:.03em;display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap}.ann a{color:var(--coral);font-weight:600}.ann-item{display:inline-flex;align-items:center;gap:7px}.ann-dot{width:3px;height:3px;background:rgba(255,255,255,.22);flex-shrink:0}
+
+    .nav{position:sticky;top:0;z-index:100;background:var(--white);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;height:82px;padding:0 48px}
+    .nav-links{display:flex;align-items:center;gap:26px;list-style:none}
+    .nav-links a{font-size:16px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--dark);transition:color .2s;white-space:nowrap}
+    .nav-links a:hover,.nav-links a.active{color:var(--red)}
+    .nav-cta{background:var(--red);color:#fff !important;padding:9px 22px;font-size:11px !important;letter-spacing:.12em !important}
+
+    .wrap{max-width:1200px;margin:0 auto;padding:0 48px}
+    .s-label{font-size:11px;font-weight:600;letter-spacing:.28em;text-transform:uppercase;color:var(--red);margin-bottom:14px}
+
+    /* Hero */
+    .page-hero{background:var(--dark);padding:72px 0 60px}
+    .breadcrumb{font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:20px}
+    .breadcrumb a{color:rgba(255,255,255,.35)} .breadcrumb span{margin:0 8px}
+    .page-hero h1{font-family:'Lexend',sans-serif;font-size:clamp(48px,7vw,96px);font-weight:900;color:#fff;line-height:.95;letter-spacing:-.01em;margin-bottom:20px}
+    .page-hero h1 i{font-style:italic;color:var(--coral)}
+    .page-hero p{font-size:15px;color:rgba(255,255,255,.5);max-width:540px;line-height:1.75}
+
+    /* Status bar */
+    .status-bar{background:var(--warm);border-bottom:1px solid var(--line);padding:10px 48px;display:flex;align-items:center;gap:12px}
+    .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;transition:background .4s}
+    .status-bar.online .status-dot{background:var(--green)}
+    .status-bar.offline .status-dot{background:var(--red);animation:blink 1.4s infinite}
+    .status-bar.checking .status-dot{background:#d97706;animation:blink 1s infinite}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+    .status-text{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mid)}
+    .status-bar.online .status-text{color:var(--green)}
+    .status-bar.offline .status-text{color:var(--red)}
+    .status-bar.checking .status-text{color:#d97706}
+    .status-hint{font-size:12px;color:var(--mid);margin-left:auto}
+
+    /* Tool section */
+    .tool-section{padding:72px 0 80px}
+    .tool-card{max-width:720px;margin:0 auto}
+
+    /* URL input row */
+    .url-row{display:flex;margin-bottom:10px;gap:0}
+    .url-input{flex:1;padding:16px 20px;border:2px solid var(--line);border-right:none;font-family:'Lexend',sans-serif;font-size:15px;color:var(--dark);background:var(--white);outline:none;transition:border-color .2s;min-width:0}
+    .url-input:focus{border-color:var(--dark)}
+    .url-input::placeholder{color:var(--mid)}
+    .btn-resolve{padding:16px 28px;background:var(--dark);color:#fff;font-family:'Lexend',sans-serif;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;border:2px solid var(--dark);white-space:nowrap;transition:background .2s}
+    .btn-resolve:hover{background:var(--red);border-color:var(--red)}
+    .btn-resolve:disabled{opacity:.5;cursor:not-allowed;background:var(--mid);border-color:var(--mid)}
+    .url-hint{font-size:12px;color:var(--mid);margin-bottom:28px}
+
+    /* Status messages */
+    .msg-box{padding:16px 20px;font-size:14px;margin-bottom:20px;display:none}
+    .msg-error{background:#fef2f2;border:1.5px solid #fca5a5;color:#991b1b}
+    .msg-loading{background:var(--warm);border:1.5px solid var(--line);color:var(--mid);display:flex;align-items:center;gap:12px}
+    .spinner{width:18px;height:18px;border:2px solid var(--line);border-top-color:var(--dark);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* Preview card */
+    .preview-card{border:1.5px solid var(--line);background:var(--white);display:none}
+    .preview-layout{display:flex;gap:0}
+    .preview-thumb-wrap{width:180px;flex-shrink:0;background:#000;position:relative;overflow:hidden}
+    .preview-thumb-wrap img{width:100%;height:100%;object-fit:cover;display:block}
+    .media-badge{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.72);color:#fff;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:3px 9px}
+    .preview-info{flex:1;padding:28px 32px;display:flex;flex-direction:column;gap:12px}
+    .preview-title-text{font-size:17px;font-weight:700;color:var(--dark);line-height:1.4;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+    .preview-meta-row{display:flex;flex-direction:column;gap:6px}
+    .preview-meta-item{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mid)}
+    .preview-meta-item svg{flex-shrink:0;opacity:.5}
+    .btn-download{margin-top:auto;padding:14px 24px;background:var(--red);color:#fff;font-family:'Lexend',sans-serif;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center;gap:10px;transition:background .2s;width:100%}
+    .btn-download:hover{background:var(--dark)}
+    .btn-download:disabled{opacity:.5;cursor:not-allowed}
+
+    /* Gallery notice */
+    .gallery-notice{padding:20px;background:#fffbeb;border:1.5px solid #fde68a;font-size:13px;color:#92400e;display:none}
+    .gallery-images{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px;margin-top:12px}
+    .gallery-images img{width:100%;aspect-ratio:1;object-fit:cover;cursor:pointer}
+    .gallery-images img:hover{opacity:.85}
+
+    /* How to section */
+    .how-to{background:var(--warm);padding:64px 0}
+    .how-to h2{font-family:'Lexend',sans-serif;font-size:clamp(24px,3vw,40px);font-weight:800;color:var(--dark);margin-bottom:8px}
+    .how-to h2 i{font-style:italic;color:var(--coral)}
+    .how-to-sub{font-size:15px;color:var(--mid);margin-bottom:40px;max-width:480px}
+    .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+    .step{background:var(--white);padding:32px 28px}
+    .step-num{font-size:48px;font-weight:900;color:var(--line);line-height:1;margin-bottom:16px}
+    .step-title{font-size:14px;font-weight:700;color:var(--dark);margin-bottom:8px;letter-spacing:.02em}
+    .step-desc{font-size:13px;color:var(--mid);line-height:1.7}
+
+    /* Offline notice */
+    .offline-notice{background:var(--dark);padding:40px 0;display:none}
+    .offline-notice-inner{max-width:720px}
+    .offline-notice h3{font-size:20px;font-weight:800;color:#fff;margin-bottom:16px}
+    .offline-code{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);padding:14px 20px;font-family:monospace;font-size:13px;color:#a3e635;margin-bottom:8px;border-radius:2px;overflow-x:auto}
+
+    /* Footer */
+    footer{background:var(--dark)}
+    .footer-grid{max-width:1200px;margin:0 auto;padding:56px 48px 32px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px}
+    .footer-slogan{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.25);margin-top:4px}
+    .footer-desc{font-size:13px;color:rgba(255,255,255,.4);line-height:1.7;max-width:240px;margin-top:16px}
+    .footer-col-title{font-size:10px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:20px}
+    .footer-links{list-style:none;display:flex;flex-direction:column;gap:10px}
+    .footer-links a{font-size:13px;color:rgba(255,255,255,.45);transition:color .2s}
+    .footer-links a:hover{color:#fff}
+    .footer-bottom{max-width:1200px;margin:0 auto;padding:20px 48px;border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;align-items:center}
+    .footer-bottom p{font-size:11px;color:rgba(255,255,255,.2)}
+    .footer-addr{font-size:13px;color:rgba(255,255,255,.45);line-height:1.5}
+    .footer-hours{font-size:11px;color:rgba(255,255,255,.25);letter-spacing:.03em}
+    .footer-bottom-links{display:flex;align-items:center;gap:12px}
+    .footer-bottom-links a{font-size:11px;color:rgba(255,255,255,.25);transition:color .2s}
+    .footer-bottom-links a:hover{color:rgba(255,255,255,.7)}
+
+    /* Mobile nav */
+    body{background:#ECEAE7 !important;overflow-x:hidden}
+    .site-container{max-width:1200px;margin:0 auto;background:var(--bg);box-shadow:0 0 60px rgba(0,0,0,.12);min-height:100vh;overflow-x:hidden}
+    .nav-ham{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:4px}
+    .nav-ham span{display:block;width:22px;height:2px;background:var(--dark);transition:all .3s}
+    .nav-ham.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+    .nav-ham.open span:nth-child(2){opacity:0}
+    .nav-ham.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+    .mobile-nav{display:none;position:fixed;inset:0;z-index:199;pointer-events:none}
+    .mobile-nav.open{display:block;pointer-events:all}
+    .mobile-nav-overlay{position:absolute;inset:0;background:rgba(0,0,0,.5);animation:mfadeIn .25s ease}
+    .mobile-nav-panel{position:absolute;top:0;right:0;width:min(320px,85vw);height:100%;background:var(--white);animation:mslideIn .3s cubic-bezier(.4,0,.2,1);overflow-y:auto;display:flex;flex-direction:column}
+    .mobile-nav-header{padding:20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+    .mobile-nav-close{background:none;border:none;cursor:pointer;font-size:22px;color:var(--mid)}
+    .mobile-nav-links a{display:block;padding:13px 24px;font-size:14px;font-weight:500;color:var(--dark);border-bottom:1px solid var(--line)}
+    .mobile-nav-links a:hover{background:var(--warm)}
+    .mobile-nav-links a.m-cta{background:var(--red);color:#fff;margin:16px;border-radius:2px;text-align:center;border:none}
+    .mobile-nav-footer{padding:16px 24px;font-size:12px;color:var(--mid);border-top:1px solid var(--line)}
+    @keyframes mfadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes mslideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+
+    @media(max-width:960px){
+      .nav{padding:0 20px} .nav-links{display:none!important} .nav-ham{display:flex!important}
+      .wrap{padding:0 20px!important} .status-bar{padding:10px 20px}
+      .steps{grid-template-columns:1fr} .footer-grid{grid-template-columns:1fr 1fr;padding:32px 20px 20px}
+      .footer-bottom{padding:16px 20px;flex-direction:column;gap:8px;text-align:center}
+      .page-hero{padding:40px 0}
+    }
+    @media(max-width:640px){
+      .url-row{flex-direction:column}
+      .url-input{border-right:2px solid var(--line);border-bottom:none}
+      .btn-resolve{border-top:none}
+      .preview-layout{flex-direction:column}
+      .preview-thumb-wrap{width:100%;height:220px}
+      .preview-info{padding:20px}
+      .steps{grid-template-columns:1fr}
+      .footer-grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+
+<div class="mobile-nav" id="mobileNav">
+  <div class="mobile-nav-overlay" id="navOverlay"></div>
+  <div class="mobile-nav-panel">
+    <div class="mobile-nav-header">
+      <img src="logo_bongbanviet.png" alt="Bóng Bàn Việt" style="height:44px;width:auto;">
+      <button class="mobile-nav-close" id="navClose">✕</button>
+    </div>
+    <div class="mobile-nav-links">
+      <a href="cot-vot.html">Cốt Vợt</a>
+      <a href="mat-vot.html">Mặt Vợt</a>
+      <a href="bong.html">Bóng</a>
+      <a href="ban.html">Bàn</a>
+      <a href="do-thi-dau.html">Đồ Thi Đấu</a>
+      <a href="combo-vot.html">Combo Vợt</a>
+      <a href="do-cu.html">Đồ Cũ</a>
+      <a href="kien-thuc.html">Kiến Thức</a>
+      <a href="lien-he.html" class="m-cta">Liên Hệ Tư Vấn</a>
+    </div>
+    <div class="mobile-nav-footer">Hotline / Zalo: <strong>096.1269.386</strong></div>
+  </div>
+</div>
+
+<div class="site-container">
+
+<div class="ann"><span class="ann-item"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.4;flex-shrink:0"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.09 1.22 2 2 0 012.07 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.18 6.18l1.27-.89a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>Tư vấn miễn phí — <a href="tel:0961269386">096.1269.386</a></span><span class="ann-dot"></span><span class="ann-item"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.4;flex-shrink:0"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>286 Nguyễn Xiển, Hà Nội</span><span class="ann-dot"></span><span class="ann-item">Zalo: <a href="https://zalo.me/0961269386">Nhắn tin ngay →</a></span></div>
+
+<nav class="nav">
+  <a href="index.html"><img src="logo_bongbanviet.png" alt="Bóng Bàn Việt" style="height:68px;width:auto;display:block;border-radius:50%"></a>
+  <ul class="nav-links">
+    <li><a href="cot-vot.html">Cốt Vợt</a></li>
+    <li><a href="mat-vot.html">Mặt Vợt</a></li>
+    <li><a href="bong.html">Bóng</a></li>
+    <li><a href="ban.html">Bàn</a></li>
+    <li><a href="do-thi-dau.html">Đồ Thi Đấu</a></li>
+    <li><a href="combo-vot.html">Combo</a></li>
+    <li><a href="do-cu.html">Đồ Cũ</a></li>
+    <li><a href="kien-thuc.html">Kiến Thức</a></li>
+    <li><a href="lien-he.html" class="nav-cta">Liên Hệ</a></li>
+  </ul>
+  <button class="nav-ham" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+
+<div class="status-bar checking" id="statusBar">
+  <span class="status-dot"></span>
+  <span class="status-text" id="statusText">Đang kết nối...</span>
+  <span class="status-hint" id="statusHint"></span>
+</div>
+
+<section class="page-hero">
+  <div class="wrap">
+    <p class="breadcrumb"><a href="index.html">Trang Chủ</a><span>·</span>Tải Video</p>
+    <h1>Tải Video <i>Douyin</i></h1>
+    <p>Dán link video Douyin để tải về chất lượng cao, không watermark. Hỗ trợ video đơn và album ảnh.</p>
+  </div>
+</section>
+
+<section class="tool-section">
+  <div class="wrap">
+    <div class="tool-card">
+      <p class="s-label">Dán Link Video</p>
+
+      <div class="url-row">
+        <input id="urlInput" class="url-input" type="text"
+          placeholder="https://www.douyin.com/video/... hoặc link rút gọn v.douyin.com/..."
+          autocomplete="off" spellcheck="false">
+        <button class="btn-resolve" id="btnResolve" onclick="doResolve()">Xem Trước</button>
+      </div>
+      <p class="url-hint">Hỗ trợ link đầy đủ và link rút gọn (v.douyin.com). Chỉ dùng nội bộ.</p>
+
+      <!-- Error -->
+      <div class="msg-box msg-error" id="errBox"></div>
+
+      <!-- Loading -->
+      <div class="msg-box msg-loading" id="loadingBox" style="display:none">
+        <div class="spinner"></div>
+        <span>Đang lấy thông tin video, vui lòng đợi...</span>
+      </div>
+
+      <!-- Preview card -->
+      <div class="preview-card" id="previewCard">
+        <div class="preview-layout">
+          <div class="preview-thumb-wrap" id="thumbWrap">
+            <img id="previewThumb" src="" alt="thumbnail">
+            <span class="media-badge" id="mediaBadge">Video</span>
+          </div>
+          <div class="preview-info">
+            <p class="preview-title-text" id="previewTitle"></p>
+            <div class="preview-meta-row">
+              <div class="preview-meta-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span id="previewAuthor"></span>
+              </div>
+              <div class="preview-meta-item" id="durationRow" style="display:none">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span id="previewDuration"></span>
+              </div>
+            </div>
+            <button class="btn-download" id="btnDownload" onclick="doDownload()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Tải Video
+            </button>
+          </div>
+        </div>
+
+        <!-- Gallery notice -->
+        <div class="gallery-notice" id="galleryNotice">
+          <strong>Đây là album ảnh.</strong> Nhấn vào từng ảnh để tải về.
+          <div class="gallery-images" id="galleryImages"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Offline notice -->
+<div class="offline-notice" id="offlineNotice">
+  <div class="wrap">
+    <div class="offline-notice-inner">
+      <h3 style="color:#fff">Cần khởi động Douyin Downloader Server</h3>
+      <p style="font-size:14px;color:rgba(255,255,255,.5);margin-bottom:20px">Công cụ này cần chạy Python server ở local. Mở terminal và chạy lệnh sau:</p>
+      <div class="offline-code">cd douyin-downloader</div>
+      <div class="offline-code">python run.py --serve</div>
+      <p style="font-size:12px;color:rgba(255,255,255,.3);margin-top:12px">Server sẽ chạy tại http://localhost:8000. Sau khi khởi động, tải lại trang này.</p>
+    </div>
+  </div>
+</div>
+
+<!-- How to use -->
+<section class="how-to">
+  <div class="wrap">
+    <p class="s-label">Hướng Dẫn</p>
+    <h2>Cách Dùng <i>Đơn Giản</i></h2>
+    <p class="how-to-sub">3 bước để tải video Douyin về máy không watermark.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <p class="step-title">Copy Link Video</p>
+        <p class="step-desc">Mở app Douyin, bấm Chia Sẻ → Copy link. Dán vào ô phía trên trang này.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <p class="step-title">Xem Trước</p>
+        <p class="step-desc">Nhấn "Xem Trước" để tải thông tin video — tiêu đề, tác giả, thời lượng.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <p class="step-title">Tải Video</p>
+        <p class="step-desc">Nhấn "Tải Video" — file MP4 chất lượng cao sẽ được tải về máy của bạn.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-grid">
+    <div><img src="/logo_bongbanviet.png" alt="Bóng Bàn Việt" style="height:48px;width:auto;display:block;margin-bottom:8px;border-radius:50%;"><div class="footer-slogan">Tư Vấn Chuẩn · Hàng Chính Hãng</div><p class="footer-desc">Thiết bị bóng bàn chuyên nghiệp tại Hà Nội. Tư vấn miễn phí theo trình độ và phong cách chơi.</p></div>
+    <div><p class="footer-col-title">Sản Phẩm</p><ul class="footer-links"><li><a href="cot-vot.html">Cốt Vợt</a></li><li><a href="mat-vot.html">Mặt Vợt</a></li><li><a href="bong.html">Bóng</a></li><li><a href="ban.html">Bàn</a></li><li><a href="do-thi-dau.html">Đồ Thi Đấu</a></li><li><a href="combo-vot.html">Combo Vợt</a></li></ul></div>
+    <div><p class="footer-col-title">Hỗ Trợ</p><ul class="footer-links"><li><a href="do-cu.html">Đồ Cũ</a></li><li><a href="kien-thuc.html">Kiến Thức</a></li><li><a href="huong-dan-mua-hang.html">Hướng Dẫn Mua Hàng</a></li><li><a href="chinh-sach-doi-tra.html">Chính Sách Đổi Trả</a></li></ul></div>
+    <div><p class="footer-col-title">Liên Hệ</p><ul class="footer-links"><li class="footer-addr">286 Nguyễn Xiển,<br>Thanh Liệt, Hà Nội</li><li class="footer-hours">T2 – CN · 8:00 – 20:00</li><li><a href="tel:0961269386">096.1269.386</a></li></ul></div>
+  </div>
+  <div class="footer-bottom"><p>© 2025 BongBanViet.com · Tư Vấn Chuẩn - Hàng Chính Hãng</p><div class="footer-bottom-links"><a href="chinh-sach-doi-tra.html">Chính Sách Đổi Trả</a><span style="color:rgba(255,255,255,.15)">·</span><a href="lien-he.html">Liên Hệ</a></div></div>
+</footer>
+
+</div><!-- /site-container -->
+
+<script>
+var _awemeId = null;
+var _isGallery = false;
+
+// ── Health check ──────────────────────────────────────────────────────────────
+async function checkHealth() {
+  var bar = document.getElementById('statusBar');
+  var txt = document.getElementById('statusText');
+  var hint = document.getElementById('statusHint');
+  var notice = document.getElementById('offlineNotice');
+  try {
+    var r = await fetch('/api/douyin/health');
+    if (r.ok) {
+      bar.className = 'status-bar online';
+      txt.textContent = 'Server đang hoạt động';
+      hint.textContent = 'Sẵn sàng tải video';
+      notice.style.display = 'none';
+    } else {
+      throw new Error();
+    }
+  } catch {
+    bar.className = 'status-bar offline';
+    txt.textContent = 'Server chưa chạy';
+    hint.textContent = 'Cần khởi động douyin-downloader trước';
+    notice.style.display = 'block';
+  }
+}
+checkHealth();
+
+// ── Format duration ────────────────────────────────────────────────────────────
+function fmtDur(sec) {
+  if (!sec) return '';
+  var m = Math.floor(sec / 60), s = sec % 60;
+  return m + ':' + String(s).padStart(2, '0');
+}
+
+// ── Resolve ────────────────────────────────────────────────────────────────────
+async function doResolve() {
+  var url = document.getElementById('urlInput').value.trim();
+  if (!url) return;
+
+  var btn = document.getElementById('btnResolve');
+  var errBox = document.getElementById('errBox');
+  var loadingBox = document.getElementById('loadingBox');
+  var previewCard = document.getElementById('previewCard');
+  var galleryNotice = document.getElementById('galleryNotice');
+
+  errBox.style.display = 'none';
+  previewCard.style.display = 'none';
+  loadingBox.style.display = 'flex';
+  btn.disabled = true;
+  _awemeId = null;
+  _isGallery = false;
+
+  try {
+    var r = await fetch('/api/douyin/resolve', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: url }),
+    });
+    var data = await r.json();
+    if (!r.ok) {
+      throw new Error(data.detail || 'Không thể lấy thông tin video. Kiểm tra lại link.');
+    }
+
+    _awemeId = data.aweme_id;
+    _isGallery = data.media_type === 'gallery';
+
+    // Render preview
+    document.getElementById('previewTitle').textContent = data.title || 'Không có tiêu đề';
+    document.getElementById('previewAuthor').textContent = '@' + (data.author || 'unknown');
+    document.getElementById('mediaBadge').textContent = _isGallery ? 'Album' : 'Video';
+
+    var durRow = document.getElementById('durationRow');
+    if (data.duration) {
+      document.getElementById('previewDuration').textContent = fmtDur(data.duration);
+      durRow.style.display = 'flex';
+    } else {
+      durRow.style.display = 'none';
+    }
+
+    // Thumbnail
+    var thumb = document.getElementById('previewThumb');
+    var thumbWrap = document.getElementById('thumbWrap');
+    if (data.cover_url) {
+      thumb.src = '/api/douyin/image?url=' + encodeURIComponent(data.cover_url);
+      thumb.style.display = 'block';
+      thumbWrap.style.display = 'block';
+    } else {
+      thumb.style.display = 'none';
+      thumbWrap.style.display = 'none';
+    }
+
+    // Download button
+    var dlBtn = document.getElementById('btnDownload');
+    if (_isGallery) {
+      dlBtn.style.display = 'none';
+      galleryNotice.style.display = 'block';
+      renderGallery(data.image_urls || []);
+    } else {
+      dlBtn.style.display = 'flex';
+      galleryNotice.style.display = 'none';
+    }
+
+    loadingBox.style.display = 'none';
+    previewCard.style.display = 'block';
+
+  } catch (err) {
+    loadingBox.style.display = 'none';
+    errBox.textContent = err.message || 'Lỗi không xác định';
+    errBox.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ── Gallery ────────────────────────────────────────────────────────────────────
+function renderGallery(urls) {
+  var container = document.getElementById('galleryImages');
+  container.innerHTML = '';
+  urls.forEach(function(url, i) {
+    var img = document.createElement('img');
+    var proxied = '/api/douyin/image?url=' + encodeURIComponent(url);
+    img.src = proxied;
+    img.alt = 'Ảnh ' + (i + 1);
+    img.title = 'Nhấn để tải ảnh ' + (i + 1);
+    img.addEventListener('click', function() {
+      var a = document.createElement('a');
+      a.href = proxied;
+      a.download = 'douyin_image_' + (i + 1) + '.jpg';
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    });
+    container.appendChild(img);
+  });
+}
+
+// ── Download ────────────────────────────────────────────────────────────────────
+function doDownload() {
+  if (!_awemeId) return;
+  var btn = document.getElementById('btnDownload');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="border-top-color:#fff;border-color:rgba(255,255,255,.3);border-top-color:#fff"></div> Đang chuẩn bị...';
+
+  var a = document.createElement('a');
+  a.href = '/api/douyin/stream/' + encodeURIComponent(_awemeId);
+  a.download = '';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  setTimeout(function() {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Tải Video';
+  }, 4000);
+}
+
+// ── Enter key ────────────────────────────────────────────────────────────────
+document.getElementById('urlInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') doResolve();
+});
+</script>
+
+<script>
+(function(){
+  var mn=document.getElementById('mobileNav'),h=document.getElementById('hamburger'),nc=document.getElementById('navClose'),no=document.getElementById('navOverlay');
+  if(!h)return;
+  function o(){mn.classList.add('open');h.classList.add('open');document.body.style.overflow='hidden';}
+  function c(){mn.classList.remove('open');h.classList.remove('open');document.body.style.overflow='';}
+  h.addEventListener('click',function(){mn.classList.contains('open')?c():o();});
+  nc.addEventListener('click',c);no.addEventListener('click',c);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')c();});
+})();
+</script>
+<script src="/js/nav-mega.js"></script>
+</body>
+</html>
