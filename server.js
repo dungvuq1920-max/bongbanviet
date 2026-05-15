@@ -320,6 +320,8 @@ app.post('/api/douyin/resolve', async (req, res) => {
 
     const isGallery = !!(aweme.image_post_info || aweme.images || aweme.image_list);
     const durMs = (aweme.video || {}).duration;
+    const videoUrl = isGallery ? null : dy.extractVideoUrl(aweme);
+    const descStr = ((aweme.desc || '') + '').trim().slice(0, 80) || String(awemeId);
     res.json({
       aweme_id: String(awemeId),
       title: (aweme.desc || '').trim() || 'Untitled',
@@ -328,6 +330,8 @@ app.post('/api/douyin/resolve', async (req, res) => {
       media_type: isGallery ? 'gallery' : 'video',
       duration: durMs ? Math.floor(parseInt(durMs) / 1000) : null,
       image_urls: isGallery ? dy.collectImageUrls(aweme) : [],
+      play_url: videoUrl || null,
+      filename: descStr.replace(/[\\/:*?"<>|#\r\n]/g, '_') + '.mp4',
     });
   } catch (err) {
     res.status(500).json({ detail: err.message });
@@ -381,6 +385,33 @@ app.get('/api/douyin/stream/:aweme_id', async (req, res) => {
   }
 });
 
+// Stream any pre-resolved video URL — avoids re-fetching video details
+app.get('/api/douyin/stream-url', async (req, res) => {
+  const { url: videoUrl, filename = 'video.mp4' } = req.query;
+  if (!videoUrl || !/^https?:\/\//i.test(videoUrl))
+    return res.status(400).json({ detail: 'Invalid or missing url' });
+  try {
+    const isDouyin = /douyin\.com|byteimg\.com|pstatp\.com/i.test(videoUrl);
+    const r = await fetch(videoUrl, {
+      headers: {
+        'User-Agent': dy.DEFAULT_UA,
+        ...(isDouyin ? { 'Referer': `${dy.BASE_URL}/` } : {}),
+      },
+      redirect: 'follow',
+      signal: AbortSignal.timeout(60000),
+    });
+    if (!r.ok) return res.status(r.status).json({ detail: 'Video stream failed: ' + r.status });
+    const safeName = String(filename).replace(/[\\/:*?"<>|#\r\n]/g, '_');
+    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(safeName)}`);
+    res.setHeader('Content-Type', r.headers.get('content-type') || 'video/mp4');
+    const cl = r.headers.get('content-length');
+    if (cl) res.setHeader('Content-Length', cl);
+    _StreamReadable.fromWeb(r.body).pipe(res);
+  } catch (err) {
+    if (!res.headersSent) res.status(502).json({ detail: err.message });
+  }
+});
+
 app.post('/api/douyin/resolve-batch', async (req, res) => {
   try {
     const urls = (req.body.urls || []).map(u => (u || '').trim()).filter(Boolean).slice(0, 50);
@@ -408,6 +439,8 @@ app.post('/api/douyin/resolve-batch', async (req, res) => {
 
         const isGallery = !!(aweme.image_post_info || aweme.images || aweme.image_list);
         const durMs = (aweme.video || {}).duration;
+        const videoUrl = isGallery ? null : dy.extractVideoUrl(aweme);
+        const descStr = ((aweme.desc || '') + '').trim().slice(0, 80) || String(awemeId);
         return {
           url: rawUrl,
           video: {
@@ -418,6 +451,8 @@ app.post('/api/douyin/resolve-batch', async (req, res) => {
             media_type: isGallery ? 'gallery' : 'video',
             duration: durMs ? Math.floor(parseInt(durMs) / 1000) : null,
             image_urls: isGallery ? dy.collectImageUrls(aweme) : [],
+            play_url: videoUrl || null,
+            filename: descStr.replace(/[\\/:*?"<>|#\r\n]/g, '_') + '.mp4',
           },
         };
       } catch (err) { return { url: rawUrl, error: err.message }; }
@@ -427,6 +462,42 @@ app.post('/api/douyin/resolve-batch', async (req, res) => {
   } catch (err) {
     res.status(500).json({ detail: err.message });
   }
+});
+
+// Search Douyin/TikTok via TikWM + translate query to Chinese
+app.post('/api/douyin/search', async (req, res) => {
+  const { query, cursor = 0 } = req.body;
+  if (!query || !String(query).trim()) return res.status(400).json({ detail: 'query required' });
+  let searchTerm = String(query).trim();
+  // Translate to Chinese using free Google Translate API
+  try {
+    const tUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=zh-CN&dt=t&q=${encodeURIComponent(searchTerm)}`;
+    const tResp = await fetch(tUrl, { headers: { 'User-Agent': dy.DEFAULT_UA }, signal: AbortSignal.timeout(5000) });
+    const tData = await tResp.json();
+    const tr = (tData[0] || []).map(t => t[0]).join('');
+    if (tr && tr !== searchTerm) searchTerm = tr;
+  } catch (e) { console.error('[Search] translate error:', e.message); }
+  try {
+    const sr = await fetch(
+      `https://www.tikwm.com/api/feed/search?keywords=${encodeURIComponent(searchTerm)}&count=20&cursor=${Number(cursor) || 0}&hd=1`,
+      { headers: { 'User-Agent': dy.DEFAULT_UA, 'Referer': 'https://www.tikwm.com/' }, signal: AbortSignal.timeout(15000) }
+    );
+    const sd = await sr.json().catch(() => null);
+    if (!sd || sd.code !== 0 || !sd.data) {
+      console.error('[Search] TikWM failed:', JSON.stringify(sd)?.slice(0, 200));
+      return res.status(502).json({ detail: 'Search failed — try again later', query_original: String(query).trim(), query_translated: searchTerm });
+    }
+    const videos = (sd.data.videos || []).map(v => ({
+      aweme_id: String(v.id || ''),
+      title: v.title || 'Untitled',
+      author: (v.author || {}).nickname || '',
+      cover_url: v.cover || '',
+      duration: v.duration || 0,
+      play_url: v.play || v.wmplay || '',
+      media_type: 'video',
+    }));
+    res.json({ query_original: String(query).trim(), query_translated: searchTerm, videos, has_more: !!(sd.data.hasMore), cursor: Number(sd.data.cursor) || 0 });
+  } catch (err) { res.status(500).json({ detail: err.message }); }
 });
 
 app.post('/api/douyin/user-posts', async (req, res) => {
@@ -450,6 +521,8 @@ app.post('/api/douyin/user-posts', async (req, res) => {
     const videos = (page.items || []).filter(a => a && a.aweme_id).map(aweme => {
       const isGallery = !!(aweme.image_post_info || aweme.images || aweme.image_list);
       const durMs = (aweme.video || {}).duration;
+      const videoUrl = isGallery ? null : dy.extractVideoUrl(aweme);
+      const descStr = ((aweme.desc || '') + '').trim().slice(0, 80) || String(aweme.aweme_id);
       return {
         aweme_id: String(aweme.aweme_id),
         title: (aweme.desc || '').trim() || 'Untitled',
@@ -457,6 +530,8 @@ app.post('/api/douyin/user-posts', async (req, res) => {
         cover_url: dy.getCoverUrl(aweme),
         media_type: isGallery ? 'gallery' : 'video',
         duration: durMs ? Math.floor(parseInt(durMs) / 1000) : null,
+        play_url: videoUrl || null,
+        filename: descStr.replace(/[\\/:*?"<>|#\r\n]/g, '_') + '.mp4',
       };
     });
 
