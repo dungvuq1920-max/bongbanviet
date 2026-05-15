@@ -238,6 +238,29 @@ app.get('/api/douyin/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
+app.post('/api/douyin/debug', async (req, res) => {
+  const url = (req.body.url || '').trim();
+  if (!url) return res.status(400).json({ error: 'url required' });
+  const out = {};
+  try {
+    const r = await dy.resolveUrl(url);
+    out.resolved_url = r.url;
+    out.parsed = r.parsed;
+  } catch (e) { out.resolve_error = e.message; }
+  try {
+    const body = new URLSearchParams({ url, hd: '1' });
+    const r = await fetch('https://www.tikwm.com/api/', {
+      method: 'POST',
+      headers: { 'User-Agent': dy.DEFAULT_UA, 'Content-Type': 'application/x-www-form-urlencoded', 'Referer': 'https://www.tikwm.com/' },
+      body: body.toString(),
+      signal: AbortSignal.timeout(20000),
+    });
+    out.tikwm_status = r.status;
+    out.tikwm_data = await r.json().catch(() => null);
+  } catch (e) { out.tikwm_error = e.message; }
+  res.json(out);
+});
+
 app.post('/api/douyin/resolve', async (req, res) => {
   try {
     const url = (req.body.url || '').trim();

@@ -315,17 +315,28 @@ function extractVideoUrl(aweme) {
 
 // ── TikWM public API (works from any IP, supports Douyin + TikTok) ─────────────
 async function fetchTikwm(videoUrl) {
-  const resp = await fetch(`https://www.tikwm.com/api/?url=${encodeURIComponent(videoUrl)}&hd=1`, {
+  // Use POST — TikWM prefers POST and has more lenient rate limits than GET
+  const body = new URLSearchParams({ url: videoUrl, hd: '1' });
+  const resp = await fetch('https://www.tikwm.com/api/', {
+    method: 'POST',
     headers: {
       'User-Agent': DEFAULT_UA,
+      'Content-Type': 'application/x-www-form-urlencoded',
       'Referer': 'https://www.tikwm.com/',
       'Accept': 'application/json, */*',
     },
+    body: body.toString(),
     signal: AbortSignal.timeout(25000),
   });
-  if (!resp.ok) return null;
+  if (!resp.ok) {
+    console.error('[TikWM] HTTP', resp.status, videoUrl);
+    return null;
+  }
   const data = await resp.json().catch(() => null);
-  if (!data || data.code !== 0 || !data.data) return null;
+  if (!data || data.code !== 0 || !data.data) {
+    console.error('[TikWM] Bad response:', JSON.stringify(data)?.slice(0, 300), '| url:', videoUrl);
+    return null;
+  }
   const d = data.data;
   // Normalize to aweme-compatible shape
   const playUrls = [d.play, d.hdplay, d.wmplay].filter(Boolean);
