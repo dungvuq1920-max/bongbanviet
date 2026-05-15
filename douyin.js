@@ -358,6 +358,44 @@ async function fetchTikwm(videoUrl) {
   };
 }
 
+// ── Tiklydown fallback API ────────────────────────────────────────────────────
+async function fetchTiklydown(videoUrl) {
+  const resp = await fetch(`https://api.tiklydown.eu.org/api/download?url=${encodeURIComponent(videoUrl)}`, {
+    headers: {
+      'User-Agent': DEFAULT_UA,
+      'Accept': 'application/json',
+      'Referer': 'https://tiklydown.eu.org/',
+    },
+    signal: AbortSignal.timeout(25000),
+  });
+  if (!resp.ok) {
+    console.error('[Tiklydown] HTTP', resp.status, videoUrl);
+    return null;
+  }
+  const d = await resp.json().catch(() => null);
+  if (!d || !d.id) {
+    console.error('[Tiklydown] Bad response:', JSON.stringify(d)?.slice(0, 200), '| url:', videoUrl);
+    return null;
+  }
+  const playUrls = [d.hdplay, d.play, d.wmplay].filter(Boolean);
+  const coverUrls = [d.cover, d.origin_cover].filter(Boolean);
+  const images = Array.isArray(d.images)
+    ? d.images.map(img => ({ display_image: { url_list: [typeof img === 'string' ? img : (img.url || img)] } }))
+    : undefined;
+  return {
+    aweme_id: String(d.id),
+    desc: d.title || '',
+    video: {
+      play_addr: { url_list: playUrls },
+      origin_cover: { url_list: coverUrls },
+      cover: { url_list: coverUrls },
+      duration: (d.duration || 0) * 1000,
+    },
+    author: { nickname: (d.author || {}).nickname || '', unique_id: (d.author || {}).unique_id || '' },
+    images,
+  };
+}
+
 // ── Public API methods ────────────────────────────────────────────────────────
 async function getVideoDetail(awemeId, originalUrl) {
   // Primary: main web API (1 attempt each — fail fast if geo-blocked)
@@ -368,17 +406,28 @@ async function getVideoDetail(awemeId, originalUrl) {
       if (detail) return detail;
     } catch {}
   }
-  // Fallback: TikWM — try original URL first (short URLs work better), then constructed aweme URL
-  const tikwmUrls = [];
-  if (originalUrl) tikwmUrls.push(originalUrl);
+
   const longUrl = `${BASE_URL}/video/${awemeId}`;
-  if (!tikwmUrls.includes(longUrl)) tikwmUrls.push(longUrl);
-  for (const u of tikwmUrls) {
+  const urlsToTry = originalUrl && originalUrl !== longUrl
+    ? [originalUrl, longUrl]
+    : [longUrl];
+
+  // Fallback 1: TikWM
+  for (const u of urlsToTry) {
     try {
       const item = await fetchTikwm(u);
       if (item) return item;
     } catch {}
   }
+
+  // Fallback 2: Tiklydown
+  for (const u of urlsToTry) {
+    try {
+      const item = await fetchTiklydown(u);
+      if (item) return item;
+    } catch {}
+  }
+
   return null;
 }
 

@@ -258,6 +258,14 @@ app.post('/api/douyin/debug', async (req, res) => {
     out.tikwm_status = r.status;
     out.tikwm_data = await r.json().catch(() => null);
   } catch (e) { out.tikwm_error = e.message; }
+  try {
+    const r = await fetch(`https://api.tiklydown.eu.org/api/download?url=${encodeURIComponent(url)}`, {
+      headers: { 'User-Agent': dy.DEFAULT_UA, 'Accept': 'application/json' },
+      signal: AbortSignal.timeout(20000),
+    });
+    out.tiklydown_status = r.status;
+    out.tiklydown_data = await r.json().catch(() => null);
+  } catch (e) { out.tiklydown_error = e.message; }
   res.json(out);
 });
 
