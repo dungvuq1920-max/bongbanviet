@@ -11,7 +11,7 @@ const logger   = require('./logger');
 
 const PAGE_ID      = process.env.FACEBOOK_PAGE_ID;
 const ACCESS_TOKEN = process.env.FACEBOOK_PAGE_ACCESS_TOKEN;
-const GRAPH_VER    = process.env.FACEBOOK_GRAPH_VERSION || 'v19.0';
+const GRAPH_VER    = process.env.FACEBOOK_GRAPH_VERSION || 'v24.0';
 const BASE_URL     = `https://graph.facebook.com/${GRAPH_VER}`;
 
 // Retry config

@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Facebook Workflow | BongBanViet</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --red:#D62B2B;
+      --ink:#111827;
+      --muted:#6B7280;
+      --line:#E5E7EB;
+      --bg:#F4F6F8;
+      --panel:#FFFFFF;
+      --green:#059669;
+      --amber:#D97706;
+      --blue:#2563EB;
+      --rose:#BE123C;
+    }
+    * { box-sizing:border-box; }
+    body {
+      margin:0;
+      font-family:"Be Vietnam Pro", system-ui, sans-serif;
+      color:var(--ink);
+      background:var(--bg);
+      min-height:100vh;
+    }
+    button, input, select, textarea { font:inherit; }
+    button { cursor:pointer; }
+    a { color:inherit; text-decoration:none; }
+    .layout { min-height:100vh; display:grid; grid-template-columns:260px 1fr; }
+    .side {
+      background:#111827;
+      color:#fff;
+      padding:22px 18px;
+      display:flex;
+      flex-direction:column;
+      gap:22px;
+      position:sticky;
+      top:0;
+      height:100vh;
+    }
+    .brand { display:flex; gap:12px; align-items:center; padding-bottom:18px; border-bottom:1px solid rgba(255,255,255,.1); }
+    .brand img { width:44px; height:44px; object-fit:contain; border-radius:50%; background:#fff; }
+    .brand b { display:block; font-size:15px; letter-spacing:.04em; }
+    .brand span { display:block; margin-top:3px; color:rgba(255,255,255,.5); font-size:11px; }
+    .nav { display:flex; flex-direction:column; gap:6px; }
+    .nav a, .nav button {
+      width:100%;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color:rgba(255,255,255,.72);
+      background:transparent;
+      border:0;
+      padding:10px 12px;
+      text-align:left;
+      border-radius:6px;
+      font-size:13px;
+      font-weight:600;
+    }
+    .nav a.active { background:var(--red); color:#fff; }
+    .side-footer { margin-top:auto; display:grid; gap:8px; color:rgba(255,255,255,.55); font-size:12px; }
+    .main { min-width:0; }
+    .top {
+      height:68px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 28px;
+      background:#fff;
+      border-bottom:1px solid var(--line);
+      position:sticky;
+      top:0;
+      z-index:5;
+    }
+    .top h1 { margin:0; font-size:20px; letter-spacing:-.01em; }
+    .top-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+    .content { padding:24px 28px 40px; }
+    .stats { display:grid; grid-template-columns:repeat(6, minmax(120px, 1fr)); gap:12px; margin-bottom:16px; }
+    .stat {
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:8px;
+      padding:14px;
+      min-width:0;
+    }
+    .stat strong { display:block; font-size:28px; line-height:1; }
+    .stat span { display:block; margin-top:7px; color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.08em; font-weight:700; }
+    .panel {
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:8px;
+      padding:16px;
+      margin-bottom:18px;
+    }
+    .controls {
+      display:grid;
+      grid-template-columns:repeat(10, minmax(0, 1fr));
+      gap:10px;
+      align-items:end;
+    }
+    .field { display:grid; gap:6px; min-width:0; }
+    .field label { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.08em; font-weight:800; }
+    .field input, .field select, .field textarea {
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:6px;
+      background:#fff;
+      padding:10px 11px;
+      color:var(--ink);
+      outline:none;
+    }
+    .field textarea { min-height:110px; resize:vertical; line-height:1.5; }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color:var(--red); box-shadow:0 0 0 3px rgba(214,43,43,.08); }
+    .span-2 { grid-column:span 2; }
+    .span-3 { grid-column:span 3; }
+    .span-4 { grid-column:span 4; }
+    .span-5 { grid-column:span 5; }
+    .span-10 { grid-column:span 10; }
+    .btn {
+      border:1px solid var(--line);
+      border-radius:6px;
+      min-height:40px;
+      padding:9px 13px;
+      background:#fff;
+      color:var(--ink);
+      font-size:12px;
+      font-weight:800;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      white-space:nowrap;
+    }
+    .btn svg { width:16px; height:16px; }
+    .btn.primary { background:var(--red); border-color:var(--red); color:#fff; }
+    .btn.dark { background:#111827; border-color:#111827; color:#fff; }
+    .btn.green { background:var(--green); border-color:var(--green); color:#fff; }
+    .btn.blue { background:var(--blue); border-color:var(--blue); color:#fff; }
+    .btn.amber { background:#FFF7ED; border-color:#FED7AA; color:#9A3412; }
+    .btn.danger { background:#FFF1F2; border-color:#FFE4E6; color:#BE123C; }
+    .btn:disabled { opacity:.55; cursor:not-allowed; }
+    .toggle {
+      display:flex;
+      align-items:center;
+      gap:9px;
+      min-height:40px;
+      padding:8px 10px;
+      border:1px solid var(--line);
+      border-radius:6px;
+      background:#fff;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:700;
+    }
+    .toggle input { width:17px; height:17px; accent-color:var(--red); }
+    .bar { display:flex; justify-content:space-between; align-items:center; gap:12px; margin:16px 0; flex-wrap:wrap; }
+    .bar-left, .bar-right { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .grid { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:14px; }
+    .post {
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:8px;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      min-height:430px;
+    }
+    .post-media {
+      height:168px;
+      background:#111827;
+      position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+    }
+    .post-media img { width:100%; height:100%; object-fit:cover; display:block; }
+    .media-empty {
+      color:rgba(255,255,255,.7);
+      text-align:center;
+      padding:18px;
+      font-size:13px;
+      line-height:1.5;
+    }
+    .select-box { position:absolute; top:10px; left:10px; width:20px; height:20px; accent-color:var(--red); z-index:2; }
+    .chip {
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+      border-radius:999px;
+      padding:4px 8px;
+      font-size:10px;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.05em;
+      background:#F3F4F6;
+      color:#374151;
+    }
+    .chip.idea { background:#EEF2FF; color:#3730A3; }
+    .chip.draft { background:#FFFBEB; color:#92400E; }
+    .chip.approved { background:#ECFDF5; color:#047857; }
+    .chip.scheduled { background:#EFF6FF; color:#1D4ED8; }
+    .chip.failed { background:#FFF1F2; color:#BE123C; }
+    .post-body { padding:14px; display:flex; flex-direction:column; gap:10px; flex:1; }
+    .post-meta { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .post h2 { margin:0; font-size:15px; line-height:1.35; min-height:42px; }
+    .line { color:var(--muted); font-size:12px; line-height:1.45; }
+    .caption {
+      border-top:1px solid var(--line);
+      padding-top:10px;
+      color:#374151;
+      font-size:12px;
+      line-height:1.55;
+      max-height:96px;
+      overflow:hidden;
+      white-space:pre-line;
+    }
+    .hashtags {
+      color:var(--blue);
+      font-size:11px;
+      line-height:1.5;
+      max-height:38px;
+      overflow:hidden;
+    }
+    .post-actions {
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:7px;
+      margin-top:auto;
+    }
+    .post-actions .btn { min-height:34px; padding:7px; font-size:11px; }
+    .empty {
+      background:#fff;
+      border:1px dashed #CBD5E1;
+      border-radius:8px;
+      padding:44px 24px;
+      text-align:center;
+      color:var(--muted);
+    }
+    .login {
+      position:fixed;
+      inset:0;
+      background:#111827;
+      z-index:50;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+    }
+    .login.hidden { display:none; }
+    .login-box {
+      width:380px;
+      max-width:100%;
+      background:#1F2937;
+      color:#fff;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:8px;
+      padding:28px;
+    }
+    .login-box img { width:60px; height:60px; object-fit:contain; border-radius:50%; background:#fff; display:block; margin:0 auto 16px; }
+    .login-box h2 { margin:0 0 6px; text-align:center; font-size:18px; }
+    .login-box p { margin:0 0 20px; text-align:center; color:rgba(255,255,255,.55); font-size:12px; }
+    .login-box input {
+      width:100%;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);
+      color:#fff;
+      border-radius:6px;
+      padding:12px;
+      outline:none;
+    }
+    .login-error { color:#FCA5A5; min-height:18px; font-size:12px; margin-top:10px; text-align:center; }
+    .modal {
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      background:rgba(17,24,39,.62);
+      z-index:40;
+      padding:22px;
+    }
+    .modal.open { display:flex; }
+    .modal-box {
+      width:min(1040px, 96vw);
+      max-height:90vh;
+      overflow:auto;
+      background:#fff;
+      border-radius:8px;
+      border:1px solid var(--line);
+    }
+    .modal-head {
+      height:58px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 18px;
+      border-bottom:1px solid var(--line);
+      position:sticky;
+      top:0;
+      background:#fff;
+      z-index:2;
+    }
+    .modal-head h3 { margin:0; font-size:16px; }
+    .modal-body { padding:18px; }
+    .toast {
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      z-index:60;
+      background:#111827;
+      color:#fff;
+      border-radius:8px;
+      padding:12px 14px;
+      max-width:420px;
+      box-shadow:0 18px 50px rgba(0,0,0,.22);
+      display:none;
+      font-size:13px;
+      line-height:1.5;
+    }
+    .toast.show { display:block; }
+    @media (max-width:1200px) {
+      .layout { grid-template-columns:1fr; }
+      .side { position:static; height:auto; flex-direction:row; align-items:center; overflow:auto; }
+      .nav { flex-direction:row; }
+      .side-footer { display:none; }
+      .stats { grid-template-columns:repeat(3, 1fr); }
+      .grid { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+      .controls { grid-template-columns:repeat(6, minmax(0, 1fr)); }
+      .span-3, .span-4, .span-5 { grid-column:span 3; }
+      .span-10 { grid-column:span 6; }
+    }
+    @media (max-width:760px) {
+      .top { height:auto; padding:16px; align-items:flex-start; flex-direction:column; }
+      .content { padding:16px; }
+      .stats, .grid { grid-template-columns:1fr; }
+      .controls { grid-template-columns:1fr; }
+      .span-2, .span-3, .span-4, .span-5, .span-10 { grid-column:span 1; }
+      .bar { align-items:stretch; }
+      .bar-left, .bar-right { width:100%; }
+      .bar .btn, .bar select, .bar input { flex:1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="login" id="login">
+    <div class="login-box">
+      <img src="/logo_bongbanviet.png" alt="BongBanViet">
+      <h2>Facebook Workflow</h2>
+      <p>BongBanViet Admin</p>
+      <input type="password" id="loginPass" placeholder="Mật khẩu admin" autocomplete="current-password">
+      <button class="btn primary" id="loginBtn" style="width:100%;margin-top:12px;"><i data-lucide="log-in"></i> Đăng nhập</button>
+      <div class="login-error" id="loginErr"></div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <aside class="side">
+      <div class="brand">
+        <img src="/logo_bongbanviet.png" alt="BongBanViet">
+        <div><b>BONGBANVIET</b><span>Facebook Dashboard</span></div>
+      </div>
+      <nav class="nav">
+        <a href="/facebook" class="active"><i data-lucide="layout-dashboard"></i> Workflow</a>
+        <a href="/admin.html"><i data-lucide="package"></i> Admin</a>
+        <a href="/index.html" target="_blank"><i data-lucide="globe"></i> Website</a>
+        <button id="logoutBtn"><i data-lucide="log-out"></i> Đăng xuất</button>
+      </nav>
+      <div class="side-footer">
+        <span id="cfgState">Đang tải cấu hình...</span>
+        <span>Page: facebook.com/bongbanviet.official</span>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="top">
+        <div>
+          <h1>Facebook Content Workflow</h1>
+          <div class="line" id="subtitle">Lịch nội dung, nguồn, visual và đăng tự động</div>
+        </div>
+        <div class="top-actions">
+          <button class="btn" id="verifyBtn"><i data-lucide="badge-check"></i> Kiểm tra token</button>
+          <button class="btn primary" id="newBtn"><i data-lucide="plus"></i> Thêm bài</button>
+        </div>
+      </header>
+
+      <section class="content">
+        <div class="stats">
+          <div class="stat"><strong id="sTotal">0</strong><span>Tổng bài</span></div>
+          <div class="stat"><strong id="sIdea">0</strong><span>Idea</span></div>
+          <div class="stat"><strong id="sDraft">0</strong><span>Draft</span></div>
+          <div class="stat"><strong id="sApproved">0</strong><span>Approved</span></div>
+          <div class="stat"><strong id="sScheduled">0</strong><span>Scheduled</span></div>
+          <div class="stat"><strong id="sFailed">0</strong><span>Failed</span></div>
+        </div>
+
+        <section class="panel">
+          <div class="controls">
+            <div class="field span-2">
+              <label>Ngày bắt đầu</label>
+              <input type="date" id="startDate">
+            </div>
+            <div class="field">
+              <label>Số ngày</label>
+              <input type="number" id="days" min="1" max="30" value="7">
+            </div>
+            <div class="field">
+              <label>Bài/ngày</label>
+              <select id="postsPerDay">
+                <option value="3">3 bài</option>
+                <option value="4">4 bài</option>
+                <option value="5">5 bài</option>
+                <option value="6">6 bài</option>
+              </select>
+            </div>
+            <label class="toggle span-2"><input type="checkbox" id="autoApprove"> Tự duyệt sau khi tạo</label>
+            <label class="toggle span-2"><input type="checkbox" id="autoScheduler"> Auto schedule</label>
+            <button class="btn primary span-2" id="collectBtn"><i data-lucide="database-zap"></i> Thu thập topic</button>
+          </div>
+        </section>
+
+        <div class="bar">
+          <div class="bar-left">
+            <select class="btn" id="statusFilter">
+              <option value="all">Tất cả trạng thái</option>
+              <option value="idea">Idea</option>
+              <option value="draft">Draft</option>
+              <option value="approved">Approved</option>
+              <option value="scheduled">Scheduled</option>
+              <option value="failed">Failed</option>
+            </select>
+            <select class="btn" id="pillarFilter">
+              <option value="all">Tất cả pillar</option>
+              <option value="knowledge">Kiến thức</option>
+              <option value="product">Sản phẩm</option>
+              <option value="combo">Combo</option>
+              <option value="news">Tin tức</option>
+              <option value="engagement">Tương tác</option>
+              <option value="promo">Promo</option>
+            </select>
+            <input class="btn" id="searchBox" placeholder="Tìm topic..." style="justify-content:flex-start;min-width:220px;">
+          </div>
+          <div class="bar-right">
+            <button class="btn" id="refreshBtn"><i data-lucide="refresh-cw"></i> Tải lại</button>
+            <button class="btn blue" id="genBtn"><i data-lucide="wand-sparkles"></i> Tạo caption</button>
+            <button class="btn amber" id="imgBtn"><i data-lucide="image-plus"></i> Tạo ảnh</button>
+            <button class="btn green" id="approveBtn"><i data-lucide="check"></i> Duyệt</button>
+            <button class="btn dark" id="scheduleBtn"><i data-lucide="send"></i> Schedule</button>
+          </div>
+        </div>
+
+        <div class="grid" id="postGrid"></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal" id="editModal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3 id="modalTitle">Chỉnh bài</h3>
+        <button class="btn" id="closeModal"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="controls">
+          <input type="hidden" id="editId">
+          <div class="field span-5"><label>Topic</label><input id="editTopic"></div>
+          <div class="field span-2"><label>Pillar</label><select id="editPillar">
+            <option value="knowledge">Kiến thức</option><option value="product">Sản phẩm</option>
+            <option value="combo">Combo</option><option value="news">Tin tức</option>
+            <option value="engagement">Tương tác</option><option value="promo">Promo</option>
+          </select></div>
+          <div class="field span-2"><label>Status</label><select id="editStatus">
+            <option value="idea">Idea</option><option value="draft">Draft</option><option value="approved">Approved</option>
+            <option value="scheduled">Scheduled</option><option value="failed">Failed</option>
+          </select></div>
+          <div class="field"><label>Giờ đăng</label><input id="editTime" type="datetime-local"></div>
+          <div class="field span-5"><label>Link website</label><input id="editLink"></div>
+          <div class="field span-5"><label>Ảnh</label><input id="editImage"></div>
+          <div class="field span-10"><label>Fact summary</label><textarea id="editFacts"></textarea></div>
+          <div class="field span-10"><label>Caption</label><textarea id="editCaption"></textarea></div>
+          <div class="field span-10"><label>Hashtag</label><textarea id="editTags"></textarea></div>
+          <div class="field span-10"><label>Nguồn JSON</label><textarea id="editSources"></textarea></div>
+          <div class="field span-10"><label>Image prompt</label><textarea id="editPrompt"></textarea></div>
+          <div class="span-10" style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;">
+            <button class="btn" id="modalGenerate"><i data-lucide="wand-sparkles"></i> Tạo caption</button>
+            <button class="btn amber" id="modalImage"><i data-lucide="image-plus"></i> Tạo ảnh</button>
+            <button class="btn primary" id="saveEdit"><i data-lucide="save"></i> Lưu</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const state = { posts: [], selected: new Set(), cfg: null };
+
+    function toast(msg) {
+      const el = $('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => el.classList.remove('show'), 3600);
+    }
+
+    const rawFetch = window.fetch.bind(window);
+    async function api(url, opts = {}) {
+      const token = sessionStorage.getItem('adminToken');
+      opts.headers = Object.assign({ 'Content-Type': 'application/json' }, opts.headers || {});
+      if (token) opts.headers['x-admin-token'] = token;
+      const res = await rawFetch(url, opts);
+      if (res.status === 401) {
+        sessionStorage.removeItem('adminToken');
+        $('login').classList.remove('hidden');
+        throw new Error('Chưa đăng nhập');
+      }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || data.message || `HTTP ${res.status}`);
+      return data;
+    }
+
+    function todayVn() {
+      const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit'
+      }).formatToParts(new Date()).reduce((a, p) => (a[p.type] = p.value, a), {});
+      return `${parts.year}-${parts.month}-${parts.day}`;
+    }
+
+    function dateTimeForInput(value) {
+      if (!value) return '';
+      return String(value).replace(' ', 'T').slice(0, 16);
+    }
+
+    function fromDateTimeInput(value) {
+      return value ? value.replace('T', ' ') + (value.length === 16 ? ':00' : '') : '';
+    }
+
+    function statusLabel(status) {
+      return {
+        idea:'Idea', draft:'Draft', approved:'Approved', scheduled:'Scheduled', failed:'Failed'
+      }[status] || status || 'Unknown';
+    }
+
+    function pillarLabel(pillar) {
+      return {
+        knowledge:'Kiến thức', product:'Sản phẩm', combo:'Combo', news:'Tin tức', engagement:'Tương tác', promo:'Promo'
+      }[pillar] || pillar || 'Khác';
+    }
+
+    function esc(s) {
+      return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    function selectedIds() {
+      return [...state.selected];
+    }
+
+    function renderStats(stats) {
+      $('sTotal').textContent = stats.total || 0;
+      $('sIdea').textContent = stats.idea || 0;
+      $('sDraft').textContent = stats.draft || 0;
+      $('sApproved').textContent = stats.approved || 0;
+      $('sScheduled').textContent = stats.scheduled || 0;
+      $('sFailed').textContent = stats.failed || 0;
+    }
+
+    function renderConfig() {
+      const cfg = state.cfg || {};
+      $('days').value = cfg.defaultDays || 7;
+      $('postsPerDay').value = cfg.dailyPostCount || 4;
+      $('autoApprove').checked = !!cfg.autoApproveGenerated;
+      $('autoScheduler').checked = !!cfg.autoSchedulerEnabled;
+      $('cfgState').textContent = `AI: ${(cfg.aiProviders || []).join(', ') || 'chưa cấu hình'} | FB: ${cfg.pageIdConfigured && cfg.pageTokenConfigured ? 'đã cấu hình' : 'thiếu token'}`;
+    }
+
+    function renderPosts() {
+      const grid = $('postGrid');
+      if (!state.posts.length) {
+        grid.innerHTML = '<div class="empty" style="grid-column:1/-1;">Chưa có bài nào trong bộ lọc hiện tại.</div>';
+        return;
+      }
+      grid.innerHTML = state.posts.map(p => {
+        const img = p.image_path ? `<img src="${esc(p.image_path)}" alt="${esc(p.topic)}">` : `<div class="media-empty">Chưa có ảnh<br>${p.image_prompt ? 'Đã có prompt visual' : 'Có thể tạo infographic'}</div>`;
+        const sources = Array.isArray(p.source_urls) ? p.source_urls.length : 0;
+        return `<article class="post">
+          <div class="post-media">
+            <input class="select-box" type="checkbox" data-select="${esc(p.id)}" ${state.selected.has(p.id) ? 'checked' : ''}>
+            ${img}
+          </div>
+          <div class="post-body">
+            <div class="post-meta"><span class="chip ${esc(p.status)}">${statusLabel(p.status)}</span><span class="chip">${pillarLabel(p.pillar)}</span></div>
+            <h2>${esc(p.topic)}</h2>
+            <div class="line">${esc(p.scheduled_time || 'Chưa có lịch')} · ${sources} nguồn</div>
+            <div class="line">${p.website_link ? `<a href="${esc(p.website_link)}" target="_blank">${esc(p.website_link)}</a>` : 'Chưa có link web'}</div>
+            <div class="caption">${esc(p.caption || p.fact_summary || 'Chưa tạo caption')}</div>
+            <div class="hashtags">${esc(p.hashtags || '')}</div>
+            ${p.error_message ? `<div class="line" style="color:#BE123C">${esc(p.error_message)}</div>` : ''}
+            <div class="post-actions">
+              <button class="btn" data-edit="${esc(p.id)}"><i data-lucide="pen-line"></i> Sửa</button>
+              <button class="btn amber" data-image="${esc(p.id)}"><i data-lucide="image-plus"></i> Ảnh</button>
+              <button class="btn blue" data-generate="${esc(p.id)}"><i data-lucide="wand-sparkles"></i> AI</button>
+              <button class="btn green" data-approve="${esc(p.id)}"><i data-lucide="check"></i> Duyệt</button>
+              <button class="btn dark" data-schedule="${esc(p.id)}"><i data-lucide="send"></i> Đăng</button>
+              <button class="btn danger" data-delete="${esc(p.id)}"><i data-lucide="trash-2"></i> Xóa</button>
+            </div>
+          </div>
+        </article>`;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    async function loadAll() {
+      const q = new URLSearchParams({
+        status: $('statusFilter').value,
+        pillar: $('pillarFilter').value,
+        q: $('searchBox').value.trim(),
+        limit: '400'
+      });
+      const [cfg, stats, posts] = await Promise.all([
+        api('/api/facebook/config'),
+        api('/api/facebook/stats'),
+        api('/api/facebook/posts?' + q.toString())
+      ]);
+      state.cfg = cfg;
+      state.posts = posts;
+      renderConfig();
+      renderStats(stats);
+      renderPosts();
+    }
+
+    async function saveConfig() {
+      state.cfg = await api('/api/facebook/config', {
+        method:'PUT',
+        body: JSON.stringify({
+          dailyPostCount: $('postsPerDay').value,
+          defaultDays: $('days').value,
+          autoApproveGenerated: $('autoApprove').checked,
+          autoSchedulerEnabled: $('autoScheduler').checked
+        })
+      });
+      renderConfig();
+    }
+
+    async function bulk(endpoint, body = {}, message = 'Đã xử lý') {
+      const ids = selectedIds();
+      await api(endpoint, { method:'POST', body: JSON.stringify(Object.assign({ ids }, body)) });
+      toast(message);
+      await loadAll();
+    }
+
+    function openEditor(post = null) {
+      $('editId').value = post?.id || '';
+      $('editTopic').value = post?.topic || '';
+      $('editPillar').value = post?.pillar || 'knowledge';
+      $('editStatus').value = post?.status || 'idea';
+      $('editTime').value = dateTimeForInput(post?.scheduled_time || '');
+      $('editLink').value = post?.website_link || '';
+      $('editImage').value = post?.image_path || '';
+      $('editFacts').value = post?.fact_summary || '';
+      $('editCaption').value = post?.caption || '';
+      $('editTags').value = post?.hashtags || '';
+      $('editPrompt').value = post?.image_prompt || '';
+      $('editSources').value = JSON.stringify(post?.source_urls || [], null, 2);
+      $('modalTitle').textContent = post ? 'Chỉnh bài' : 'Thêm bài mới';
+      $('editModal').classList.add('open');
+      lucide.createIcons();
+    }
+
+    async function saveEditor() {
+      let sourceUrls = [];
+      try { sourceUrls = JSON.parse($('editSources').value || '[]'); } catch { throw new Error('Nguồn JSON không hợp lệ'); }
+      const payload = {
+        topic: $('editTopic').value.trim(),
+        pillar: $('editPillar').value,
+        status: $('editStatus').value,
+        scheduled_time: fromDateTimeInput($('editTime').value),
+        website_link: $('editLink').value.trim(),
+        image_path: $('editImage').value.trim(),
+        fact_summary: $('editFacts').value,
+        caption: $('editCaption').value,
+        hashtags: $('editTags').value,
+        image_prompt: $('editPrompt').value,
+        source_urls: sourceUrls
+      };
+      const id = $('editId').value;
+      if (id) {
+        await api('/api/facebook/posts/' + encodeURIComponent(id), { method:'PUT', body: JSON.stringify(payload) });
+      } else {
+        await api('/api/facebook/posts', { method:'POST', body: JSON.stringify(payload) });
+      }
+      $('editModal').classList.remove('open');
+      toast('Đã lưu bài');
+      await loadAll();
+    }
+
+    async function login() {
+      $('loginErr').textContent = '';
+      try {
+        const data = await rawFetch('/api/admin/login', {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json' },
+          body: JSON.stringify({ password: $('loginPass').value })
+        }).then(r => r.json().then(d => ({ ok:r.ok, data:d })));
+        if (!data.ok) throw new Error(data.data.error || 'Sai mật khẩu');
+        sessionStorage.setItem('adminToken', data.data.token);
+        $('login').classList.add('hidden');
+        await loadAll();
+      } catch (e) {
+        $('loginErr').textContent = e.message;
+      }
+    }
+
+    async function verifySession() {
+      const token = sessionStorage.getItem('adminToken');
+      $('startDate').value = todayVn();
+      if (!token) return;
+      try {
+        const res = await rawFetch('/api/admin/verify', { headers:{ 'x-admin-token':token } });
+        if (!res.ok) throw new Error('expired');
+        $('login').classList.add('hidden');
+        await loadAll();
+      } catch {
+        sessionStorage.removeItem('adminToken');
+      }
+    }
+
+    document.addEventListener('click', async (e) => {
+      const btn = e.target.closest('button');
+      const checkbox = e.target.closest('[data-select]');
+      if (checkbox) {
+        const id = checkbox.dataset.select;
+        checkbox.checked ? state.selected.add(id) : state.selected.delete(id);
+        return;
+      }
+      if (!btn) return;
+      try {
+        if (btn.id === 'loginBtn') return login();
+        if (btn.id === 'logoutBtn') {
+          sessionStorage.removeItem('adminToken');
+          $('login').classList.remove('hidden');
+          return;
+        }
+        if (btn.id === 'refreshBtn') return loadAll();
+        if (btn.id === 'newBtn') return openEditor();
+        if (btn.id === 'closeModal') return $('editModal').classList.remove('open');
+        if (btn.id === 'saveEdit') return saveEditor();
+        if (btn.id === 'collectBtn') {
+          await saveConfig();
+          const data = await api('/api/facebook/collect', {
+            method:'POST',
+            body: JSON.stringify({
+              startDate: $('startDate').value,
+              days: $('days').value,
+              postsPerDay: $('postsPerDay').value
+            })
+          });
+          toast(`Đã thu thập ${data.created} topic`);
+          return loadAll();
+        }
+        if (btn.id === 'genBtn') return bulk('/api/facebook/generate', { count: 12, autoApprove: $('autoApprove').checked }, 'Đã tạo caption');
+        if (btn.id === 'imgBtn') return bulk('/api/facebook/images', { count: 12 }, 'Đã tạo ảnh');
+        if (btn.id === 'approveBtn') return bulk('/api/facebook/approve', {}, 'Đã duyệt bài');
+        if (btn.id === 'scheduleBtn') return bulk('/api/facebook/schedule', {}, 'Đã gửi lịch đăng');
+        if (btn.id === 'verifyBtn') {
+          const data = await api('/api/facebook/verify-token', { method:'POST', body:'{}' });
+          return toast(data.valid ? `Token hợp lệ: ${data.page?.name || data.page?.id || ''}` : `Token lỗi: ${data.error}`);
+        }
+        if (btn.id === 'modalGenerate') return bulk('/api/facebook/generate', { ids: [$('editId').value], autoApprove:false }, 'Đã tạo caption');
+        if (btn.id === 'modalImage') return bulk('/api/facebook/images', { ids: [$('editId').value], force:true }, 'Đã tạo ảnh');
+        const id = btn.dataset.edit || btn.dataset.generate || btn.dataset.image || btn.dataset.approve || btn.dataset.schedule || btn.dataset.delete;
+        if (!id) return;
+        if (btn.dataset.edit) return openEditor(state.posts.find(p => p.id === id));
+        if (btn.dataset.generate) return bulk('/api/facebook/generate', { ids:[id], autoApprove:false }, 'Đã tạo caption');
+        if (btn.dataset.image) return bulk('/api/facebook/images', { ids:[id], force:true }, 'Đã tạo ảnh');
+        if (btn.dataset.approve) return bulk('/api/facebook/approve', { ids:[id] }, 'Đã duyệt bài');
+        if (btn.dataset.schedule) return bulk('/api/facebook/schedule', { ids:[id] }, 'Đã gửi lịch đăng');
+        if (btn.dataset.delete && confirm('Xóa bài này?')) {
+          await api('/api/facebook/posts/' + encodeURIComponent(id), { method:'DELETE' });
+          state.selected.delete(id);
+          toast('Đã xóa bài');
+          return loadAll();
+        }
+      } catch (err) {
+        toast(err.message);
+      }
+    });
+
+    ['statusFilter','pillarFilter'].forEach(id => $(id).addEventListener('change', () => loadAll().catch(e => toast(e.message))));
+    $('searchBox').addEventListener('input', () => {
+      clearTimeout(window.__searchTimer);
+      window.__searchTimer = setTimeout(() => loadAll().catch(e => toast(e.message)), 250);
+    });
+    ['postsPerDay','days','autoApprove','autoScheduler'].forEach(id => $(id).addEventListener('change', () => saveConfig().catch(e => toast(e.message))));
+    $('loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+    $('editModal').addEventListener('click', e => { if (e.target.id === 'editModal') $('editModal').classList.remove('open'); });
+
+    lucide.createIcons();
+    verifySession();
+  </script>
+</body>
+</html>

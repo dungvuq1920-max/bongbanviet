@@ -207,6 +207,7 @@ app.post('/api/lichtap', (req, res) => {
 // Serve uploaded images from persistent volume first
 app.use('/images/products', express.static(path.join(DATA_DIR, 'images', 'products')));
 app.use('/images/banners', express.static(path.join(DATA_DIR, 'images', 'banners')));
+app.use('/images/facebook', express.static(path.join(DATA_DIR, 'images', 'facebook')));
 // Serve lichtap React app — inject Firebase runtime config from Railway env vars
 app.get(['/lichtap', '/lichtap/'], (req, res) => {
   const indexPath = path.join(__dirname, 'lichtap', 'index.html');
@@ -890,6 +891,561 @@ function productRow(row) {
 
 function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+// ─── Facebook Content Workflow ───────────────────────────────────────────────
+
+const FACEBOOK_SITE_URL = (process.env.SITE_URL || process.env.PUBLIC_SITE_URL || 'https://bongbanviet.com').replace(/\/+$/, '');
+const FACEBOOK_IMAGE_DIR = path.join(DATA_DIR, 'images', 'facebook');
+fs.mkdirSync(FACEBOOK_IMAGE_DIR, { recursive: true });
+
+const FACEBOOK_PILLARS = {
+  knowledge:  { label: 'Kiến thức kỹ thuật',    voice: 'chuyên gia ân cần, thực chiến' },
+  product:    { label: 'Sản phẩm & review',     voice: 'chuyên nghiệp, đáng tin cậy' },
+  combo:      { label: 'Combo & tư vấn chọn đồ', voice: 'gần gũi, tư vấn đúng trình độ' },
+  news:       { label: 'Tin tức & cộng đồng',   voice: 'cập nhật, khách quan' },
+  engagement: { label: 'Tương tác cộng đồng',   voice: 'thân thiện, gợi mở bình luận' },
+  promo:      { label: 'Bán hàng mềm',          voice: 'rõ lợi ích, không thúc ép quá đà' },
+};
+
+const FACEBOOK_DAILY_TIMES = [
+  { time: '07:30:00', pillar: 'knowledge' },
+  { time: '10:30:00', pillar: 'combo' },
+  { time: '12:30:00', pillar: 'product' },
+  { time: '15:30:00', pillar: 'engagement' },
+  { time: '19:30:00', pillar: 'knowledge' },
+  { time: '21:30:00', pillar: 'engagement' },
+];
+
+const FACEBOOK_SOURCE_LIBRARY = [
+  {
+    name: 'ITTF Documents / Statutes',
+    type: 'official',
+    url: 'https://documents.ittf.sport/document?field_document_category_target_id=1245&field_document_type_target_id=All&field_place_value=&items_per_page=50&order=name_1&sort=desc',
+    useFor: ['luật thi đấu', 'quy định kỹ thuật', 'thiết bị hợp lệ'],
+  },
+  {
+    name: 'ITTF Equipment',
+    type: 'official',
+    url: 'https://equipment.ittf.com/',
+    useFor: ['mặt vợt hợp lệ', 'bóng', 'bàn', 'lưới', 'sàn thi đấu'],
+  },
+  {
+    name: 'World Table Tennis',
+    type: 'official',
+    url: 'https://www.worldtabletennis.com/',
+    useFor: ['tin WTT', 'lịch giải', 'ranking', 'VĐV quốc tế'],
+  },
+  {
+    name: 'ITTF Education',
+    type: 'official',
+    url: 'https://www.ittfeducation.com/',
+    useFor: ['coaching', 'kỹ thuật', 'tập luyện'],
+  },
+  {
+    name: 'Butterfly Global',
+    type: 'brand',
+    url: 'https://www.butterfly-global.com/en/products/',
+    useFor: ['thông số Butterfly', 'mặt vợt', 'cốt vợt'],
+  },
+  {
+    name: 'TIBHAR Official',
+    type: 'brand',
+    url: 'https://tibhar.info/en/',
+    useFor: ['thông số Tibhar', 'mặt vợt', 'cốt vợt'],
+  },
+  {
+    name: 'DHS Official',
+    type: 'brand',
+    url: 'https://dhs-tt.com/',
+    useFor: ['thông số DHS', 'mặt vợt', 'cốt vợt', 'bóng'],
+  },
+  {
+    name: 'Yinhe USA',
+    type: 'brand',
+    url: 'https://yinheusa.com/shop/',
+    useFor: ['thông số Yinhe/Galaxy', 'review sản phẩm'],
+  },
+  {
+    name: 'Báo Nhân Dân - Bóng bàn quốc gia',
+    type: 'vietnam',
+    url: 'https://nhandan.vn/chu-de/giai-bong-ban-quoc-gia-bao-nhan-dan-latest-704471.html',
+    useFor: ['giải vô địch quốc gia', 'VĐV Việt Nam'],
+  },
+  {
+    name: 'SGGP Thể thao',
+    type: 'vietnam',
+    url: 'https://thethao.sggp.org.vn/',
+    useFor: ['bóng bàn Việt Nam', 'lịch giải', 'đội tuyển'],
+  },
+  {
+    name: 'TableTennisDaily Forum',
+    type: 'forum',
+    url: 'https://www.tabletennisdaily.com/forum/',
+    useFor: ['review thực tế', 'câu hỏi cộng đồng', 'thiết bị'],
+  },
+  {
+    name: 'MyTableTennis.NET Forum',
+    type: 'forum',
+    url: 'https://mytabletennis.net/forum/forum.asp',
+    useFor: ['kinh nghiệm thiết bị', 'setup người chơi phong trào'],
+  },
+  {
+    name: 'OOAK Table Tennis Forum',
+    type: 'forum',
+    url: 'https://ooakforum.com/',
+    useFor: ['gai dài', 'anti-spin', 'defender', 'lối chơi đặc thù'],
+  },
+  {
+    name: 'Reddit r/tabletennis',
+    type: 'forum',
+    url: 'https://www.reddit.com/r/tabletennis/',
+    useFor: ['câu hỏi người mới', 'poll', 'insight cộng đồng'],
+  },
+  {
+    name: 'PingSkills Forum',
+    type: 'forum',
+    url: 'https://www.pingskills.com/table-tennis-forum/topic/equipment',
+    useFor: ['hỏi đáp kỹ thuật', 'tư vấn thiết bị cơ bản'],
+  },
+  {
+    name: 'EmRatThich Forum',
+    type: 'forum',
+    url: 'https://emratthich.com/',
+    useFor: ['coaching', 'DHS/H3', 'thiết bị Trung Quốc'],
+  },
+];
+
+const FACEBOOK_BRAND_SOURCES = {
+  butterfly: 'https://www.butterfly-global.com/en/products/',
+  tibhar: 'https://tibhar.info/en/',
+  dhs: 'https://dhs-tt.com/',
+  yinhe: 'https://yinheusa.com/shop/',
+};
+
+const FACEBOOK_KNOWLEDGE_TOPICS = [
+  '3 lỗi khiến cú giật phải thiếu lực',
+  'Cách trả giao bóng xoáy xuống an toàn hơn cho người mới',
+  'Vì sao người mới nên ưu tiên kiểm soát trước tốc độ',
+  'Footwork cơ bản để không bị chôn chân khi vào trận',
+  'Giao bóng ngắn: 3 điểm cần nhớ để không bị bắt bài',
+  'Cách đọc xoáy từ mặt vợt đối thủ trong 1 giây đầu',
+  'Khi nào nên đánh ngắn, khi nào nên vung dài?',
+  'Tại sao tập hay nhưng vào trận lại cứng tay?',
+  '3 cách giảm lỗi rúc lưới khi giật trái',
+  'Checklist trước khi đổi mặt vợt mới',
+];
+
+const FACEBOOK_ENGAGEMENT_TOPICS = [
+  'Anh em đang khó nhất ở khâu nào: giao bóng, trả giao bóng hay footwork?',
+  'Nếu chỉ được chọn 1: kiểm soát tốt hơn hay tốc độ cao hơn?',
+  'Bạn đang chơi 1 càng hay 2 càng? Comment lối chơi của mình',
+  'Mặt vợt bám dính kiểu Trung Quốc hay tensor châu Âu dễ chơi hơn?',
+  'Người mới nên đầu tư vào cốt vợt hay mặt vợt trước?',
+  'Một lỗi kỹ thuật anh em muốn sửa nhất trong tuần này là gì?',
+];
+
+function fbSetting(key, fallback = '') {
+  const row = db.prepare('SELECT value FROM settings WHERE key = ?').get(key);
+  return row ? row.value : fallback;
+}
+
+function setFbSetting(key, value) {
+  db.prepare(`INSERT INTO settings (key, value, updated_at) VALUES (?, ?, datetime('now'))
+    ON CONFLICT(key) DO UPDATE SET value=excluded.value, updated_at=excluded.updated_at`)
+    .run(key, String(value ?? ''));
+}
+
+function getFacebookConfig() {
+  return {
+    siteUrl: FACEBOOK_SITE_URL,
+    autoSchedulerEnabled: fbSetting('facebook_auto_scheduler_enabled', '0') === '1',
+    dailyPostCount: Math.max(3, Math.min(6, Number(fbSetting('facebook_daily_post_count', '4')) || 4)),
+    defaultDays: Math.max(1, Math.min(30, Number(fbSetting('facebook_default_days', '7')) || 7)),
+    autoApproveGenerated: fbSetting('facebook_auto_approve_generated', '0') === '1',
+    pageIdConfigured: !!process.env.FACEBOOK_PAGE_ID,
+    pageTokenConfigured: !!process.env.FACEBOOK_PAGE_ACCESS_TOKEN,
+    graphVersion: process.env.FACEBOOK_GRAPH_VERSION || 'v24.0',
+    aiProviders: shopeeCopyProviderPlan('auto'),
+  };
+}
+
+function fbFullUrl(urlPath) {
+  if (!urlPath) return FACEBOOK_SITE_URL;
+  if (/^https?:\/\//i.test(urlPath)) return urlPath;
+  return FACEBOOK_SITE_URL + '/' + String(urlPath).replace(/^\/+/, '');
+}
+
+function fbPublicPathToFile(publicPath) {
+  if (!publicPath || /^https?:\/\//i.test(publicPath)) return publicPath;
+  const rel = String(publicPath).replace(/^\/+/, '').replace(/[\\/]+/g, path.sep);
+  const candidates = [
+    path.join(DATA_DIR, rel),
+    path.join(__dirname, rel),
+  ];
+  return candidates.find(p => fs.existsSync(p)) || publicPath;
+}
+
+function facebookPostRow(row) {
+  if (!row) return null;
+  return {
+    ...row,
+    source_urls: parseJSON(row.source_urls, []),
+    metrics: parseJSON(row.metrics, {}),
+  };
+}
+
+function statusCountRows() {
+  return db.prepare('SELECT status, COUNT(*) as count FROM facebook_posts GROUP BY status').all();
+}
+
+function fbScheduleSlots(days, postsPerDay, startDate) {
+  const slots = [];
+  const count = Math.max(3, Math.min(6, Number(postsPerDay) || 4));
+  const dayCount = Math.max(1, Math.min(30, Number(days) || 7));
+  const start = startDate
+    ? new Date(`${String(startDate).slice(0, 10)}T00:00:00+07:00`)
+    : new Date();
+
+  for (let d = 0; d < dayCount; d++) {
+    const date = new Date(start.getTime() + d * 24 * 60 * 60 * 1000);
+    const yyyyMmDd = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Ho_Chi_Minh',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(date);
+    for (let i = 0; i < count; i++) {
+      const t = FACEBOOK_DAILY_TIMES[i] || FACEBOOK_DAILY_TIMES[FACEBOOK_DAILY_TIMES.length - 1];
+      slots.push({
+        scheduled_time: `${yyyyMmDd} ${t.time}`,
+        pillar: t.pillar,
+      });
+    }
+  }
+  return slots;
+}
+
+function fbSourceBundle(pillar, product = null) {
+  const urls = [];
+  const add = (name, url, type = 'official') => urls.push({ name, url, type });
+  if (pillar === 'knowledge') {
+    add('ITTF Education', 'https://www.ittfeducation.com/');
+    add('PingSkills Forum', 'https://www.pingskills.com/table-tennis-forum/topic/equipment', 'forum');
+    add('BongBanViet Knowledge', fbFullUrl('/kien-thuc.html'), 'internal');
+  } else if (pillar === 'product' || pillar === 'combo' || pillar === 'promo') {
+    add('BongBanViet Product Data', product?.slug ? fbFullUrl(`/san-pham.html?id=${product.slug}`) : fbFullUrl('/'));
+    if (product?.brand_slug && FACEBOOK_BRAND_SOURCES[product.brand_slug]) {
+      add(`${product.brand_slug.toUpperCase()} Official`, FACEBOOK_BRAND_SOURCES[product.brand_slug], 'brand');
+    }
+    add('ITTF Equipment', 'https://equipment.ittf.com/');
+  } else if (pillar === 'news') {
+    add('World Table Tennis', 'https://www.worldtabletennis.com/');
+    add('Báo Nhân Dân - Bóng bàn quốc gia', 'https://nhandan.vn/chu-de/giai-bong-ban-quoc-gia-bao-nhan-dan-latest-704471.html', 'vietnam');
+    add('SGGP Thể thao', 'https://thethao.sggp.org.vn/', 'vietnam');
+  } else {
+    add('Reddit r/tabletennis', 'https://www.reddit.com/r/tabletennis/', 'forum');
+    add('TableTennisDaily Forum', 'https://www.tabletennisdaily.com/forum/', 'forum');
+    add('BongBanViet Facebook', 'https://facebook.com/bongbanviet.official', 'internal');
+  }
+  return urls;
+}
+
+function fbTopicForSlot(slot, index, products, combos, articles) {
+  const pillar = slot.pillar;
+  const product = products.length ? products[index % products.length] : null;
+  const combo = combos.length ? combos[index % combos.length] : null;
+  const article = articles.length ? articles[index % articles.length] : null;
+
+  if (pillar === 'product' && product) {
+    return {
+      topic: `Review nhanh ${product.name}: phù hợp với ai?`,
+      product,
+      website_link: fbFullUrl(`/san-pham.html?id=${product.slug}`),
+      image_path: parseJSON(product.images, [])[0] || '',
+      fact_summary: `Sản phẩm trong hệ thống BongBanViet: ${product.name}. Danh mục ${product.category_slug || ''}, thương hiệu ${product.brand_slug || ''}.`,
+    };
+  }
+
+  if (pillar === 'combo' && combo) {
+    return {
+      topic: `Gợi ý combo vợt ${combo.name} cho người chơi phong trào`,
+      product: combo,
+      website_link: fbFullUrl(`/san-pham.html?id=${combo.slug}`),
+      image_path: parseJSON(combo.images, [])[0] || '',
+      fact_summary: `Combo nội bộ BongBanViet: ${combo.name}. Cốt: ${combo.blade || 'chưa ghi'}, FH: ${combo.rubber_fh || 'chưa ghi'}, BH: ${combo.rubber_bh || 'chưa ghi'}.`,
+    };
+  }
+
+  if (pillar === 'knowledge') {
+    const topic = article?.title
+      ? `Từ bài viết BongBanViet: ${article.title}`
+      : FACEBOOK_KNOWLEDGE_TOPICS[index % FACEBOOK_KNOWLEDGE_TOPICS.length];
+    return {
+      topic,
+      website_link: article?.slug ? fbFullUrl(`/kien-thuc.html#${article.slug}`) : fbFullUrl('/kien-thuc.html'),
+      fact_summary: article?.excerpt || 'Bài kiến thức cần bám nguyên tắc kỹ thuật, tránh khẳng định tuyệt đối nếu chỉ là kinh nghiệm thực chiến.',
+    };
+  }
+
+  if (pillar === 'news') {
+    return {
+      topic: 'Theo dõi WTT/ITTF tuần này: xem gì để học chiến thuật?',
+      website_link: fbFullUrl('/kien-thuc.html'),
+      fact_summary: 'Chỉ dùng tin mới khi đã kiểm tra ngày đăng và nguồn WTT/ITTF hoặc báo chính thống.',
+    };
+  }
+
+  return {
+    topic: FACEBOOK_ENGAGEMENT_TOPICS[index % FACEBOOK_ENGAGEMENT_TOPICS.length],
+    website_link: fbFullUrl('/'),
+    fact_summary: 'Bài tương tác dùng insight cộng đồng từ forum, không coi bình luận forum là nguồn chốt sự thật.',
+  };
+}
+
+function fallbackFacebookContent(post) {
+  const pillar = FACEBOOK_PILLARS[post.pillar] || FACEBOOK_PILLARS.knowledge;
+  const topic = post.topic || 'Bóng bàn phong trào';
+  const baseTags = '#BongBanViet #BóngBànViệt #BóngBàn #TableTennis #PingPong #HàNội';
+  const tagsByPillar = {
+    knowledge: '#KyThuatBongBan #Topspin #GiaoBong #Footwork',
+    product: '#CotVot #MatVot #VotBongBan #ChinhHang',
+    combo: '#ComboVot #TuVanBongBan #VotBongBan #NguoiMoiChoi',
+    news: '#WTT #ITTF #BongBanTheGioi #BongBanVietNam',
+    engagement: '#HoiDapBongBan #CongDongBongBan #DamMeBongBan',
+    promo: '#UuDaiBongBan #ComboVot #HangChinhHang',
+  };
+  const caption = `${topic}\n\nĐây là chủ đề BongBanViet chọn để anh em dễ hiểu hơn về ${pillar.label.toLowerCase()}.\n\n1. Ưu tiên đúng trình độ trước khi chạy theo thông số.\n2. Kiểm tra nguồn thông tin và trải nghiệm thực tế trước khi quyết định.\n3. Nếu chọn thiết bị, hãy cân bằng giữa kiểm soát, độ xoáy và ngân sách.\n\n💡 Lời khuyên: chọn đúng thường giúp tiến bộ nhanh hơn chọn quá mạnh.\n\nAnh em đang gặp vấn đề gì ở chủ đề này? Comment để BongBanViet tư vấn tiếp.\n\nBóng Bàn Việt - Tư Vấn Chuẩn, Hàng Chính Hãng\nWebsite: bongbanviet.com\nHotline/Zalo: 096.1269.386`;
+  return {
+    caption,
+    hashtags: `${baseTags} ${tagsByPillar[post.pillar] || ''}`.trim(),
+    cta: 'Comment hoặc inbox/Zalo 096.1269.386 để được tư vấn.',
+    image_prompt: `Professional square Vietnamese infographic for BongBanViet about "${topic}", table tennis themed, red black white palette, 3 concise points, logo/website footer.`,
+  };
+}
+
+function buildFacebookPrompt(post) {
+  const sources = (post.source_urls || []).map((s, i) => `${i + 1}. ${s.name || 'Nguồn'} (${s.type || 'source'}): ${s.url}`).join('\n');
+  const pillar = FACEBOOK_PILLARS[post.pillar] || FACEBOOK_PILLARS.knowledge;
+  return `Bạn là content strategist cho Bóng Bàn Việt.
+
+Thương hiệu:
+- Website: bongbanviet.com
+- Định vị: Tư Vấn Chuẩn, Hàng Chính Hãng
+- Hotline/Zalo: 096.1269.386
+- Đối tượng: người chơi bóng bàn phong trào Việt Nam, từ mới chơi đến nâng cao.
+
+Topic: ${post.topic}
+Pillar: ${post.pillar} - ${pillar.label}
+Giọng văn: ${post.brand_voice || pillar.voice}
+Fact summary nội bộ: ${post.fact_summary || 'Không có'}
+Link điều hướng: ${post.website_link || FACEBOOK_SITE_URL}
+
+Nguồn tham khảo:
+${sources || '- Nguồn nội bộ BongBanViet'}
+
+Nguyên tắc:
+- Không bịa số liệu, ranking, kết quả giải, thông số sản phẩm.
+- Forum chỉ dùng như insight cộng đồng, không dùng làm nguồn chốt sự thật.
+- Với sản phẩm, chỉ nói "phù hợp" theo hướng tư vấn, tránh claim tuyệt đối như tốt nhất thị trường.
+- Bài phải tự nhiên, dễ đọc trên Facebook, 120-230 từ.
+- Footer luôn có:
+Bóng Bàn Việt - Tư Vấn Chuẩn, Hàng Chính Hãng
+Website: bongbanviet.com
+Hotline/Zalo: 096.1269.386
+
+Trả về JSON hợp lệ:
+{
+  "caption": "...",
+  "hashtags": "#BongBanViet ...",
+  "cta": "...",
+  "image_prompt": "English prompt for a 1080x1080 Facebook infographic"
+}`;
+}
+
+function parseFacebookAiJson(raw, fallback) {
+  try {
+    const text = String(raw || '').trim();
+    const jsonText = text.startsWith('{') ? text : (text.match(/\{[\s\S]*\}/) || [text])[0];
+    const parsed = JSON.parse(jsonText);
+    return {
+      caption: String(parsed.caption || fallback.caption || '').trim(),
+      hashtags: String(parsed.hashtags || fallback.hashtags || '').trim(),
+      cta: String(parsed.cta || fallback.cta || '').trim(),
+      image_prompt: String(parsed.image_prompt || fallback.image_prompt || '').trim(),
+    };
+  } catch {
+    return fallback;
+  }
+}
+
+async function generateFacebookContent(post, provider = 'auto') {
+  const fallback = fallbackFacebookContent(post);
+  const plan = shopeeCopyProviderPlan(provider);
+  if (!plan.length) return { ...fallback, usedFallback: true, providerError: 'Chưa có API key AI.' };
+
+  const prompt = buildFacebookPrompt(post);
+  const errors = [];
+  for (const aiProvider of plan) {
+    try {
+      const raw = await callShopeeTextProvider(aiProvider, prompt);
+      return {
+        ...parseFacebookAiJson(raw, fallback),
+        usedFallback: false,
+        provider: aiProvider,
+        providerLabel: shopeeProviderLabel(aiProvider),
+      };
+    } catch (e) {
+      errors.push(`${shopeeProviderLabel(aiProvider)}: ${e.message}`);
+    }
+  }
+  return { ...fallback, usedFallback: true, providerError: errors.join(' | ') };
+}
+
+function escapeXml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function wrapText(value, maxChars, maxLines) {
+  const words = String(value || '').replace(/\s+/g, ' ').trim().split(' ').filter(Boolean);
+  const lines = [];
+  let line = '';
+  for (const word of words) {
+    const next = line ? `${line} ${word}` : word;
+    if (next.length > maxChars && line) {
+      lines.push(line);
+      line = word;
+      if (lines.length >= maxLines) break;
+    } else {
+      line = next;
+    }
+  }
+  if (line && lines.length < maxLines) lines.push(line);
+  return lines;
+}
+
+function facebookKeyPoints(post) {
+  const raw = [post.fact_summary, post.caption].filter(Boolean).join('\n');
+  const lines = raw
+    .split(/\n+/)
+    .map(s => s.replace(/^[\s\d.:\-•]+/, '').trim())
+    .filter(s => s.length > 18 && !/Bóng Bàn Việt|Website:|Hotline/i.test(s));
+  const picked = lines.slice(0, 3);
+  while (picked.length < 3) {
+    picked.push([
+      'Chọn đúng theo trình độ và mục tiêu chơi',
+      'Ưu tiên kiểm soát trước khi tăng tốc độ',
+      'Inbox BongBanViet để được tư vấn setup phù hợp',
+    ][picked.length]);
+  }
+  return picked;
+}
+
+async function generateFacebookInfographic(post) {
+  let sharp;
+  try {
+    sharp = require('sharp');
+  } catch {
+    throw new Error('Chưa cài sharp để tạo infographic PNG.');
+  }
+
+  const pillar = FACEBOOK_PILLARS[post.pillar] || FACEBOOK_PILLARS.knowledge;
+  const titleLines = wrapText(post.topic, 26, 3);
+  const points = facebookKeyPoints(post).map(p => wrapText(p, 38, 2));
+  const titleSvg = titleLines.map((line, i) =>
+    `<text x="80" y="${180 + i * 62}" font-size="54" font-weight="800" fill="#111827">${escapeXml(line)}</text>`
+  ).join('');
+  const pointSvg = points.map((lines, i) => {
+    const y = 440 + i * 128;
+    const body = lines.map((line, j) =>
+      `<text x="178" y="${y + 8 + j * 36}" font-size="31" font-weight="700" fill="#1F2937">${escapeXml(line)}</text>`
+    ).join('');
+    return `<circle cx="112" cy="${y - 2}" r="30" fill="#D62B2B"/>
+      <text x="112" y="${y + 10}" text-anchor="middle" font-size="32" font-weight="800" fill="#fff">${i + 1}</text>
+      ${body}`;
+  }).join('');
+
+  const svg = `<svg width="1080" height="1080" viewBox="0 0 1080 1080" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1080" height="1080" fill="#FAFAF8"/>
+    <rect x="0" y="0" width="1080" height="18" fill="#D62B2B"/>
+    <circle cx="950" cy="150" r="84" fill="#FEE2E2"/>
+    <circle cx="958" cy="150" r="34" fill="#fff" stroke="#D62B2B" stroke-width="9"/>
+    <path d="M875 238 C940 180 1010 218 1028 286" fill="none" stroke="#111827" stroke-width="18" stroke-linecap="round"/>
+    <text x="80" y="88" font-size="26" font-weight="800" fill="#D62B2B" letter-spacing="4">BONG BAN VIET</text>
+    <text x="80" y="124" font-size="24" font-weight="700" fill="#6B7280">${escapeXml(pillar.label.toUpperCase())}</text>
+    ${titleSvg}
+    <rect x="80" y="365" width="920" height="3" fill="#111827" opacity="0.12"/>
+    ${pointSvg}
+    <rect x="80" y="908" width="920" height="88" rx="8" fill="#111827"/>
+    <text x="112" y="955" font-size="30" font-weight="800" fill="#fff">Tư Vấn Chuẩn - Hàng Chính Hãng</text>
+    <text x="112" y="982" font-size="22" font-weight="600" fill="#D1D5DB">bongbanviet.com | Zalo 096.1269.386</text>
+  </svg>`;
+
+  const filename = `${post.id}-${Date.now().toString(36)}.png`;
+  const outputPath = path.join(FACEBOOK_IMAGE_DIR, filename);
+  await sharp(Buffer.from(svg)).png().toFile(outputPath);
+  return '/images/facebook/' + filename;
+}
+
+function parseFacebookScheduledTime(value) {
+  if (!value) return NaN;
+  const raw = String(value).trim().replace('T', ' ');
+  const match = raw.match(/^(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2})(?::(\d{2}))?$/);
+  if (match) {
+    return Math.floor(new Date(`${match[1]}T${match[2]}:${match[3] || '00'}+07:00`).getTime() / 1000);
+  }
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? NaN : Math.floor(d.getTime() / 1000);
+}
+
+async function scheduleFacebookPost(row) {
+  const post = facebookPostRow(row);
+  if (!post.caption || !post.scheduled_time) {
+    throw new Error('Bài cần có caption và scheduled_time trước khi schedule.');
+  }
+  const unixTs = parseFacebookScheduledTime(post.scheduled_time);
+  if (!Number.isFinite(unixTs)) throw new Error(`scheduled_time không hợp lệ: ${post.scheduled_time}`);
+  if (unixTs * 1000 < Date.now() + 11 * 60 * 1000) {
+    throw new Error('scheduled_time phải cách hiện tại ít nhất 11 phút.');
+  }
+
+  const { schedulePost, schedulePostWithPhoto } = require('./fb-agent/src/facebook_client');
+  const message = [post.caption.trim(), post.hashtags?.trim()].filter(Boolean).join('\n\n');
+  const imagePath = post.image_path ? fbPublicPathToFile(post.image_path) : '';
+  const result = imagePath
+    ? await schedulePostWithPhoto(message, unixTs, imagePath)
+    : await schedulePost(message, unixTs);
+
+  if (!result.success) throw new Error(result.error || 'Facebook API không trả về thành công.');
+  db.prepare(`UPDATE facebook_posts SET status='scheduled', facebook_post_id=?, error_message='', updated_at=datetime('now') WHERE id=?`)
+    .run(result.postId || '', post.id);
+  return result;
+}
+
+let facebookAutoSchedulerStarted = false;
+function startFacebookAutoScheduler() {
+  if (facebookAutoSchedulerStarted) return;
+  facebookAutoSchedulerStarted = true;
+  const tick = async () => {
+    if (fbSetting('facebook_auto_scheduler_enabled', '0') !== '1') return;
+    const rows = db.prepare(`SELECT * FROM facebook_posts
+      WHERE status='approved' AND scheduled_time <> ''
+      ORDER BY scheduled_time ASC LIMIT 20`).all();
+    for (const row of rows) {
+      try {
+        await scheduleFacebookPost(row);
+      } catch (e) {
+        db.prepare(`UPDATE facebook_posts SET status='failed', error_message=?, updated_at=datetime('now') WHERE id=?`)
+          .run(e.message, row.id);
+      }
+    }
+  };
+  setInterval(() => tick().catch(e => console.error('[Facebook Scheduler]', e.message)), 120000);
+  setTimeout(() => tick().catch(e => console.error('[Facebook Scheduler]', e.message)), 5000);
 }
 
 db.exec(`
@@ -1849,6 +2405,282 @@ app.get('/api/stats', (req, res) => {
     featured: db.prepare('SELECT COUNT(*) as c FROM products WHERE featured=1').get().c,
     used: db.prepare("SELECT COUNT(*) as c FROM products WHERE condition='used'").get().c,
   });
+});
+
+// ─── Facebook Dashboard API ─────────────────────────────────────────────────
+
+app.get('/api/facebook/sources', requireAuth, (req, res) => {
+  res.json(FACEBOOK_SOURCE_LIBRARY);
+});
+
+app.get('/api/facebook/config', requireAuth, (req, res) => {
+  res.json(getFacebookConfig());
+});
+
+app.put('/api/facebook/config', requireAuth, (req, res) => {
+  const { autoSchedulerEnabled, dailyPostCount, defaultDays, autoApproveGenerated } = req.body || {};
+  if (autoSchedulerEnabled !== undefined) setFbSetting('facebook_auto_scheduler_enabled', autoSchedulerEnabled ? '1' : '0');
+  if (dailyPostCount !== undefined) setFbSetting('facebook_daily_post_count', Math.max(3, Math.min(6, Number(dailyPostCount) || 4)));
+  if (defaultDays !== undefined) setFbSetting('facebook_default_days', Math.max(1, Math.min(30, Number(defaultDays) || 7)));
+  if (autoApproveGenerated !== undefined) setFbSetting('facebook_auto_approve_generated', autoApproveGenerated ? '1' : '0');
+  res.json(getFacebookConfig());
+});
+
+app.get('/api/facebook/stats', requireAuth, (req, res) => {
+  const counts = {};
+  for (const row of statusCountRows()) counts[row.status || 'unknown'] = row.count;
+  res.json({
+    total: db.prepare('SELECT COUNT(*) as c FROM facebook_posts').get().c,
+    today: db.prepare(`SELECT COUNT(*) as c FROM facebook_posts WHERE substr(scheduled_time, 1, 10) = date('now', '+7 hours')`).get().c,
+    scheduled: counts.scheduled || 0,
+    approved: counts.approved || 0,
+    draft: counts.draft || 0,
+    idea: counts.idea || 0,
+    failed: counts.failed || 0,
+    counts,
+  });
+});
+
+app.get('/api/facebook/posts', requireAuth, (req, res) => {
+  const { status = 'all', pillar = 'all', q = '', limit = 300 } = req.query;
+  let sql = 'SELECT * FROM facebook_posts WHERE 1=1';
+  const params = [];
+  if (status && status !== 'all') { sql += ' AND status = ?'; params.push(status); }
+  if (pillar && pillar !== 'all') { sql += ' AND pillar = ?'; params.push(pillar); }
+  if (q) {
+    sql += ' AND (topic LIKE ? OR caption LIKE ? OR hashtags LIKE ?)';
+    const term = `%${q}%`;
+    params.push(term, term, term);
+  }
+  sql += ' ORDER BY scheduled_time ASC, created_at DESC LIMIT ?';
+  params.push(Math.max(1, Math.min(1000, Number(limit) || 300)));
+  res.json(db.prepare(sql).all(...params).map(facebookPostRow));
+});
+
+app.post('/api/facebook/posts', requireAuth, (req, res) => {
+  const body = req.body || {};
+  if (!body.topic) return res.status(400).json({ error: 'Thiếu topic' });
+  const id = generateId();
+  db.prepare(`INSERT INTO facebook_posts
+    (id, topic, pillar, status, brand_voice, source_type, source_urls, source_notes, fact_summary,
+     caption, hashtags, cta, website_link, image_path, image_prompt, image_source, scheduled_time, error_message)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+    .run(
+      id,
+      body.topic,
+      body.pillar || 'knowledge',
+      body.status || 'idea',
+      body.brand_voice || '',
+      body.source_type || '',
+      JSON.stringify(body.source_urls || []),
+      body.source_notes || '',
+      body.fact_summary || '',
+      body.caption || '',
+      body.hashtags || '',
+      body.cta || '',
+      body.website_link || '',
+      body.image_path || '',
+      body.image_prompt || '',
+      body.image_source || '',
+      String(body.scheduled_time || '').replace('T', ' '),
+      body.error_message || ''
+    );
+  res.status(201).json(facebookPostRow(db.prepare('SELECT * FROM facebook_posts WHERE id=?').get(id)));
+});
+
+app.put('/api/facebook/posts/:id', requireAuth, (req, res) => {
+  const existing = db.prepare('SELECT * FROM facebook_posts WHERE id=?').get(req.params.id);
+  if (!existing) return res.status(404).json({ error: 'Không tìm thấy bài' });
+  const body = req.body || {};
+  db.prepare(`UPDATE facebook_posts SET
+    topic=?, pillar=?, status=?, brand_voice=?, source_type=?, source_urls=?, source_notes=?, fact_summary=?,
+    caption=?, hashtags=?, cta=?, website_link=?, image_path=?, image_prompt=?, image_source=?,
+    scheduled_time=?, facebook_post_id=?, error_message=?, metrics=?, updated_at=datetime('now')
+    WHERE id=?`)
+    .run(
+      body.topic ?? existing.topic,
+      body.pillar ?? existing.pillar,
+      body.status ?? existing.status,
+      body.brand_voice ?? existing.brand_voice,
+      body.source_type ?? existing.source_type,
+      JSON.stringify(body.source_urls ?? parseJSON(existing.source_urls, [])),
+      body.source_notes ?? existing.source_notes,
+      body.fact_summary ?? existing.fact_summary,
+      body.caption ?? existing.caption,
+      body.hashtags ?? existing.hashtags,
+      body.cta ?? existing.cta,
+      body.website_link ?? existing.website_link,
+      body.image_path ?? existing.image_path,
+      body.image_prompt ?? existing.image_prompt,
+      body.image_source ?? existing.image_source,
+      String(body.scheduled_time ?? existing.scheduled_time).replace('T', ' '),
+      body.facebook_post_id ?? existing.facebook_post_id,
+      body.error_message ?? existing.error_message,
+      JSON.stringify(body.metrics ?? parseJSON(existing.metrics, {})),
+      existing.id
+    );
+  res.json(facebookPostRow(db.prepare('SELECT * FROM facebook_posts WHERE id=?').get(existing.id)));
+});
+
+app.delete('/api/facebook/posts/:id', requireAuth, (req, res) => {
+  const info = db.prepare('DELETE FROM facebook_posts WHERE id=?').run(req.params.id);
+  if (!info.changes) return res.status(404).json({ error: 'Không tìm thấy bài' });
+  res.json({ ok: true });
+});
+
+app.post('/api/facebook/collect', requireAuth, (req, res) => {
+  const cfg = getFacebookConfig();
+  const days = Math.max(1, Math.min(30, Number(req.body?.days) || cfg.defaultDays));
+  const postsPerDay = Math.max(3, Math.min(6, Number(req.body?.postsPerDay) || cfg.dailyPostCount));
+  const startDate = req.body?.startDate || new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
+  const replaceFutureIdeas = !!req.body?.replaceFutureIdeas;
+
+  if (replaceFutureIdeas) {
+    db.prepare(`DELETE FROM facebook_posts
+      WHERE status IN ('idea','draft') AND scheduled_time >= ?`).run(`${startDate} 00:00:00`);
+  }
+
+  const products = db.prepare(`SELECT * FROM products WHERE in_stock=1 ORDER BY featured DESC, sort_order ASC, updated_at DESC LIMIT 120`).all();
+  const combos = db.prepare(`SELECT * FROM combos WHERE in_stock=1 ORDER BY sort_order ASC LIMIT 40`).all();
+  const articles = db.prepare(`SELECT * FROM articles ORDER BY published_at DESC LIMIT 40`).all();
+  const slots = fbScheduleSlots(days, postsPerDay, startDate);
+  const existingTimes = new Set(db.prepare('SELECT scheduled_time FROM facebook_posts').all().map(r => r.scheduled_time));
+  const insert = db.prepare(`INSERT INTO facebook_posts
+    (id, topic, pillar, status, brand_voice, source_type, source_urls, source_notes, fact_summary,
+     website_link, image_path, image_source, scheduled_time)
+    VALUES (?, ?, ?, 'idea', ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+
+  let created = 0;
+  const tx = db.transaction(() => {
+    slots.forEach((slot, index) => {
+      if (existingTimes.has(slot.scheduled_time)) return;
+      const idea = fbTopicForSlot(slot, index, products, combos, articles);
+      const sourceUrls = fbSourceBundle(slot.pillar, idea.product);
+      insert.run(
+        generateId(),
+        idea.topic,
+        slot.pillar,
+        FACEBOOK_PILLARS[slot.pillar]?.voice || '',
+        sourceUrls[0]?.type || '',
+        JSON.stringify(sourceUrls),
+        'Thu thập từ nguồn chính thống, hãng, forum quốc tế và dữ liệu nội bộ BongBanViet.',
+        idea.fact_summary || '',
+        idea.website_link || fbFullUrl('/'),
+        idea.image_path || '',
+        idea.image_path ? 'Ảnh sản phẩm BongBanViet' : '',
+        slot.scheduled_time
+      );
+      created++;
+    });
+  });
+  tx();
+
+  res.json({ ok: true, created, days, postsPerDay, startDate });
+});
+
+app.post('/api/facebook/generate', requireAuth, async (req, res) => {
+  const ids = Array.isArray(req.body?.ids) ? req.body.ids.filter(Boolean) : [];
+  const provider = req.body?.provider || 'auto';
+  const autoApprove = req.body?.autoApprove !== undefined
+    ? !!req.body.autoApprove
+    : getFacebookConfig().autoApproveGenerated;
+  const count = Math.max(1, Math.min(30, Number(req.body?.count) || 12));
+  const rows = ids.length
+    ? db.prepare(`SELECT * FROM facebook_posts WHERE id IN (${ids.map(() => '?').join(',')})`).all(...ids)
+    : db.prepare(`SELECT * FROM facebook_posts WHERE status IN ('idea','new','failed') ORDER BY scheduled_time ASC LIMIT ?`).all(count);
+
+  const results = [];
+  for (const rawRow of rows) {
+    const post = facebookPostRow(rawRow);
+    try {
+      const generated = await generateFacebookContent(post, provider);
+      db.prepare(`UPDATE facebook_posts SET
+        caption=?, hashtags=?, cta=?, image_prompt=?, status=?, error_message=?, updated_at=datetime('now')
+        WHERE id=?`)
+        .run(
+          generated.caption,
+          generated.hashtags,
+          generated.cta,
+          generated.image_prompt,
+          autoApprove ? 'approved' : 'draft',
+          generated.usedFallback && generated.providerError ? generated.providerError : '',
+          post.id
+        );
+      results.push({ id: post.id, ok: true, usedFallback: !!generated.usedFallback, provider: generated.provider || '' });
+    } catch (e) {
+      db.prepare(`UPDATE facebook_posts SET status='failed', error_message=?, updated_at=datetime('now') WHERE id=?`).run(e.message, post.id);
+      results.push({ id: post.id, ok: false, error: e.message });
+    }
+  }
+  res.json({ ok: true, processed: results.length, results });
+});
+
+app.post('/api/facebook/images', requireAuth, async (req, res) => {
+  const ids = Array.isArray(req.body?.ids) ? req.body.ids.filter(Boolean) : [];
+  const force = !!req.body?.force;
+  const count = Math.max(1, Math.min(30, Number(req.body?.count) || 12));
+  const rows = ids.length
+    ? db.prepare(`SELECT * FROM facebook_posts WHERE id IN (${ids.map(() => '?').join(',')})`).all(...ids)
+    : db.prepare(`SELECT * FROM facebook_posts WHERE status IN ('draft','approved') ORDER BY scheduled_time ASC LIMIT ?`).all(count);
+  const results = [];
+  for (const rawRow of rows) {
+    const post = facebookPostRow(rawRow);
+    if (post.image_path && !force) {
+      results.push({ id: post.id, ok: true, skipped: true, image_path: post.image_path });
+      continue;
+    }
+    try {
+      const imagePath = await generateFacebookInfographic(post);
+      db.prepare(`UPDATE facebook_posts SET image_path=?, image_source='Generated BongBanViet infographic', updated_at=datetime('now') WHERE id=?`)
+        .run(imagePath, post.id);
+      results.push({ id: post.id, ok: true, image_path: imagePath });
+    } catch (e) {
+      db.prepare(`UPDATE facebook_posts SET error_message=?, updated_at=datetime('now') WHERE id=?`).run(e.message, post.id);
+      results.push({ id: post.id, ok: false, error: e.message });
+    }
+  }
+  res.json({ ok: true, processed: results.length, results });
+});
+
+app.post('/api/facebook/approve', requireAuth, (req, res) => {
+  const ids = Array.isArray(req.body?.ids) ? req.body.ids.filter(Boolean) : [];
+  if (!ids.length) return res.status(400).json({ error: 'Chưa chọn bài' });
+  const info = db.prepare(`UPDATE facebook_posts SET status='approved', error_message='', updated_at=datetime('now')
+    WHERE id IN (${ids.map(() => '?').join(',')})`).run(...ids);
+  res.json({ ok: true, changed: info.changes });
+});
+
+app.post('/api/facebook/schedule', requireAuth, async (req, res) => {
+  const ids = Array.isArray(req.body?.ids) ? req.body.ids.filter(Boolean) : [];
+  const rows = ids.length
+    ? db.prepare(`SELECT * FROM facebook_posts WHERE id IN (${ids.map(() => '?').join(',')})`).all(...ids)
+    : db.prepare(`SELECT * FROM facebook_posts WHERE status='approved' ORDER BY scheduled_time ASC LIMIT 30`).all();
+  const results = [];
+  for (const row of rows) {
+    try {
+      if (row.status !== 'approved' && !req.body?.force) throw new Error('Chỉ schedule bài đã approved.');
+      const result = await scheduleFacebookPost(row);
+      results.push({ id: row.id, ok: true, facebook_post_id: result.postId || '' });
+    } catch (e) {
+      db.prepare(`UPDATE facebook_posts SET status='failed', error_message=?, updated_at=datetime('now') WHERE id=?`).run(e.message, row.id);
+      results.push({ id: row.id, ok: false, error: e.message });
+    }
+  }
+  res.json({ ok: true, processed: results.length, results });
+});
+
+app.post('/api/facebook/verify-token', requireAuth, async (req, res) => {
+  try {
+    const { verifyToken } = require('./fb-agent/src/facebook_client');
+    res.json(await verifyToken());
+  } catch (e) {
+    res.status(400).json({ valid: false, error: e.message });
+  }
 });
 
 // ─── Price List (bang_gia_dai_ly.xlsx) ──────────────────────────────────────
@@ -2964,6 +3796,7 @@ function startServer() {
     console.log(`   Admin panel:  http://localhost:${PORT}/admin.html`);
     console.log(`   Website:      http://localhost:${PORT}/index.html\n`);
     startTracker();
+    startFacebookAutoScheduler();
   });
   server.on('error', err => {
     if (err.code === 'EADDRINUSE') {

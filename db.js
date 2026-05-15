@@ -99,6 +99,31 @@ db.exec(`
     paused INTEGER DEFAULT 0,
     added_at TEXT DEFAULT (datetime('now'))
   );
+
+  CREATE TABLE IF NOT EXISTS facebook_posts (
+    id TEXT PRIMARY KEY,
+    topic TEXT NOT NULL,
+    pillar TEXT DEFAULT 'knowledge',
+    status TEXT DEFAULT 'idea',
+    brand_voice TEXT DEFAULT '',
+    source_type TEXT DEFAULT '',
+    source_urls TEXT DEFAULT '[]',
+    source_notes TEXT DEFAULT '',
+    fact_summary TEXT DEFAULT '',
+    caption TEXT DEFAULT '',
+    hashtags TEXT DEFAULT '',
+    cta TEXT DEFAULT '',
+    website_link TEXT DEFAULT '',
+    image_path TEXT DEFAULT '',
+    image_prompt TEXT DEFAULT '',
+    image_source TEXT DEFAULT '',
+    scheduled_time TEXT DEFAULT '',
+    facebook_post_id TEXT DEFAULT '',
+    error_message TEXT DEFAULT '',
+    metrics TEXT DEFAULT '{}',
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  );
 `);
 
 // Migrations: add columns if not yet present (must run BEFORE seed)
@@ -108,6 +133,17 @@ db.exec(`
   "ALTER TABLE products ADD COLUMN variants TEXT DEFAULT '[]'",
   "ALTER TABLE combos ADD COLUMN price TEXT DEFAULT ''",
   "ALTER TABLE combos ADD COLUMN in_stock INTEGER DEFAULT 1",
+  "ALTER TABLE facebook_posts ADD COLUMN brand_voice TEXT DEFAULT ''",
+  "ALTER TABLE facebook_posts ADD COLUMN source_type TEXT DEFAULT ''",
+  "ALTER TABLE facebook_posts ADD COLUMN source_urls TEXT DEFAULT '[]'",
+  "ALTER TABLE facebook_posts ADD COLUMN source_notes TEXT DEFAULT ''",
+  "ALTER TABLE facebook_posts ADD COLUMN fact_summary TEXT DEFAULT ''",
+  "ALTER TABLE facebook_posts ADD COLUMN cta TEXT DEFAULT ''",
+  "ALTER TABLE facebook_posts ADD COLUMN website_link TEXT DEFAULT ''",
+  "ALTER TABLE facebook_posts ADD COLUMN image_path TEXT DEFAULT ''",
+  "ALTER TABLE facebook_posts ADD COLUMN image_prompt TEXT DEFAULT ''",
+  "ALTER TABLE facebook_posts ADD COLUMN image_source TEXT DEFAULT ''",
+  "ALTER TABLE facebook_posts ADD COLUMN metrics TEXT DEFAULT '{}'",
 ].forEach(sql => { try { db.exec(sql); } catch {} });
 
 // Orders table (added later, created via migration)
