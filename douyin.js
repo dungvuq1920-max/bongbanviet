@@ -8,7 +8,7 @@ const DEFAULT_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
 const BASE_URL = 'https://www.douyin.com';
 
 const WATERMARK_HINTS = ['tplv-dy-water', 'dy-water', 'owner_watermark', 'watermark_image', 'watermark=1', 'playwm'];
-const ALLOWED_IMAGE_DOMAINS = ['douyinpic.com', 'douyinstatic.com', 'douyin.com', 'pstatp.com', 'byteimg.com', 'tiktokcdn.com', 'tiktokcdn-us.com', 'bytedance.com', 'tiktokv.com'];
+const ALLOWED_IMAGE_DOMAINS = ['douyinpic.com', 'douyinstatic.com', 'douyin.com', 'pstatp.com', 'byteimg.com', 'tiktokcdn.com', 'tiktokcdn-us.com', 'bytedance.com', 'tiktokv.com', 'tikwm.com'];
 
 const DEFAULT_QUERY = {
   device_platform: 'webapp', aid: '6383', channel: 'channel_pc_web',
@@ -309,50 +309,54 @@ function extractVideoUrl(aweme) {
   return watermarked;
 }
 
-// ── iesdouyin.com legacy API (less geo-restricted) ───────────────────────────
-async function fetchIesdouyin(awemeId) {
-  const cookies = loadCookies();
-  const url = `https://www.iesdouyin.com/web/api/v2/aweme/iteminfo/?item_ids=${awemeId}&reflow_source=reflow_page`;
-  const resp = await fetch(url, {
+// ── TikWM public API (works from any IP, supports Douyin + TikTok) ─────────────
+async function fetchTikwm(awemeId) {
+  const videoUrl = `${BASE_URL}/video/${awemeId}`;
+  const resp = await fetch(`https://www.tikwm.com/api/?url=${encodeURIComponent(videoUrl)}&hd=1`, {
     headers: {
       'User-Agent': DEFAULT_UA,
-      'Referer': 'https://www.iesdouyin.com/',
+      'Referer': 'https://www.tikwm.com/',
       'Accept': 'application/json, */*',
-      'Accept-Language': 'zh-CN,zh;q=0.9',
-      'Accept-Encoding': 'gzip, deflate',
-      'Cookie': cookieStr(cookies),
     },
-    signal: AbortSignal.timeout(20000),
+    signal: AbortSignal.timeout(25000),
   });
   if (!resp.ok) return null;
-  const text = await resp.text();
-  if (!text) return null;
-  const data = JSON.parse(text);
-  const items = (data || {}).item_list || [];
-  return items[0] || null;
+  const data = await resp.json().catch(() => null);
+  if (!data || data.code !== 0 || !data.data) return null;
+  const d = data.data;
+  // Normalize to aweme-compatible shape
+  const playUrls = [d.play, d.hdplay, d.wmplay].filter(Boolean);
+  const coverUrls = [d.cover, d.origin_cover].filter(Boolean);
+  const images = Array.isArray(d.images)
+    ? d.images.map(img => ({ display_image: { url_list: [typeof img === 'string' ? img : img.url || img] } }))
+    : undefined;
+  return {
+    aweme_id: String(d.id || awemeId),
+    desc: d.title || '',
+    video: {
+      play_addr: { url_list: playUrls },
+      origin_cover: { url_list: coverUrls },
+      cover: { url_list: coverUrls },
+      duration: (d.duration || 0) * 1000,
+    },
+    author: { nickname: (d.author || {}).nickname || '', unique_id: (d.author || {}).unique_id || '' },
+    images,
+  };
 }
 
 // ── Public API methods ────────────────────────────────────────────────────────
 async function getVideoDetail(awemeId) {
-  // Primary: main web API (may be geo-blocked from non-CN servers; 1 retry to fail fast)
+  // Primary: main web API (1 attempt each — fail fast if geo-blocked)
   for (const aid of ['6383', '1128']) {
     try {
       const data = await douyinFetch('/aweme/v1/web/aweme/detail/', { aweme_id: awemeId, aid }, 1);
       const detail = (data || {}).aweme_detail;
       if (detail) return detail;
-      const filterInfo = (data || {}).filter_detail;
-      if (filterInfo && filterInfo.filter_reason) continue;
     } catch {}
   }
-  // Fallback 1: feed endpoint
+  // Fallback: TikWM public API (bypasses geo-block, works from any server)
   try {
-    const data = await douyinFetch('/aweme/v1/web/feed/', { aweme_id: awemeId, count: '1' });
-    const list = (data || {}).aweme_list || [];
-    if (list.length) return list[0];
-  } catch {}
-  // Fallback 2: iesdouyin.com legacy API (different domain, often not geo-blocked)
-  try {
-    const item = await fetchIesdouyin(awemeId);
+    const item = await fetchTikwm(awemeId);
     if (item) return item;
   } catch {}
   return null;
