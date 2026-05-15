@@ -79,8 +79,31 @@
     .btn-sm:disabled{opacity:.45;cursor:not-allowed;background:#9CA3AF}
     .btn-sm.album{background:#FEF3C7;color:#92400E}
     .btn-sm.album:hover{background:#FDE68A}
-    .btn-sm.proc{background:#EDE9FE;color:#7C3AED;padding:7px 10px}
+    .btn-sm.proc{background:#EDE9FE;color:#7C3AED;padding:5px 9px}
     .btn-sm.proc:hover{background:#DDD6FE}
+    .btn-sm.tt-up{background:#111;color:#fff;padding:5px 9px}
+    .btn-sm.tt-up:hover{background:#374151}
+    .btn-sm.done-dl{background:#DCFCE7;color:#166534;padding:5px 9px}
+
+    /* Per-card action row */
+    .r-acts{display:flex;align-items:center;gap:4px;flex-shrink:0}
+    .music-sel{width:118px;padding:4px 5px;border:1.5px solid var(--line);border-radius:5px;font-family:'Inter',sans-serif;font-size:11px;color:var(--dark);background:#fff;cursor:pointer;outline:none;height:28px;max-width:118px}
+    .music-sel:focus{border-color:#9CA3AF}
+    .spin-sm{display:inline-block;width:10px;height:10px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
+
+    /* TikTok bar */
+    .tt-bar{display:flex;align-items:center;justify-content:space-between;padding:7px 48px;border-bottom:1px solid var(--line);background:#F9FAFB;font-size:12px}
+    .tt-btn{padding:4px 12px;border:1.5px solid var(--line);background:#fff;font-family:'Inter',sans-serif;font-size:11px;font-weight:600;cursor:pointer;border-radius:5px;display:inline-flex;align-items:center;gap:5px;color:var(--dark);transition:all .15s}
+    .tt-btn:hover{border-color:#9CA3AF;background:#F3F4F6}
+    .tt-btn.live{background:#111;color:#fff;border-color:#111}
+    .tt-btn.live:hover{background:#374151;border-color:#374151}
+
+    /* FFmpeg status bar */
+    .ff-bar{display:flex;align-items:center;gap:8px;padding:6px 48px;font-size:12px;border-bottom:1px solid #FDE68A;background:#FFFBEB;color:#92400E}
+    .ff-bar.ready{background:#F0FDF4;border-color:#BBF7D0;color:#166534}
+    .ff-bar.err{background:#FEF2F2;border-color:#FECACA;color:#991B1B}
+
+    @media(max-width:600px){.tt-bar,.ff-bar{padding-left:20px;padding-right:20px}}
 
     .dl-all-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
     .dl-all-count{font-size:12px;color:var(--mid)}
@@ -145,10 +168,21 @@
     </div>
     <p class="title">Douyin Downloader</p>
     <p class="subtitle">Tải video &amp; ảnh không watermark</p>
-    <a href="/process" style="display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-size:12px;color:var(--mid);text-decoration:none;padding:4px 10px;border:1px solid var(--line);border-radius:20px;transition:all .2s" onmouseover="this.style.borderColor='#9CA3AF'" onmouseout="this.style.borderColor='var(--line)'">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
-      Xử Lý Video (đổi nhạc)
-    </a>
+  </div>
+
+  <!-- TikTok connection bar -->
+  <div class="tt-bar" id="ttBar" style="display:none">
+    <span id="ttStatusTxt" style="color:var(--mid)">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-right:4px"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V9.41a8.16 8.16 0 004.77 1.52V7.49a4.85 4.85 0 01-1-.8z"/></svg>
+      TikTok
+    </span>
+    <button class="tt-btn" id="ttConnBtn" onclick="ttConnect()">Kết nối TikTok</button>
+  </div>
+
+  <!-- FFmpeg status bar -->
+  <div class="ff-bar" id="ffBar" style="display:none">
+    <div class="spinner" style="width:12px;height:12px;border-color:currentColor;border-top-color:transparent;flex-shrink:0" id="ffSpin"></div>
+    <span id="ffTxt">Đang tải FFmpeg...</span>
   </div>
 
   <div class="tabs">
@@ -227,10 +261,15 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Tải Video
       </button>
-      <button class="btn-full" onclick="pvProcess()" style="background:#7C3AED;margin-top:8px">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-        Đổi Nhạc Nền
-      </button>
+      <div id="pvProcArea" style="margin-top:8px">
+        <select id="pvMusicSel" style="width:100%;padding:7px 10px;border:1.5px solid var(--line);border-radius:8px;font-family:'Inter',sans-serif;font-size:12px;color:var(--dark);margin-bottom:6px;outline:none">
+          <option value="-1">♫ Chọn nhạc nền...</option>
+        </select>
+        <button class="btn-full" onclick="pvProcess()" style="background:#7C3AED" id="pvProcBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          Đổi Nhạc Nền
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -256,10 +295,52 @@
   </div>
 </div>
 
+<script src="/ffmpeg-proxy/ffmpeg.js"></script>
+<script src="/ffmpeg-proxy/util.js"></script>
 <script>
 var _bResolved = [];
 var _uVideos = [], _uUrl = '', _uCursor = 0, _uHasMore = false, _uCount = 0;
 var _srResults = [], _srCursor = 0, _srHasMore = false, _srQuery = '';
+
+// ── FFmpeg state ──────────────────────────────────────────────────────────────
+var ffInst = null, _ffetch = null, _ffBlobURL = null, ffReady = false;
+var _procResults = {}; // cardKey → { url, name }
+
+// ── Music Library ─────────────────────────────────────────────────────────────
+var MUSIC_LIB = [
+  {t:'Electronic Beat', g:'EDM'},
+  {t:'Synth Pop',       g:'Pop'},
+  {t:'Dance Floor',     g:'EDM'},
+  {t:'Acoustic Breeze', g:'Acoustic'},
+  {t:'Chill Vibes',     g:'Chill'},
+  {t:'Cinematic Rise',  g:'Cinematic'},
+  {t:'Happy Day',       g:'Pop'},
+  {t:'Indie Folk',      g:'Acoustic'},
+  {t:'Tech House',      g:'EDM'},
+  {t:'Hip Hop Beat',    g:'Hip-hop'},
+  {t:'Summer Pop',      g:'Pop'},
+  {t:'Jazz Lounge',     g:'Jazz'},
+  {t:'Lo-fi Study',     g:'Chill'},
+  {t:'Trap Flow',       g:'Hip-hop'},
+  {t:'Epic Score',      g:'Cinematic'},
+  {t:'Orchestral Drama',g:'Cinematic'},
+  {t:'Rock Anthem',     g:'Rock'},
+];
+MUSIC_LIB.forEach(function(t,i){ t.url='https://www.soundhelix.com/examples/mp3/SoundHelix-Song-'+(i+1)+'.mp3'; });
+
+// Build options HTML grouped by genre
+var _mOptHtml = (function(){
+  var groups={}, order=[];
+  MUSIC_LIB.forEach(function(t,i){
+    if(!groups[t.g]){groups[t.g]=[];order.push(t.g);}
+    groups[t.g].push({i:i,t:t.t});
+  });
+  return order.map(function(g){
+    return '<optgroup label="'+g+'">'+groups[g].map(function(x){
+      return '<option value="'+x.i+'">'+x.t+'</option>';
+    }).join('')+'</optgroup>';
+  }).join('');
+})();
 
 // ── Tab ───────────────────────────────────────────────────────────────────────
 function sw(t) {
@@ -336,21 +417,121 @@ function pvDownload(){
   },3000);
 }
 
-function sendToProcessIdx(type, i){
-  var v;
-  if(type==='b') v=_bResolved[i]&&_bResolved[i].video;
-  else if(type==='u') v=_uVideos[i];
-  else if(type==='sr') v=_srResults[i];
-  if(!v||!v.play_url) return;
-  var fn=v.filename||((v.title||'video').slice(0,60).replace(/[\\/:*?"<>|#\r\n]/g,'_')+'.mp4');
-  sessionStorage.setItem('processVideo',JSON.stringify({url:v.play_url,filename:fn,title:v.title,author:v.author}));
-  window.location.href='/process';
+// ── Inline processing (replaces redirect to /process) ────────────────────────
+function ext(n){ var d=n.lastIndexOf('.'); return d>0?n.slice(d+1).toLowerCase():'mp4'; }
+
+async function processOneVideo(vFile, mFile, volume, doLoop, onPct){
+  var uid=Date.now()+'_'+Math.random().toString(36).slice(2,7);
+  var vn='v'+uid+'.'+ext(vFile.name), mn='m'+uid+'.mp3', on='o'+uid+'.mp4';
+  var progH=function(p){ if(onPct) onPct(Math.round((p.progress||0)*100)); };
+  ffInst.on('progress',progH);
+  try{
+    await ffInst.writeFile(vn, await (vFile.isUrl ? _ffetch(vFile.proxyUrl) : _ffetch(vFile)));
+    await ffInst.writeFile(mn, await (mFile._url  ? _ffetch(mFile._url)    : _ffetch(mFile)));
+    var args=['-i',vn];
+    if(doLoop) args.push('-stream_loop','-1');
+    args.push('-i',mn,'-map','0:v','-map','1:a','-af','volume='+volume.toFixed(2),'-c:v','copy','-shortest','-y',on);
+    var code=await ffInst.exec(args);
+    if(code!==0) throw new Error('FFmpeg lỗi (code '+code+')');
+    var data=await ffInst.readFile(on);
+    return URL.createObjectURL(new Blob([data.buffer],{type:'video/mp4'}));
+  }finally{
+    ffInst.off('progress',progH);
+    try{await ffInst.deleteFile(vn);}catch(e){}
+    try{await ffInst.deleteFile(mn);}catch(e){}
+    try{await ffInst.deleteFile(on);}catch(e){}
+  }
 }
 
-function pvProcess(){
+async function processCard(type, idx, btn){
+  var sel=$('msel_'+type+'_'+idx);
+  var trackIdx=sel?parseInt(sel.value):-1;
+  if(trackIdx<0){ alert('Chọn nhạc nền trước!'); return; }
+  if(!ffReady){ alert('FFmpeg chưa sẵn sàng, đợi vài giây rồi thử lại.'); return; }
+  var v;
+  if(type==='b') v=_bResolved[idx]&&_bResolved[idx].video;
+  else if(type==='u') v=_uVideos[idx];
+  else if(type==='sr') v=_srResults[idx];
+  if(!v||!v.play_url) return;
+  var track=MUSIC_LIB[trackIdx];
+  var fn=v.filename||((v.title||'video').slice(0,60).replace(/[\\/:*?"<>|#\r\n]/g,'_')+'.mp4');
+  var outFn=fn.replace(/\.mp4$/i,'')+'_bgnhac.mp4';
+  btn.disabled=true; btn.innerHTML='<span class="spin-sm"></span>';
+  if(sel) sel.disabled=true;
+  var vFile={name:fn,isUrl:true,proxyUrl:'/api/douyin/stream-url?url='+encodeURIComponent(v.play_url)+'&filename='+encodeURIComponent(fn)};
+  var mFile={name:track.t+'.mp3',_url:track.url};
+  try{
+    var url=await processOneVideo(vFile,mFile,0.8,true,function(pct){
+      btn.innerHTML=pct+'%';
+    });
+    var cardKey=type+'_'+idx;
+    _procResults[cardKey]={url:url,name:outFn};
+    $('acts_'+type+'_'+idx).innerHTML=
+      '<a class="btn-sm done-dl" href="'+url+'" download="'+esc(outFn)+'">⬇ Tải</a>'+
+      '<button class="btn-sm tt-up" onclick="uploadTikTok(\''+cardKey+'\',this)">TikTok ↑</button>';
+  }catch(e){
+    btn.disabled=false; btn.innerHTML='▶';
+    if(sel) sel.disabled=false;
+    alert('Lỗi xử lý: '+(e.message||e));
+  }
+}
+
+async function pvProcess(){
   if(!_pvUrl) return;
-  sessionStorage.setItem('processVideo',JSON.stringify({url:_pvUrl,filename:_pvFn,title:$('pvTitle').textContent}));
-  window.location.href='/process';
+  var sel=$('pvMusicSel');
+  var trackIdx=sel?parseInt(sel.value):-1;
+  if(trackIdx<0){ alert('Chọn nhạc nền trước!'); return; }
+  if(!ffReady){ alert('FFmpeg chưa sẵn sàng, đợi vài giây.'); return; }
+  var track=MUSIC_LIB[trackIdx];
+  var outFn=(_pvFn||'video').replace(/\.mp4$/i,'')+'_bgnhac.mp4';
+  var procBtn=$('pvProcBtn');
+  procBtn.disabled=true; procBtn.innerHTML='<span class="spinner-sm" style="display:inline-block"></span> Đang xử lý...';
+  var vFile={name:_pvFn||'video.mp4',isUrl:true,proxyUrl:'/api/douyin/stream-url?url='+encodeURIComponent(_pvUrl)+'&filename='+encodeURIComponent(_pvFn||'video.mp4')};
+  var mFile={name:track.t+'.mp3',_url:track.url};
+  try{
+    var url=await processOneVideo(vFile,mFile,0.8,true,function(pct){ procBtn.textContent=pct+'%'; });
+    $('pvProcArea').innerHTML='<a class="btn-full" href="'+url+'" download="'+esc(outFn)+'" style="background:#7C3AED;color:#fff;padding:11px;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:6px;text-decoration:none">⬇ Tải video đã xử lý</a>'+
+      '<button class="btn-full" onclick="_pvTtKey=\'pv_tmp\';_procResults[_pvTtKey]={url:\''+url+'\',name:\''+esc(outFn)+'\'};uploadTikTok(_pvTtKey,this)" style="background:#111">TikTok ↑ Upload</button>';
+  }catch(e){
+    procBtn.disabled=false;
+    procBtn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg> Đổi Nhạc Nền';
+    alert('Lỗi: '+(e.message||e));
+  }
+}
+var _pvTtKey='';
+
+// ── TikTok upload ─────────────────────────────────────────────────────────────
+var ttStatus={connected:false,configured:false,username:''};
+
+async function uploadTikTok(cardKey, btn){
+  var result=_procResults[cardKey];
+  if(!result||!result.url) return;
+  // Check status
+  var st=ttStatus;
+  if(!st.connected){
+    if(st.configured){
+      if(confirm('Chưa kết nối TikTok. Kết nối ngay?')) ttConnect();
+    }else{
+      window.open('https://www.tiktok.com/upload','_blank');
+    }
+    return;
+  }
+  var origTxt=btn.textContent;
+  btn.disabled=true; btn.textContent='Đang up...';
+  try{
+    var resp=await fetch(result.url);
+    var blob=await resp.blob();
+    var fd=new FormData();
+    fd.append('video',blob,result.name);
+    fd.append('title',result.name.replace('_bgnhac.mp4',''));
+    var r=await fetch('/api/tiktok/upload',{method:'POST',body:fd});
+    var d=await r.json();
+    if(!r.ok) throw new Error(d.error||'Upload thất bại');
+    btn.textContent='✓ Đã up'; btn.style.background='#16a34a';
+  }catch(e){
+    btn.disabled=false; btn.textContent=origTxt;
+    alert('Upload TikTok thất bại: '+e.message);
+  }
 }
 
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closePv();});
@@ -428,7 +609,7 @@ function renderBatch(results){
       var btnH=alb
         ?'<button class="btn-sm album" onclick="dlAlbumBatch('+i+')">Xem Ảnh</button>'
         :(v.play_url
-          ?'<button class="btn-sm" onclick="dlBatchItem('+i+',this)">Tải</button><button class="btn-sm proc" onclick="sendToProcessIdx(\'b\','+i+')" title="Đổi nhạc nền">♫</button>'
+          ?'<div class="r-acts" id="acts_b_'+i+'"><select class="music-sel" id="msel_b_'+i+'" title="Chọn nhạc nền"><option value="-1">♫ Nhạc</option>'+_mOptHtml+'</select><button class="btn-sm" style="padding:5px 10px" onclick="dlBatchItem('+i+',this)">Tải</button><button class="btn-sm proc" id="proc_b_'+i+'" onclick="processCard(\'b\','+i+',this)">▶</button></div>'
           :'<span class="badge-sm">No URL</span>');
       div.innerHTML=th+'<div class="r-info"><p class="r-title'+titleCls+'"'+titleClick+'>'+esc(v.title||'Không có tiêu đề')+'</p>'+
         '<p class="r-sub">@'+esc(v.author||'')+(v.duration?' · '+fmtDur(v.duration):'')+'</p></div>'+
@@ -479,7 +660,7 @@ async function fetchUser(first){
   try{
     var startIdx=_uVideos.length;
     var r=await fetch('/api/douyin/user-posts',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({url:_uUrl,cursor:_uCursor,count:20})});
+      body:JSON.stringify({url:_uUrl,cursor:_uCursor,count:8})});
     var d=await r.json(); if(!r.ok) throw new Error(d.detail||'Không thể tải danh sách video.');
     _uHasMore=d.has_more; _uCursor=d.next_cursor; _uCount+=(d.videos||[]).length;
     if(first) _uVideos=d.videos||[];
@@ -512,7 +693,7 @@ function renderUser(d,first,startIdx){
     var titleCls=pvClick?' clickable':'', titleClick=pvClick?' onclick="'+pvClick+'"':'';
     var btnH=alb?'<button class="btn-sm album">Album</button>':
       (v.play_url
-        ?'<button class="btn-sm" onclick="dlUserItem('+idx+',this)">Tải</button><button class="btn-sm proc" onclick="sendToProcessIdx(\'u\','+idx+')" title="Đổi nhạc nền">♫</button>'
+        ?'<div class="r-acts" id="acts_u_'+idx+'"><select class="music-sel" id="msel_u_'+idx+'" title="Chọn nhạc nền"><option value="-1">♫ Nhạc</option>'+_mOptHtml+'</select><button class="btn-sm" style="padding:5px 10px" onclick="dlUserItem('+idx+',this)">Tải</button><button class="btn-sm proc" id="proc_u_'+idx+'" onclick="processCard(\'u\','+idx+',this)">▶</button></div>'
         :'<span class="badge-sm">No URL</span>');
     div.innerHTML=th+'<div class="r-info"><p class="r-title'+titleCls+'"'+titleClick+'>'+esc(v.title||'Không có tiêu đề')+'</p>'+
       '<p class="r-sub">@'+esc(v.author||'')+(v.duration?' · '+fmtDur(v.duration):'')+'</p></div>'+
@@ -588,7 +769,7 @@ function renderSearchResults(videos,startIdx,first){
     var th=mkThumb(v.cover_url, pvClick);
     var titleCls=pvClick?' clickable':'', titleClick=pvClick?' onclick="'+pvClick+'"':'';
     var btnH=v.play_url
-      ?'<button class="btn-sm" onclick="dlSrItem('+idx+',this)">Tải</button><button class="btn-sm proc" onclick="sendToProcessIdx(\'sr\','+idx+')" title="Đổi nhạc nền">♫</button>'
+      ?'<div class="r-acts" id="acts_sr_'+idx+'"><select class="music-sel" id="msel_sr_'+idx+'" title="Chọn nhạc nền"><option value="-1">♫ Nhạc</option>'+_mOptHtml+'</select><button class="btn-sm" style="padding:5px 10px" onclick="dlSrItem('+idx+',this)">Tải</button><button class="btn-sm proc" id="proc_sr_'+idx+'" onclick="processCard(\'sr\','+idx+',this)">▶</button></div>'
       :'<span class="badge-sm">No URL</span>';
     div.innerHTML=th+'<div class="r-info"><p class="r-title'+titleCls+'"'+titleClick+'>'+esc(v.title||'Không có tiêu đề')+'</p>'+
       '<p class="r-sub">@'+esc(v.author||'')+(v.duration?' · '+fmtDur(v.duration):'')+'</p></div>'+
@@ -680,6 +861,110 @@ $('srInput').addEventListener('keydown',function(e){if(e.key==='Enter')doSearch(
   window.dySaveCookies=dySaveCookies;
   window.dyLogout=dyLogout;
   dyCheckStatus();
+})();
+
+// ── TikTok connect bar ────────────────────────────────────────────────────────
+(function(){
+  function renderTTBar(){
+    var bar=$('ttBar'); if(!bar) return;
+    bar.style.display='flex';
+    var st=ttStatus;
+    if(st.connected){
+      $('ttStatusTxt').innerHTML=
+        '<svg width="13" height="13" viewBox="0 0 24 24" fill="#111" style="vertical-align:-2px;margin-right:4px"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V9.41a8.16 8.16 0 004.77 1.52V7.49a4.85 4.85 0 01-1-.8z"/></svg>'+
+        '<span style="color:#166534;font-weight:600">✓ TikTok: @'+esc(st.username||'connected')+'</span>';
+      $('ttConnBtn').textContent='Ngắt kết nối';
+      $('ttConnBtn').className='tt-btn';
+      $('ttConnBtn').onclick=function(){ttDisconnect();};
+    }else{
+      $('ttStatusTxt').innerHTML=
+        '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-right:4px"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V9.41a8.16 8.16 0 004.77 1.52V7.49a4.85 4.85 0 01-1-.8z"/></svg>'+
+        (st.configured ? 'Chưa kết nối TikTok' : '<span style="color:#92400E">TikTok API chưa cấu hình — upload thủ công</span>');
+      $('ttConnBtn').textContent=st.configured?'Kết nối TikTok':'Mở TikTok';
+      $('ttConnBtn').className='tt-btn live';
+      $('ttConnBtn').onclick=function(){ st.configured?ttConnect():window.open('https://www.tiktok.com/upload','_blank'); };
+    }
+  }
+
+  async function checkTT(){
+    try{
+      var d=await fetch('/api/tiktok/status').then(function(r){return r.json();});
+      ttStatus.connected=d.connected;
+      ttStatus.configured=d.configured;
+      ttStatus.username=d.username||'';
+      renderTTBar();
+    }catch(e){ /* silent */ }
+  }
+
+  function ttConnect(){
+    fetch('/api/tiktok/auth-url').then(function(r){return r.json();}).then(function(d){
+      if(d.error){alert('TikTok chưa cấu hình: '+d.error);return;}
+      var pop=window.open(d.url,'tiktok-auth','width=520,height=680,top=80,left=80');
+      var hdl=function(e){
+        if(!e.data||e.data.type!=='tiktok-auth') return;
+        window.removeEventListener('message',hdl);
+        if(pop&&!pop.closed) pop.close();
+        if(e.data.success){
+          ttStatus.connected=true;
+          ttStatus.username=e.data.username;
+          renderTTBar();
+        }else{
+          alert('Kết nối TikTok thất bại: '+(e.data.error||'unknown'));
+        }
+      };
+      window.addEventListener('message',hdl);
+    }).catch(function(e){alert('Lỗi: '+e.message);});
+  }
+
+  function ttDisconnect(){
+    fetch('/api/tiktok/disconnect',{method:'DELETE'}).then(function(){
+      ttStatus.connected=false; ttStatus.username='';
+      renderTTBar();
+    });
+  }
+
+  window.ttConnect=ttConnect;
+  window.ttDisconnect=ttDisconnect;
+  checkTT();
+})();
+
+// ── FFmpeg init ───────────────────────────────────────────────────────────────
+(function(){
+  function setFF(type,msg){
+    var bar=$('ffBar'); if(!bar) return;
+    bar.style.display='flex';
+    bar.className='ff-bar'+( type?' '+type:'');
+    $('ffTxt').textContent=msg;
+    var spin=$('ffSpin');
+    if(spin) spin.style.display=(type==='loading')?'block':'none';
+    if(type==='ready') setTimeout(function(){ bar.style.display='none'; },3000);
+  }
+
+  async function initFF(){
+    if(typeof FFmpegWASM==='undefined'||typeof FFmpegUtil==='undefined'){
+      setFF('err','Không tải được FFmpeg — reload trang.');
+      return;
+    }
+    ffInst=new FFmpegWASM.FFmpeg();
+    _ffetch=FFmpegUtil.fetchFile;
+    _ffBlobURL=FFmpegUtil.toBlobURL;
+    setFF('loading','Đang tải FFmpeg WASM (~30MB, cache sau lần đầu)...');
+    try{
+      var base='/ffmpeg-proxy';
+      await ffInst.load({
+        coreURL: await _ffBlobURL(base+'/ffmpeg-core.js','text/javascript'),
+        wasmURL: await _ffBlobURL(base+'/ffmpeg-core.wasm','application/wasm'),
+      });
+      ffReady=true;
+      setFF('ready','FFmpeg sẵn sàng ✓ — xử lý nhạc nền ngay trên trang này');
+      // Populate pvMusicSel in modal
+      var pvSel=$('pvMusicSel');
+      if(pvSel) pvSel.innerHTML='<option value="-1">♫ Chọn nhạc nền...</option>'+_mOptHtml;
+    }catch(e){
+      setFF('err','Tải FFmpeg thất bại: '+e.message+'. Reload trang.');
+    }
+  }
+  initFF();
 })();
 </script>
 </body>

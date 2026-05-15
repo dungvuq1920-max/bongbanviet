@@ -228,6 +228,119 @@ app.get(['/vandon', '/vandon/'], (req, res) => {
   res.sendFile(path.join(__dirname, 'vandon', 'index.html'));
 });
 app.use('/vandon', express.static(path.join(__dirname, 'vandon')));
+
+// ─── FFmpeg WASM Proxy (fixes cross-origin Worker restriction) ──────────────
+// Serves ffmpeg scripts from same origin so browser allows Worker creation
+const FFMPEG_MAP = {
+  'ffmpeg.js':        'https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js',
+  'util.js':          'https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js',
+  'ffmpeg-core.js':   'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js',
+  'ffmpeg-core.wasm': 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm',
+};
+app.get('/ffmpeg-proxy/:file', async (req, res) => {
+  const file = req.params.file;
+  const upstream = FFMPEG_MAP[file]
+    || (/^\d+\.ffmpeg\.js$/.test(file) ? `https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/${file}` : null);
+  if (!upstream) return res.status(404).end();
+  try {
+    const r = await fetch(upstream, { signal: AbortSignal.timeout(30000) });
+    if (!r.ok) return res.status(r.status).end();
+    res.setHeader('Content-Type', file.endsWith('.wasm') ? 'application/wasm' : 'text/javascript');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.end(Buffer.from(await r.arrayBuffer()));
+  } catch (e) {
+    res.status(502).json({ error: e.message });
+  }
+});
+
+// ─── TikTok Integration ───────────────────────────────────────────────────
+app.get('/api/tiktok/status', (req, res) => {
+  const cfg = readShopeeAiConfig();
+  const configured = !!(process.env.TIKTOK_CLIENT_KEY);
+  if (!cfg.tiktokAccessToken) return res.json({ connected: false, configured });
+  res.json({ connected: true, username: cfg.tiktokUsername || '', avatar: cfg.tiktokAvatar || '', configured });
+});
+
+app.get('/api/tiktok/auth-url', (req, res) => {
+  const clientKey = process.env.TIKTOK_CLIENT_KEY || '';
+  if (!clientKey) return res.status(400).json({ error: 'TIKTOK_CLIENT_KEY chưa được cấu hình' });
+  const redirectUri = process.env.TIKTOK_REDIRECT_URI || `${req.protocol}://${req.get('host')}/api/tiktok/callback`;
+  const state = crypto.randomBytes(16).toString('hex');
+  const url = `https://www.tiktok.com/v2/auth/authorize/?client_key=${clientKey}&scope=video.publish%2Cuser.info.basic&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;
+  res.json({ url });
+});
+
+app.get('/api/tiktok/callback', async (req, res) => {
+  const { code, error: ttErr } = req.query;
+  const close = (ok, data) => res.send(`<script>window.opener&&window.opener.postMessage(${JSON.stringify({ type: 'tiktok-auth', success: ok, ...data })},'*');window.close();</script>`);
+  if (ttErr || !code) return close(false, { error: ttErr || 'cancelled' });
+  const clientKey = process.env.TIKTOK_CLIENT_KEY || '';
+  const clientSecret = process.env.TIKTOK_CLIENT_SECRET || '';
+  const redirectUri = process.env.TIKTOK_REDIRECT_URI || `${req.protocol}://${req.get('host')}/api/tiktok/callback`;
+  try {
+    const tokenR = await fetch('https://open.tiktokapis.com/v2/oauth/token/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Cache-Control': 'no-cache' },
+      body: new URLSearchParams({ client_key: clientKey, client_secret: clientSecret, code, grant_type: 'authorization_code', redirect_uri: redirectUri })
+    });
+    const td = await tokenR.json();
+    if (!td.access_token) throw new Error(td.error_description || 'Token exchange failed');
+    const userR = await fetch('https://open.tiktokapis.com/v2/user/info/?fields=open_id,display_name,avatar_url', {
+      headers: { Authorization: `Bearer ${td.access_token}` }
+    });
+    const user = ((await userR.json()).data || {}).user || {};
+    const cfg = readShopeeAiConfig();
+    Object.assign(cfg, { tiktokAccessToken: td.access_token, tiktokRefreshToken: td.refresh_token || '', tiktokOpenId: user.open_id || '', tiktokUsername: user.display_name || '', tiktokAvatar: user.avatar_url || '' });
+    writeShopeeAiConfig(cfg);
+    close(true, { username: user.display_name || 'TikTok User' });
+  } catch (e) {
+    close(false, { error: e.message });
+  }
+});
+
+app.delete('/api/tiktok/disconnect', (req, res) => {
+  const cfg = readShopeeAiConfig();
+  ['tiktokAccessToken','tiktokRefreshToken','tiktokOpenId','tiktokUsername','tiktokAvatar'].forEach(k => delete cfg[k]);
+  writeShopeeAiConfig(cfg);
+  res.json({ ok: true });
+});
+
+// TikTok video upload — client POSTs processed blob, server uploads to TikTok API
+try { fs.mkdirSync(path.join(DATA_DIR, 'temp'), { recursive: true }); } catch {}
+const ttMulter = multer({ dest: path.join(DATA_DIR, 'temp'), limits: { fileSize: 500 * 1024 * 1024 } });
+app.post('/api/tiktok/upload', ttMulter.single('video'), async (req, res) => {
+  const cfg = readShopeeAiConfig();
+  if (!cfg.tiktokAccessToken) return res.status(401).json({ error: 'Chưa kết nối TikTok' });
+  if (!req.file) return res.status(400).json({ error: 'Không có file video' });
+  const filePath = req.file.path;
+  const title = (req.body.title || 'Bóng bàn').slice(0, 150);
+  const token = cfg.tiktokAccessToken;
+  try {
+    const fileSize = fs.statSync(filePath).size;
+    const initR = await fetch('https://open.tiktokapis.com/v2/post/publish/video/init/', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json; charset=UTF-8' },
+      body: JSON.stringify({
+        post_info: { title, privacy_level: 'SELF_ONLY', disable_duet: false, disable_comment: false, disable_stitch: false, video_cover_timestamp_ms: 1000 },
+        source_info: { source: 'FILE_UPLOAD', video_size: fileSize, chunk_size: fileSize, total_chunk_count: 1 }
+      })
+    });
+    const initData = await initR.json();
+    if (initData.error?.code !== 'ok') throw new Error(initData.error?.message || 'TikTok init failed');
+    const uploadR = await fetch(initData.data.upload_url, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'video/mp4', 'Content-Length': String(fileSize), 'Content-Range': `bytes 0-${fileSize-1}/${fileSize}` },
+      body: fs.readFileSync(filePath)
+    });
+    fs.unlinkSync(filePath);
+    if (!uploadR.ok) throw new Error('TikTok upload failed: ' + uploadR.status);
+    res.json({ ok: true });
+  } catch (e) {
+    try { fs.unlinkSync(filePath); } catch {}
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.use(express.static(__dirname, { extensions: ['html'] }));
 
 // ─── Douyin Downloader (native Node.js, no Python dependency) ────────────────

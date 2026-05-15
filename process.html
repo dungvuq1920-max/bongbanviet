@@ -234,8 +234,8 @@
   <div id="queue" class="queue"></div>
 </div>
 
-<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
-<script src="https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js"></script>
+<script src="/ffmpeg-proxy/ffmpeg.js"></script>
+<script src="/ffmpeg-proxy/util.js"></script>
 <script>
 'use strict';
 
@@ -419,7 +419,7 @@ checkPassedVideo();
 async function loadFF(){
   setFFBar('loading','Đang tải FFmpeg WASM (~30MB, sẽ được cache sau lần đầu)...');
   try {
-    var base='https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
+    var base='/ffmpeg-proxy';
     await ffInst.load({
       coreURL: await _blobURL(base+'/ffmpeg-core.js',  'text/javascript'),
       wasmURL: await _blobURL(base+'/ffmpeg-core.wasm','application/wasm'),
