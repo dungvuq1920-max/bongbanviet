@@ -326,7 +326,7 @@ async function fetchTikwm(videoUrl) {
       'Accept': 'application/json, */*',
     },
     body: body.toString(),
-    signal: AbortSignal.timeout(25000),
+    signal: AbortSignal.timeout(15000),
   });
   if (!resp.ok) {
     console.error('[TikWM] HTTP', resp.status, videoUrl);
@@ -418,7 +418,13 @@ async function fetchCobalt(videoUrl) {
 
 // ── Public API methods ────────────────────────────────────────────────────────
 async function getVideoDetail(awemeId, originalUrl) {
-  // Primary: Douyin direct API (geo-blocked from Railway, fails fast)
+  const longUrl = `${BASE_URL}/video/${awemeId}`;
+  const altUrl = originalUrl && originalUrl !== longUrl ? originalUrl : null;
+
+  // Primary: TikWM — fast, no geo-blocking, works from any server IP
+  try { const item = await fetchTikwm(longUrl); if (item) return item; } catch {}
+
+  // Fallback 1: Douyin direct API (geo-blocked from Railway but worth trying)
   for (const aid of ['6383', '1128']) {
     try {
       const data = await douyinFetch('/aweme/v1/web/aweme/detail/', { aweme_id: awemeId, aid }, 1);
@@ -426,12 +432,6 @@ async function getVideoDetail(awemeId, originalUrl) {
       if (detail) return detail;
     } catch {}
   }
-
-  const longUrl = `${BASE_URL}/video/${awemeId}`;
-  const altUrl = originalUrl && originalUrl !== longUrl ? originalUrl : null;
-
-  // Fallback 1: TikWM — long URL only (v.douyin.com short URL format always rejected)
-  try { const item = await fetchTikwm(longUrl); if (item) return item; } catch {}
 
   // Fallback 2: douyin.wtf (8s timeout — fails fast if unreachable)
   for (const u of [longUrl, altUrl].filter(Boolean)) {
