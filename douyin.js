@@ -309,20 +309,51 @@ function extractVideoUrl(aweme) {
   return watermarked;
 }
 
+// ── iesdouyin.com legacy API (less geo-restricted) ───────────────────────────
+async function fetchIesdouyin(awemeId) {
+  const cookies = loadCookies();
+  const url = `https://www.iesdouyin.com/web/api/v2/aweme/iteminfo/?item_ids=${awemeId}&reflow_source=reflow_page`;
+  const resp = await fetch(url, {
+    headers: {
+      'User-Agent': DEFAULT_UA,
+      'Referer': 'https://www.iesdouyin.com/',
+      'Accept': 'application/json, */*',
+      'Accept-Language': 'zh-CN,zh;q=0.9',
+      'Accept-Encoding': 'gzip, deflate',
+      'Cookie': cookieStr(cookies),
+    },
+    signal: AbortSignal.timeout(20000),
+  });
+  if (!resp.ok) return null;
+  const text = await resp.text();
+  if (!text) return null;
+  const data = JSON.parse(text);
+  const items = (data || {}).item_list || [];
+  return items[0] || null;
+}
+
 // ── Public API methods ────────────────────────────────────────────────────────
 async function getVideoDetail(awemeId) {
-  for (const aid of ['6383', '1128', '1180']) {
-    const data = await douyinFetch('/aweme/v1/web/aweme/detail/', { aweme_id: awemeId, aid });
-    const detail = (data || {}).aweme_detail;
-    if (detail) return detail;
-    const filterInfo = (data || {}).filter_detail;
-    if (filterInfo && filterInfo.filter_reason) continue;
+  // Primary: main web API (may be geo-blocked from non-CN servers; 1 retry to fail fast)
+  for (const aid of ['6383', '1128']) {
+    try {
+      const data = await douyinFetch('/aweme/v1/web/aweme/detail/', { aweme_id: awemeId, aid }, 1);
+      const detail = (data || {}).aweme_detail;
+      if (detail) return detail;
+      const filterInfo = (data || {}).filter_detail;
+      if (filterInfo && filterInfo.filter_reason) continue;
+    } catch {}
   }
-  // Fallback: try feed endpoint
+  // Fallback 1: feed endpoint
   try {
     const data = await douyinFetch('/aweme/v1/web/feed/', { aweme_id: awemeId, count: '1' });
     const list = (data || {}).aweme_list || [];
     if (list.length) return list[0];
+  } catch {}
+  // Fallback 2: iesdouyin.com legacy API (different domain, often not geo-blocked)
+  try {
+    const item = await fetchIesdouyin(awemeId);
+    if (item) return item;
   } catch {}
   return null;
 }
