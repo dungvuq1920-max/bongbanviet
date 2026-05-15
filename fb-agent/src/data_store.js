@@ -23,6 +23,9 @@ const HEADERS = [
   'hashtags',
   'facebook_post_id',
   'error_message',
+  'content_pillar',
+  'image_path',
+  'image_prompt',
 ];
 
 /**
@@ -114,11 +117,32 @@ async function getApprovedPosts() {
   return posts.filter(p => p.status && p.status.trim() === 'approved');
 }
 
+/**
+ * Lấy các post theo status bất kỳ.
+ */
+async function getPostsByStatus(status) {
+  const posts = await readPosts();
+  return posts.filter(p => p.status && p.status.trim() === status);
+}
+
+/**
+ * Thêm một hoặc nhiều post mới vào cuối CSV.
+ */
+async function addPosts(newPosts) {
+  const posts = await readPosts();
+  const allPosts = [...posts, ...newPosts];
+  writePosts(allPosts);
+  logger.info(`Đã thêm ${newPosts.length} bài mới vào CSV.`);
+  return allPosts;
+}
+
 module.exports = {
   readPosts,
   writePosts,
   updatePost,
   getNewPosts,
   getApprovedPosts,
+  getPostsByStatus,
+  addPosts,
   CSV_PATH,
 };

@@ -502,7 +502,7 @@ app.get('/api/douyin/stream/:aweme_id', async (req, res) => {
 
     const r = await fetch(videoUrl, {
       headers: { 'Referer': `${dy.BASE_URL}/`, 'User-Agent': dy.DEFAULT_UA },
-      signal: AbortSignal.timeout(60000),
+      signal: AbortSignal.timeout(180000),
     });
     if (!r.ok) return res.status(r.status).json({ detail: 'stream failed' });
 
@@ -529,7 +529,7 @@ app.get('/api/douyin/stream-url', async (req, res) => {
         ...(isDouyin ? { 'Referer': `${dy.BASE_URL}/` } : {}),
       },
       redirect: 'follow',
-      signal: AbortSignal.timeout(60000),
+      signal: AbortSignal.timeout(180000),
     });
     if (!r.ok) return res.status(r.status).json({ detail: 'Video stream failed: ' + r.status });
     const safeName = String(filename).replace(/[\\/:*?"<>|#\r\n]/g, '_');

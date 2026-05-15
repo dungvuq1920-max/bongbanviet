@@ -5,7 +5,7 @@
 
 const cron             = require('node-cron');
 const { getApprovedPosts, updatePost } = require('./data_store');
-const { schedulePost } = require('./facebook_client');
+const { schedulePost, schedulePostWithPhoto } = require('./facebook_client');
 const logger           = require('./logger');
 
 // Mặc định chạy mỗi 2 phút. Override bằng SCHEDULER_CRON trong .env
@@ -16,9 +16,10 @@ const FB_MIN_FUTURE_MS = 11 * 60 * 1000; // 11 phút để có buffer
 
 /**
  * Xử lý một post được approve: validate → gọi FB API → cập nhật status.
+ * Tự động chọn endpoint: đăng kèm ảnh nếu có image_path, text-only nếu không.
  */
 async function processPost(post) {
-  const { id, topic, caption, hashtags, scheduled_time } = post;
+  const { id, topic, caption, hashtags, scheduled_time, image_path } = post;
 
   logger.info(`Scheduler: xử lý post ${id} — "${topic || '(không có topic)'}"`);
 
@@ -71,7 +72,17 @@ async function processPost(post) {
 
   const unixTs = Math.floor(scheduledDate.getTime() / 1000);
 
-  const result = await schedulePost(message, unixTs);
+  // Chọn endpoint: có ảnh → /photos, không ảnh → /feed
+  let result;
+  const hasImage = image_path && image_path.trim() !== '';
+
+  if (hasImage) {
+    logger.info(`Post ${id}: đăng kèm ảnh — ${image_path}`);
+    result = await schedulePostWithPhoto(message, unixTs, image_path.trim());
+  } else {
+    logger.info(`Post ${id}: đăng text-only (không có ảnh).`);
+    result = await schedulePost(message, unixTs);
+  }
 
   if (result.success) {
     await updatePost(id, {
@@ -79,7 +90,7 @@ async function processPost(post) {
       facebook_post_id: result.postId,
       error_message:    '',
     });
-    logger.info(`Post ${id} đã schedule thành công lên Facebook.`, { fbPostId: result.postId });
+    logger.info(`Post ${id} đã schedule thành công lên Facebook.`, { fbPostId: result.postId, withPhoto: hasImage });
   } else {
     await updatePost(id, {
       status:        'failed',
