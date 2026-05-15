@@ -230,29 +230,40 @@ app.get(['/vandon', '/vandon/'], (req, res) => {
 app.use('/vandon', express.static(path.join(__dirname, 'vandon')));
 app.use(express.static(__dirname, { extensions: ['html'] }));
 
-// ─── Douyin Downloader Proxy ──────────────────────────────────────────────────
-const DOUYIN_API = process.env.DOUYIN_API_URL || 'http://localhost:8000';
+// ─── Douyin Downloader (native Node.js, no Python dependency) ────────────────
+const dy = require('./douyin');
 const { Readable: _StreamReadable } = require('stream');
 
-app.get('/api/douyin/health', async (req, res) => {
-  try {
-    const r = await fetch(`${DOUYIN_API}/api/v1/health`, { signal: AbortSignal.timeout(4000) });
-    res.json(await r.json());
-  } catch {
-    res.status(503).json({ status: 'offline' });
-  }
+app.get('/api/douyin/health', (_req, res) => {
+  res.json({ status: 'ok' });
 });
 
 app.post('/api/douyin/resolve', async (req, res) => {
   try {
-    const r = await fetch(`${DOUYIN_API}/api/v1/resolve`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(req.body),
-      signal: AbortSignal.timeout(30000),
+    const url = (req.body.url || '').trim();
+    if (!url) return res.status(400).json({ detail: 'url is required' });
+
+    const { parsed } = await dy.resolveUrl(url);
+    if (!parsed || !['video', 'gallery'].includes(parsed.type))
+      return res.status(400).json({ detail: 'Unsupported URL format' });
+
+    const awemeId = parsed.aweme_id;
+    if (!awemeId) return res.status(400).json({ detail: 'Could not extract video ID from URL' });
+
+    const aweme = await dy.getVideoDetail(awemeId);
+    if (!aweme) return res.status(404).json({ detail: 'Video not found or unavailable' });
+
+    const isGallery = !!(aweme.image_post_info || aweme.images || aweme.image_list);
+    const durMs = (aweme.video || {}).duration;
+    res.json({
+      aweme_id: String(awemeId),
+      title: (aweme.desc || '').trim() || 'Untitled',
+      author: (aweme.author || {}).nickname || 'Unknown',
+      cover_url: dy.getCoverUrl(aweme),
+      media_type: isGallery ? 'gallery' : 'video',
+      duration: durMs ? Math.floor(parseInt(durMs) / 1000) : null,
+      image_urls: isGallery ? dy.collectImageUrls(aweme) : [],
     });
-    const data = await r.json();
-    res.status(r.status).json(data);
   } catch (err) {
     res.status(500).json({ detail: err.message });
   }
@@ -261,8 +272,11 @@ app.post('/api/douyin/resolve', async (req, res) => {
 app.get('/api/douyin/image', async (req, res) => {
   const { url } = req.query;
   if (!url) return res.status(400).json({ detail: 'url required' });
+  if (!dy.isAllowedImageUrl(url)) return res.status(400).json({ detail: 'URL not from allowed CDN' });
   try {
-    const r = await fetch(`${DOUYIN_API}/api/v1/image?url=${encodeURIComponent(url)}`, {
+    const r = await fetch(url, {
+      headers: { 'Referer': 'https://www.douyin.com/', 'User-Agent': dy.DEFAULT_UA },
+      redirect: 'follow',
       signal: AbortSignal.timeout(15000),
     });
     if (!r.ok) return res.status(r.status).end();
@@ -277,12 +291,23 @@ app.get('/api/douyin/image', async (req, res) => {
 app.get('/api/douyin/stream/:aweme_id', async (req, res) => {
   const { aweme_id } = req.params;
   try {
-    const r = await fetch(`${DOUYIN_API}/api/v1/stream/${encodeURIComponent(aweme_id)}`);
+    const aweme = await dy.getVideoDetail(aweme_id);
+    if (!aweme) return res.status(404).json({ detail: 'Video not found' });
+
+    const videoUrl = dy.extractVideoUrl(aweme);
+    if (!videoUrl) return res.status(404).json({ detail: 'No downloadable video URL found' });
+
+    const desc = ((aweme.desc || aweme_id) + '').trim().slice(0, 80);
+    const safeName = desc.replace(/[\\/:*?"<>|#\r\n]/g, '_');
+
+    const r = await fetch(videoUrl, {
+      headers: { 'Referer': `${dy.BASE_URL}/`, 'User-Agent': dy.DEFAULT_UA },
+      signal: AbortSignal.timeout(60000),
+    });
     if (!r.ok) return res.status(r.status).json({ detail: 'stream failed' });
-    const ct = r.headers.get('content-type');
-    if (ct) res.setHeader('Content-Type', ct);
-    const cd = r.headers.get('content-disposition');
-    if (cd) res.setHeader('Content-Disposition', cd);
+
+    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(safeName + '.mp4')}`);
+    res.setHeader('Content-Type', 'video/mp4');
     const cl = r.headers.get('content-length');
     if (cl) res.setHeader('Content-Length', cl);
     _StreamReadable.fromWeb(r.body).pipe(res);
@@ -293,14 +318,47 @@ app.get('/api/douyin/stream/:aweme_id', async (req, res) => {
 
 app.post('/api/douyin/resolve-batch', async (req, res) => {
   try {
-    const r = await fetch(`${DOUYIN_API}/api/v1/resolve-batch`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(req.body),
-      signal: AbortSignal.timeout(120000),
-    });
-    const data = await r.json();
-    res.status(r.status).json(data);
+    const urls = (req.body.urls || []).map(u => (u || '').trim()).filter(Boolean).slice(0, 50);
+    if (!urls.length) return res.status(400).json({ detail: 'urls required' });
+
+    // Semaphore: max 5 concurrent
+    let running = 0;
+    const queue = [];
+    async function withSem(fn) {
+      if (running < 5) { running++; try { return await fn(); } finally { running--; queue.shift()?.(); } }
+      await new Promise(r => queue.push(r));
+      return withSem(fn);
+    }
+
+    const results = await Promise.all(urls.map(rawUrl => withSem(async () => {
+      try {
+        const { parsed } = await dy.resolveUrl(rawUrl);
+        if (!parsed || !['video', 'gallery'].includes(parsed.type))
+          return { url: rawUrl, error: 'Unsupported URL format' };
+        const awemeId = parsed.aweme_id;
+        if (!awemeId) return { url: rawUrl, error: 'Could not extract video ID' };
+
+        const aweme = await dy.getVideoDetail(awemeId);
+        if (!aweme) return { url: rawUrl, error: 'Video not found' };
+
+        const isGallery = !!(aweme.image_post_info || aweme.images || aweme.image_list);
+        const durMs = (aweme.video || {}).duration;
+        return {
+          url: rawUrl,
+          video: {
+            aweme_id: String(awemeId),
+            title: (aweme.desc || '').trim() || 'Untitled',
+            author: (aweme.author || {}).nickname || 'Unknown',
+            cover_url: dy.getCoverUrl(aweme),
+            media_type: isGallery ? 'gallery' : 'video',
+            duration: durMs ? Math.floor(parseInt(durMs) / 1000) : null,
+            image_urls: isGallery ? dy.collectImageUrls(aweme) : [],
+          },
+        };
+      } catch (err) { return { url: rawUrl, error: err.message }; }
+    })));
+
+    res.json({ results });
   } catch (err) {
     res.status(500).json({ detail: err.message });
   }
@@ -308,14 +366,49 @@ app.post('/api/douyin/resolve-batch', async (req, res) => {
 
 app.post('/api/douyin/user-posts', async (req, res) => {
   try {
-    const r = await fetch(`${DOUYIN_API}/api/v1/user-posts`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(req.body),
-      signal: AbortSignal.timeout(30000),
+    const url = (req.body.url || '').trim();
+    const cursor = parseInt(req.body.cursor || 0) || 0;
+    const count = parseInt(req.body.count || 20) || 20;
+    if (!url) return res.status(400).json({ detail: 'url is required' });
+
+    const { parsed } = await dy.resolveUrl(url);
+    if (!parsed || parsed.type !== 'user')
+      return res.status(400).json({ detail: 'URL must be a Douyin user profile URL' });
+    const secUid = parsed.sec_uid;
+    if (!secUid) return res.status(400).json({ detail: 'Could not extract user ID from URL' });
+
+    const [userInfo, page] = await Promise.all([
+      dy.getUserInfo(secUid),
+      dy.getUserPosts(secUid, cursor, count),
+    ]);
+
+    const videos = (page.items || []).filter(a => a && a.aweme_id).map(aweme => {
+      const isGallery = !!(aweme.image_post_info || aweme.images || aweme.image_list);
+      const durMs = (aweme.video || {}).duration;
+      return {
+        aweme_id: String(aweme.aweme_id),
+        title: (aweme.desc || '').trim() || 'Untitled',
+        author: (aweme.author || {}).nickname || 'Unknown',
+        cover_url: dy.getCoverUrl(aweme),
+        media_type: isGallery ? 'gallery' : 'video',
+        duration: durMs ? Math.floor(parseInt(durMs) / 1000) : null,
+      };
     });
-    const data = await r.json();
-    res.status(r.status).json(data);
+
+    let avatarUrl = null;
+    if (userInfo) {
+      for (const key of ['avatar_medium', 'avatar_thumb', 'avatar_larger']) {
+        const urls = (userInfo[key] || {}).url_list || [];
+        if (urls.length) { avatarUrl = urls[0]; break; }
+      }
+    }
+
+    res.json({
+      user: { sec_uid: secUid, nickname: (userInfo || {}).nickname || secUid, avatar_url: avatarUrl },
+      videos,
+      has_more: page.has_more,
+      next_cursor: page.next_cursor,
+    });
   } catch (err) {
     res.status(500).json({ detail: err.message });
   }

@@ -2,5 +2,5 @@
 builder = "nixpacks"
 
 [deploy]
-startCommand = "bash start.sh"
+startCommand = "node server.js"
 restartPolicyType = "on_failure"
