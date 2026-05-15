@@ -492,20 +492,46 @@ app.get('/api/douyin/image', async (req, res) => {
 app.get('/api/douyin/stream/:aweme_id', async (req, res) => {
   const { aweme_id } = req.params;
   try {
-    const aweme = await dy.getVideoDetail(aweme_id);
-    if (!aweme) return res.status(404).json({ detail: 'Video not found' });
-
-    const videoUrl = dy.extractVideoUrl(aweme);
-    if (!videoUrl) return res.status(404).json({ detail: 'No downloadable video URL found' });
-
-    const desc = ((aweme.desc || aweme_id) + '').trim().slice(0, 80);
-    const safeName = desc.replace(/[\\/:*?"<>|#\r\n]/g, '_');
-
-    const r = await fetch(videoUrl, {
-      headers: { 'Referer': `${dy.BASE_URL}/`, 'User-Agent': dy.DEFAULT_UA },
-      signal: AbortSignal.timeout(180000),
+    // Use TikWM directly — skips geo-blocked Douyin API, responds in <10s
+    const longUrl = `https://www.douyin.com/video/${encodeURIComponent(aweme_id)}`;
+    const tikwmBody = new URLSearchParams({ url: longUrl, hd: '1' });
+    const tikwmResp = await fetch('https://www.tikwm.com/api/', {
+      method: 'POST',
+      headers: {
+        'User-Agent': dy.DEFAULT_UA,
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Referer': 'https://www.tikwm.com/',
+        'Accept': 'application/json, */*',
+      },
+      body: tikwmBody.toString(),
+      signal: AbortSignal.timeout(12000),
     });
-    if (!r.ok) return res.status(r.status).json({ detail: 'stream failed' });
+    if (!tikwmResp.ok) return res.status(502).json({ error: 'TikWM API unavailable' });
+
+    const tikwmData = await tikwmResp.json().catch(() => null);
+    if (!tikwmData || tikwmData.code !== 0 || !tikwmData.data)
+      return res.status(404).json({ error: 'Video not found or unavailable' });
+
+    const d = tikwmData.data;
+    const videoUrl = d.play || d.hdplay || d.wmplay;
+    if (!videoUrl) return res.status(404).json({ error: 'No playable URL from TikWM' });
+
+    const safeName = (d.title || aweme_id).replace(/[\\/:*?"<>|#\r\n]/g, '_');
+
+    // Separate connection timeout from body stream — abort only if CDN doesn't start responding
+    const ctrl = new AbortController();
+    const connectTimer = setTimeout(() => ctrl.abort(new Error('CDN connection timeout')), 20000);
+    let r;
+    try {
+      r = await fetch(videoUrl, {
+        headers: { 'User-Agent': dy.DEFAULT_UA, 'Referer': 'https://www.tiktok.com/' },
+        redirect: 'follow',
+        signal: ctrl.signal,
+      });
+    } finally {
+      clearTimeout(connectTimer);
+    }
+    if (!r.ok) return res.status(r.status).json({ error: 'CDN returned ' + r.status });
 
     res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(safeName + '.mp4')}`);
     res.setHeader('Content-Type', 'video/mp4');
@@ -513,7 +539,7 @@ app.get('/api/douyin/stream/:aweme_id', async (req, res) => {
     if (cl) res.setHeader('Content-Length', cl);
     _StreamReadable.fromWeb(r.body).pipe(res);
   } catch (err) {
-    if (!res.headersSent) res.status(502).json({ detail: err.message });
+    if (!res.headersSent) res.status(502).json({ error: err.message });
   }
 });
 
