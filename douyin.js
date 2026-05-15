@@ -134,8 +134,10 @@ function cookieStr(obj) {
 async function douyinFetch(path, extraParams = {}, retries = 3) {
   const cookies = loadCookies();
   const msToken = (cookies.msToken || '').trim() || genMsToken();
+  const verifyFp = cookies['s_v_web_id'] || cookies['ttwid'] || '';
 
   const params = { ...DEFAULT_QUERY, ...extraParams, msToken };
+  if (verifyFp) { params.verifyFp = verifyFp; params.s_v_web_id = verifyFp; }
   const qs = new URLSearchParams(params).toString();
   const signed = buildXBogus(`${BASE_URL}${path}?${qs}`, DEFAULT_UA);
 
@@ -309,14 +311,19 @@ function extractVideoUrl(aweme) {
 
 // ── Public API methods ────────────────────────────────────────────────────────
 async function getVideoDetail(awemeId) {
-  for (const aid of ['6383', '1128']) {
+  for (const aid of ['6383', '1128', '1180']) {
     const data = await douyinFetch('/aweme/v1/web/aweme/detail/', { aweme_id: awemeId, aid });
     const detail = (data || {}).aweme_detail;
     if (detail) return detail;
     const filterInfo = (data || {}).filter_detail;
     if (filterInfo && filterInfo.filter_reason) continue;
-    break;
   }
+  // Fallback: try feed endpoint
+  try {
+    const data = await douyinFetch('/aweme/v1/web/feed/', { aweme_id: awemeId, count: '1' });
+    const list = (data || {}).aweme_list || [];
+    if (list.length) return list[0];
+  } catch {}
   return null;
 }
 
