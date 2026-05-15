@@ -360,32 +360,65 @@ async function fetchTikwm(videoUrl) {
 
 // ── douyin.wtf fallback API ───────────────────────────────────────────────────
 async function fetchDouyinWtf(videoUrl) {
-  // Correct endpoint: /api/hybrid/video_data — returns full aweme_detail structure
   const resp = await fetch(`https://api.douyin.wtf/api/hybrid/video_data?url=${encodeURIComponent(videoUrl)}&minimal=false`, {
-    headers: {
-      'User-Agent': DEFAULT_UA,
-      'Accept': 'application/json',
-      'Referer': 'https://douyin.wtf/',
-    },
-    signal: AbortSignal.timeout(25000),
+    headers: { 'User-Agent': DEFAULT_UA, 'Accept': 'application/json', 'Referer': 'https://douyin.wtf/' },
+    signal: AbortSignal.timeout(8000),
   });
-  if (!resp.ok) {
-    console.error('[DouyinWtf] HTTP', resp.status, videoUrl);
-    return null;
-  }
+  if (!resp.ok) { console.error('[DouyinWtf] HTTP', resp.status, videoUrl); return null; }
   const d = await resp.json().catch(() => null);
-  // Response: { code: 200, router: "...", data: { aweme_detail fields } }
   if (!d || d.code !== 200 || !d.data) {
     console.error('[DouyinWtf] Bad response:', JSON.stringify(d)?.slice(0, 200), '| url:', videoUrl);
     return null;
   }
-  // d.data is the full aweme_detail — return it directly
   return d.data;
+}
+
+// ── Cobalt.tools fallback ─────────────────────────────────────────────────────
+async function fetchCobalt(videoUrl) {
+  const resp = await fetch('https://api.cobalt.tools/', {
+    method: 'POST',
+    headers: {
+      'User-Agent': DEFAULT_UA,
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ url: videoUrl, videoQuality: '1080', filenameStyle: 'pretty' }),
+    signal: AbortSignal.timeout(20000),
+  });
+  if (!resp.ok) { console.error('[Cobalt] HTTP', resp.status, videoUrl); return null; }
+  const d = await resp.json().catch(() => null);
+  if (!d || d.status === 'error') {
+    console.error('[Cobalt] Error:', JSON.stringify(d)?.slice(0, 200), '| url:', videoUrl);
+    return null;
+  }
+  if (d.status === 'redirect' || d.status === 'stream') {
+    return {
+      aweme_id: '',
+      desc: d.filename || '',
+      video: { play_addr: { url_list: [d.url].filter(Boolean) }, origin_cover: { url_list: [] }, cover: { url_list: [] }, duration: 0 },
+      author: { nickname: '', unique_id: '' },
+      images: undefined,
+    };
+  }
+  if (d.status === 'picker') {
+    const images = Array.isArray(d.picker)
+      ? d.picker.filter(p => p.type === 'photo').map(p => ({ display_image: { url_list: [p.url] } }))
+      : undefined;
+    return {
+      aweme_id: '',
+      desc: d.filename || '',
+      video: { play_addr: { url_list: [] }, origin_cover: { url_list: [] }, cover: { url_list: [] }, duration: 0 },
+      author: { nickname: '', unique_id: '' },
+      images,
+    };
+  }
+  console.error('[Cobalt] Unknown status:', d.status, '| url:', videoUrl);
+  return null;
 }
 
 // ── Public API methods ────────────────────────────────────────────────────────
 async function getVideoDetail(awemeId, originalUrl) {
-  // Primary: main web API (1 attempt each — fail fast if geo-blocked)
+  // Primary: Douyin direct API (geo-blocked from Railway, fails fast)
   for (const aid of ['6383', '1128']) {
     try {
       const data = await douyinFetch('/aweme/v1/web/aweme/detail/', { aweme_id: awemeId, aid }, 1);
@@ -395,25 +428,19 @@ async function getVideoDetail(awemeId, originalUrl) {
   }
 
   const longUrl = `${BASE_URL}/video/${awemeId}`;
-  // TikWM rejects v.douyin.com short URLs — try long URL first, then short as fallback
-  const urlsToTry = originalUrl && originalUrl !== longUrl
-    ? [longUrl, originalUrl]
-    : [longUrl];
+  const altUrl = originalUrl && originalUrl !== longUrl ? originalUrl : null;
 
-  // Fallback 1: TikWM
-  for (const u of urlsToTry) {
-    try {
-      const item = await fetchTikwm(u);
-      if (item) return item;
-    } catch {}
+  // Fallback 1: TikWM — long URL only (v.douyin.com short URL format always rejected)
+  try { const item = await fetchTikwm(longUrl); if (item) return item; } catch {}
+
+  // Fallback 2: douyin.wtf (8s timeout — fails fast if unreachable)
+  for (const u of [longUrl, altUrl].filter(Boolean)) {
+    try { const item = await fetchDouyinWtf(u); if (item) return item; } catch {}
   }
 
-  // Fallback 2: douyin.wtf
-  for (const u of urlsToTry) {
-    try {
-      const item = await fetchDouyinWtf(u);
-      if (item) return item;
-    } catch {}
+  // Fallback 3: Cobalt.tools
+  for (const u of [longUrl, altUrl].filter(Boolean)) {
+    try { const item = await fetchCobalt(u); if (item) return item; } catch {}
   }
 
   return null;

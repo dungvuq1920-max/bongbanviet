@@ -278,15 +278,27 @@ app.post('/api/douyin/debug', async (req, res) => {
     } catch (e) { out.tikwm_long_error = e.message; }
   }
 
-  // Test douyin.wtf with long URL (correct endpoint)
+  // Test douyin.wtf with long URL (8s timeout)
   try {
     const r = await fetch(`https://api.douyin.wtf/api/hybrid/video_data?url=${encodeURIComponent(longUrl)}&minimal=false`, {
       headers: { 'User-Agent': dy.DEFAULT_UA, 'Accept': 'application/json', 'Referer': 'https://douyin.wtf/' },
-      signal: AbortSignal.timeout(20000),
+      signal: AbortSignal.timeout(8000),
     });
     out.douyinwtf_status = r.status;
     out.douyinwtf_data = await r.json().catch(() => null);
   } catch (e) { out.douyinwtf_error = e.message; }
+
+  // Test Cobalt.tools with long URL
+  try {
+    const r = await fetch('https://api.cobalt.tools/', {
+      method: 'POST',
+      headers: { 'User-Agent': dy.DEFAULT_UA, 'Accept': 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: longUrl, videoQuality: '1080', filenameStyle: 'pretty' }),
+      signal: AbortSignal.timeout(20000),
+    });
+    out.cobalt_status = r.status;
+    out.cobalt_data = await r.json().catch(() => null);
+  } catch (e) { out.cobalt_error = e.message; }
 
   res.json(out);
 });
