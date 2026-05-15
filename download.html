@@ -94,6 +94,29 @@
     .btn-more:hover{background:var(--line)}
     .btn-more:disabled{opacity:.45;cursor:not-allowed}
 
+    /* Thumbnail wrap with play overlay */
+    .r-thumb-wrap{position:relative;width:48px;height:48px;border-radius:6px;overflow:hidden;flex-shrink:0;background:#F3F4F6}
+    .r-thumb-wrap.clickable{cursor:pointer}
+    .r-thumb-wrap img{width:100%;height:100%;object-fit:cover;display:block}
+    .r-play-ov{position:absolute;inset:0;background:rgba(0,0,0,.42);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s}
+    .r-thumb-wrap.clickable:hover .r-play-ov{opacity:1}
+    .r-title.clickable{cursor:pointer}
+    .r-title.clickable:hover{color:var(--accent)}
+
+    /* Preview modal */
+    .pv-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:2000;align-items:center;justify-content:center;padding:16px}
+    .pv-modal.open{display:flex}
+    .pv-box{background:var(--card);border-radius:16px;overflow:hidden;max-width:360px;width:100%;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+    .pv-close-btn{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);border:none;color:#fff;font-size:18px;line-height:1;cursor:pointer;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:10;transition:background .15s}
+    .pv-close-btn:hover{background:rgba(0,0,0,.8)}
+    .pv-media{background:#000;width:100%;height:420px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .pv-media video{max-width:100%;max-height:100%;object-fit:contain}
+    .pv-cover{max-width:100%;max-height:100%;object-fit:contain;display:none}
+    .pv-info{padding:14px 18px 18px}
+    .pv-title{font-size:14px;font-weight:700;color:var(--dark);line-height:1.4;margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .pv-sub{font-size:12px;color:var(--mid);margin-bottom:12px}
+    @media(max-width:420px){.pv-media{height:360px}}
+
     .search-hint{font-size:12px;color:var(--mid);margin-bottom:12px;padding:8px 12px;background:#F9FAFB;border-radius:6px;border:1px solid var(--line);display:none}
 
     .auth-bar{margin:8px 48px 0;padding:8px 14px;border-radius:8px;display:flex;align-items:center;justify-content:space-between;font-size:12px;background:#F9FAFB;border:1px solid var(--line)}
@@ -183,6 +206,25 @@
   </div>
 </div>
 
+<!-- Video Preview Modal -->
+<div class="pv-modal" id="pvModal" onclick="if(event.target===this)closePv()">
+  <div class="pv-box">
+    <button class="pv-close-btn" onclick="closePv()">×</button>
+    <div class="pv-media" id="pvMedia">
+      <video id="pvVideo" controls playsinline preload="metadata" style="display:none"></video>
+      <img id="pvCover" class="pv-cover" alt="">
+    </div>
+    <div class="pv-info">
+      <p id="pvTitle" class="pv-title"></p>
+      <p id="pvSub" class="pv-sub"></p>
+      <button id="pvDlBtn" class="btn-full" onclick="pvDownload()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Tải Video
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Cookie Login Modal -->
 <div class="dy-modal" id="dyModal" onclick="if(event.target===this)dyCloseModal()">
   <div class="dy-modal-box" style="max-width:420px;text-align:left">
@@ -226,6 +268,65 @@ function hide(id){ $(id).style.display='none'; }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function fmtDur(s){ if(!s)return''; var m=Math.floor(s/60); return m+':'+String(s%60).padStart(2,'0'); }
 function thumbUrl(u){ return '/api/douyin/image?url='+encodeURIComponent(u); }
+
+// ── Thumbnail helper ──────────────────────────────────────────────────────────
+function mkThumb(coverUrl, onclickStr){
+  var ph='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:.35"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>';
+  var inner=coverUrl?'<img src="'+thumbUrl(coverUrl)+'" alt="" onerror="this.style.display=\'none\'">':ph;
+  var playIco=onclickStr?'<div class="r-play-ov"><svg width="16" height="16" viewBox="0 0 24 24" fill="#fff" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>':'';
+  var clickAttr=onclickStr?' onclick="'+onclickStr+'"':'';
+  return '<div class="r-thumb-wrap'+(onclickStr?' clickable':'')+'"'+clickAttr+'>'+inner+playIco+'</div>';
+}
+
+// ── Preview modal ─────────────────────────────────────────────────────────────
+var _pvUrl='', _pvFn='';
+
+function openPvIdx(type, i){
+  var v;
+  if(type==='b') v=_bResolved[i]&&_bResolved[i].video;
+  else if(type==='u') v=_uVideos[i];
+  else if(type==='sr') v=_srResults[i];
+  if(!v||!v.play_url) return;
+  var fn=v.filename||((v.title||'video').slice(0,60).replace(/[\\/:*?"<>|#\r\n]/g,'_')+'.mp4');
+  openPv(v.play_url, fn, v.title, v.author, v.duration, v.cover_url);
+}
+
+function openPv(videoUrl, filename, title, author, dur, cover){
+  _pvUrl=videoUrl; _pvFn=filename;
+  $('pvTitle').textContent=title||'Không có tiêu đề';
+  $('pvSub').textContent='@'+(author||'')+(dur?' · '+fmtDur(dur):'');
+  var vid=$('pvVideo'), cov=$('pvCover');
+  var src='/api/douyin/stream-url?url='+encodeURIComponent(videoUrl)+'&filename='+encodeURIComponent(filename||'video.mp4');
+  vid.src=src;
+  if(cover){ vid.poster=thumbUrl(cover); }
+  else{ vid.removeAttribute('poster'); }
+  vid.style.display='block'; cov.style.display='none';
+  vid.load();
+  $('pvDlBtn').disabled=false; $('pvDlBtn').innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Tải Video';
+  $('pvModal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function closePv(){
+  var vid=$('pvVideo');
+  vid.pause(); vid.src=''; vid.removeAttribute('poster');
+  $('pvModal').classList.remove('open');
+  document.body.style.overflow='';
+  _pvUrl=''; _pvFn='';
+}
+
+function pvDownload(){
+  if(!_pvUrl) return;
+  var btn=$('pvDlBtn');
+  btn.disabled=true; btn.textContent='Đang tải...';
+  dl(_pvUrl,_pvFn);
+  setTimeout(function(){
+    btn.disabled=false;
+    btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Tải Video';
+  },3000);
+}
+
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closePv();});
 
 // Download via stream-url proxy (avoids re-fetching video details)
 function dl(videoUrl, filename){
@@ -294,12 +395,13 @@ function renderBatch(results){
     } else {
       var v=item.video, alb=v.media_type==='gallery';
       div.className='result-item';
-      var th=v.cover_url?'<img class="r-thumb" src="'+thumbUrl(v.cover_url)+'" alt="">':
-        '<div class="r-thumb-ph"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:.4"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></div>';
+      var pvClick=(!alb&&v.play_url)?'openPvIdx("b",'+i+')':null;
+      var th=mkThumb(v.cover_url, pvClick);
+      var titleCls=pvClick?' clickable':'', titleClick=pvClick?' onclick="'+pvClick+'"':'';
       var btnH=alb
         ?'<button class="btn-sm album" onclick="dlAlbumBatch('+i+')">Xem Ảnh</button>'
         :(v.play_url?'<button class="btn-sm" onclick="dlBatchItem('+i+',this)">Tải</button>':'<span class="badge-sm">No URL</span>');
-      div.innerHTML=th+'<div class="r-info"><p class="r-title">'+esc(v.title||'Không có tiêu đề')+'</p>'+
+      div.innerHTML=th+'<div class="r-info"><p class="r-title'+titleCls+'"'+titleClick+'>'+esc(v.title||'Không có tiêu đề')+'</p>'+
         '<p class="r-sub">@'+esc(v.author||'')+(v.duration?' · '+fmtDur(v.duration):'')+'</p></div>'+
         '<span class="badge-sm'+(alb?' album':'')+'">'+( alb?'Album':'Video')+'</span>'+btnH;
     }
@@ -376,11 +478,12 @@ function renderUser(d,first,startIdx){
     var idx=startIdx+j;
     var div=document.createElement('div'); div.className='result-item';
     var alb=v.media_type==='gallery';
-    var th=v.cover_url?'<img class="r-thumb" src="'+thumbUrl(v.cover_url)+'" alt="">':
-      '<div class="r-thumb-ph"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:.4"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></div>';
+    var pvClick=(!alb&&v.play_url)?'openPvIdx("u",'+idx+')':null;
+    var th=mkThumb(v.cover_url, pvClick);
+    var titleCls=pvClick?' clickable':'', titleClick=pvClick?' onclick="'+pvClick+'"':'';
     var btnH=alb?'<button class="btn-sm album">Album</button>':
       (v.play_url?'<button class="btn-sm" onclick="dlUserItem('+idx+',this)">Tải</button>':'<span class="badge-sm">No URL</span>');
-    div.innerHTML=th+'<div class="r-info"><p class="r-title">'+esc(v.title||'Không có tiêu đề')+'</p>'+
+    div.innerHTML=th+'<div class="r-info"><p class="r-title'+titleCls+'"'+titleClick+'>'+esc(v.title||'Không có tiêu đề')+'</p>'+
       '<p class="r-sub">@'+esc(v.author||'')+(v.duration?' · '+fmtDur(v.duration):'')+'</p></div>'+
       '<span class="badge-sm'+(alb?' album':'')+'">'+( alb?'Album':'Video')+'</span>'+btnH;
     list.appendChild(div);
@@ -450,10 +553,11 @@ function renderSearchResults(videos,startIdx,first){
   videos.forEach(function(v,j){
     var idx=startIdx+j;
     var div=document.createElement('div'); div.className='result-item';
-    var th=v.cover_url?'<img class="r-thumb" src="'+thumbUrl(v.cover_url)+'" alt="" onerror="this.style.display=\'none\'">':
-      '<div class="r-thumb-ph"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:.4"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></div>';
+    var pvClick=v.play_url?'openPvIdx("sr",'+idx+')':null;
+    var th=mkThumb(v.cover_url, pvClick);
+    var titleCls=pvClick?' clickable':'', titleClick=pvClick?' onclick="'+pvClick+'"':'';
     var btnH=v.play_url?'<button class="btn-sm" onclick="dlSrItem('+idx+',this)">Tải</button>':'<span class="badge-sm">No URL</span>';
-    div.innerHTML=th+'<div class="r-info"><p class="r-title">'+esc(v.title||'Không có tiêu đề')+'</p>'+
+    div.innerHTML=th+'<div class="r-info"><p class="r-title'+titleCls+'"'+titleClick+'>'+esc(v.title||'Không có tiêu đề')+'</p>'+
       '<p class="r-sub">@'+esc(v.author||'')+(v.duration?' · '+fmtDur(v.duration):'')+'</p></div>'+
       '<span class="badge-sm">Video</span>'+btnH;
     list.appendChild(div);
