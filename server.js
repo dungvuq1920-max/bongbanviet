@@ -414,6 +414,102 @@ app.post('/api/douyin/user-posts', async (req, res) => {
   }
 });
 
+// ─── Douyin QR Login ─────────────────────────────────────────────────────────
+const DY_SSO = 'https://sso.douyin.com';
+const DY_SVC = encodeURIComponent('https://www.douyin.com');
+
+async function dyFollowRedirectForCookies(startUrl) {
+  const all = {};
+  let url = startUrl;
+  for (let i = 0; i < 8; i++) {
+    let r;
+    try {
+      r = await fetch(url, {
+        headers: { 'User-Agent': dy.DEFAULT_UA, 'Referer': 'https://www.douyin.com/' },
+        redirect: 'manual',
+        signal: AbortSignal.timeout(10000),
+      });
+    } catch { break; }
+    const setCookies = r.headers.getSetCookie ? r.headers.getSetCookie() : [];
+    for (const h of setCookies) {
+      const m = h.match(/^([^=]+)=([^;]*)/);
+      if (m) all[m[1].trim()] = m[2].trim();
+    }
+    if (r.status >= 300 && r.status < 400) {
+      const loc = r.headers.get('location');
+      if (!loc) break;
+      url = loc.startsWith('http') ? loc : new URL(loc, url).href;
+    } else break;
+  }
+  return all;
+}
+
+app.get('/api/douyin-login/qr', async (_req, res) => {
+  try {
+    const r = await fetch(
+      `${DY_SSO}/get_qrcode/?service=${DY_SVC}&need_logo=false&redirect_url=${encodeURIComponent('https://www.douyin.com/')}&next=%2F&aid=6383&language=zh`,
+      {
+        headers: { 'User-Agent': dy.DEFAULT_UA, 'Referer': 'https://www.douyin.com/' },
+        signal: AbortSignal.timeout(12000),
+      }
+    );
+    const d = await r.json();
+    if (d.error_code !== 0) return res.status(400).json({ error: d.description || 'QR generation failed' });
+    const qr = d.data || {};
+    res.json({ token: qr.token, qr_url: qr.qrcode_index_url || qr.qrcode || qr.url });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/douyin-login/poll', async (req, res) => {
+  const { token } = req.query;
+  if (!token) return res.status(400).json({ error: 'token required' });
+  try {
+    const r = await fetch(
+      `${DY_SSO}/check_qrconnect/?token=${encodeURIComponent(token)}&service=${DY_SVC}&need_logo=false&aid=6383`,
+      {
+        headers: { 'User-Agent': dy.DEFAULT_UA, 'Referer': 'https://www.douyin.com/' },
+        signal: AbortSignal.timeout(12000),
+      }
+    );
+    const d = await r.json();
+    const status = (d.data || {}).status;
+    const label = ['waiting', 'scanned', 'confirmed', 'expired'][status - 1] || 'unknown';
+
+    if (status === 3) {
+      const redirectUrl = (d.data || {}).redirect_url;
+      if (redirectUrl) {
+        const cookies = await dyFollowRedirectForCookies(redirectUrl);
+        if (cookies.sessionid) {
+          db.prepare("INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES ('douyin_cookies', ?, datetime('now'))").run(JSON.stringify(cookies));
+          return res.json({ status: 'confirmed', saved: true });
+        }
+      }
+      return res.json({ status: 'confirmed', saved: false });
+    }
+    res.json({ status: label });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/douyin-login/status', (_req, res) => {
+  try {
+    const row = db.prepare("SELECT value FROM settings WHERE key = 'douyin_cookies'").get();
+    if (!row) return res.json({ logged_in: false });
+    const c = JSON.parse(row.value || '{}');
+    res.json({ logged_in: !!c.sessionid });
+  } catch {
+    res.json({ logged_in: false });
+  }
+});
+
+app.delete('/api/douyin-login', (_req, res) => {
+  db.prepare("DELETE FROM settings WHERE key = 'douyin_cookies'").run();
+  res.json({ ok: true });
+});
+
 // ─── DexScreener Proxy ────────────────────────────────────────────────────────
 app.get('/api/dex/tokens', async (req, res) => {
   const { addresses } = req.query;

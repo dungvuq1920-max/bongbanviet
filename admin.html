@@ -1025,6 +1025,10 @@
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="13" rx="2"/><path d="m3 13 4-4 4 4 4-5 4 5"/><circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"/><path d="M8 21h8M12 17v4"/></svg>
       Tạo Ảnh AI
     </button>
+    <button class="sb-item" id="nav-douyin-login" onclick="nav('douyin-login')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/><path d="M8 6h8M8 10h5"/></svg>
+      Douyin Login
+    </button>
     <button class="sb-item" id="nav-banners" onclick="nav('banners')">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
       Ảnh &amp; Banner
@@ -2761,6 +2765,51 @@ Có chủ đề nào bạn muốn chúng tôi cover? Comment nhé!
       </div>
     </div>
 
+    <!-- ── Douyin Login ──────────────────────── -->
+    <div class="page" id="page-douyin-login">
+      <div class="sec-head">
+        <span class="sec-title">Đăng nhập Douyin</span>
+        <span style="font-size:12px;color:var(--muted)">Xác thực cookie để tải video không watermark</span>
+      </div>
+      <div class="settings-grid">
+        <div class="set-card" style="max-width:480px;">
+          <div class="set-card-head">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22C6.48 22 2 17.52 2 12S6.48 2 12 2s10 4.48 10 10-4.48 10-10 10z"/><path d="M12 8v4l3 3"/></svg>
+            Trạng Thái Kết Nối
+          </div>
+          <div style="padding:16px 0 8px;">
+            <div id="dyStatusDisplay" style="font-size:13px;color:var(--muted);margin-bottom:16px;">Đang kiểm tra…</div>
+            <div id="dyQrArea" style="display:none;text-align:center;padding:12px 0 20px;">
+              <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">Mở app Douyin → nhấn biểu tượng <strong>QR Code</strong> → quét mã dưới đây</p>
+              <div style="display:inline-block;padding:8px;border:2px solid var(--border);border-radius:6px;background:#fff;">
+                <img id="dyQrImg" src="" width="180" height="180" alt="QR Code" style="display:block;">
+              </div>
+              <p id="dyQrMsg" style="font-size:12px;margin-top:10px;color:var(--muted);">Còn 120 giây</p>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn-red" id="dyLoginBtn" onclick="dyStartLogin()">Đăng nhập bằng QR Code</button>
+              <button class="set-btn" id="dyLogoutBtn" style="display:none;" onclick="dyLogout()">Đăng xuất Douyin</button>
+            </div>
+          </div>
+        </div>
+        <div class="set-card" style="max-width:480px;">
+          <div class="set-card-head">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            Hướng Dẫn
+          </div>
+          <div style="padding:16px 0;font-size:12.5px;line-height:2;color:var(--muted);">
+            <p>1. Nhấn <strong>Đăng nhập bằng QR Code</strong></p>
+            <p>2. Mở app <strong>Douyin</strong> trên điện thoại</p>
+            <p>3. Nhấn biểu tượng <strong>QR Code</strong> ở góc trên phải</p>
+            <p>4. Quét mã QR hiển thị trên màn hình này</p>
+            <p>5. Xác nhận đăng nhập trên điện thoại</p>
+            <hr style="border:none;border-top:1px solid var(--border);margin:10px 0;">
+            <p style="color:var(--yellow);">Cookie hết hạn sau vài ngày — đăng nhập lại khi gặp lỗi anti-bot.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ── Ảnh & Banner ──────────────────────────── -->
     <div class="page" id="page-banners">
       <div class="sec-head">
@@ -2934,6 +2983,7 @@ const PAGE_TITLES = { ...CAT_LBL, dashboard:'Dashboard', banners:'Ảnh & Banner
 const loaded = {};
 PAGE_TITLES.shopee = 'Shopee AI';
 PAGE_TITLES['ai-image'] = 'Tạo Ảnh Website / FB / IG';
+PAGE_TITLES['douyin-login'] = 'Đăng nhập Douyin';
 let siteSettings = {};
 
 /* ─── Helpers ──────────────────────────────────────────────── */
@@ -3393,6 +3443,7 @@ async function loadSection(cat) {
   if (cat === 'bang-gia')  { bgLoadData(); return; }
   if (cat === 'shopee')    { spLoadAiConfig(); return; }
   if (cat === 'ai-image')  { initAiImageTab(); return; }
+  if (cat === 'douyin-login') { dyCheckStatus(); return; }
   if (cat === 'don-hang')  { vdInit(); return; }
   if (loaded[cat]) return;
   loaded[cat] = true;
@@ -5624,6 +5675,90 @@ function vdInit() {
   }
   refreshDashboard();
 }
+
+/* ─── Douyin QR Login ──────────────────────────────────── */
+(function() {
+  let dyPollTimer, dyCountdown = 120;
+
+  async function dyCheckStatus() {
+    const statusEl = document.getElementById('dyStatusDisplay');
+    const logoutBtn = document.getElementById('dyLogoutBtn');
+    const loginBtn = document.getElementById('dyLoginBtn');
+    if (!statusEl) return;
+    try {
+      const d = await (await fetch('/api/douyin-login/status')).json();
+      if (d.logged_in) {
+        statusEl.innerHTML = '<span style="color:var(--green);font-weight:600;">✓ Đã đăng nhập — cookie hợp lệ</span>';
+        if (logoutBtn) logoutBtn.style.display = '';
+        if (loginBtn) loginBtn.style.display = 'none';
+      } else {
+        statusEl.innerHTML = '<span>Chưa đăng nhập</span>';
+        if (logoutBtn) logoutBtn.style.display = 'none';
+        if (loginBtn) { loginBtn.style.display = ''; loginBtn.disabled = false; loginBtn.textContent = 'Đăng nhập bằng QR Code'; }
+      }
+    } catch { if (statusEl) statusEl.textContent = 'Không kết nối được server'; }
+  }
+
+  async function dyStartLogin() {
+    const loginBtn = document.getElementById('dyLoginBtn');
+    const qrArea  = document.getElementById('dyQrArea');
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'Đang lấy mã QR…';
+    clearInterval(dyPollTimer);
+    try {
+      const d = await (await fetch('/api/douyin-login/qr')).json();
+      if (d.error) throw new Error(d.error);
+      document.getElementById('dyQrImg').src = d.qr_url;
+      qrArea.style.display = '';
+      loginBtn.style.display = 'none';
+      dyCountdown = 120;
+      document.getElementById('dyQrMsg').textContent = 'Còn 120 giây';
+      const token = d.token;
+      dyPollTimer = setInterval(async () => {
+        dyCountdown -= 2;
+        const msgEl = document.getElementById('dyQrMsg');
+        if (dyCountdown <= 0) {
+          clearInterval(dyPollTimer);
+          qrArea.style.display = 'none';
+          loginBtn.style.display = ''; loginBtn.disabled = false; loginBtn.textContent = 'Đăng nhập bằng QR Code';
+          toast('QR đã hết hạn, vui lòng thử lại', 'err');
+          return;
+        }
+        if (msgEl) msgEl.textContent = `Còn ${dyCountdown} giây`;
+        try {
+          const pd = await (await fetch(`/api/douyin-login/poll?token=${encodeURIComponent(token)}`)).json();
+          if (pd.status === 'confirmed') {
+            clearInterval(dyPollTimer);
+            qrArea.style.display = 'none';
+            toast(pd.saved ? 'Đăng nhập Douyin thành công!' : 'Xác nhận OK nhưng không lấy được cookie, thử lại', pd.saved ? 'ok' : 'err');
+            dyCheckStatus();
+          } else if (pd.status === 'expired') {
+            clearInterval(dyPollTimer);
+            qrArea.style.display = 'none';
+            loginBtn.style.display = ''; loginBtn.disabled = false; loginBtn.textContent = 'Đăng nhập bằng QR Code';
+            toast('QR đã hết hạn', 'err');
+          } else if (pd.status === 'scanned' && msgEl) {
+            msgEl.textContent = '✓ Đã quét — xác nhận trên điện thoại…';
+          }
+        } catch { /* network glitch — retry next tick */ }
+      }, 2000);
+    } catch (err) {
+      loginBtn.disabled = false; loginBtn.style.display = ''; loginBtn.textContent = 'Đăng nhập bằng QR Code';
+      if (qrArea) qrArea.style.display = 'none';
+      toast('Lỗi lấy QR: ' + err.message, 'err');
+    }
+  }
+
+  async function dyLogout() {
+    await fetch('/api/douyin-login', { method: 'DELETE' });
+    toast('Đã đăng xuất Douyin', 'ok');
+    dyCheckStatus();
+  }
+
+  window.dyCheckStatus = dyCheckStatus;
+  window.dyStartLogin  = dyStartLogin;
+  window.dyLogout      = dyLogout;
+})();
 
 checkServer();
 loadDashboard();

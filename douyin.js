@@ -109,8 +109,16 @@ function buildXBogus(url, ua = DEFAULT_UA) {
 // ── Cookie & token helpers ────────────────────────────────────────────────────
 function loadCookies() {
   const raw = (process.env.DOUYIN_COOKIES || '').trim();
-  if (!raw) return {};
-  try { return JSON.parse(raw); } catch { return {}; }
+  if (raw) {
+    try { return JSON.parse(raw); } catch { return {}; }
+  }
+  // Fallback: read cookies saved via QR login (stored in SQLite settings table)
+  try {
+    const dbMod = require('./db');
+    const row = dbMod.prepare("SELECT value FROM settings WHERE key = 'douyin_cookies'").get();
+    if (row && row.value) return JSON.parse(row.value);
+  } catch { /* db not available or not initialized */ }
+  return {};
 }
 
 function genMsToken() {
