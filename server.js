@@ -520,14 +520,30 @@ app.post('/api/douyin-login/cookies', (req, res) => {
     const raw = (req.body.cookies || '').trim();
     if (!raw) return res.status(400).json({ error: 'cookies required' });
     const parsed = {};
-    raw.split(';').forEach(part => {
-      const idx = part.indexOf('=');
-      if (idx > 0) {
-        const k = part.slice(0, idx).trim();
-        const v = part.slice(idx + 1).trim();
-        if (k) parsed[k] = v;
+    // Support JSON array format from EditThisCookie / Cookie-Editor extensions
+    if (raw.trimStart().startsWith('[') || raw.trimStart().startsWith('{')) {
+      try {
+        const arr = JSON.parse(raw);
+        const items = Array.isArray(arr) ? arr : [arr];
+        items.forEach(item => {
+          const k = (item.name || item.key || '').trim();
+          const v = String(item.value ?? '').trim();
+          if (k) parsed[k] = v;
+        });
+      } catch {
+        // fall through to semicolon parsing
       }
-    });
+    }
+    if (!parsed.sessionid) {
+      raw.split(';').forEach(part => {
+        const idx = part.indexOf('=');
+        if (idx > 0) {
+          const k = part.slice(0, idx).trim();
+          const v = part.slice(idx + 1).trim();
+          if (k) parsed[k] = v;
+        }
+      });
+    }
     if (!parsed.sessionid) return res.status(400).json({ error: 'Cookie thiếu sessionid — hãy kiểm tra lại đã copy đúng chưa' });
     db.prepare("INSERT OR REPLACE INTO settings(key, value, updated_at) VALUES('douyin_cookies', ?, datetime('now'))").run(JSON.stringify(parsed));
     res.json({ ok: true });
