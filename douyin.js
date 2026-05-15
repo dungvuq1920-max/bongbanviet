@@ -142,9 +142,16 @@ async function douyinFetch(path, extraParams = {}, retries = 3) {
   const headers = {
     'User-Agent': DEFAULT_UA,
     'Referer': `${BASE_URL}/?recommend=1`,
-    'Accept': '*/*',
+    'Origin': BASE_URL,
+    'Accept': 'application/json, text/plain, */*',
     'Accept-Encoding': 'gzip, deflate',
-    'Accept-Language': 'zh-CN,zh;q=0.9',
+    'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+    'Sec-Fetch-Dest': 'empty',
+    'Sec-Fetch-Mode': 'cors',
+    'Sec-Fetch-Site': 'same-origin',
+    'Sec-Ch-Ua': '"Google Chrome";v="139", "Chromium";v="139", "Not/A)Brand";v="24"',
+    'Sec-Ch-Ua-Mobile': '?0',
+    'Sec-Ch-Ua-Platform': '"Windows"',
     'Cookie': cookieStr({ ...cookies, msToken }),
   };
 
