@@ -278,9 +278,9 @@ app.post('/api/douyin/debug', async (req, res) => {
     } catch (e) { out.tikwm_long_error = e.message; }
   }
 
-  // Test douyin.wtf with long URL
+  // Test douyin.wtf with long URL (correct endpoint)
   try {
-    const r = await fetch(`https://api.douyin.wtf/api?url=${encodeURIComponent(longUrl)}&minimal=false`, {
+    const r = await fetch(`https://api.douyin.wtf/api/hybrid/video_data?url=${encodeURIComponent(longUrl)}&minimal=false`, {
       headers: { 'User-Agent': dy.DEFAULT_UA, 'Accept': 'application/json', 'Referer': 'https://douyin.wtf/' },
       signal: AbortSignal.timeout(20000),
     });

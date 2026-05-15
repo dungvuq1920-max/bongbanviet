@@ -360,7 +360,8 @@ async function fetchTikwm(videoUrl) {
 
 // ── douyin.wtf fallback API ───────────────────────────────────────────────────
 async function fetchDouyinWtf(videoUrl) {
-  const resp = await fetch(`https://api.douyin.wtf/api?url=${encodeURIComponent(videoUrl)}&minimal=false`, {
+  // Correct endpoint: /api/hybrid/video_data — returns full aweme_detail structure
+  const resp = await fetch(`https://api.douyin.wtf/api/hybrid/video_data?url=${encodeURIComponent(videoUrl)}&minimal=false`, {
     headers: {
       'User-Agent': DEFAULT_UA,
       'Accept': 'application/json',
@@ -373,37 +374,13 @@ async function fetchDouyinWtf(videoUrl) {
     return null;
   }
   const d = await resp.json().catch(() => null);
-  if (!d || d.status !== 'success') {
+  // Response: { code: 200, router: "...", data: { aweme_detail fields } }
+  if (!d || d.code !== 200 || !d.data) {
     console.error('[DouyinWtf] Bad response:', JSON.stringify(d)?.slice(0, 200), '| url:', videoUrl);
     return null;
   }
-  if (d.type === 'image') {
-    const images = Array.isArray(d.images)
-      ? d.images.map(url => ({ display_image: { url_list: [url] } }))
-      : undefined;
-    return {
-      aweme_id: String(d.aweme_id || ''),
-      desc: d.title || '',
-      video: { play_addr: { url_list: [] }, origin_cover: { url_list: [] }, cover: { url_list: [] }, duration: 0 },
-      author: { nickname: (d.author || {}).name || '', unique_id: (d.author || {}).id || '' },
-      images,
-    };
-  }
-  const vd = d.video_data || {};
-  const playUrls = [vd.nwm_video_url_HQ, vd.nwm_video_url, vd.wm_video_url_HQ, vd.wm_video_url].filter(Boolean);
-  const coverUrls = [d.cover].filter(Boolean);
-  return {
-    aweme_id: String(d.aweme_id || ''),
-    desc: d.title || '',
-    video: {
-      play_addr: { url_list: playUrls },
-      origin_cover: { url_list: coverUrls },
-      cover: { url_list: coverUrls },
-      duration: 0,
-    },
-    author: { nickname: (d.author || {}).name || '', unique_id: (d.author || {}).id || '' },
-    images: undefined,
-  };
+  // d.data is the full aweme_detail — return it directly
+  return d.data;
 }
 
 // ── Public API methods ────────────────────────────────────────────────────────
