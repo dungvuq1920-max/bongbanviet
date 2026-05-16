@@ -492,34 +492,33 @@ app.get('/api/douyin/image', async (req, res) => {
 app.get('/api/douyin/stream/:aweme_id', async (req, res) => {
   const { aweme_id } = req.params;
   try {
-    // Try TikTok URL first (search results use TikTok IDs), then Douyin (user-posts)
-    let tikwmData = null;
-    for (const candidateUrl of [
-      `https://www.tiktok.com/video/${encodeURIComponent(aweme_id)}`,
-      `https://www.douyin.com/video/${encodeURIComponent(aweme_id)}`,
-    ]) {
-      let tikwmResp;
-      try {
-        tikwmResp = await fetch('https://www.tikwm.com/api/', {
-          method: 'POST',
-          headers: {
-            'User-Agent': dy.DEFAULT_UA,
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Referer': 'https://www.tikwm.com/',
-            'Accept': 'application/json, */*',
-          },
-          body: new URLSearchParams({ url: candidateUrl, hd: '1' }).toString(),
-          signal: AbortSignal.timeout(12000),
-        });
-      } catch (e) { continue; }
-      if (!tikwmResp.ok) continue;
-      const d = await tikwmResp.json().catch(() => null);
-      if (d?.code === 0 && d?.data && (d.data.play || d.data.hdplay || d.data.wmplay)) {
-        tikwmData = d;
-        break;
-      }
+    // Try TikTok and Douyin URL formats in parallel — take whichever TikWM resolves first
+    const _tryTikwm = async (candidateUrl) => {
+      const r = await fetch('https://www.tikwm.com/api/', {
+        method: 'POST',
+        headers: {
+          'User-Agent': dy.DEFAULT_UA,
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Referer': 'https://www.tikwm.com/',
+          'Accept': 'application/json, */*',
+        },
+        body: new URLSearchParams({ url: candidateUrl, hd: '1' }).toString(),
+        signal: AbortSignal.timeout(25000),
+      });
+      if (!r.ok) throw new Error('tikwm_http_' + r.status);
+      const d = await r.json().catch(() => null);
+      if (d?.code === 0 && d?.data && (d.data.play || d.data.hdplay || d.data.wmplay)) return d;
+      throw new Error('tikwm_code_' + (d?.code ?? 'null'));
+    };
+    let tikwmData;
+    try {
+      tikwmData = await Promise.any([
+        _tryTikwm(`https://www.tiktok.com/video/${encodeURIComponent(aweme_id)}`),
+        _tryTikwm(`https://www.douyin.com/video/${encodeURIComponent(aweme_id)}`),
+      ]);
+    } catch {
+      return res.status(404).json({ error: 'Video not found or unavailable' });
     }
-    if (!tikwmData) return res.status(404).json({ error: 'Video not found or unavailable' });
 
     const d = tikwmData.data;
     const videoUrl = d.play || d.hdplay || d.wmplay;
@@ -529,7 +528,7 @@ app.get('/api/douyin/stream/:aweme_id', async (req, res) => {
 
     // Separate connection timeout from body stream — abort only if CDN doesn't start responding
     const ctrl = new AbortController();
-    const connectTimer = setTimeout(() => ctrl.abort(new Error('CDN connection timeout')), 20000);
+    const connectTimer = setTimeout(() => ctrl.abort(new Error('CDN connection timeout')), 30000);
     let r;
     try {
       r = await fetch(videoUrl, {
