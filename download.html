@@ -196,8 +196,14 @@
     .btn-sm.add-col.in-col{background:#DCFCE7;color:#166534}
     .btn-sm.add-col.in-col:hover{background:#BBF7D0}
 
+    /* ── Search two-column layout ──────────────────────────────────── */
+    .search-layout{display:flex;gap:16px;align-items:flex-start}
+    .search-main{flex:1;min-width:0}
+    .collect-sidebar{width:280px;flex-shrink:0;position:sticky;top:10px;max-height:calc(100vh - 40px);overflow-y:auto;border-radius:10px}
+    @media(max-width:680px){.search-layout{flex-direction:column}.collect-sidebar{width:100%;position:static;max-height:none}}
+
     /* ── Collection panel ─────────────────────────────────────────── */
-    .collect-panel{margin-top:16px;border:1.5px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
+    .collect-panel{border:1.5px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
     .collect-hd{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:#F9FAFB;border-bottom:1px solid var(--line)}
     .collect-hd-title{font-size:13px;font-weight:700;color:var(--dark);display:flex;align-items:center;gap:5px}
     .collect-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}
@@ -304,49 +310,53 @@
 
   <!-- ── TÌM KIẾM ───────────────────────────────────────────────────── -->
   <div class="panel active" id="pSearch">
-    <div class="input-wrap">
-      <input id="srInput" class="url-input" type="text"
-        placeholder="Nhập từ khóa tìm kiếm (tiếng Việt hoặc tiếng Trung)..."
-        autocomplete="off" spellcheck="false">
-      <button class="btn-resolve" id="srBtn" onclick="doSearch()">Tìm Kiếm</button>
-    </div>
-    <p class="input-hint">Tự động dịch sang tiếng Trung rồi tìm trên Douyin</p>
-    <div id="srDurFilterWrap" style="display:none;margin-bottom:10px;align-items:center;gap:8px;flex-wrap:wrap">
-      <select id="srDurSel" onchange="applyDurFilter()" style="padding:6px 10px;border:1.5px solid var(--line);border-radius:6px;font-family:'Inter',sans-serif;font-size:12px;color:var(--dark);background:#fff;outline:none;cursor:pointer">
-        <option value="all">⏱ Tất cả thời lượng</option>
-        <option value="30">Dưới 30 giây</option>
-        <option value="60">Dưới 1 phút</option>
-        <option value="120">Dưới 2 phút</option>
-        <option value="300">Dưới 5 phút</option>
-        <option value="600">Dưới 10 phút</option>
-        <option value="600+">Hơn 10 phút</option>
-      </select>
-      <span id="srDurCount" style="font-size:12px;color:var(--mid)"></span>
-    </div>
-    <div class="search-hint" id="srHint"></div>
-    <div class="msg msg-err" id="srErr"></div>
-    <div class="msg msg-load" id="srLoad"><div class="spinner"></div><span id="srLoadTxt">Đang tìm kiếm...</span></div>
-    <div id="srResults"></div>
-
-    <!-- ── Collection panel ─────────────────────────────────────── -->
-    <div id="srCollect" class="collect-panel" style="display:none">
-      <div class="collect-hd">
-        <span class="collect-hd-title">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-          Video đã chọn (<span id="collectCount">0</span>)
-        </span>
-        <div style="display:flex;gap:6px;align-items:center">
-          <button class="btn-sm" onclick="openSchedModal()" style="background:#EDE9FE;color:#7C3AED;font-size:10px;padding:3px 9px">📅 Xem lịch</button>
-          <button class="btn-sm" onclick="clearCollect()" style="background:#FEE2E2;color:#991B1B;font-size:10px;padding:3px 9px">Xóa tất cả</button>
+    <div class="search-layout">
+      <div class="search-main">
+        <div class="input-wrap">
+          <input id="srInput" class="url-input" type="text"
+            placeholder="Nhập từ khóa tìm kiếm (tiếng Việt hoặc tiếng Trung)..."
+            autocomplete="off" spellcheck="false">
+          <button class="btn-resolve" id="srBtn" onclick="doSearch()">Tìm Kiếm</button>
         </div>
+        <p class="input-hint">Tự động dịch sang tiếng Trung rồi tìm trên Douyin</p>
+        <div id="srDurFilterWrap" style="display:none;margin-bottom:10px;align-items:center;gap:8px;flex-wrap:wrap">
+          <select id="srDurSel" onchange="applyDurFilter()" style="padding:6px 10px;border:1.5px solid var(--line);border-radius:6px;font-family:'Inter',sans-serif;font-size:12px;color:var(--dark);background:#fff;outline:none;cursor:pointer">
+            <option value="all">⏱ Tất cả thời lượng</option>
+            <option value="30">Dưới 30 giây</option>
+            <option value="60">Dưới 1 phút</option>
+            <option value="120">Dưới 2 phút</option>
+            <option value="300">Dưới 5 phút</option>
+            <option value="600">Dưới 10 phút</option>
+            <option value="600+">Hơn 10 phút</option>
+          </select>
+          <span id="srDurCount" style="font-size:12px;color:var(--mid)"></span>
+        </div>
+        <div class="search-hint" id="srHint"></div>
+        <div class="msg msg-err" id="srErr"></div>
+        <div class="msg msg-load" id="srLoad"><div class="spinner"></div><span id="srLoadTxt">Đang tìm kiếm...</span></div>
+        <div id="srResults"></div>
       </div>
-      <div id="collectList"></div>
-      <div class="collect-footer">
-        <button class="btn-sm" onclick="openSchedBatch()" style="background:#EDE9FE;color:#7C3AED;font-size:11px;padding:5px 12px">📅 Đặt lịch hàng loạt</button>
-        <button class="btn-sm" onclick="uploadCollectAll()" style="background:#111;color:#fff;font-size:11px;padding:5px 12px;display:flex;align-items:center;gap:4px">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="#fff"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V9.41a8.16 8.16 0 004.77 1.52V7.49a4.85 4.85 0 01-1-.8z"/></svg>
-          Upload tất cả TikTok
-        </button>
+
+      <!-- ── Collection sidebar ──────────────────────────────────── -->
+      <div id="srCollect" class="collect-panel collect-sidebar" style="display:none">
+        <div class="collect-hd">
+          <span class="collect-hd-title">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            Video đã chọn (<span id="collectCount">0</span>)
+          </span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <button class="btn-sm" onclick="openSchedModal()" style="background:#EDE9FE;color:#7C3AED;font-size:10px;padding:3px 9px">📅 Lịch</button>
+            <button class="btn-sm" onclick="clearCollect()" style="background:#FEE2E2;color:#991B1B;font-size:10px;padding:3px 7px">✕</button>
+          </div>
+        </div>
+        <div id="collectList"></div>
+        <div class="collect-footer">
+          <button class="btn-sm" onclick="openSchedBatch()" style="background:#EDE9FE;color:#7C3AED;font-size:11px;padding:5px 10px">📅 Đặt lịch</button>
+          <button class="btn-sm" onclick="uploadCollectAll()" style="background:#111;color:#fff;font-size:11px;padding:5px 10px;display:flex;align-items:center;gap:4px">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="#fff"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V9.41a8.16 8.16 0 004.77 1.52V7.49a4.85 4.85 0 01-1-.8z"/></svg>
+            Upload TikTok
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -613,7 +623,9 @@ function openPv(videoUrl, filename, title, author, dur, cover){
   $('pvTitle').textContent=title||'Không có tiêu đề';
   $('pvSub').textContent='@'+(author||'')+(dur?' · '+fmtDur(dur):'');
   var vid=$('pvVideo'), cov=$('pvCover');
-  var src='/api/douyin/stream-url?url='+encodeURIComponent(videoUrl)+'&filename='+encodeURIComponent(filename||'video.mp4');
+  var src=_pvAwemeId
+    ?'/api/douyin/stream/'+encodeURIComponent(_pvAwemeId)
+    :'/api/douyin/stream-url?url='+encodeURIComponent(videoUrl)+'&filename='+encodeURIComponent(filename||'video.mp4');
   vid.src=src;
   if(cover){ vid.poster=thumbUrl(cover); }
   else{ vid.removeAttribute('poster'); }

@@ -492,25 +492,34 @@ app.get('/api/douyin/image', async (req, res) => {
 app.get('/api/douyin/stream/:aweme_id', async (req, res) => {
   const { aweme_id } = req.params;
   try {
-    // Use TikWM directly — skips geo-blocked Douyin API, responds in <10s
-    const longUrl = `https://www.douyin.com/video/${encodeURIComponent(aweme_id)}`;
-    const tikwmBody = new URLSearchParams({ url: longUrl, hd: '1' });
-    const tikwmResp = await fetch('https://www.tikwm.com/api/', {
-      method: 'POST',
-      headers: {
-        'User-Agent': dy.DEFAULT_UA,
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Referer': 'https://www.tikwm.com/',
-        'Accept': 'application/json, */*',
-      },
-      body: tikwmBody.toString(),
-      signal: AbortSignal.timeout(12000),
-    });
-    if (!tikwmResp.ok) return res.status(502).json({ error: 'TikWM API unavailable' });
-
-    const tikwmData = await tikwmResp.json().catch(() => null);
-    if (!tikwmData || tikwmData.code !== 0 || !tikwmData.data)
-      return res.status(404).json({ error: 'Video not found or unavailable' });
+    // Try TikTok URL first (search results use TikTok IDs), then Douyin (user-posts)
+    let tikwmData = null;
+    for (const candidateUrl of [
+      `https://www.tiktok.com/video/${encodeURIComponent(aweme_id)}`,
+      `https://www.douyin.com/video/${encodeURIComponent(aweme_id)}`,
+    ]) {
+      let tikwmResp;
+      try {
+        tikwmResp = await fetch('https://www.tikwm.com/api/', {
+          method: 'POST',
+          headers: {
+            'User-Agent': dy.DEFAULT_UA,
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Referer': 'https://www.tikwm.com/',
+            'Accept': 'application/json, */*',
+          },
+          body: new URLSearchParams({ url: candidateUrl, hd: '1' }).toString(),
+          signal: AbortSignal.timeout(12000),
+        });
+      } catch (e) { continue; }
+      if (!tikwmResp.ok) continue;
+      const d = await tikwmResp.json().catch(() => null);
+      if (d?.code === 0 && d?.data && (d.data.play || d.data.hdplay || d.data.wmplay)) {
+        tikwmData = d;
+        break;
+      }
+    }
+    if (!tikwmData) return res.status(404).json({ error: 'Video not found or unavailable' });
 
     const d = tikwmData.data;
     const videoUrl = d.play || d.hdplay || d.wmplay;
@@ -934,13 +943,67 @@ const FACEBOOK_PILLARS = {
   promo:      { label: 'Bán hàng mềm',          voice: 'rõ lợi ích, không thúc ép quá đà' },
 };
 
-const FACEBOOK_DAILY_TIMES = [
-  { time: '07:30:00', pillar: 'knowledge' },
-  { time: '10:30:00', pillar: 'combo' },
-  { time: '12:30:00', pillar: 'product' },
-  { time: '15:30:00', pillar: 'engagement' },
-  { time: '19:30:00', pillar: 'knowledge' },
-  { time: '21:30:00', pillar: 'engagement' },
+const FACEBOOK_DAY_LABELS = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+const FACEBOOK_GROWTH_SCHEDULE = {
+  1: [
+    { time: '07:30:00', pillar: 'knowledge', bucket: 'Knowledge', label: 'Tip kỹ thuật đầu tuần', intent: 'Nhận diện đầu ngày, giúp page có giá trị ngay từ bài đầu.' },
+    { time: '10:30:00', pillar: 'knowledge', bucket: 'Website', label: 'Kiến thức kéo web', intent: 'Dẫn về bongbanviet.com bằng bài chuyên sâu hoặc checklist.' },
+    { time: '12:15:00', pillar: 'product', bucket: 'Product', label: 'Product discovery', intent: 'Giới thiệu sản phẩm theo nhu cầu, không bán gắt.' },
+    { time: '15:30:00', pillar: 'engagement', bucket: 'Community', label: 'Poll/câu hỏi cộng đồng', intent: 'Kéo comment để tạo tín hiệu tương tác.' },
+    { time: '21:15:00', pillar: 'engagement', bucket: 'Community', label: 'Hỏi đáp setup', intent: 'Gom câu hỏi cho inbox/Zalo và chủ đề ngày sau.' },
+  ],
+  2: [
+    { time: '07:30:00', pillar: 'knowledge', bucket: 'Knowledge', label: 'Drill/footwork', intent: 'Tăng follow bằng nội dung dễ lưu và dễ share.' },
+    { time: '10:30:00', pillar: 'combo', bucket: 'Combo', label: 'Combo theo trình độ', intent: 'Tư vấn setup theo level/ngân sách.' },
+    { time: '12:15:00', pillar: 'product', bucket: 'Product', label: 'Review mềm', intent: 'Đưa sản phẩm vào khung người dùng đang lướt mua sắm.' },
+    { time: '15:30:00', pillar: 'engagement', bucket: 'Community', label: 'So sánh A/B', intent: 'Tạo bình luận giữa 2 lựa chọn thiết bị/kỹ thuật.' },
+    { time: '18:30:00', pillar: 'combo', bucket: 'Sales-soft', label: 'Setup sau giờ làm', intent: 'Đẩy cân nhắc mua khi người chơi rảnh xem đồ.' },
+    { time: '21:15:00', pillar: 'engagement', bucket: 'Community', label: 'Hỏi đáp tối', intent: 'Chốt ngày bằng câu hỏi dễ trả lời.' },
+  ],
+  3: [
+    { time: '07:30:00', pillar: 'knowledge', bucket: 'Knowledge', label: 'Lỗi kỹ thuật thường gặp', intent: 'Bài hữu ích để tăng share/save.' },
+    { time: '10:30:00', pillar: 'knowledge', bucket: 'Website', label: 'Nguồn uy tín + web', intent: 'Xây authority bằng nguồn ITTF/WTT/hãng/forum.' },
+    { time: '12:15:00', pillar: 'product', bucket: 'Product', label: 'Sản phẩm nổi bật', intent: 'Tận dụng khung retail tốt để quảng bá hàng.' },
+    { time: '15:30:00', pillar: 'engagement', bucket: 'Community', label: 'Mini quiz', intent: 'Kéo phản hồi nhanh, tăng tín hiệu tương tác.' },
+    { time: '18:30:00', pillar: 'combo', bucket: 'Combo', label: 'Case tư vấn setup', intent: 'Chuyển từ quan tâm sang inbox/Zalo.' },
+    { time: '21:15:00', pillar: 'product', bucket: 'Product', label: 'So sánh review', intent: 'Bài cân nhắc mua, không trùng với slot trưa.' },
+  ],
+  4: [
+    { time: '07:30:00', pillar: 'knowledge', bucket: 'Knowledge', label: 'Giao bóng/trả giao', intent: 'Giữ nhịp nhận diện bằng tip thực chiến.' },
+    { time: '10:30:00', pillar: 'product', bucket: 'Product', label: 'Product discovery', intent: 'Quảng bá sản phẩm trong khung mua sắm buổi sáng.' },
+    { time: '12:15:00', pillar: 'combo', bucket: 'Combo', label: 'Combo bán mềm', intent: 'Gợi ý setup theo nhu cầu cụ thể.' },
+    { time: '15:30:00', pillar: 'engagement', bucket: 'Community', label: 'Câu hỏi cộng đồng', intent: 'Tăng comment trước giờ cao điểm tối.' },
+    { time: '18:30:00', pillar: 'promo', bucket: 'Promo', label: 'Ưu đãi nhẹ', intent: 'Chỉ dùng khi có sản phẩm/ưu đãi rõ, tránh spam.' },
+    { time: '21:15:00', pillar: 'knowledge', bucket: 'Website', label: 'Recap kiến thức', intent: 'Dẫn về bài website hoặc checklist cuối ngày.' },
+  ],
+  5: [
+    { time: '07:30:00', pillar: 'knowledge', bucket: 'Knowledge', label: 'Checklist cuối tuần', intent: 'Chuẩn bị cho người chơi đi đánh cuối tuần.' },
+    { time: '10:30:00', pillar: 'product', bucket: 'Product', label: 'Sản phẩm dễ mua', intent: 'Tập trung sản phẩm phổ thông/còn hàng.' },
+    { time: '12:15:00', pillar: 'promo', bucket: 'Promo', label: 'Ưu đãi cuối tuần', intent: 'CTA rõ nhưng không chiếm quá nhiều lịch.' },
+    { time: '15:30:00', pillar: 'engagement', bucket: 'Community', label: 'Poll cuối tuần', intent: 'Kéo bình luận nhẹ trước cuối tuần.' },
+    { time: '21:15:00', pillar: 'combo', bucket: 'Combo', label: 'Setup đi đánh cuối tuần', intent: 'Gợi ý combo thực dụng cho người chơi phong trào.' },
+  ],
+  6: [
+    { time: '08:30:00', pillar: 'knowledge', bucket: 'Knowledge', label: 'Tip thực chiến cuối tuần', intent: 'Nội dung dễ xem trước khi đi chơi/đi đánh.' },
+    { time: '11:00:00', pillar: 'product', bucket: 'Product', label: 'Ảnh kho/sản phẩm', intent: 'Tạo trust bằng hình ảnh thật và thông tin gọn.' },
+    { time: '16:00:00', pillar: 'engagement', bucket: 'Community', label: 'Poll trận đấu', intent: 'Tận dụng thời gian cộng đồng rảnh thảo luận.' },
+    { time: '20:30:00', pillar: 'engagement', bucket: 'Community', label: 'Recap cộng đồng', intent: 'Hỏi trải nghiệm trong ngày, gom insight cho tuần sau.' },
+  ],
+  0: [
+    { time: '08:30:00', pillar: 'knowledge', bucket: 'Knowledge', label: 'FAQ người mới', intent: 'Nội dung nhẹ, dễ follow cho người mới.' },
+    { time: '11:00:00', pillar: 'knowledge', bucket: 'Website', label: 'Bài tổng hợp website', intent: 'Kéo traffic bằng bài dài hoặc danh sách tư vấn.' },
+    { time: '16:00:00', pillar: 'engagement', bucket: 'Community', label: 'Bình chọn chủ đề', intent: 'Lấy topic cho tuần tới.' },
+    { time: '20:30:00', pillar: 'engagement', bucket: 'Community', label: 'Lịch tuần tới', intent: 'Tạo kỳ vọng, nhắc follow page.' },
+  ],
+};
+
+const FACEBOOK_CONTENT_MIX = [
+  { bucket: 'Knowledge', percent: 35, note: 'Kỹ thuật, luật, drill, lỗi thường gặp.' },
+  { bucket: 'Community', percent: 20, note: 'Poll, hỏi đáp, tình huống trận đấu.' },
+  { bucket: 'Product', percent: 20, note: 'Review mềm, so sánh, phù hợp trình độ nào.' },
+  { bucket: 'Website', percent: 10, note: 'Bài kéo traffic về bongbanviet.com.' },
+  { bucket: 'Trust', percent: 10, note: 'Chính hãng, feedback, ảnh kho, quy trình tư vấn.' },
+  { bucket: 'Promo', percent: 5, note: 'Ưu đãi và CTA mạnh, dùng tiết chế.' },
 ];
 
 const FACEBOOK_SOURCE_LIBRARY = [
@@ -1082,17 +1145,29 @@ function setFbSetting(key, value) {
     .run(key, String(value ?? ''));
 }
 
+function facebookScheduleTemplate() {
+  return [1, 2, 3, 4, 5, 6, 0].map(day => ({
+    day,
+    label: FACEBOOK_DAY_LABELS[day],
+    recommendedCount: FACEBOOK_GROWTH_SCHEDULE[day].length,
+    slots: FACEBOOK_GROWTH_SCHEDULE[day],
+  }));
+}
+
 function getFacebookConfig() {
   return {
     siteUrl: FACEBOOK_SITE_URL,
     autoSchedulerEnabled: fbSetting('facebook_auto_scheduler_enabled', '0') === '1',
-    dailyPostCount: Math.max(3, Math.min(6, Number(fbSetting('facebook_daily_post_count', '4')) || 4)),
+    dailyPostCount: Math.max(3, Math.min(6, Number(fbSetting('facebook_daily_post_count', '5')) || 5)),
     defaultDays: Math.max(1, Math.min(30, Number(fbSetting('facebook_default_days', '7')) || 7)),
     autoApproveGenerated: fbSetting('facebook_auto_approve_generated', '0') === '1',
     pageIdConfigured: !!process.env.FACEBOOK_PAGE_ID,
     pageTokenConfigured: !!process.env.FACEBOOK_PAGE_ACCESS_TOKEN,
     graphVersion: process.env.FACEBOOK_GRAPH_VERSION || 'v24.0',
     aiProviders: shopeeCopyProviderPlan('auto'),
+    scheduleMode: 'growth',
+    scheduleTemplate: facebookScheduleTemplate(),
+    contentMix: FACEBOOK_CONTENT_MIX,
   };
 }
 
@@ -1256,7 +1331,7 @@ function statusCountRows() {
 
 function fbScheduleSlots(days, postsPerDay, startDate) {
   const slots = [];
-  const count = Math.max(3, Math.min(6, Number(postsPerDay) || 4));
+  const count = Math.max(3, Math.min(6, Number(postsPerDay) || 5));
   const dayCount = Math.max(1, Math.min(30, Number(days) || 7));
   const start = startDate
     ? new Date(`${String(startDate).slice(0, 10)}T00:00:00+07:00`)
@@ -1270,11 +1345,17 @@ function fbScheduleSlots(days, postsPerDay, startDate) {
       month: '2-digit',
       day: '2-digit',
     }).format(date);
-    for (let i = 0; i < count; i++) {
-      const t = FACEBOOK_DAILY_TIMES[i] || FACEBOOK_DAILY_TIMES[FACEBOOK_DAILY_TIMES.length - 1];
+    const dayOfWeek = new Date(`${yyyyMmDd}T12:00:00+07:00`).getUTCDay();
+    const daySchedule = FACEBOOK_GROWTH_SCHEDULE[dayOfWeek] || FACEBOOK_GROWTH_SCHEDULE[1];
+    const selectedSlots = daySchedule.slice(0, Math.min(count, daySchedule.length));
+    for (const t of selectedSlots) {
       slots.push({
         scheduled_time: `${yyyyMmDd} ${t.time}`,
         pillar: t.pillar,
+        bucket: t.bucket,
+        label: t.label,
+        intent: t.intent,
+        weekday: FACEBOOK_DAY_LABELS[dayOfWeek],
       });
     }
   }
@@ -1395,6 +1476,7 @@ Pillar: ${post.pillar} - ${pillar.label}
 Giọng văn: ${post.brand_voice || pillar.voice}
 Fact summary nội bộ: ${post.fact_summary || 'Không có'}
 Link điều hướng: ${post.website_link || FACEBOOK_SITE_URL}
+Slot/nhóm lịch đăng: ${post.source_notes || 'Theo lịch tăng trưởng BongBanViet'}
 
 Nguồn tham khảo:
 ${sources || '- Nguồn nội bộ BongBanViet'}
@@ -2592,7 +2674,7 @@ app.get('/api/facebook/config', requireAuth, (req, res) => {
 app.put('/api/facebook/config', requireAuth, (req, res) => {
   const { autoSchedulerEnabled, dailyPostCount, defaultDays, autoApproveGenerated } = req.body || {};
   if (autoSchedulerEnabled !== undefined) setFbSetting('facebook_auto_scheduler_enabled', autoSchedulerEnabled ? '1' : '0');
-  if (dailyPostCount !== undefined) setFbSetting('facebook_daily_post_count', Math.max(3, Math.min(6, Number(dailyPostCount) || 4)));
+  if (dailyPostCount !== undefined) setFbSetting('facebook_daily_post_count', Math.max(3, Math.min(6, Number(dailyPostCount) || 5)));
   if (defaultDays !== undefined) setFbSetting('facebook_default_days', Math.max(1, Math.min(30, Number(defaultDays) || 7)));
   if (autoApproveGenerated !== undefined) setFbSetting('facebook_auto_approve_generated', autoApproveGenerated ? '1' : '0');
   res.json(getFacebookConfig());
@@ -2792,6 +2874,12 @@ app.post('/api/facebook/collect', requireAuth, (req, res) => {
       }
 
       const { idea, sourceUrls, dedupeKey } = selected;
+      const slotNote = [
+        `Slot ${slot.weekday || ''} ${String(slot.scheduled_time).slice(11, 16)}`,
+        slot.label,
+        `Nhóm: ${slot.bucket || slot.pillar}`,
+        slot.intent,
+      ].filter(Boolean).join(' | ');
       insert.run(
         generateId(),
         idea.topic,
@@ -2799,7 +2887,7 @@ app.post('/api/facebook/collect', requireAuth, (req, res) => {
         FACEBOOK_PILLARS[slot.pillar]?.voice || '',
         sourceUrls[0]?.type || '',
         JSON.stringify(sourceUrls),
-        'Thu thập từ nguồn chính thống, hãng, forum quốc tế và dữ liệu nội bộ BongBanViet.',
+        slotNote,
         idea.fact_summary || '',
         idea.website_link || fbFullUrl('/'),
         idea.image_path || '',
