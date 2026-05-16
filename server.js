@@ -1112,12 +1112,141 @@ function fbPublicPathToFile(publicPath) {
   return candidates.find(p => fs.existsSync(p)) || publicPath;
 }
 
+function fbNormalizeText(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
+    .replace(/https?:\/\/\S+/g, ' ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+    .replace(/\s+/g, ' ');
+}
+
+function fbCanonicalLink(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  try {
+    const url = new URL(raw, FACEBOOK_SITE_URL);
+    const host = url.hostname.replace(/^www\./, '').toLowerCase();
+    const pathName = (url.pathname || '/').replace(/\/+$/, '') || '/';
+    const pathKey = pathName.toLowerCase();
+    const productId = url.searchParams.get('id');
+    if (productId) return `${pathKey}?id=${fbNormalizeText(productId)}`;
+    if (url.hash && url.hash.length > 1) return `${pathKey}#${fbNormalizeText(url.hash.slice(1))}`;
+    if (host.endsWith('bongbanviet.com') && !['/', '/index.html', '/kien-thuc.html'].includes(pathKey)) {
+      return pathKey;
+    }
+  } catch {}
+  return '';
+}
+
+function fbDedupeKey(post) {
+  const pillar = fbNormalizeText(post?.pillar || 'general') || 'general';
+  const topic = fbNormalizeText(post?.topic || '');
+  const link = fbCanonicalLink(post?.website_link || '');
+  if (link && !['engagement', 'news'].includes(pillar)) return `${pillar}:link:${link}`;
+  if (topic) return `${pillar}:topic:${topic}`;
+  const raw = [pillar, post?.website_link || '', post?.caption || ''].join('|');
+  return `${pillar}:hash:${crypto.createHash('sha1').update(raw).digest('hex')}`;
+}
+
+function fbPostIsUsed(row) {
+  const status = String(row?.status || '').toLowerCase();
+  return ['scheduled', 'posted', 'published'].includes(status) || !!row?.facebook_post_id || !!row?.posted_at;
+}
+
+function facebookDedupeConflict(dedupeKey, postId = '') {
+  if (!dedupeKey) return null;
+  const history = db.prepare(`SELECT post_id, topic, source_status, posted_at
+    FROM facebook_post_history WHERE dedupe_key=?`).get(dedupeKey);
+  if (history && history.post_id !== postId) return history;
+  const row = db.prepare(`SELECT id as post_id, topic, status as source_status, posted_at
+    FROM facebook_posts
+    WHERE dedupe_key=? AND id<>? AND (status IN ('scheduled','posted','published') OR facebook_post_id<>'' OR posted_at<>'')
+    LIMIT 1`).get(dedupeKey, postId);
+  return row || null;
+}
+
+function markFacebookPostHistory(post, options = {}) {
+  const dedupeKey = options.dedupeKey || post?.dedupe_key || fbDedupeKey(post);
+  if (!dedupeKey) return '';
+  const postedAt = options.postedAt || post?.posted_at || new Date().toISOString();
+  const sourceStatus = options.sourceStatus || post?.status || 'posted';
+  const facebookPostId = options.facebookPostId || post?.facebook_post_id || '';
+  db.prepare(`INSERT INTO facebook_post_history
+    (dedupe_key, post_id, topic, pillar, website_link, facebook_post_id, source_status, posted_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+    ON CONFLICT(dedupe_key) DO UPDATE SET
+      post_id=excluded.post_id,
+      topic=excluded.topic,
+      pillar=excluded.pillar,
+      website_link=excluded.website_link,
+      facebook_post_id=CASE
+        WHEN excluded.facebook_post_id <> '' THEN excluded.facebook_post_id
+        ELSE facebook_post_history.facebook_post_id
+      END,
+      source_status=excluded.source_status,
+      posted_at=excluded.posted_at,
+      updated_at=datetime('now')`)
+    .run(
+      dedupeKey,
+      post?.id || '',
+      post?.topic || '',
+      post?.pillar || '',
+      post?.website_link || '',
+      facebookPostId,
+      sourceStatus,
+      postedAt
+    );
+  return dedupeKey;
+}
+
+function facebookUsedDedupeKeys() {
+  const keys = new Set(
+    db.prepare(`SELECT dedupe_key FROM facebook_post_history WHERE dedupe_key <> ''`).all()
+      .map(r => r.dedupe_key)
+  );
+  for (const row of db.prepare(`SELECT id, topic, pillar, website_link, caption, dedupe_key FROM facebook_posts`).all()) {
+    const key = row.dedupe_key || fbDedupeKey(row);
+    if (key) keys.add(key);
+  }
+  return keys;
+}
+
+function syncFacebookDedupeHistory() {
+  const rows = db.prepare(`SELECT id, topic, pillar, status, website_link, caption, dedupe_key,
+    facebook_post_id, scheduled_time, posted_at FROM facebook_posts`).all();
+  const updateKey = db.prepare(`UPDATE facebook_posts SET dedupe_key=?, updated_at=datetime('now') WHERE id=?`);
+  const markUsed = db.prepare(`UPDATE facebook_posts SET dedupe_key=?, posted_at=?, updated_at=datetime('now') WHERE id=?`);
+  const tx = db.transaction(() => {
+    for (const row of rows) {
+      const dedupeKey = row.dedupe_key || fbDedupeKey(row);
+      if (!dedupeKey) continue;
+      if (!row.dedupe_key) updateKey.run(dedupeKey, row.id);
+      if (fbPostIsUsed(row)) {
+        const postedAt = row.posted_at || row.scheduled_time || new Date().toISOString();
+        if (!row.posted_at || row.dedupe_key !== dedupeKey) markUsed.run(dedupeKey, postedAt, row.id);
+        markFacebookPostHistory({ ...row, dedupe_key: dedupeKey, posted_at: postedAt }, {
+          dedupeKey,
+          facebookPostId: row.facebook_post_id || '',
+          sourceStatus: row.status || 'posted',
+          postedAt,
+        });
+      }
+    }
+  });
+  tx();
+}
+
 function facebookPostRow(row) {
   if (!row) return null;
   return {
     ...row,
     source_urls: parseJSON(row.source_urls, []),
     metrics: parseJSON(row.metrics, {}),
+    dedupe_key: row.dedupe_key || fbDedupeKey(row),
+    is_used: fbPostIsUsed(row),
   };
 }
 
@@ -1438,6 +1567,11 @@ async function scheduleFacebookPost(row) {
   if (unixTs * 1000 < Date.now() + 11 * 60 * 1000) {
     throw new Error('scheduled_time phải cách hiện tại ít nhất 11 phút.');
   }
+  const dedupeKey = post.dedupe_key || fbDedupeKey(post);
+  const conflict = facebookDedupeConflict(dedupeKey, post.id);
+  if (conflict) {
+    throw new Error(`Bài trùng với nội dung đã đánh dấu đăng: ${conflict.topic || conflict.post_id || dedupeKey}`);
+  }
 
   const { schedulePost, schedulePostWithPhoto } = require('./fb-agent/src/facebook_client');
   const message = [post.caption.trim(), post.hashtags?.trim()].filter(Boolean).join('\n\n');
@@ -1447,8 +1581,20 @@ async function scheduleFacebookPost(row) {
     : await schedulePost(message, unixTs);
 
   if (!result.success) throw new Error(result.error || 'Facebook API không trả về thành công.');
-  db.prepare(`UPDATE facebook_posts SET status='scheduled', facebook_post_id=?, error_message='', updated_at=datetime('now') WHERE id=?`)
-    .run(result.postId || '', post.id);
+  const postedAt = new Date().toISOString();
+  const tx = db.transaction(() => {
+    db.prepare(`UPDATE facebook_posts SET
+      status='scheduled', facebook_post_id=?, dedupe_key=?, posted_at=?, error_message='', updated_at=datetime('now')
+      WHERE id=?`)
+      .run(result.postId || '', dedupeKey, postedAt, post.id);
+    markFacebookPostHistory({ ...post, dedupe_key: dedupeKey, posted_at: postedAt }, {
+      dedupeKey,
+      facebookPostId: result.postId || '',
+      sourceStatus: 'scheduled',
+      postedAt,
+    });
+  });
+  tx();
   return result;
 }
 
@@ -2487,10 +2633,19 @@ app.post('/api/facebook/posts', requireAuth, (req, res) => {
   const body = req.body || {};
   if (!body.topic) return res.status(400).json({ error: 'Thiếu topic' });
   const id = generateId();
+  const dedupeKey = fbDedupeKey({
+    topic: body.topic,
+    pillar: body.pillar || 'knowledge',
+    website_link: body.website_link || '',
+    caption: body.caption || '',
+  });
+  if (!body.allowDuplicate && facebookUsedDedupeKeys().has(dedupeKey)) {
+    return res.status(409).json({ error: 'Topic/link này đã tồn tại hoặc đã từng đăng, không nên tạo trùng.' });
+  }
   db.prepare(`INSERT INTO facebook_posts
     (id, topic, pillar, status, brand_voice, source_type, source_urls, source_notes, fact_summary,
-     caption, hashtags, cta, website_link, image_path, image_prompt, image_source, scheduled_time, error_message)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+     caption, hashtags, cta, website_link, image_path, image_prompt, image_source, dedupe_key, scheduled_time, error_message)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
     .run(
       id,
       body.topic,
@@ -2508,6 +2663,7 @@ app.post('/api/facebook/posts', requireAuth, (req, res) => {
       body.image_path || '',
       body.image_prompt || '',
       body.image_source || '',
+      dedupeKey,
       String(body.scheduled_time || '').replace('T', ' '),
       body.error_message || ''
     );
@@ -2518,10 +2674,18 @@ app.put('/api/facebook/posts/:id', requireAuth, (req, res) => {
   const existing = db.prepare('SELECT * FROM facebook_posts WHERE id=?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'Không tìm thấy bài' });
   const body = req.body || {};
+  const nextPost = {
+    ...existing,
+    topic: body.topic ?? existing.topic,
+    pillar: body.pillar ?? existing.pillar,
+    website_link: body.website_link ?? existing.website_link,
+    caption: body.caption ?? existing.caption,
+  };
+  const dedupeKey = fbDedupeKey(nextPost);
   db.prepare(`UPDATE facebook_posts SET
     topic=?, pillar=?, status=?, brand_voice=?, source_type=?, source_urls=?, source_notes=?, fact_summary=?,
     caption=?, hashtags=?, cta=?, website_link=?, image_path=?, image_prompt=?, image_source=?,
-    scheduled_time=?, facebook_post_id=?, error_message=?, metrics=?, updated_at=datetime('now')
+    dedupe_key=?, scheduled_time=?, facebook_post_id=?, posted_at=?, error_message=?, metrics=?, updated_at=datetime('now')
     WHERE id=?`)
     .run(
       body.topic ?? existing.topic,
@@ -2539,13 +2703,24 @@ app.put('/api/facebook/posts/:id', requireAuth, (req, res) => {
       body.image_path ?? existing.image_path,
       body.image_prompt ?? existing.image_prompt,
       body.image_source ?? existing.image_source,
+      dedupeKey,
       String(body.scheduled_time ?? existing.scheduled_time).replace('T', ' '),
       body.facebook_post_id ?? existing.facebook_post_id,
+      body.posted_at ?? existing.posted_at,
       body.error_message ?? existing.error_message,
       JSON.stringify(body.metrics ?? parseJSON(existing.metrics, {})),
       existing.id
     );
-  res.json(facebookPostRow(db.prepare('SELECT * FROM facebook_posts WHERE id=?').get(existing.id)));
+  const updated = db.prepare('SELECT * FROM facebook_posts WHERE id=?').get(existing.id);
+  if (fbPostIsUsed(updated)) {
+    markFacebookPostHistory(updated, {
+      dedupeKey,
+      facebookPostId: updated.facebook_post_id || '',
+      sourceStatus: updated.status || 'posted',
+      postedAt: updated.posted_at || new Date().toISOString(),
+    });
+  }
+  res.json(facebookPostRow(updated));
 });
 
 app.delete('/api/facebook/posts/:id', requireAuth, (req, res) => {
@@ -2576,17 +2751,47 @@ app.post('/api/facebook/collect', requireAuth, (req, res) => {
   const articles = db.prepare(`SELECT * FROM articles ORDER BY published_at DESC LIMIT 40`).all();
   const slots = fbScheduleSlots(days, postsPerDay, startDate);
   const existingTimes = new Set(db.prepare('SELECT scheduled_time FROM facebook_posts').all().map(r => r.scheduled_time));
+  const usedDedupeKeys = facebookUsedDedupeKeys();
   const insert = db.prepare(`INSERT INTO facebook_posts
     (id, topic, pillar, status, brand_voice, source_type, source_urls, source_notes, fact_summary,
-     website_link, image_path, image_source, scheduled_time)
-    VALUES (?, ?, ?, 'idea', ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+     website_link, image_path, image_source, dedupe_key, scheduled_time)
+    VALUES (?, ?, ?, 'idea', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
 
   let created = 0;
+  let skippedTimes = 0;
+  let skippedDuplicates = 0;
+  let skippedNoAlternative = 0;
   const tx = db.transaction(() => {
     slots.forEach((slot, index) => {
-      if (existingTimes.has(slot.scheduled_time)) return;
-      const idea = fbTopicForSlot(slot, index, products, combos, articles);
-      const sourceUrls = fbSourceBundle(slot.pillar, idea.product);
+      if (existingTimes.has(slot.scheduled_time)) {
+        skippedTimes++;
+        return;
+      }
+
+      let selected = null;
+      for (let attempt = 0; attempt < 80; attempt++) {
+        const idea = fbTopicForSlot(slot, index + attempt * slots.length, products, combos, articles);
+        const sourceUrls = fbSourceBundle(slot.pillar, idea.product);
+        const dedupeKey = fbDedupeKey({
+          topic: idea.topic,
+          pillar: slot.pillar,
+          website_link: idea.website_link || fbFullUrl('/'),
+          caption: idea.fact_summary || '',
+        });
+        if (usedDedupeKeys.has(dedupeKey)) {
+          skippedDuplicates++;
+          continue;
+        }
+        selected = { idea, sourceUrls, dedupeKey };
+        break;
+      }
+
+      if (!selected) {
+        skippedNoAlternative++;
+        return;
+      }
+
+      const { idea, sourceUrls, dedupeKey } = selected;
       insert.run(
         generateId(),
         idea.topic,
@@ -2599,14 +2804,17 @@ app.post('/api/facebook/collect', requireAuth, (req, res) => {
         idea.website_link || fbFullUrl('/'),
         idea.image_path || '',
         idea.image_path ? 'Ảnh sản phẩm BongBanViet' : '',
+        dedupeKey,
         slot.scheduled_time
       );
       created++;
+      existingTimes.add(slot.scheduled_time);
+      usedDedupeKeys.add(dedupeKey);
     });
   });
   tx();
 
-  res.json({ ok: true, created, days, postsPerDay, startDate });
+  res.json({ ok: true, created, days, postsPerDay, startDate, skippedTimes, skippedDuplicates, skippedNoAlternative });
 });
 
 app.post('/api/facebook/generate', requireAuth, async (req, res) => {
@@ -2698,6 +2906,32 @@ app.post('/api/facebook/schedule', requireAuth, async (req, res) => {
     }
   }
   res.json({ ok: true, processed: results.length, results });
+});
+
+app.post('/api/facebook/posts/:id/mark-posted', requireAuth, (req, res) => {
+  const existing = db.prepare('SELECT * FROM facebook_posts WHERE id=?').get(req.params.id);
+  if (!existing) return res.status(404).json({ error: 'Không tìm thấy bài' });
+  const dedupeKey = existing.dedupe_key || fbDedupeKey(existing);
+  const conflict = facebookDedupeConflict(dedupeKey, existing.id);
+  if (conflict && !req.body?.force) {
+    return res.status(409).json({ error: `Bài trùng với nội dung đã đánh dấu đăng: ${conflict.topic || conflict.post_id || dedupeKey}` });
+  }
+  const postedAt = String(req.body?.posted_at || '').replace('T', ' ') || new Date().toISOString();
+  const facebookPostId = req.body?.facebook_post_id ?? existing.facebook_post_id ?? '';
+  const tx = db.transaction(() => {
+    db.prepare(`UPDATE facebook_posts SET
+      status='posted', dedupe_key=?, facebook_post_id=?, posted_at=?, error_message='', updated_at=datetime('now')
+      WHERE id=?`)
+      .run(dedupeKey, facebookPostId, postedAt, existing.id);
+    markFacebookPostHistory({ ...existing, status: 'posted', dedupe_key: dedupeKey, facebook_post_id: facebookPostId, posted_at: postedAt }, {
+      dedupeKey,
+      facebookPostId,
+      sourceStatus: 'posted',
+      postedAt,
+    });
+  });
+  tx();
+  res.json(facebookPostRow(db.prepare('SELECT * FROM facebook_posts WHERE id=?').get(existing.id)));
 });
 
 app.post('/api/facebook/verify-token', requireAuth, async (req, res) => {
@@ -3822,6 +4056,7 @@ function startServer() {
     console.log(`   Admin panel:  http://localhost:${PORT}/admin.html`);
     console.log(`   Website:      http://localhost:${PORT}/index.html\n`);
     startTracker();
+    syncFacebookDedupeHistory();
     startFacebookAutoScheduler();
   });
   server.on('error', err => {

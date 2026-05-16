@@ -117,10 +117,25 @@ db.exec(`
     image_path TEXT DEFAULT '',
     image_prompt TEXT DEFAULT '',
     image_source TEXT DEFAULT '',
+    dedupe_key TEXT DEFAULT '',
     scheduled_time TEXT DEFAULT '',
     facebook_post_id TEXT DEFAULT '',
+    posted_at TEXT DEFAULT '',
     error_message TEXT DEFAULT '',
     metrics TEXT DEFAULT '{}',
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS facebook_post_history (
+    dedupe_key TEXT PRIMARY KEY,
+    post_id TEXT DEFAULT '',
+    topic TEXT DEFAULT '',
+    pillar TEXT DEFAULT '',
+    website_link TEXT DEFAULT '',
+    facebook_post_id TEXT DEFAULT '',
+    source_status TEXT DEFAULT '',
+    posted_at TEXT DEFAULT (datetime('now')),
     created_at TEXT DEFAULT (datetime('now')),
     updated_at TEXT DEFAULT (datetime('now'))
   );
@@ -143,7 +158,17 @@ db.exec(`
   "ALTER TABLE facebook_posts ADD COLUMN image_path TEXT DEFAULT ''",
   "ALTER TABLE facebook_posts ADD COLUMN image_prompt TEXT DEFAULT ''",
   "ALTER TABLE facebook_posts ADD COLUMN image_source TEXT DEFAULT ''",
+  "ALTER TABLE facebook_posts ADD COLUMN dedupe_key TEXT DEFAULT ''",
+  "ALTER TABLE facebook_posts ADD COLUMN posted_at TEXT DEFAULT ''",
   "ALTER TABLE facebook_posts ADD COLUMN metrics TEXT DEFAULT '{}'",
+  "ALTER TABLE facebook_post_history ADD COLUMN post_id TEXT DEFAULT ''",
+  "ALTER TABLE facebook_post_history ADD COLUMN topic TEXT DEFAULT ''",
+  "ALTER TABLE facebook_post_history ADD COLUMN pillar TEXT DEFAULT ''",
+  "ALTER TABLE facebook_post_history ADD COLUMN website_link TEXT DEFAULT ''",
+  "ALTER TABLE facebook_post_history ADD COLUMN facebook_post_id TEXT DEFAULT ''",
+  "ALTER TABLE facebook_post_history ADD COLUMN source_status TEXT DEFAULT ''",
+  "ALTER TABLE facebook_post_history ADD COLUMN posted_at TEXT DEFAULT (datetime('now'))",
+  "ALTER TABLE facebook_post_history ADD COLUMN updated_at TEXT DEFAULT (datetime('now'))",
 ].forEach(sql => { try { db.exec(sql); } catch {} });
 
 // Orders table (added later, created via migration)
