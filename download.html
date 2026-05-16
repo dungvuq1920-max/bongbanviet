@@ -302,9 +302,12 @@
         Tải Video
       </button>
       <div id="pvProcArea" style="margin-top:8px">
-        <select id="pvMusicSel" style="width:100%;padding:7px 10px;border:1.5px solid var(--line);border-radius:8px;font-family:'Inter',sans-serif;font-size:12px;color:var(--dark);margin-bottom:6px;outline:none">
-          <option value="-1">♫ Chọn nhạc nền...</option>
-        </select>
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
+          <select id="pvMusicSel" onchange="stopPreview()" style="flex:1;min-width:0;padding:7px 10px;border:1.5px solid var(--line);border-radius:8px;font-family:'Inter',sans-serif;font-size:12px;color:var(--dark);outline:none">
+            <option value="-1">♫ Chọn nhạc nền...</option>
+          </select>
+          <button id="pvPreviewBtn" onclick="previewTrack(this,'pvMusicSel')" title="Nghe thử" style="flex-shrink:0;padding:7px 13px;border:1.5px solid var(--line);background:#fff;border-radius:8px;font-size:15px;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif">♫</button>
+        </div>
         <button class="btn-full" onclick="pvProcess()" style="background:#7C3AED" id="pvProcBtn">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
           Đổi Nhạc Nền
@@ -397,27 +400,64 @@ var _srResults = [], _srCursor = 0, _srHasMore = false, _srQuery = '';
 var ffInst = null, _ffetch = null, _ffBlobURL = null, ffReady = false;
 var _procResults = {}; // cardKey → { url, name }
 
+// ── Music preview ─────────────────────────────────────────────────────────────
+var _pvAudio = null, _pvBtnEl = null;
+function previewTrack(btn, selId) {
+  var sel = $(selId), idx = sel ? parseInt(sel.value) : -1;
+  if (idx < 0) { alert('Chọn nhạc nền trước!'); return; }
+  if (_pvBtnEl === btn && _pvAudio && !_pvAudio.paused) { stopPreview(); return; }
+  stopPreview();
+  var track = MUSIC_LIB[idx];
+  _pvBtnEl = btn;
+  btn.textContent = '⏸'; btn.style.background = '#7C3AED'; btn.style.color = '#fff'; btn.style.borderColor = '#7C3AED';
+  _pvAudio = new Audio(track.url);
+  _pvAudio.volume = 0.7;
+  _pvAudio.onended = stopPreview;
+  _pvAudio.onerror = stopPreview;
+  _pvAudio.play().catch(stopPreview);
+}
+function stopPreview() {
+  if (_pvAudio) { try { _pvAudio.pause(); } catch(e){} _pvAudio.onended=null; _pvAudio.onerror=null; _pvAudio=null; }
+  if (_pvBtnEl) { _pvBtnEl.textContent='♫'; _pvBtnEl.style.background=''; _pvBtnEl.style.color=''; _pvBtnEl.style.borderColor=''; _pvBtnEl=null; }
+}
+
 // ── Music Library ─────────────────────────────────────────────────────────────
 var MUSIC_LIB = [
-  {t:'Electronic Beat', g:'EDM'},
-  {t:'Synth Pop',       g:'Pop'},
-  {t:'Dance Floor',     g:'EDM'},
-  {t:'Acoustic Breeze', g:'Acoustic'},
-  {t:'Chill Vibes',     g:'Chill'},
-  {t:'Cinematic Rise',  g:'Cinematic'},
-  {t:'Happy Day',       g:'Pop'},
-  {t:'Indie Folk',      g:'Acoustic'},
-  {t:'Tech House',      g:'EDM'},
-  {t:'Hip Hop Beat',    g:'Hip-hop'},
-  {t:'Summer Pop',      g:'Pop'},
-  {t:'Jazz Lounge',     g:'Jazz'},
-  {t:'Lo-fi Study',     g:'Chill'},
-  {t:'Trap Flow',       g:'Hip-hop'},
-  {t:'Epic Score',      g:'Cinematic'},
-  {t:'Orchestral Drama',g:'Cinematic'},
-  {t:'Rock Anthem',     g:'Rock'},
+  // ── SoundHelix (royalty-free test tracks) ──────────────────────────────────
+  {t:'Electronic Beat',  g:'EDM',       src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'},
+  {t:'Synth Pop',        g:'Pop',       src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3'},
+  {t:'Dance Floor',      g:'EDM',       src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3'},
+  {t:'Acoustic Breeze',  g:'Acoustic',  src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3'},
+  {t:'Chill Vibes',      g:'Chill',     src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3'},
+  {t:'Cinematic Rise',   g:'Cinematic', src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3'},
+  {t:'Happy Day',        g:'Pop',       src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3'},
+  {t:'Indie Folk',       g:'Acoustic',  src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3'},
+  {t:'Tech House',       g:'EDM',       src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3'},
+  {t:'Hip Hop Beat',     g:'Hip-hop',   src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3'},
+  {t:'Summer Pop',       g:'Pop',       src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3'},
+  {t:'Jazz Lounge',      g:'Jazz',      src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-12.mp3'},
+  {t:'Lo-fi Study',      g:'Chill',     src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-13.mp3'},
+  {t:'Trap Flow',        g:'Hip-hop',   src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-14.mp3'},
+  {t:'Epic Score',       g:'Cinematic', src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3'},
+  {t:'Orchestral Drama', g:'Cinematic', src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-16.mp3'},
+  {t:'Rock Anthem',      g:'Rock',      src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-17.mp3'},
+  // ── Kevin MacLeod / FreePD (CC0 Public Domain) ────────────────────────────
+  {t:'Digital Lemonade', g:'EDM',       src:'https://freepd.com/music/Digital%20Lemonade.mp3'},
+  {t:'Electrodoodle',    g:'EDM',       src:'https://freepd.com/music/Electrodoodle.mp3'},
+  {t:'Funkorama',        g:'Funk',      src:'https://freepd.com/music/Funkorama.mp3'},
+  {t:'Night Owl',        g:'Jazz',      src:'https://freepd.com/music/Night%20Owl.mp3'},
+  {t:'Bossa Antigua',    g:'Jazz',      src:'https://freepd.com/music/Bossa%20Antigua.mp3'},
+  {t:'Perspectives',     g:'Ambient',   src:'https://freepd.com/music/Perspectives.mp3'},
+  {t:'Shades of Spring', g:'Acoustic',  src:'https://freepd.com/music/Shades%20of%20Spring.mp3'},
+  {t:'The Complex',      g:'Ambient',   src:'https://freepd.com/music/The%20Complex.mp3'},
+  {t:'Twisting',         g:'Electronic',src:'https://freepd.com/music/Twisting.mp3'},
+  {t:'Groovy Ambient',   g:'Chill',     src:'https://freepd.com/music/Groovy%20Ambient.mp3'},
+  {t:'Impact Moderato',  g:'Cinematic', src:'https://freepd.com/music/Impact%20Moderato.mp3'},
+  {t:'Double Drift',     g:'Chill',     src:'https://freepd.com/music/Double%20Drift.mp3'},
+  {t:'Monkeys Spinning', g:'Quirky',    src:'https://freepd.com/music/Monkeys%20Spinning%20Monkeys.mp3'},
+  {t:'Retro Soul',       g:'Soul',      src:'https://freepd.com/music/Retro%20Soul.mp3'},
 ];
-MUSIC_LIB.forEach(function(t,i){ t.url='/api/proxy-audio?url='+encodeURIComponent('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-'+(i+1)+'.mp3'); });
+MUSIC_LIB.forEach(function(t){ t.url='/api/proxy-audio?url='+encodeURIComponent(t.src); });
 
 // Build options HTML grouped by genre
 var _mOptHtml = (function(){
@@ -496,6 +536,7 @@ function closePv(){
   $('pvModal').classList.remove('open');
   document.body.style.overflow='';
   _pvUrl=''; _pvFn=''; _pvAwemeId='';
+  stopPreview();
 }
 
 function pvDownload(){
@@ -822,7 +863,7 @@ function renderBatch(results){
       var btnH=alb
         ?'<button class="btn-sm album" onclick="dlAlbumBatch('+i+')">Xem Ảnh</button>'
         :(v.play_url
-          ?'<div class="r-acts" id="acts_b_'+i+'"><select class="music-sel" id="msel_b_'+i+'" title="Chọn nhạc nền"><option value="-1">♫ Nhạc</option>'+_mOptHtml+'</select><button class="btn-sm" style="padding:5px 10px" onclick="dlBatchItem('+i+',this)">Tải</button><button class="btn-sm proc" id="proc_b_'+i+'" onclick="processCard(\'b\','+i+',this)">▶</button></div>'
+          ?'<div class="r-acts" id="acts_b_'+i+'"><select class="music-sel" id="msel_b_'+i+'" title="Chọn nhạc nền" onchange="stopPreview()"><option value="-1">♫ Nhạc</option>'+_mOptHtml+'</select><button class="btn-sm" style="padding:4px 7px" title="Nghe thử" onclick="previewTrack(this,\'msel_b_'+i+'\')">♫</button><button class="btn-sm" style="padding:5px 10px" onclick="dlBatchItem('+i+',this)">Tải</button><button class="btn-sm proc" id="proc_b_'+i+'" onclick="processCard(\'b\','+i+',this)">▶</button></div>'
           :'<span class="badge-sm">No URL</span>');
       div.innerHTML=th+'<div class="r-info"><p class="r-title'+titleCls+'"'+titleClick+'>'+esc(v.title||'Không có tiêu đề')+'</p>'+
         '<p class="r-sub">@'+esc(v.author||'')+(v.duration?' · '+fmtDur(v.duration):'')+'</p></div>'+
@@ -906,7 +947,7 @@ function renderUser(d,first,startIdx){
     var titleCls=pvClick?' clickable':'', titleClick=pvClick?' onclick="'+pvClick+'"':'';
     var btnH=alb?'<button class="btn-sm album">Album</button>':
       (v.play_url
-        ?'<div class="r-acts" id="acts_u_'+idx+'"><select class="music-sel" id="msel_u_'+idx+'" title="Chọn nhạc nền"><option value="-1">♫ Nhạc</option>'+_mOptHtml+'</select><button class="btn-sm" style="padding:5px 10px" onclick="dlUserItem('+idx+',this)">Tải</button><button class="btn-sm proc" id="proc_u_'+idx+'" onclick="processCard(\'u\','+idx+',this)">▶</button></div>'
+        ?'<div class="r-acts" id="acts_u_'+idx+'"><select class="music-sel" id="msel_u_'+idx+'" title="Chọn nhạc nền" onchange="stopPreview()"><option value="-1">♫ Nhạc</option>'+_mOptHtml+'</select><button class="btn-sm" style="padding:4px 7px" title="Nghe thử" onclick="previewTrack(this,\'msel_u_'+idx+'\')">♫</button><button class="btn-sm" style="padding:5px 10px" onclick="dlUserItem('+idx+',this)">Tải</button><button class="btn-sm proc" id="proc_u_'+idx+'" onclick="processCard(\'u\','+idx+',this)">▶</button></div>'
         :'<span class="badge-sm">No URL</span>');
     div.innerHTML=th+'<div class="r-info"><p class="r-title'+titleCls+'"'+titleClick+'>'+esc(v.title||'Không có tiêu đề')+'</p>'+
       '<p class="r-sub">@'+esc(v.author||'')+(v.duration?' · '+fmtDur(v.duration):'')+'</p></div>'+
@@ -976,18 +1017,22 @@ function renderSearchResults(videos,startIdx,first){
     return;
   }
   var playIco='<svg width="22" height="22" viewBox="0 0 24 24" fill="#fff" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
-  var phIco='<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.3"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>';
   videos.forEach(function(v,j){
     var idx=startIdx+j;
     var card=document.createElement('div'); card.className='sr-card';
-    var thumbInner=v.cover_url
-      ?'<img src="'+thumbUrl(v.cover_url)+'" alt="" loading="lazy" onerror="this.parentNode.innerHTML=\'<div class=sr-thumb-ph>'+phIco.replace(/"/g,"'")+'</div>\'">'
-      :'<div class="sr-thumb-ph">'+phIco+'</div>';
+    // Try direct CDN URL first (fast, no proxy hop); if fails, fall back to our proxy; if proxy also fails, hide img
+    var thumbInner='<div class="sr-thumb-ph" style="background:#F3F4F6;width:100%;height:100%"></div>';
+    if(v.cover_url){
+      var directSrc=esc(v.cover_url);
+      var proxySrc=esc('/api/douyin/image?url='+encodeURIComponent(v.cover_url));
+      thumbInner='<img src="'+directSrc+'" alt="" loading="eager" data-fallback="'+proxySrc+'" onerror="if(!this.dataset.tried){this.dataset.tried=1;this.src=this.dataset.fallback}else{this.style.visibility=\'hidden\'}">';
+    }
     var durBadge=v.duration?'<span class="sr-card-dur">'+fmtDur(v.duration)+'</span>':'';
     var thumbClick=v.play_url?'openPvIdx("sr",'+idx+')':'';
     var actsHtml=v.play_url
       ?'<div class="sr-card-acts" id="acts_sr_'+idx+'">'+
-          '<select class="music-sel" id="msel_sr_'+idx+'" title="Chọn nhạc nền"><option value="-1">♫ Nhạc</option>'+_mOptHtml+'</select>'+
+          '<select class="music-sel" id="msel_sr_'+idx+'" title="Chọn nhạc nền" onchange="stopPreview()"><option value="-1">♫ Nhạc</option>'+_mOptHtml+'</select>'+
+          '<button class="btn-sm" style="padding:3px 6px" title="Nghe thử" onclick="previewTrack(this,\'msel_sr_'+idx+'\')">♫</button>'+
           '<button class="btn-sm" onclick="dlSrItem('+idx+',this)">Tải</button>'+
           '<button class="btn-sm proc" id="proc_sr_'+idx+'" onclick="processCard(\'sr\','+idx+',this)">▶</button>'+
         '</div>'

@@ -8,7 +8,7 @@ const DEFAULT_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
 const BASE_URL = 'https://www.douyin.com';
 
 const WATERMARK_HINTS = ['tplv-dy-water', 'dy-water', 'owner_watermark', 'watermark_image', 'watermark=1', 'playwm'];
-const ALLOWED_IMAGE_DOMAINS = ['douyinpic.com', 'douyinstatic.com', 'douyin.com', 'pstatp.com', 'byteimg.com', 'tiktokcdn.com', 'tiktokcdn-us.com', 'bytedance.com', 'tiktokv.com', 'tikwm.com'];
+const ALLOWED_IMAGE_DOMAINS = ['douyinpic.com', 'douyinstatic.com', 'douyin.com', 'pstatp.com', 'byteimg.com', 'tiktokcdn.com', 'tiktokcdn-us.com', 'bytedance.com', 'tiktokv.com', 'tikwm.com', 'muscdn.com', 'sgsnssdk.com', 'ibytedtos.com', 'snssdk.com', 'ibyteimg.com'];
 
 const DEFAULT_QUERY = {
   device_platform: 'webapp', aid: '6383', channel: 'channel_pc_web',
