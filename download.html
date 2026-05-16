@@ -226,9 +226,9 @@
   </div>
 
   <div class="tabs">
-    <button class="tab active" id="tabL" onclick="sw('link')">Link Video</button>
+    <button class="tab active" id="tabSR" onclick="sw('search')">Tìm Kiếm</button>
+    <button class="tab" id="tabL" onclick="sw('link')">Link Video</button>
     <button class="tab" id="tabU" onclick="sw('user')">Video Kênh</button>
-    <button class="tab" id="tabSR" onclick="sw('search')">Tìm Kiếm</button>
   </div>
 
   <div class="auth-bar" id="authBar">
@@ -240,7 +240,7 @@
   </div>
 
   <!-- ── LINK VIDEO (batch) ─────────────────────────────────────────── -->
-  <div class="panel active" id="pLink">
+  <div class="panel" id="pLink">
     <textarea id="bArea" class="batch-area"
       placeholder="Dán mỗi link trên một dòng:&#10;https://www.douyin.com/video/123...&#10;https://v.douyin.com/abc...&#10;..."
       oninput="onBInput()"></textarea>
@@ -271,7 +271,7 @@
   </div>
 
   <!-- ── TÌM KIẾM ───────────────────────────────────────────────────── -->
-  <div class="panel" id="pSearch">
+  <div class="panel active" id="pSearch">
     <div class="input-wrap">
       <input id="srInput" class="url-input" type="text"
         placeholder="Nhập từ khóa tìm kiếm (tiếng Việt hoặc tiếng Trung)..."
@@ -279,6 +279,18 @@
       <button class="btn-resolve" id="srBtn" onclick="doSearch()">Tìm Kiếm</button>
     </div>
     <p class="input-hint">Tự động dịch sang tiếng Trung rồi tìm trên Douyin</p>
+    <div id="srDurFilterWrap" style="display:none;margin-bottom:10px;align-items:center;gap:8px;flex-wrap:wrap">
+      <select id="srDurSel" onchange="applyDurFilter()" style="padding:6px 10px;border:1.5px solid var(--line);border-radius:6px;font-family:'Inter',sans-serif;font-size:12px;color:var(--dark);background:#fff;outline:none;cursor:pointer">
+        <option value="all">⏱ Tất cả thời lượng</option>
+        <option value="30">Dưới 30 giây</option>
+        <option value="60">Dưới 1 phút</option>
+        <option value="120">Dưới 2 phút</option>
+        <option value="300">Dưới 5 phút</option>
+        <option value="600">Dưới 10 phút</option>
+        <option value="600+">Hơn 10 phút</option>
+      </select>
+      <span id="srDurCount" style="font-size:12px;color:var(--mid)"></span>
+    </div>
     <div class="search-hint" id="srHint"></div>
     <div class="msg msg-err" id="srErr"></div>
     <div class="msg msg-load" id="srLoad"><div class="spinner"></div><span id="srLoadTxt">Đang tìm kiếm...</span></div>
@@ -394,7 +406,7 @@
 <script>
 var _bResolved = [];
 var _uVideos = [], _uUrl = '', _uCursor = 0, _uHasMore = false, _uCount = 0;
-var _srResults = [], _srCursor = 0, _srHasMore = false, _srQuery = '';
+var _srResults = [], _srCursor = 0, _srHasMore = false, _srQuery = '', _srDurFilter = 'all';
 
 // ── FFmpeg state ──────────────────────────────────────────────────────────────
 var ffInst = null, _ffetch = null, _ffBlobURL = null, ffReady = false;
@@ -525,6 +537,7 @@ function openPv(videoUrl, filename, title, author, dur, cover){
   else{ vid.removeAttribute('poster'); }
   vid.style.display='block'; cov.style.display='none';
   vid.load();
+  vid.play().catch(function(){});
   $('pvDlBtn').disabled=false; $('pvDlBtn').innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Tải Video';
   $('pvModal').classList.add('open');
   document.body.style.overflow='hidden';
@@ -974,8 +987,9 @@ $('uUrl').addEventListener('keydown',function(e){if(e.key==='Enter')doUser();});
 // ── TÌM KIẾM ─────────────────────────────────────────────────────────────────
 async function doSearch(){
   var query=$('srInput').value.trim(); if(!query)return;
-  _srQuery=query; _srCursor=0; _srResults=[]; _srHasMore=false;
-  hide('srErr'); hide('srHint'); $('srResults').innerHTML=''; show('srLoad',true);
+  _srQuery=query; _srCursor=0; _srResults=[]; _srHasMore=false; _srDurFilter='all';
+  var durSel=$('srDurSel'); if(durSel) durSel.value='all';
+  hide('srErr'); hide('srHint'); hide('srDurFilterWrap'); $('srResults').innerHTML=''; show('srLoad',true);
   $('srBtn').disabled=true; $('srLoadTxt').textContent='Đang dịch và tìm kiếm...';
   await fetchSearch(true);
   $('srBtn').disabled=false;
@@ -996,8 +1010,10 @@ async function fetchSearch(first){
       hint.innerHTML='Kết quả cho: <strong>'+esc(d.query_translated)+'</strong>'+
         (d.query_translated!==d.query_original?' (từ "'+esc(d.query_original)+'")'  :'');
       hint.style.display='block';
+      show('srDurFilterWrap', true);
     }
     renderSearchResults(newVids,startIdx,first);
+    applyDurFilter();
   }catch(e){
     hide('srLoad');
     var eb=$('srErr'); eb.textContent=e.message; eb.style.display='block';
@@ -1019,7 +1035,7 @@ function renderSearchResults(videos,startIdx,first){
   var playIco='<svg width="22" height="22" viewBox="0 0 24 24" fill="#fff" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
   videos.forEach(function(v,j){
     var idx=startIdx+j;
-    var card=document.createElement('div'); card.className='sr-card';
+    var card=document.createElement('div'); card.className='sr-card'; card.dataset.duration=v.duration||0;
     // Try direct CDN URL first (fast, no proxy hop); if fails, fall back to our proxy; if proxy also fails, hide img
     var thumbInner='<div class="sr-thumb-ph" style="background:#F3F4F6;width:100%;height:100%"></div>';
     if(v.cover_url){
@@ -1066,6 +1082,32 @@ function dlSrItem(i,btn){
   var fn=(v.title||'video').slice(0,60).replace(/[\\/:*?"<>|#\r\n]/g,'_')+'.mp4';
   dl(v.play_url,fn);
   setTimeout(function(){if(btn){btn.disabled=false;btn.textContent='Tải';}},4000);
+}
+
+function checkDurFilter(dur){
+  if(_srDurFilter==='all') return true;
+  if(_srDurFilter==='30')  return dur>0&&dur<=30;
+  if(_srDurFilter==='60')  return dur>0&&dur<=60;
+  if(_srDurFilter==='120') return dur>0&&dur<=120;
+  if(_srDurFilter==='300') return dur>0&&dur<=300;
+  if(_srDurFilter==='600') return dur>0&&dur<=600;
+  if(_srDurFilter==='600+') return dur>600;
+  return true;
+}
+
+function applyDurFilter(){
+  var sel=$('srDurSel');
+  _srDurFilter=sel?sel.value:'all';
+  var cards=document.querySelectorAll('#srList .sr-card');
+  var count=0;
+  cards.forEach(function(card){
+    var dur=parseInt(card.dataset.duration)||0;
+    var pass=checkDurFilter(dur);
+    card.style.display=pass?'':'none';
+    if(pass) count++;
+  });
+  var countEl=$('srDurCount');
+  if(countEl) countEl.textContent=count+' video';
 }
 
 $('srInput').addEventListener('keydown',function(e){if(e.key==='Enter')doSearch();});
