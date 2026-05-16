@@ -730,9 +730,9 @@ async function processCard(type, idx, btn){
   var outFn=fn.replace(/\.mp4$/i,'')+'_bgnhac.mp4';
   btn.disabled=true; btn.innerHTML='<span class="spin-sm"></span>';
   if(sel) sel.disabled=true;
-  var proxyUrl=v.aweme_id
-    ?'/api/douyin/stream/'+encodeURIComponent(v.aweme_id)
-    :'/api/douyin/stream-url?url='+encodeURIComponent(v.play_url)+'&filename='+encodeURIComponent(fn);
+  var proxyUrl=v.play_url
+    ?'/api/douyin/stream-url?url='+encodeURIComponent(v.play_url)+'&filename='+encodeURIComponent(fn)
+    :'/api/douyin/stream/'+encodeURIComponent(v.aweme_id);
   var vFile={name:fn,isUrl:true,proxyUrl:proxyUrl};
   var mFile={name:track.t+'.mp3',_url:track.url};
   try{
@@ -761,9 +761,9 @@ async function pvProcess(){
   var outFn=(_pvFn||'video').replace(/\.mp4$/i,'')+'_bgnhac.mp4';
   var procBtn=$('pvProcBtn');
   procBtn.disabled=true; procBtn.innerHTML='<span class="spinner-sm" style="display:inline-block"></span> Đang xử lý...';
-  var pvProxyUrl=_pvAwemeId
-    ?'/api/douyin/stream/'+encodeURIComponent(_pvAwemeId)
-    :'/api/douyin/stream-url?url='+encodeURIComponent(_pvUrl)+'&filename='+encodeURIComponent(_pvFn||'video.mp4');
+  var pvProxyUrl=_pvUrl
+    ?'/api/douyin/stream-url?url='+encodeURIComponent(_pvUrl)+'&filename='+encodeURIComponent(_pvFn||'video.mp4')
+    :'/api/douyin/stream/'+encodeURIComponent(_pvAwemeId);
   var vFile={name:_pvFn||'video.mp4',isUrl:true,proxyUrl:pvProxyUrl};
   var mFile={name:track.t+'.mp3',_url:track.url};
   try{
@@ -1313,9 +1313,9 @@ async function processCollectItem(key,btn){
   var outFn=fn.replace(/\.mp4$/i,'')+'_bgnhac.mp4';
   btn.disabled=true; btn.innerHTML='<span class="spin-sm"></span>';
   if(sel) sel.disabled=true;
-  var proxyUrl=v.aweme_id
-    ?'/api/douyin/stream/'+encodeURIComponent(v.aweme_id)
-    :'/api/douyin/stream-url?url='+encodeURIComponent(v.play_url)+'&filename='+encodeURIComponent(fn);
+  var proxyUrl=v.play_url
+    ?'/api/douyin/stream-url?url='+encodeURIComponent(v.play_url)+'&filename='+encodeURIComponent(fn)
+    :'/api/douyin/stream/'+encodeURIComponent(v.aweme_id);
   try{
     var url=await processOneVideo({name:fn,isUrl:true,proxyUrl:proxyUrl},{name:track.t+'.mp3',_url:track.url},0.8,true,function(pct){btn.innerHTML=pct+'%';});
     item.processed={url:url,name:outFn,title:v.title||''};
