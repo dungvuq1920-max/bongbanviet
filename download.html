@@ -191,6 +191,38 @@
     .sr-card-acts .music-sel{flex:1;min-width:0;font-size:10px;height:24px;padding:2px 3px;max-width:none;width:0}
     .sr-card-acts .btn-sm{font-size:10px;padding:3px 7px;flex-shrink:0}
     .sr-card-acts .btn-sm.proc{padding:3px 6px}
+    .btn-sm.add-col{background:#EDE9FE;color:#7C3AED;padding:3px 7px}
+    .btn-sm.add-col:hover{background:#DDD6FE}
+    .btn-sm.add-col.in-col{background:#DCFCE7;color:#166534}
+    .btn-sm.add-col.in-col:hover{background:#BBF7D0}
+
+    /* ── Collection panel ─────────────────────────────────────────── */
+    .collect-panel{margin-top:16px;border:1.5px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
+    .collect-hd{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:#F9FAFB;border-bottom:1px solid var(--line)}
+    .collect-hd-title{font-size:13px;font-weight:700;color:var(--dark);display:flex;align-items:center;gap:5px}
+    .collect-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}
+    .collect-item:last-child{border-bottom:none}
+    .collect-thumb{width:38px;height:54px;border-radius:5px;object-fit:cover;flex-shrink:0;background:#F3F4F6;cursor:pointer}
+    .collect-info{flex:1;min-width:0}
+    .collect-title{font-size:12px;font-weight:600;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+    .collect-sub{font-size:10px;color:var(--mid);margin-bottom:5px}
+    .collect-acts{display:flex;gap:3px;align-items:center;flex-wrap:wrap}
+    .collect-sched-time{font-size:10px;color:#7C3AED;font-weight:600;margin-top:4px}
+    .collect-footer{display:flex;gap:8px;padding:9px 14px;background:#F9FAFB;border-top:1px solid var(--line);justify-content:flex-end;flex-wrap:wrap}
+
+    /* ── Schedule modal ───────────────────────────────────────────── */
+    .sched-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:2200;align-items:center;justify-content:center;padding:16px}
+    .sched-modal.open{display:flex}
+    .sched-box{background:var(--card);border-radius:16px;max-width:440px;width:100%;position:relative;box-shadow:0 24px 64px rgba(0,0,0,.4);max-height:90vh;overflow-y:auto}
+    .sched-inner{padding:22px 22px 18px}
+    .sched-list-item{display:flex;align-items:center;gap:7px;padding:8px 0;border-bottom:1px solid var(--line)}
+    .sched-list-item:last-child{border-bottom:none}
+    .sched-li-title{flex:1;font-size:12px;font-weight:600;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+    .sched-li-time{font-size:11px;color:var(--mid);white-space:nowrap;flex-shrink:0}
+    .sched-badge{display:inline-block;padding:1px 7px;border-radius:100px;font-size:10px;font-weight:700;flex-shrink:0}
+    .sched-badge.pending{background:#FEF3C7;color:#92400E}
+    .sched-badge.due{background:#FEE2E2;color:#991B1B}
+    .sched-badge.done{background:#DCFCE7;color:#166534}
   </style>
 </head>
 <body>
@@ -295,6 +327,28 @@
     <div class="msg msg-err" id="srErr"></div>
     <div class="msg msg-load" id="srLoad"><div class="spinner"></div><span id="srLoadTxt">Đang tìm kiếm...</span></div>
     <div id="srResults"></div>
+
+    <!-- ── Collection panel ─────────────────────────────────────── -->
+    <div id="srCollect" class="collect-panel" style="display:none">
+      <div class="collect-hd">
+        <span class="collect-hd-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Video đã chọn (<span id="collectCount">0</span>)
+        </span>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="btn-sm" onclick="openSchedModal()" style="background:#EDE9FE;color:#7C3AED;font-size:10px;padding:3px 9px">📅 Xem lịch</button>
+          <button class="btn-sm" onclick="clearCollect()" style="background:#FEE2E2;color:#991B1B;font-size:10px;padding:3px 9px">Xóa tất cả</button>
+        </div>
+      </div>
+      <div id="collectList"></div>
+      <div class="collect-footer">
+        <button class="btn-sm" onclick="openSchedBatch()" style="background:#EDE9FE;color:#7C3AED;font-size:11px;padding:5px 12px">📅 Đặt lịch hàng loạt</button>
+        <button class="btn-sm" onclick="uploadCollectAll()" style="background:#111;color:#fff;font-size:11px;padding:5px 12px;display:flex;align-items:center;gap:4px">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="#fff"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V9.41a8.16 8.16 0 004.77 1.52V7.49a4.85 4.85 0 01-1-.8z"/></svg>
+          Upload tất cả TikTok
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -397,6 +451,34 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V9.41a8.16 8.16 0 004.77 1.52V7.49a4.85 4.85 0 01-1-.8z"/></svg>
         Upload lên TikTok ↑
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- Schedule modal -->
+<div class="sched-modal" id="schedModal" onclick="if(event.target===this)closeSchedModal()">
+  <div class="sched-box">
+    <button class="pv-close-btn" onclick="closeSchedModal()">×</button>
+    <div class="sched-inner">
+      <p style="font-size:16px;font-weight:700;color:var(--dark);margin-bottom:3px">📅 Lịch Đăng TikTok</p>
+      <p style="font-size:11px;color:var(--mid);margin-bottom:14px">Giữ tab mở để tự động đăng khi đến giờ</p>
+
+      <div id="schedFormArea" style="display:none;background:#F9FAFB;border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:14px">
+        <p id="schedFormTitle" style="font-size:12px;font-weight:600;color:var(--dark);margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></p>
+        <label style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--mid);display:block;margin-bottom:5px">Ngày giờ đăng</label>
+        <input type="datetime-local" id="schedDtInput" class="tt-input" style="margin-bottom:10px">
+        <div style="display:flex;gap:6px;justify-content:flex-end">
+          <button onclick="cancelSchedForm()" style="padding:6px 14px;border:1.5px solid var(--line);background:#fff;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;color:var(--dark)">Hủy</button>
+          <button onclick="confirmSchedItem()" style="padding:6px 14px;background:var(--accent);color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer">Xác nhận</button>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <p style="font-size:12px;font-weight:700;color:var(--dark)">Danh sách đã đặt (<span id="schedListCount">0</span>)</p>
+        <button onclick="clearAllSched()" style="font-size:11px;color:var(--mid);background:none;border:none;cursor:pointer;text-decoration:underline">Xóa tất cả</button>
+      </div>
+      <div id="schedListEl" style="max-height:300px;overflow-y:auto"></div>
+      <p id="schedEmptyMsg" style="font-size:12px;color:var(--mid);text-align:center;padding:20px 0;display:none">Chưa có lịch nào được đặt</p>
     </div>
   </div>
 </div>
@@ -536,11 +618,11 @@ function openPv(videoUrl, filename, title, author, dur, cover){
   if(cover){ vid.poster=thumbUrl(cover); }
   else{ vid.removeAttribute('poster'); }
   vid.style.display='block'; cov.style.display='none';
-  vid.load();
   $('pvDlBtn').disabled=false; $('pvDlBtn').innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Tải Video';
   $('pvModal').classList.add('open');
   document.body.style.overflow='hidden';
-  vid.play().catch(function(){});
+  vid.load();
+  requestAnimationFrame(function(){ requestAnimationFrame(function(){ vid.play().catch(function(){}); }); });
 }
 
 function closePv(){
@@ -1051,6 +1133,7 @@ function renderSearchResults(videos,startIdx,first){
           '<button class="btn-sm" style="padding:3px 6px" title="Nghe thử" onclick="previewTrack(this,\'msel_sr_'+idx+'\')">♫</button>'+
           '<button class="btn-sm" onclick="dlSrItem('+idx+',this)">Tải</button>'+
           '<button class="btn-sm proc" id="proc_sr_'+idx+'" onclick="processCard(\'sr\','+idx+',this)">▶</button>'+
+          '<button class="btn-sm add-col" id="addcol_sr_'+idx+'" onclick="addToCollect('+idx+')" title="Thêm vào danh sách đăng">+</button>'+
         '</div>'
       :'<span class="badge-sm" style="font-size:10px">No URL</span>';
     card.innerHTML=
@@ -1111,6 +1194,260 @@ function applyDurFilter(){
 }
 
 $('srInput').addEventListener('keydown',function(e){if(e.key==='Enter')doSearch();});
+
+// ── Collection ─────────────────────────────────────────────────────────────────
+var _collect={}, _collectKeys=[];
+
+function collectKey(v,idx){ return v.aweme_id?'a_'+v.aweme_id:'i_'+idx; }
+
+function addToCollect(idx){
+  var v=_srResults[idx]; if(!v||!v.play_url) return;
+  var key=collectKey(v,idx);
+  var btn=$('addcol_sr_'+idx);
+  if(_collect[key]){
+    delete _collect[key];
+    _collectKeys=_collectKeys.filter(function(k){return k!==key;});
+    if(btn){btn.textContent='+';btn.classList.remove('in-col');}
+  }else{
+    _collect[key]={v:v,idx:idx,musicIdx:-1,scheduled:null,processed:null};
+    _collectKeys.push(key);
+    if(btn){btn.textContent='✓';btn.classList.add('in-col');}
+  }
+  renderCollectPanel();
+}
+
+function removeFromCollect(key){
+  if(!_collect[key]) return;
+  var oldIdx=_collect[key].idx;
+  delete _collect[key];
+  _collectKeys=_collectKeys.filter(function(k){return k!==key;});
+  var btn=$('addcol_sr_'+oldIdx); if(btn){btn.textContent='+';btn.classList.remove('in-col');}
+  renderCollectPanel();
+}
+
+function clearCollect(){
+  _collectKeys.forEach(function(key){
+    var item=_collect[key]; if(!item) return;
+    var btn=$('addcol_sr_'+item.idx); if(btn){btn.textContent='+';btn.classList.remove('in-col');}
+  });
+  _collect={}; _collectKeys=[];
+  renderCollectPanel();
+}
+
+function openPvForCollect(key){
+  var item=_collect[key]; if(!item||!item.v||!item.v.play_url) return;
+  var v=item.v, fn=(v.title||'video').slice(0,60).replace(/[\\/:*?"<>|#\r\n]/g,'_')+'.mp4';
+  openPv(v.play_url,fn,v.title,v.author,v.duration,v.cover_url);
+}
+
+function renderCollectPanel(){
+  var count=_collectKeys.length;
+  var panel=$('srCollect'),listEl=$('collectList'),countEl=$('collectCount');
+  if(!panel) return;
+  if(countEl) countEl.textContent=count;
+  if(!count){panel.style.display='none';return;}
+  panel.style.display='block';
+  listEl.innerHTML='';
+  _collectKeys.forEach(function(key){
+    var item=_collect[key]; if(!item) return;
+    var v=item.v;
+    var thumbH=v.cover_url
+      ?'<img class="collect-thumb" src="'+esc('/api/douyin/image?url='+encodeURIComponent(v.cover_url))+'" onclick="openPvForCollect(\''+key+'\')" alt="" onerror="this.style.visibility=\'hidden\'">'
+      :'<div class="collect-thumb" style="display:flex;align-items:center;justify-content:center" onclick="openPvForCollect(\''+key+'\')"></div>';
+    var schedTxt=item.scheduled?'<p class="collect-sched-time">📅 '+fmtSchedTime(item.scheduled)+'</p>':'';
+    var procHtml=item.processed
+      ?'<a class="btn-sm done-dl" href="'+esc(item.processed.url)+'" download="'+esc(item.processed.name)+'" style="font-size:10px;padding:3px 7px">⬇</a>'+
+        '<button class="btn-sm tt-up" style="font-size:10px;padding:3px 7px" onclick="openTtUpFromCollect(\''+key+'\')">TikTok↑</button>'
+      :'<button class="btn-sm proc" id="proc_col_'+key+'" onclick="processCollectItem(\''+key+'\',this)" style="font-size:10px;padding:3px 6px">▶</button>'+
+        '<button class="btn-sm tt-up" style="font-size:10px;padding:3px 7px" onclick="openTtUpFromCollect(\''+key+'\')" title="Cần xử lý nhạc trước">TikTok↑</button>';
+    var row=document.createElement('div'); row.className='collect-item'; row.id='citem_'+key;
+    row.innerHTML=thumbH+
+      '<div class="collect-info">'+
+        '<p class="collect-title" title="'+esc(v.title||'')+'">'+esc(v.title||'Không có tiêu đề')+'</p>'+
+        '<p class="collect-sub">@'+esc(v.author||'')+(v.duration?' · '+fmtDur(v.duration):'')+'</p>'+
+        '<div class="collect-acts">'+
+          '<select class="music-sel" id="cmsel_'+key+'" style="height:24px;font-size:10px;padding:1px 3px;width:88px" onchange="stopPreview();if(_collect[\''+key+'\'])_collect[\''+key+'\'].musicIdx=parseInt(this.value)"><option value="-1">♫ Nhạc</option>'+_mOptHtml+'</select>'+
+          '<button class="btn-sm" style="padding:3px 5px;font-size:10px" onclick="previewTrack(this,\'cmsel_'+key+'\')">♫</button>'+
+          procHtml+
+          '<button class="btn-sm" style="background:#EDE9FE;color:#7C3AED;font-size:10px;padding:3px 6px" onclick="openSchedForKey(\''+key+'\')">📅</button>'+
+          '<button class="btn-sm" style="background:#FEE2E2;color:#DC2626;font-size:10px;padding:3px 6px" onclick="removeFromCollect(\''+key+'\')">✕</button>'+
+        '</div>'+
+        schedTxt+
+      '</div>';
+    listEl.appendChild(row);
+    if(item.musicIdx>=0){var sel=$('cmsel_'+key);if(sel) sel.value=item.musicIdx;}
+  });
+}
+
+async function processCollectItem(key,btn){
+  var item=_collect[key]; if(!item) return;
+  var sel=$('cmsel_'+key);
+  var trackIdx=sel?parseInt(sel.value):-1;
+  if(trackIdx<0){alert('Chọn nhạc nền trước!');return;}
+  if(!ffReady){alert('FFmpeg chưa sẵn sàng.');return;}
+  var v=item.v, track=MUSIC_LIB[trackIdx];
+  var fn=(v.title||'video').slice(0,60).replace(/[\\/:*?"<>|#\r\n]/g,'_')+'.mp4';
+  var outFn=fn.replace(/\.mp4$/i,'')+'_bgnhac.mp4';
+  btn.disabled=true; btn.innerHTML='<span class="spin-sm"></span>';
+  if(sel) sel.disabled=true;
+  var proxyUrl=v.aweme_id
+    ?'/api/douyin/stream/'+encodeURIComponent(v.aweme_id)
+    :'/api/douyin/stream-url?url='+encodeURIComponent(v.play_url)+'&filename='+encodeURIComponent(fn);
+  try{
+    var url=await processOneVideo({name:fn,isUrl:true,proxyUrl:proxyUrl},{name:track.t+'.mp3',_url:track.url},0.8,true,function(pct){btn.innerHTML=pct+'%';});
+    item.processed={url:url,name:outFn,title:v.title||''};
+    item.musicIdx=trackIdx;
+    renderCollectPanel();
+  }catch(e){
+    btn.disabled=false; btn.innerHTML='▶';
+    if(sel) sel.disabled=false;
+    alert('Lỗi: '+(e.message||e));
+  }
+}
+
+function openTtUpFromCollect(key){
+  var item=_collect[key];
+  if(!item||!item.processed){alert('Cần xử lý đổi nhạc nền trước (nhấn ▶).');return;}
+  var ck='col_'+key; _procResults[ck]=item.processed; openTtUp(ck);
+}
+
+function uploadCollectAll(){
+  var keys=_collectKeys.filter(function(k){return _collect[k]&&_collect[k].processed;});
+  if(!keys.length){alert('Chưa có video nào được xử lý nhạc. Nhấn ▶ để xử lý từng video trước.');return;}
+  keys.forEach(function(key,i){setTimeout(function(){openTtUpFromCollect(key);},i*300);});
+}
+
+// ── Schedule ──────────────────────────────────────────────────────────────────
+var _schedList=[], _schedCurrentKey=null, _schedBatchMode=false;
+(function(){try{_schedList=JSON.parse(localStorage.getItem('dy_sched')||'[]');}catch(e){_schedList=[];}})();
+function saveSched(){try{localStorage.setItem('dy_sched',JSON.stringify(_schedList));}catch(e){}}
+
+function fmtSchedTime(iso){
+  try{
+    var d=new Date(iso);
+    var p=function(n){return String(n).padStart(2,'0');};
+    return d.getFullYear()+'/'+p(d.getMonth()+1)+'/'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());
+  }catch(e){return iso||'';}
+}
+
+function _schedDefaultDt(plusMs){
+  var d=new Date(Date.now()+(plusMs||3600000));
+  var p=function(n){return String(n).padStart(2,'0');};
+  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes());
+}
+
+function openSchedForKey(key){
+  _schedBatchMode=false; _schedCurrentKey=key;
+  var item=_collect[key]; if(!item) return;
+  var f=$('schedFormArea'),t=$('schedFormTitle');
+  if(f) f.style.display='block';
+  if(t) t.textContent=(item.v.title||'Video').slice(0,70);
+  var inp=$('schedDtInput'); if(inp) inp.value=item.scheduled?item.scheduled.slice(0,16):_schedDefaultDt();
+  renderSchedList();
+  $('schedModal').classList.add('open'); document.body.style.overflow='hidden';
+}
+
+function openSchedBatch(){
+  _schedBatchMode=true; _schedCurrentKey=null;
+  var f=$('schedFormArea'),t=$('schedFormTitle');
+  if(f) f.style.display='block';
+  if(t) t.textContent='Đặt lịch '+_collectKeys.length+' video · cách nhau 30 phút';
+  var inp=$('schedDtInput'); if(inp) inp.value=_schedDefaultDt();
+  renderSchedList();
+  $('schedModal').classList.add('open'); document.body.style.overflow='hidden';
+}
+
+function openSchedModal(){
+  cancelSchedForm(); renderSchedList();
+  $('schedModal').classList.add('open'); document.body.style.overflow='hidden';
+}
+
+function closeSchedModal(){
+  cancelSchedForm();
+  $('schedModal').classList.remove('open'); document.body.style.overflow='';
+}
+
+function cancelSchedForm(){
+  _schedCurrentKey=null; _schedBatchMode=false;
+  var f=$('schedFormArea'); if(f) f.style.display='none';
+}
+
+function confirmSchedItem(){
+  var inp=$('schedDtInput'); if(!inp||!inp.value){alert('Chọn ngày giờ!');return;}
+  var base=new Date(inp.value); if(isNaN(base)){alert('Ngày giờ không hợp lệ.');return;}
+  var STEP=30*60*1000;
+  if(_schedBatchMode){
+    _collectKeys.forEach(function(key,i){
+      var item=_collect[key]; if(!item) return;
+      var iso=new Date(base.getTime()+i*STEP).toISOString(); item.scheduled=iso;
+      var ex=_schedList.findIndex(function(s){return s.key===key;});
+      if(ex>=0){_schedList[ex].scheduledAt=iso;_schedList[ex].status='pending';}
+      else _schedList.push({key:key,title:item.v.title||'Video',scheduledAt:iso,status:'pending'});
+    });
+    renderCollectPanel();
+  }else{
+    var key=_schedCurrentKey; var item=_collect[key]; if(!item) return;
+    var iso=base.toISOString(); item.scheduled=iso;
+    var ex=_schedList.findIndex(function(s){return s.key===key;});
+    if(ex>=0){_schedList[ex].scheduledAt=iso;_schedList[ex].status='pending';}
+    else _schedList.push({key:key,title:item.v.title||'Video',scheduledAt:iso,status:'pending'});
+    renderCollectPanel();
+  }
+  saveSched(); cancelSchedForm(); renderSchedList();
+}
+
+function removeSchedItem(i){
+  var s=_schedList[i];
+  if(s&&_collect[s.key]) _collect[s.key].scheduled=null;
+  _schedList.splice(i,1); saveSched(); renderSchedList(); renderCollectPanel();
+}
+
+function clearAllSched(){
+  _schedList.forEach(function(s){if(_collect[s.key]) _collect[s.key].scheduled=null;});
+  _schedList=[]; saveSched(); renderSchedList(); renderCollectPanel();
+}
+
+function renderSchedList(){
+  var el=$('schedListEl'),countEl=$('schedListCount'),emptyEl=$('schedEmptyMsg');
+  if(!el) return;
+  var now=Date.now();
+  if(countEl) countEl.textContent=_schedList.length;
+  if(!_schedList.length){el.innerHTML='';if(emptyEl)emptyEl.style.display='block';return;}
+  if(emptyEl) emptyEl.style.display='none';
+  el.innerHTML=_schedList.map(function(s,i){
+    var isDue=new Date(s.scheduledAt).getTime()<=now&&s.status==='pending';
+    var badge=s.status==='done'
+      ?'<span class="sched-badge done">Xong</span>'
+      :(isDue?'<span class="sched-badge due">Đến giờ!</span>':'<span class="sched-badge pending">Chờ</span>');
+    return '<div class="sched-list-item">'+badge+
+      '<span class="sched-li-title" title="'+esc(s.title||'')+'">'+esc((s.title||'Video').slice(0,38))+'</span>'+
+      '<span class="sched-li-time">'+fmtSchedTime(s.scheduledAt)+'</span>'+
+      (isDue?'<button class="btn-sm tt-up" style="font-size:10px;padding:3px 8px" onclick="triggerSchedUpload('+i+')">↑ Đăng</button>':'')+
+      '<button style="background:none;border:none;color:var(--mid);cursor:pointer;font-size:17px;padding:0 2px;line-height:1" onclick="removeSchedItem('+i+')">×</button>'+
+    '</div>';
+  }).join('');
+}
+
+function triggerSchedUpload(i){
+  var s=_schedList[i]; if(!s) return;
+  var item=_collect[s.key];
+  if(!item||!item.processed){alert('Video này chưa được xử lý nhạc nền.');return;}
+  var ck='sc_'+s.key; _procResults[ck]=item.processed; openTtUp(ck);
+  s.status='done'; saveSched(); renderSchedList();
+}
+
+// Auto-trigger every 60s
+setInterval(function(){
+  var now=Date.now(), changed=false;
+  _schedList.forEach(function(s,i){
+    if(s.status==='pending'&&new Date(s.scheduledAt).getTime()<=now){
+      changed=true;
+      var item=_collect[s.key];
+      if(item&&item.processed&&ttStatus.connected) triggerSchedUpload(i);
+    }
+  });
+  if(changed) renderSchedList();
+},60000);
 
 // ── Douyin Auth ───────────────────────────────────────────────────────────────
 (function(){
