@@ -23,7 +23,7 @@
     body{background:var(--bg);font-family:'Inter',sans-serif;font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 16px}
     a{text-decoration:none;color:inherit}
 
-    .card{width:100%;max-width:820px;background:var(--card);border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,.08),0 1px 4px rgba(0,0,0,.06);overflow:hidden}
+    .card{width:100%;max-width:1160px;background:var(--card);border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,.08),0 1px 4px rgba(0,0,0,.06);overflow:hidden}
 
     .header{padding:40px 48px 0;text-align:center}
     .icon{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#FF6B5B,#E8503A);display:inline-flex;align-items:center;justify-content:center;margin-bottom:18px;box-shadow:0 4px 16px rgba(232,80,58,.35)}
@@ -199,7 +199,7 @@
     /* ── Search two-column layout ──────────────────────────────────── */
     .search-layout{display:flex;gap:16px;align-items:flex-start}
     .search-main{flex:1;min-width:0}
-    .collect-sidebar{width:280px;flex-shrink:0;position:sticky;top:10px;max-height:calc(100vh - 40px);overflow-y:auto;border-radius:10px}
+    .collect-sidebar{width:320px;flex-shrink:0;position:sticky;top:10px;max-height:calc(100vh - 40px);overflow-y:auto;border-radius:10px}
     @media(max-width:680px){.search-layout{flex-direction:column}.collect-sidebar{width:100%;position:static;max-height:none}}
 
     /* ── Collection panel ─────────────────────────────────────────── */
@@ -624,7 +624,7 @@ function openPv(videoUrl, filename, title, author, dur, cover){
   $('pvSub').textContent='@'+(author||'')+(dur?' · '+fmtDur(dur):'');
   var vid=$('pvVideo'), cov=$('pvCover');
   var src=_pvAwemeId
-    ?'/api/douyin/stream/'+encodeURIComponent(_pvAwemeId)
+    ?'/api/douyin/preview/'+encodeURIComponent(_pvAwemeId)
     :'/api/douyin/stream-url?url='+encodeURIComponent(videoUrl)+'&filename='+encodeURIComponent(filename||'video.mp4');
   vid.src=src;
   if(cover){ vid.poster=thumbUrl(cover); }
@@ -660,6 +660,14 @@ function pvDownload(){
 // ── Inline processing (replaces redirect to /process) ────────────────────────
 function ext(n){ var d=n.lastIndexOf('.'); return d>0?n.slice(d+1).toLowerCase():'mp4'; }
 
+// FFmpeg mutex — exec() is not re-entrant; serialise all processing jobs
+var _ffLock=null;
+async function _acquireFF(){
+  if(_ffLock) await _ffLock;
+  var _rel; _ffLock=new Promise(function(r){_rel=r;});
+  return _rel;
+}
+
 // fetch URL with HTTP-status check — prevents passing error JSON to FFmpeg
 async function safeFFetch(urlOrFile){
   if(typeof urlOrFile==='string'){
@@ -674,6 +682,8 @@ async function safeFFetch(urlOrFile){
 }
 
 async function processOneVideo(vFile, mFile, volume, doLoop, onPct){
+  // Wait for any concurrent job — FFmpeg exec() is not re-entrant
+  var _release=await _acquireFF();
   var uid=Date.now()+'_'+Math.random().toString(36).slice(2,7);
   var vn='v'+uid+'.'+ext(vFile.name), mn='m'+uid+'.mp3', on='o'+uid+'.mp4';
   var progH=function(p){ if(onPct) onPct(Math.round((p.progress||0)*100)); };
@@ -701,6 +711,7 @@ async function processOneVideo(vFile, mFile, volume, doLoop, onPct){
     try{await ffInst.deleteFile(vn);}catch(e){}
     try{await ffInst.deleteFile(mn);}catch(e){}
     try{await ffInst.deleteFile(on);}catch(e){}
+    _ffLock=null; _release();
   }
 }
 

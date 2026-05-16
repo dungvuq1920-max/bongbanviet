@@ -489,33 +489,37 @@ app.get('/api/douyin/image', async (req, res) => {
   }
 });
 
+// Shared helper: resolve a video ID via TikWM (tries TikTok + Douyin URLs in parallel)
+async function _resolveTikwmById(aweme_id) {
+  const _tryOne = async (candidateUrl) => {
+    const r = await fetch('https://www.tikwm.com/api/', {
+      method: 'POST',
+      headers: {
+        'User-Agent': dy.DEFAULT_UA,
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Referer': 'https://www.tikwm.com/',
+        'Accept': 'application/json, */*',
+      },
+      body: new URLSearchParams({ url: candidateUrl, hd: '1' }).toString(),
+      signal: AbortSignal.timeout(25000),
+    });
+    if (!r.ok) throw new Error('tikwm_http_' + r.status);
+    const d = await r.json().catch(() => null);
+    if (d?.code === 0 && d?.data && (d.data.play || d.data.hdplay || d.data.wmplay)) return d;
+    throw new Error('tikwm_code_' + (d?.code ?? 'null'));
+  };
+  return Promise.any([
+    _tryOne(`https://www.tiktok.com/video/${encodeURIComponent(aweme_id)}`),
+    _tryOne(`https://www.douyin.com/video/${encodeURIComponent(aweme_id)}`),
+  ]);
+}
+
 app.get('/api/douyin/stream/:aweme_id', async (req, res) => {
   const { aweme_id } = req.params;
   try {
-    // Try TikTok and Douyin URL formats in parallel — take whichever TikWM resolves first
-    const _tryTikwm = async (candidateUrl) => {
-      const r = await fetch('https://www.tikwm.com/api/', {
-        method: 'POST',
-        headers: {
-          'User-Agent': dy.DEFAULT_UA,
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Referer': 'https://www.tikwm.com/',
-          'Accept': 'application/json, */*',
-        },
-        body: new URLSearchParams({ url: candidateUrl, hd: '1' }).toString(),
-        signal: AbortSignal.timeout(25000),
-      });
-      if (!r.ok) throw new Error('tikwm_http_' + r.status);
-      const d = await r.json().catch(() => null);
-      if (d?.code === 0 && d?.data && (d.data.play || d.data.hdplay || d.data.wmplay)) return d;
-      throw new Error('tikwm_code_' + (d?.code ?? 'null'));
-    };
     let tikwmData;
     try {
-      tikwmData = await Promise.any([
-        _tryTikwm(`https://www.tiktok.com/video/${encodeURIComponent(aweme_id)}`),
-        _tryTikwm(`https://www.douyin.com/video/${encodeURIComponent(aweme_id)}`),
-      ]);
+      tikwmData = await _resolveTikwmById(aweme_id);
     } catch {
       return res.status(404).json({ error: 'Video not found or unavailable' });
     }
@@ -575,6 +579,54 @@ app.get('/api/douyin/stream-url', async (req, res) => {
     _StreamReadable.fromWeb(r.body).pipe(res);
   } catch (err) {
     if (!res.headersSent) res.status(502).json({ detail: err.message });
+  }
+});
+
+// Preview endpoint — no Content-Disposition, supports Range requests so <video> can play + seek
+app.get('/api/douyin/preview/:aweme_id', async (req, res) => {
+  const { aweme_id } = req.params;
+  try {
+    let tikwmData;
+    try {
+      tikwmData = await _resolveTikwmById(aweme_id);
+    } catch {
+      return res.status(404).json({ error: 'Video not found or unavailable' });
+    }
+
+    const d = tikwmData.data;
+    const videoUrl = d.play || d.hdplay || d.wmplay;
+    if (!videoUrl) return res.status(404).json({ error: 'No playable URL' });
+
+    const fetchHeaders = {
+      'User-Agent': dy.DEFAULT_UA,
+      'Referer': 'https://www.tiktok.com/',
+    };
+    const rangeHeader = req.headers['range'];
+    if (rangeHeader) fetchHeaders['Range'] = rangeHeader;
+
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(new Error('CDN timeout')), 30000);
+    let r;
+    try {
+      r = await fetch(videoUrl, { headers: fetchHeaders, redirect: 'follow', signal: ctrl.signal });
+    } finally {
+      clearTimeout(timer);
+    }
+
+    if (!r.ok && r.status !== 206) return res.status(r.status).json({ error: 'CDN ' + r.status });
+
+    res.setHeader('Content-Type', 'video/mp4');
+    res.setHeader('Accept-Ranges', 'bytes');
+    if (r.status === 206) {
+      res.status(206);
+      const cr = r.headers.get('content-range');
+      if (cr) res.setHeader('Content-Range', cr);
+    }
+    const cl = r.headers.get('content-length');
+    if (cl) res.setHeader('Content-Length', cl);
+    _StreamReadable.fromWeb(r.body).pipe(res);
+  } catch (err) {
+    if (!res.headersSent) res.status(502).json({ error: err.message });
   }
 });
 
