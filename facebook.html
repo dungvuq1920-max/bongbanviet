@@ -97,6 +97,28 @@
       padding:16px;
       margin-bottom:18px;
     }
+    .panel-title { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+    .panel-title h2 { margin:0; font-size:15px; }
+    .panel-title p { margin:3px 0 0; color:var(--muted); font-size:12px; line-height:1.45; }
+    .schedule-board { display:grid; grid-template-columns:repeat(7, minmax(128px, 1fr)); gap:10px; overflow-x:auto; padding-bottom:2px; }
+    .schedule-day { border:1px solid var(--line); border-radius:8px; background:#FAFAFA; min-width:128px; overflow:hidden; }
+    .schedule-day header { padding:9px 10px; border-bottom:1px solid var(--line); background:#fff; }
+    .schedule-day b { display:block; font-size:13px; }
+    .schedule-day span { display:block; margin-top:2px; color:var(--muted); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; }
+    .slot-list { display:grid; gap:6px; padding:8px; }
+    .slot {
+      border:1px solid #E5E7EB;
+      border-left:3px solid var(--red);
+      border-radius:6px;
+      background:#fff;
+      padding:7px;
+      display:grid;
+      gap:3px;
+    }
+    .slot strong { font-size:12px; line-height:1.2; }
+    .slot small { color:var(--muted); font-size:10px; line-height:1.35; }
+    .mix-strip { display:flex; gap:6px; flex-wrap:wrap; margin-top:12px; }
+    .mix-pill { border:1px solid var(--line); border-radius:999px; padding:5px 8px; font-size:11px; font-weight:800; background:#fff; color:#374151; }
     .controls {
       display:grid;
       grid-template-columns:repeat(10, minmax(0, 1fr));
@@ -427,6 +449,18 @@
           </div>
         </section>
 
+        <section class="panel">
+          <div class="panel-title">
+            <div>
+              <h2>Lịch tăng trưởng page mới</h2>
+              <p>Tự chia khung giờ theo mục tiêu: nhận diện, cộng đồng, sản phẩm, website và bán hàng mềm.</p>
+            </div>
+            <span class="chip">Growth</span>
+          </div>
+          <div class="schedule-board" id="scheduleBoard"></div>
+          <div class="mix-strip" id="contentMix"></div>
+        </section>
+
         <div class="bar">
           <div class="bar-left">
             <select class="btn" id="statusFilter">
@@ -582,6 +616,30 @@
       $('autoApprove').checked = !!cfg.autoApproveGenerated;
       $('autoScheduler').checked = !!cfg.autoSchedulerEnabled;
       $('cfgState').textContent = `AI: ${(cfg.aiProviders || []).join(', ') || 'chưa cấu hình'} | FB: ${cfg.pageIdConfigured && cfg.pageTokenConfigured ? 'đã cấu hình' : 'thiếu token'}`;
+      renderScheduleStrategy();
+    }
+
+    function renderScheduleStrategy() {
+      const cfg = state.cfg || {};
+      const board = $('scheduleBoard');
+      const mix = $('contentMix');
+      const template = cfg.scheduleTemplate || [];
+      board.innerHTML = template.map(day => `
+        <article class="schedule-day">
+          <header><b>${esc(day.label)}</b><span>${day.recommendedCount || 0} slot đề xuất</span></header>
+          <div class="slot-list">
+            ${(day.slots || []).map(slot => `
+              <div class="slot">
+                <strong>${esc(String(slot.time || '').slice(0, 5))} · ${esc(pillarLabel(slot.pillar))}</strong>
+                <small>${esc(slot.label || slot.bucket || '')}</small>
+              </div>
+            `).join('')}
+          </div>
+        </article>
+      `).join('');
+      mix.innerHTML = (cfg.contentMix || []).map(item =>
+        `<span class="mix-pill">${esc(item.bucket)} ${Number(item.percent || 0)}%</span>`
+      ).join('');
     }
 
     function renderPosts() {
@@ -605,6 +663,7 @@
             <div class="post-meta"><span><span class="chip ${esc(p.status)}">${statusLabel(p.status)}</span>${usedChip}</span><span class="chip">${pillarLabel(p.pillar)}</span></div>
             <h2>${esc(p.topic)}</h2>
             <div class="line">${esc(p.scheduled_time || 'Chưa có lịch')} · ${sources} nguồn</div>
+            ${p.source_notes ? `<div class="line">${esc(p.source_notes)}</div>` : ''}
             <div class="line">${p.website_link ? `<a href="${esc(p.website_link)}" target="_blank">${esc(p.website_link)}</a>` : 'Chưa có link web'}</div>
             <div class="caption">${esc(p.caption || p.fact_summary || 'Chưa tạo caption')}</div>
             <div class="hashtags">${esc(p.hashtags || '')}</div>
