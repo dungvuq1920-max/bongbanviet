@@ -556,24 +556,36 @@ app.get('/api/douyin/stream/:aweme_id', async (req, res) => {
 });
 
 // Stream any pre-resolved video URL — avoids re-fetching video details
+// ?inline=1 → serve without Content-Disposition + Range support (for <video> playback)
 app.get('/api/douyin/stream-url', async (req, res) => {
-  const { url: videoUrl, filename = 'video.mp4' } = req.query;
+  const { url: videoUrl, filename = 'video.mp4', inline } = req.query;
   if (!videoUrl || !/^https?:\/\//i.test(videoUrl))
     return res.status(400).json({ detail: 'Invalid or missing url' });
   try {
-    const isDouyin = /douyin\.com|byteimg\.com|pstatp\.com/i.test(videoUrl);
-    const r = await fetch(videoUrl, {
-      headers: {
-        'User-Agent': dy.DEFAULT_UA,
-        ...(isDouyin ? { 'Referer': `${dy.BASE_URL}/` } : {}),
-      },
-      redirect: 'follow',
-      signal: AbortSignal.timeout(180000),
-    });
-    if (!r.ok) return res.status(r.status).json({ detail: 'Video stream failed: ' + r.status });
-    const safeName = String(filename).replace(/[\\/:*?"<>|#\r\n]/g, '_');
-    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(safeName)}`);
+    const isInline = !!inline;
+    const fetchHeaders = { 'User-Agent': dy.DEFAULT_UA, 'Referer': 'https://www.tiktok.com/' };
+    const rangeHeader = req.headers['range'];
+    if (isInline && rangeHeader) fetchHeaders['Range'] = rangeHeader;
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(new Error('CDN timeout')), 30000);
+    let r;
+    try {
+      r = await fetch(videoUrl, { headers: fetchHeaders, redirect: 'follow', signal: ctrl.signal });
+    } finally {
+      clearTimeout(timer);
+    }
+    if (!r.ok && r.status !== 206) return res.status(r.status).json({ detail: 'Video stream failed: ' + r.status });
     res.setHeader('Content-Type', r.headers.get('content-type') || 'video/mp4');
+    res.setHeader('Accept-Ranges', 'bytes');
+    if (!isInline) {
+      const safeName = String(filename).replace(/[\\/:*?"<>|#\r\n]/g, '_');
+      res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(safeName)}`);
+    }
+    if (r.status === 206) {
+      res.status(206);
+      const cr = r.headers.get('content-range');
+      if (cr) res.setHeader('Content-Range', cr);
+    }
     const cl = r.headers.get('content-length');
     if (cl) res.setHeader('Content-Length', cl);
     _StreamReadable.fromWeb(r.body).pipe(res);

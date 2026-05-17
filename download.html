@@ -623,9 +623,9 @@ function openPv(videoUrl, filename, title, author, dur, cover){
   $('pvTitle').textContent=title||'Không có tiêu đề';
   $('pvSub').textContent='@'+(author||'')+(dur?' · '+fmtDur(dur):'');
   var vid=$('pvVideo'), cov=$('pvCover');
-  var src=_pvAwemeId
-    ?'/api/douyin/preview/'+encodeURIComponent(_pvAwemeId)
-    :'/api/douyin/stream-url?url='+encodeURIComponent(videoUrl)+'&filename='+encodeURIComponent(filename||'video.mp4');
+  var src=videoUrl
+    ?'/api/douyin/stream-url?url='+encodeURIComponent(videoUrl)+'&filename='+encodeURIComponent(filename||'video.mp4')+'&inline=1'
+    :'/api/douyin/preview/'+encodeURIComponent(_pvAwemeId);
   vid.src=src;
   if(cover){ vid.poster=thumbUrl(cover); }
   else{ vid.removeAttribute('poster'); }
@@ -682,18 +682,21 @@ async function safeFFetch(urlOrFile){
 }
 
 async function processOneVideo(vFile, mFile, volume, doLoop, onPct){
-  // Wait for any concurrent job — FFmpeg exec() is not re-entrant
-  var _release=await _acquireFF();
   var uid=Date.now()+'_'+Math.random().toString(36).slice(2,7);
   var vn='v'+uid+'.'+ext(vFile.name), mn='m'+uid+'.mp3', on='o'+uid+'.mp4';
+  // Download before acquiring FFmpeg lock — all jobs download concurrently, URLs stay fresh
+  var vData=await safeFFetch(vFile.isUrl ? vFile.proxyUrl : vFile);
+  var mData=await safeFFetch(mFile._url || mFile);
+  // Serialise FFmpeg — exec() is not re-entrant
+  var _release=await _acquireFF();
   var progH=function(p){ if(onPct) onPct(Math.round((p.progress||0)*100)); };
   var ffLogs=[];
   var logH=function(e){ ffLogs.push(e.message||''); };
   ffInst.on('progress',progH);
   ffInst.on('log',logH);
   try{
-    await ffInst.writeFile(vn, await safeFFetch(vFile.isUrl ? vFile.proxyUrl : vFile));
-    await ffInst.writeFile(mn, await safeFFetch(mFile._url || mFile));
+    await ffInst.writeFile(vn, vData);
+    await ffInst.writeFile(mn, mData);
     var args=['-i',vn,'-stream_loop','-1','-i',mn,'-map','0:v','-map','1:a',
               '-af','volume='+volume.toFixed(2),'-c:v','copy','-c:a','aac',
               '-shortest','-movflags','+faststart','-y',on];
