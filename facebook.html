@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Facebook Workflow | BongBanViet</title>
+  <title>Facebook AI Dashboard | BongBanViet</title>
   <link rel="icon" type="image/png" href="/favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
@@ -267,6 +267,47 @@
       text-align:center;
       color:var(--muted);
     }
+    .prompt-console {
+      display:grid;
+      grid-template-columns:minmax(0, 1.2fr) minmax(280px, .8fr);
+      gap:12px;
+      align-items:stretch;
+    }
+    .prompt-console textarea {
+      min-height:220px;
+      font-family:ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size:12px;
+    }
+    .prompt-output {
+      border:1px solid var(--line);
+      border-radius:8px;
+      background:#0F172A;
+      color:#E5E7EB;
+      padding:12px;
+      min-height:220px;
+      max-height:360px;
+      overflow:auto;
+      white-space:pre-wrap;
+      font:12px/1.55 ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+    .run-list { display:grid; gap:8px; margin-top:12px; }
+    .run-card {
+      border:1px solid var(--line);
+      border-radius:8px;
+      padding:10px;
+      display:grid;
+      gap:6px;
+      background:#FAFAFA;
+    }
+    .run-card strong { font-size:12px; }
+    .run-card pre {
+      margin:0;
+      max-height:90px;
+      overflow:hidden;
+      white-space:pre-wrap;
+      color:#374151;
+      font:11px/1.45 ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
     .login {
       position:fixed;
       inset:0;
@@ -364,6 +405,7 @@
       .top { height:auto; padding:16px; align-items:flex-start; flex-direction:column; }
       .content { padding:16px; }
       .stats, .grid { grid-template-columns:1fr; }
+      .prompt-console { grid-template-columns:1fr; }
       .controls { grid-template-columns:1fr; }
       .span-2, .span-3, .span-4, .span-5, .span-10 { grid-column:span 1; }
       .bar { align-items:stretch; }
@@ -376,7 +418,7 @@
   <div class="login" id="login">
     <div class="login-box">
       <img src="/logo_bongbanviet.png" alt="BongBanViet">
-      <h2>Facebook Workflow</h2>
+      <h2>Facebook AI Dashboard</h2>
       <p>BongBanViet Admin</p>
       <input type="password" id="loginPass" placeholder="Mật khẩu admin" autocomplete="current-password">
       <button class="btn primary" id="loginBtn" style="width:100%;margin-top:12px;"><i data-lucide="log-in"></i> Đăng nhập</button>
@@ -388,10 +430,10 @@
     <aside class="side">
       <div class="brand">
         <img src="/logo_bongbanviet.png" alt="BongBanViet">
-        <div><b>BONGBANVIET</b><span>Facebook Dashboard</span></div>
+        <div><b>BONGBANVIET</b><span>Facebook AI Dashboard</span></div>
       </div>
       <nav class="nav">
-        <a href="/facebook" class="active"><i data-lucide="layout-dashboard"></i> Workflow</a>
+        <a href="/facebook" class="active"><i data-lucide="layout-dashboard"></i> Dashboard</a>
         <a href="/admin.html"><i data-lucide="package"></i> Admin</a>
         <a href="/index.html" target="_blank"><i data-lucide="globe"></i> Website</a>
         <button id="logoutBtn"><i data-lucide="log-out"></i> Đăng xuất</button>
@@ -405,8 +447,8 @@
     <main class="main">
       <header class="top">
         <div>
-          <h1>Facebook Content Workflow</h1>
-          <div class="line" id="subtitle">Lịch nội dung, nguồn, visual và đăng tự động</div>
+          <h1>Facebook AI Dashboard</h1>
+          <div class="line" id="subtitle">Chạy prompt trực tiếp, tạo nội dung và quản lý bài đăng Facebook Page</div>
         </div>
         <div class="top-actions">
           <button class="btn" id="verifyBtn"><i data-lucide="badge-check"></i> Kiểm tra token</button>
@@ -442,6 +484,41 @@
             <button class="btn dark span-2" id="saveConnection"><i data-lucide="plug-zap"></i> Lưu kết nối</button>
             <button class="btn span-2" id="verifyBtnInline"><i data-lucide="badge-check"></i> Kiểm tra token</button>
           </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title">
+            <div>
+              <h2>Chạy prompt trực tiếp</h2>
+              <p>Gọi GPT/Gemini/Claude ngay từ server website, không qua n8n. Nếu output là JSON bài đăng, kết quả sẽ được đưa vào grid dashboard.</p>
+            </div>
+            <span class="chip approved">Direct</span>
+          </div>
+          <div class="controls" style="margin-bottom:12px;">
+            <div class="field span-2"><label>AI provider</label><select id="directProvider">
+              <option value="auto">Auto</option>
+              <option value="openai">OpenAI</option>
+              <option value="gemini">Gemini</option>
+              <option value="claude">Claude</option>
+            </select></div>
+            <label class="toggle span-2"><input type="checkbox" id="directSavePosts" checked> Lưu JSON thành bài</label>
+            <label class="toggle span-2"><input type="checkbox" id="directAutoApprove"> Tự duyệt bài tạo ra</label>
+            <label class="toggle span-2"><input type="checkbox" id="directAllowDuplicate"> Cho phép trùng</label>
+            <button class="btn primary span-2" id="runPromptBtn"><i data-lucide="play"></i> Chạy prompt</button>
+          </div>
+          <div class="prompt-console">
+            <div class="field">
+              <label>Prompt</label>
+              <textarea id="directPrompt" placeholder="Dán prompt GPT/Claude tại đây. Nên yêu cầu output JSON có posts: [{ topic, pillar, caption, hashtags, cta, image_prompt, scheduled_time, website_link }] để dashboard tự tạo bài."></textarea>
+            </div>
+            <div>
+              <div class="field">
+                <label>Kết quả mới nhất</label>
+                <div class="prompt-output" id="directPromptOutput">Chưa chạy prompt.</div>
+              </div>
+            </div>
+          </div>
+          <div class="run-list" id="promptRunList"></div>
         </section>
 
         <section class="panel">
@@ -560,7 +637,7 @@
 
   <script>
     const $ = (id) => document.getElementById(id);
-    const state = { posts: [], selected: new Set(), cfg: null };
+    const state = { posts: [], selected: new Set(), cfg: null, runs: [] };
 
     function toast(msg) {
       const el = $('toast');
@@ -622,6 +699,12 @@
       return [...state.selected];
     }
 
+    function shortText(value, max = 360) {
+      const text = String(value || '').trim();
+      if (text.length <= max) return text;
+      return text.slice(0, max).replace(/\s+\S*$/, '').trim() + '...';
+    }
+
     function renderStats(stats) {
       $('sTotal').textContent = stats.total || 0;
       $('sIdea').textContent = stats.idea || 0;
@@ -651,6 +734,28 @@
       $('connectionState').textContent = `Facebook: ${fbReady ? 'đã cấu hình' : tokenText} | AI: ${(cfg.aiProviders || []).join(', ') || 'chưa cấu hình'}`;
       $('cfgState').textContent = `AI: ${(cfg.aiProviders || []).join(', ') || 'chưa cấu hình'} | FB: ${fbReady ? 'đã cấu hình' : 'thiếu token'}`;
       renderScheduleStrategy();
+    }
+
+    function renderPromptRuns() {
+      const list = $('promptRunList');
+      const runs = state.runs || [];
+      if (!runs.length) {
+        list.innerHTML = '<div class="empty" style="padding:18px;">Chưa có prompt run nào.</div>';
+        return;
+      }
+      list.innerHTML = runs.slice(0, 6).map(run => {
+        const created = Array.isArray(run.created_posts) ? run.created_posts.filter(p => p.id).length : 0;
+        const skipped = Array.isArray(run.created_posts) ? run.created_posts.filter(p => p.skipped).length : 0;
+        const body = run.status === 'failed' ? run.error_message : (run.raw_output || '');
+        return `<article class="run-card">
+          <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;">
+            <strong>${esc(run.provider || 'AI')} · ${esc(run.created_at || '')}</strong>
+            <span class="chip ${run.status === 'failed' ? 'failed' : 'approved'}">${esc(run.status || '')}</span>
+          </div>
+          <div class="line">${created} bài đã tạo${skipped ? ` · ${skipped} trùng bị bỏ qua` : ''} · ${Number(run.duration_ms || 0)}ms</div>
+          <pre>${esc(shortText(body, 520))}</pre>
+        </article>`;
+      }).join('');
     }
 
     function renderScheduleStrategy() {
@@ -724,15 +829,18 @@
         q: $('searchBox').value.trim(),
         limit: '400'
       });
-      const [cfg, stats, posts] = await Promise.all([
+      const [cfg, stats, posts, runs] = await Promise.all([
         api('/api/facebook/config'),
         api('/api/facebook/stats'),
-        api('/api/facebook/posts?' + q.toString())
+        api('/api/facebook/posts?' + q.toString()),
+        api('/api/facebook/prompt-runs?limit=8')
       ]);
       state.cfg = cfg;
       state.posts = posts;
+      state.runs = runs;
       renderConfig();
       renderStats(stats);
+      renderPromptRuns();
       renderPosts();
     }
 
@@ -771,6 +879,43 @@
       await api(endpoint, { method:'POST', body: JSON.stringify(Object.assign({ ids }, body)) });
       toast(message);
       await loadAll();
+    }
+
+    async function runDirectPrompt() {
+      const prompt = $('directPrompt').value.trim();
+      if (prompt.length < 10) {
+        $('directPrompt').focus();
+        throw new Error('Nhập prompt trước khi chạy.');
+      }
+      $('runPromptBtn').disabled = true;
+      $('directPromptOutput').textContent = 'Đang gọi AI trực tiếp từ server...';
+      try {
+        const data = await api('/api/facebook/prompt/run', {
+          method:'POST',
+          body: JSON.stringify({
+            prompt,
+            provider: $('directProvider').value,
+            saveAsPosts: $('directSavePosts').checked,
+            autoApprove: $('directAutoApprove').checked,
+            allowDuplicate: $('directAllowDuplicate').checked
+          })
+        });
+        const run = data.run || {};
+        const created = Array.isArray(run.created_posts) ? run.created_posts.filter(p => p.id).length : 0;
+        const skipped = Array.isArray(run.created_posts) ? run.created_posts.filter(p => p.skipped).length : 0;
+        $('directPromptOutput').textContent = [
+          `Provider: ${run.provider || ''}`,
+          `Status: ${run.status || ''}`,
+          `Created posts: ${created}`,
+          skipped ? `Skipped duplicates: ${skipped}` : '',
+          '',
+          run.raw_output || ''
+        ].filter(line => line !== '').join('\n');
+        toast(created ? `Đã chạy prompt và tạo ${created} bài trên dashboard` : 'Đã chạy prompt, xem kết quả bên dưới');
+        await loadAll();
+      } finally {
+        $('runPromptBtn').disabled = false;
+      }
     }
 
     function openEditor(post = null) {
@@ -870,6 +1015,7 @@
         if (btn.id === 'closeModal') return $('editModal').classList.remove('open');
         if (btn.id === 'saveEdit') return saveEditor();
         if (btn.id === 'saveConnection') return saveConnection();
+        if (btn.id === 'runPromptBtn') return runDirectPrompt();
         if (btn.id === 'collectBtn') {
           await saveConfig();
           const data = await api('/api/facebook/collect', {

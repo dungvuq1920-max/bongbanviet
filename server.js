@@ -1870,6 +1870,193 @@ async function generateFacebookContent(post, provider = 'auto') {
   return { ...fallback, usedFallback: true, providerError: errors.join(' | ') };
 }
 
+function extractJsonFromAiText(raw) {
+  const text = String(raw || '').trim();
+  if (!text) return null;
+
+  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  const candidates = [];
+  if (fenced?.[1]) candidates.push(fenced[1].trim());
+  candidates.push(text);
+
+  const firstObject = text.indexOf('{');
+  const lastObject = text.lastIndexOf('}');
+  if (firstObject !== -1 && lastObject > firstObject) candidates.push(text.slice(firstObject, lastObject + 1));
+
+  const firstArray = text.indexOf('[');
+  const lastArray = text.lastIndexOf(']');
+  if (firstArray !== -1 && lastArray > firstArray) candidates.push(text.slice(firstArray, lastArray + 1));
+
+  for (const candidate of candidates) {
+    try {
+      return JSON.parse(candidate);
+    } catch {}
+  }
+  return null;
+}
+
+function normalizeFacebookPillar(value) {
+  const raw = normalizeText(value || '');
+  if (['knowledge', 'kien thuc', 'ky thuat', 'tip'].includes(raw)) return 'knowledge';
+  if (['product', 'san pham', 'review'].includes(raw)) return 'product';
+  if (['combo', 'setup'].includes(raw)) return 'combo';
+  if (['news', 'tin tuc'].includes(raw)) return 'news';
+  if (['engagement', 'community', 'tuong tac', 'hoi dap', 'poll'].includes(raw)) return 'engagement';
+  if (['trust', 'chinh hang', 'niem tin'].includes(raw)) return 'trust';
+  if (['promo', 'uu dai', 'khuyen mai'].includes(raw)) return 'promo';
+  return FACEBOOK_PILLARS[value] ? value : 'knowledge';
+}
+
+function parseDirectFacebookPromptOutput(raw) {
+  const parsed = extractJsonFromAiText(raw);
+  if (!parsed) {
+    return {
+      type: 'text',
+      text: String(raw || '').trim(),
+      posts: [],
+    };
+  }
+
+  const sourcePosts = Array.isArray(parsed)
+    ? parsed
+    : Array.isArray(parsed.posts)
+      ? parsed.posts
+      : Array.isArray(parsed.items)
+        ? parsed.items
+        : Array.isArray(parsed.data)
+          ? parsed.data
+          : (parsed.caption || parsed.topic || parsed.title)
+            ? [parsed]
+            : [];
+
+  return {
+    type: 'json',
+    data: parsed,
+    posts: sourcePosts
+      .filter(item => item && typeof item === 'object')
+      .map((item, index) => ({
+        topic: String(item.topic || item.title || item.name || `Prompt trực tiếp ${index + 1}`).trim(),
+        pillar: normalizeFacebookPillar(item.pillar || item.bucket || item.category || 'knowledge'),
+        status: String(item.status || 'draft').trim().toLowerCase(),
+        brand_voice: String(item.brand_voice || '').trim(),
+        source_type: String(item.source_type || 'direct-prompt').trim(),
+        source_urls: Array.isArray(item.source_urls) ? item.source_urls : [],
+        source_notes: String(item.source_notes || item.notes || 'Tạo trực tiếp từ prompt trên dashboard /facebook').trim(),
+        fact_summary: String(item.fact_summary || item.summary || item.description || '').trim(),
+        caption: String(item.caption || item.post || item.content || '').trim(),
+        hashtags: Array.isArray(item.hashtags) ? item.hashtags.join(' ') : String(item.hashtags || '').trim(),
+        cta: String(item.cta || '').trim(),
+        website_link: String(item.website_link || item.product_url || item.url || '').trim(),
+        image_path: String(item.image_path || item.image_url || '').trim(),
+        image_prompt: String(item.image_prompt || item.visual_prompt || '').trim(),
+        scheduled_time: String(item.scheduled_time || item.schedule_time || item.time || '').replace('T', ' ').trim(),
+      }))
+      .filter(item => item.topic || item.caption),
+  };
+}
+
+function insertFacebookPostFromPrompt(item, runId, options = {}) {
+  const topic = item.topic || item.caption.slice(0, 90) || `Prompt trực tiếp ${runId}`;
+  const pillar = normalizeFacebookPillar(item.pillar);
+  const allowedStatuses = new Set(['idea', 'draft', 'approved', 'scheduled', 'posted', 'failed']);
+  const requestedStatus = allowedStatuses.has(item.status) ? item.status : 'draft';
+  const status = options.autoApprove ? 'approved' : requestedStatus;
+  const dedupeKey = fbDedupeKey({
+    topic,
+    pillar,
+    website_link: item.website_link || '',
+    caption: item.caption || item.fact_summary || '',
+  });
+
+  if (!options.allowDuplicate && facebookUsedDedupeKeys().has(dedupeKey)) {
+    return { skipped: true, reason: 'duplicate', topic, dedupe_key: dedupeKey };
+  }
+
+  const id = generateId();
+  db.prepare(`INSERT INTO facebook_posts
+    (id, topic, pillar, status, brand_voice, source_type, source_urls, source_notes, fact_summary,
+     caption, hashtags, cta, website_link, image_path, image_prompt, image_source, dedupe_key, scheduled_time, error_message)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+    .run(
+      id,
+      topic,
+      pillar,
+      status,
+      item.brand_voice || FACEBOOK_PILLARS[pillar]?.voice || '',
+      item.source_type || 'direct-prompt',
+      JSON.stringify(item.source_urls || []),
+      [item.source_notes, `Prompt run: ${runId}`].filter(Boolean).join(' | '),
+      item.fact_summary || '',
+      item.caption || '',
+      item.hashtags || '',
+      item.cta || '',
+      item.website_link || FACEBOOK_SITE_URL,
+      item.image_path || '',
+      item.image_prompt || '',
+      item.image_path ? 'Direct prompt image URL/path' : '',
+      dedupeKey,
+      item.scheduled_time || '',
+      ''
+    );
+
+  return { id, topic, status, dedupe_key: dedupeKey };
+}
+
+function facebookPromptRunRow(row) {
+  if (!row) return null;
+  return {
+    ...row,
+    parsed_output: parseJSON(row.parsed_output, {}),
+    created_posts: parseJSON(row.created_posts, []),
+  };
+}
+
+async function runDirectFacebookPrompt({ prompt, provider = 'auto', saveAsPosts = true, autoApprove = false, allowDuplicate = false }) {
+  const plan = facebookProviderPlan(provider);
+  if (!plan.length) throw new Error('Chưa có API key AI cho Facebook. Hãy lưu OpenAI/Gemini/Claude key trong phần kết nối.');
+
+  const started = Date.now();
+  const errors = [];
+  for (const aiProvider of plan) {
+    const runId = generateId();
+    try {
+      const raw = await callFacebookTextProvider(aiProvider, prompt);
+      const parsed = parseDirectFacebookPromptOutput(raw);
+      const createdPosts = [];
+
+      if (saveAsPosts && parsed.posts.length) {
+        for (const item of parsed.posts) {
+          createdPosts.push(insertFacebookPostFromPrompt(item, runId, { autoApprove, allowDuplicate }));
+        }
+      }
+
+      db.prepare(`INSERT INTO facebook_prompt_runs
+        (id, provider, prompt, raw_output, parsed_output, status, error_message, created_posts, duration_ms)
+        VALUES (?, ?, ?, ?, ?, 'success', '', ?, ?)`)
+        .run(
+          runId,
+          aiProvider,
+          prompt,
+          raw,
+          JSON.stringify(parsed),
+          JSON.stringify(createdPosts),
+          Date.now() - started
+        );
+
+      return facebookPromptRunRow(db.prepare('SELECT * FROM facebook_prompt_runs WHERE id=?').get(runId));
+    } catch (e) {
+      errors.push(`${facebookProviderLabel(aiProvider)}: ${e.message}`);
+    }
+  }
+
+  const runId = generateId();
+  db.prepare(`INSERT INTO facebook_prompt_runs
+    (id, provider, prompt, raw_output, parsed_output, status, error_message, created_posts, duration_ms)
+    VALUES (?, ?, ?, '', '{}', 'failed', ?, '[]', ?)`)
+    .run(runId, provider, prompt, errors.join(' | '), Date.now() - started);
+  throw new Error(errors.join(' | '));
+}
+
 function escapeXml(value) {
   return String(value || '')
     .replace(/&/g, '&amp;')
@@ -3355,6 +3542,31 @@ app.post('/api/facebook/generate', requireAuth, async (req, res) => {
     }
   }
   res.json({ ok: true, processed: results.length, results });
+});
+
+app.get('/api/facebook/prompt-runs', requireAuth, (req, res) => {
+  const limit = Math.max(1, Math.min(50, Number(req.query?.limit) || 10));
+  const rows = db.prepare(`SELECT * FROM facebook_prompt_runs ORDER BY created_at DESC, rowid DESC LIMIT ?`).all(limit);
+  res.json(rows.map(facebookPromptRunRow));
+});
+
+app.post('/api/facebook/prompt/run', requireAuth, async (req, res) => {
+  const prompt = String(req.body?.prompt || '').trim();
+  if (prompt.length < 10) return res.status(400).json({ error: 'Prompt quá ngắn. Hãy nhập ít nhất 10 ký tự.' });
+  if (prompt.length > 60000) return res.status(400).json({ error: 'Prompt quá dài. Giới hạn 60.000 ký tự.' });
+
+  try {
+    const run = await runDirectFacebookPrompt({
+      prompt,
+      provider: req.body?.provider || 'auto',
+      saveAsPosts: req.body?.saveAsPosts !== false,
+      autoApprove: !!req.body?.autoApprove,
+      allowDuplicate: !!req.body?.allowDuplicate,
+    });
+    res.json({ ok: true, run });
+  } catch (e) {
+    res.status(400).json({ ok: false, error: e.message });
+  }
 });
 
 app.post('/api/facebook/images', requireAuth, async (req, res) => {

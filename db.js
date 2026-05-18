@@ -139,6 +139,19 @@ db.exec(`
     created_at TEXT DEFAULT (datetime('now')),
     updated_at TEXT DEFAULT (datetime('now'))
   );
+
+  CREATE TABLE IF NOT EXISTS facebook_prompt_runs (
+    id TEXT PRIMARY KEY,
+    provider TEXT DEFAULT '',
+    prompt TEXT NOT NULL,
+    raw_output TEXT DEFAULT '',
+    parsed_output TEXT DEFAULT '{}',
+    status TEXT DEFAULT 'success',
+    error_message TEXT DEFAULT '',
+    created_posts TEXT DEFAULT '[]',
+    duration_ms INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
 `);
 
 // Migrations: add columns if not yet present (must run BEFORE seed)
