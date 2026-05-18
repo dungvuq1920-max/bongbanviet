@@ -543,7 +543,7 @@ function buildCard(s){
   // history (collapsed, only if has data)
   const histHTML=hist.length?`
     <button class="hist-toggle" onclick="toggleHistory('${s.id}')">
-      ▸ Lịch sử: ${hist.reduce((a,b)=>a+b.sessions.length,0)} buổi · ${hist.length} lần reset
+      ▸ Lịch sử: ${hist.reduce((a,b)=>a+b.sessions.length,0)} buổi · ${fmtMoney(hist.reduce((a,b)=>a+b.sessions.reduce((acc,se)=>acc+parseFee(se.fee),0),0))}đ · ${hist.length} lần reset
     </button>
     <div class="hist-body" id="hist-${s.id}" style="display:none">
       ${hist.slice().reverse().map(batch=>`
