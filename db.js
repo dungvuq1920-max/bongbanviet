@@ -201,6 +201,7 @@ db.exec(`
 db.exec(`
   CREATE TABLE IF NOT EXISTS fb_posts (
     id TEXT PRIMARY KEY,
+    source_id TEXT DEFAULT '',
     topic TEXT DEFAULT '',
     pillar TEXT DEFAULT 'knowledge',
     status TEXT DEFAULT 'draft',
@@ -219,6 +220,9 @@ db.exec(`
     updated_at TEXT DEFAULT (datetime('now'))
   )
 `);
+
+try { db.exec("ALTER TABLE fb_posts ADD COLUMN source_id TEXT DEFAULT ''"); } catch {}
+try { db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_fb_posts_source_id ON fb_posts(source_id) WHERE source_id <> ''"); } catch {}
 
 // Orders table (added later, created via migration)
 db.exec(`

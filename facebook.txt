@@ -1,7 +1,7 @@
 FACEBOOK PROMPT PACK - BONG BAN VIET
 File: facebook.txt
 Use for: bongbanviet.com/facebook
-Updated: 2026-05-18
+Updated: 2026-05-18 - local JSON auto import
 
 MUC TIEU
 
@@ -15,12 +15,35 @@ Quy trinh khuyen dung:
 2. Dan MASTER PROMPT ben duoi.
 3. Dan them lenh van hanh cu the.
 4. Yeu cau AI tra ve JSON dung format DASHBOARD_JSON_OUTPUT.
-5. Copy JSON ket qua.
-6. Dua vao dashboard bongbanviet.com/facebook de luu thanh draft.
-7. Review, sua, tao anh neu can, roi dang thu cong len Facebook Page.
+5. Yeu cau AI luu ket qua thanh file C:\Users\dungvuq1920\Desktop\facebook-posts.json neu dang chay trong local agent.
+6. Neu da bat watcher, file JSON se tu dong duoc day vao lich. Neu chua bat watcher, chay lenh import ben duoi.
+7. Vao dashboard bongbanviet.com/facebook de review, sua, tao anh neu can, roi dang thu cong len Facebook Page.
 
 Neu dashboard dang dung che do "Chay prompt truc tiep" bang API thi co the dan prompt vao do.
 Neu khong dung API thi chi dung AI ngoai dashboard, copy ket qua vao dashboard.
+
+AUTO IMPORT JSON VAO LICH LOCAL
+
+1. Chay web local:
+   npm run dev
+
+2. Bam "Copy Master Prompt" tren dau trang bongbanviet.com/facebook.
+
+3. Dan prompt vao Antigravity / GPT / Claude local va yeu cau AI ghi ket qua JSON thuan vao:
+   C:\Users\dungvuq1920\Desktop\facebook-posts.json
+
+4. Server local tu theo doi file nay. Khi file duoc tao hoac ghi de, server tu import/upsert vao lich va dashboard tu refresh.
+
+5. Neu can import mot lan bang lenh thu cong:
+   npm run facebook:import-json -- C:\Users\dungvuq1920\Desktop\facebook-posts.json
+
+6. Moi post nen co source_id on dinh theo slot:
+   bbv-facebook-YYYYMMDD-HHMM
+
+Vi du:
+   source_id: bbv-facebook-20260518-0730
+
+Ghi chu: source_id giup dashboard cap nhat bai cu khi import lai cung slot, tranh tao bai trung.
 
 ======================================================================
 PROMPT 01 - MASTER PROMPT FACEBOOK PAGE BONG BAN VIET
@@ -210,6 +233,7 @@ Output bat buoc theo format:
 {
   "posts": [
     {
+      "source_id": "bbv-facebook-YYYYMMDD-HHMM",
       "topic": "Ten chu de ngan gon",
       "pillar": "knowledge",
       "status": "draft",
@@ -229,7 +253,7 @@ Output bat buoc theo format:
       "cta": "Comment/inbox/Zalo 096.1269.386 de duoc tu van.",
       "website_link": "https://bongbanviet.com",
       "image_prompt": "English prompt for a 1080x1080 Facebook infographic",
-      "scheduled_time": "YYYY-MM-DD HH:mm:ss"
+      "scheduled_time": "YYYY-MM-DDTHH:mm:00"
     }
   ]
 }
@@ -286,6 +310,7 @@ Tra ve JSON hop le theo format:
 {
   "posts": [
     {
+      "source_id": "bbv-facebook-20260519-0730",
       "topic": "...",
       "pillar": "knowledge",
       "status": "draft",
@@ -298,7 +323,7 @@ Tra ve JSON hop le theo format:
       "cta": "...",
       "website_link": "https://bongbanviet.com",
       "image_prompt": "...",
-      "scheduled_time": "2026-05-19 07:30:00"
+      "scheduled_time": "2026-05-19T07:30:00"
     }
   ]
 }
@@ -577,4 +602,3 @@ Lenh tao anh:
 
 Lenh chuan hoa output:
 "Hay chuan hoa cac bai sau thanh JSON schema cua dashboard bongbanviet.com/facebook, khong them giai thich ngoai JSON."
-

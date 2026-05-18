@@ -29,6 +29,19 @@ input,textarea,select{font-family:inherit;font-size:inherit;outline:none}
 .count-chip{background:rgba(59,130,246,.12);color:var(--blue);border-radius:999px;padding:3px 10px;font-size:12px;font-weight:600;white-space:nowrap}
 .btn-import{background:var(--blue);color:#fff;border-radius:8px;padding:7px 16px;font-weight:600;font-size:13px;white-space:nowrap}
 .btn-import:hover{background:var(--blue2)}
+.top-week-date{width:132px;background:var(--bg);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:6px 9px;font-size:12px;color-scheme:dark}
+.btn-master{background:var(--green);color:#fff;border-radius:8px;padding:7px 13px;font-weight:700;font-size:12px;white-space:nowrap}
+.btn-master:hover{background:#059669}
+.top-file-lbl{display:inline-flex;align-items:center;gap:5px;background:var(--surf2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer}
+.top-file-lbl:hover{background:var(--surf3)}
+.auto-chip{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.22);color:#6ee7b7;border-radius:999px;padding:3px 9px;font-size:11px;font-weight:700;white-space:nowrap}
+.auto-chip.err{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.25);color:#fca5a5}
+.auto-chip.off{background:rgba(100,116,139,.12);border-color:var(--line);color:var(--muted)}
+@media(max-width:980px){
+  .hdr{height:auto;min-height:56px;flex-wrap:wrap;padding:8px 12px}
+  .hdr-right{margin-left:0;flex-wrap:wrap}
+  .status-tabs{order:3;width:100%;overflow-x:auto;margin-left:0}
+}
 
 /* ── Pillar filter bar ── */
 .pbar{padding:9px 20px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line);background:var(--surf)}
@@ -172,6 +185,11 @@ input[type=file]{display:none}
     <button class="stab" data-s="posted" onclick="setStatus('posted')">Đã Đăng</button>
   </div>
   <div class="hdr-right">
+    <input type="date" id="topWeekDate" class="top-week-date" onchange="syncPromptWeekDate('top')" title="Tuần bắt đầu từ Thứ 2">
+    <button class="btn-master" onclick="copyMasterPrompt()" title="Copy Master Prompt để chạy bằng GPT, Claude hoặc Antigravity">📋 Copy Master Prompt</button>
+    <label class="top-file-lbl" for="topImportFile" title="Chọn file JSON để nhập thẳng vào lịch">📂 Nhập JSON</label>
+    <input type="file" id="topImportFile" accept=".json,.txt" onchange="loadAndImportTopFile(event)">
+    <span class="auto-chip" id="autoImportChip" title="Server local tự theo dõi Desktop/facebook-posts.json">Auto JSON</span>
     <span class="count-chip" id="countChip">0 bài</span>
     <button class="btn-import" style="background:var(--surf2);border:1px solid var(--line);color:var(--text)" onclick="openImport()">+ Nhập</button>
   </div>
@@ -192,13 +210,13 @@ input[type=file]{display:none}
         <b>Quy trình:</b><br>
         1. Chọn tuần cần tạo bài bên dưới<br>
         2. Bấm <b>📋 Copy</b> → Dán vào Claude hoặc GPT<br>
-        3. AI tự tạo <b>36 bài</b> theo lịch T2–CN, trả về JSON<br>
-        4. Copy JSON hoặc lưu .json → Dán / Upload vào ô dưới<br>
-        5. Bấm <b>Nhập Lịch</b> → Bài vào đúng ô lịch tự động
+        3. AI tự tạo <b>36 bài</b> theo lịch T2–CN và lưu JSON<br>
+        4. File đích: <b>C:\Users\dungvuq1920\Desktop\facebook-posts.json</b><br>
+        5. Server local tự import → lịch tự cập nhật, không cần nhập thủ công
       </div>
       <div class="fld" style="margin-bottom:2px">
         <label>Tuần bắt đầu từ (Thứ 2)</label>
-        <input type="date" id="importWeekDate" style="background:var(--bg);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:6px 10px;width:100%">
+        <input type="date" id="importWeekDate" onchange="syncPromptWeekDate('modal')" style="background:var(--bg);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:6px 10px;width:100%">
       </div>
       <div>
         <div class="slbl">Master Prompt</div>
@@ -334,6 +352,40 @@ var activePillar = 'all';
 var calWeekStart = null;
 var _editId = null;
 var _copyPost = null;
+var _autoImportRevision = null;
+
+function nextMondayString(){
+  const d=new Date();
+  const day=d.getDay();
+  const diff=day===0?1:day===1?0:8-day;
+  d.setDate(d.getDate()+diff);
+  return d.toISOString().slice(0,10);
+}
+
+function setPromptWeekDate(value){
+  const v=value||nextMondayString();
+  const top=document.getElementById('topWeekDate');
+  const modal=document.getElementById('importWeekDate');
+  if(top) top.value=v;
+  if(modal) modal.value=v;
+  return v;
+}
+
+function initPromptWeekDate(){
+  const top=document.getElementById('topWeekDate');
+  return setPromptWeekDate((top&&top.value)||nextMondayString());
+}
+
+function getPromptWeekDate(){
+  const top=document.getElementById('topWeekDate');
+  const modal=document.getElementById('importWeekDate');
+  return (top&&top.value)||(modal&&modal.value)||initPromptWeekDate();
+}
+
+function syncPromptWeekDate(origin){
+  const source=origin==='modal'?document.getElementById('importWeekDate'):document.getElementById('topWeekDate');
+  setPromptWeekDate((source&&source.value)||nextMondayString());
+}
 
 const POST_FOOTER = '\n\n——\nBóng Bàn Việt - Đồng Hành Cùng Mọi Tay Vợt\n📍 Website: bongbanviet.com\n📞 Hotline/Zalo: 096.1269.386\n#BongBanViet #KyThuatBongBan #GiatPhai #HaTayBongBan';
 
@@ -546,36 +598,49 @@ async function saveEdit(){
 function openImport(){
   document.getElementById('importArea').value='';
   document.getElementById('importOk').style.display='none';
-  const d=new Date();
-  const day=d.getDay();
-  const diff=day===0?1:day===1?0:8-day;
-  d.setDate(d.getDate()+diff);
-  document.getElementById('importWeekDate').value=d.toISOString().slice(0,10);
+  setPromptWeekDate(getPromptWeekDate());
   document.getElementById('ovImport').style.display='flex';
   setTimeout(()=>document.getElementById('importArea').focus(),80);
 }
 
 function closeImport(){ document.getElementById('ovImport').style.display='none'; }
 
+function parseImportPostsRaw(raw){
+  const obj=JSON.parse(raw);
+  const parsed=Array.isArray(obj)?obj:(Array.isArray(obj.posts)?obj.posts:null);
+  if(!parsed||!parsed.length) throw new Error('Không tìm thấy mảng posts');
+  return parsed;
+}
+
+function importSummary(r){
+  const created=Number(r.created||0);
+  const updated=Number(r.updated||0);
+  if(created||updated) return `${created} mới, ${updated} cập nhật`;
+  return `${r.count||0} bài`;
+}
+
+async function importPostsToCalendar(parsed){
+  const r=await api('POST','/api/fb-posts/import',{posts:parsed});
+  await load(true);
+  return r;
+}
+
 async function doImport(){
   const raw=document.getElementById('importArea').value.trim();
   if(!raw){ toast('Chưa có JSON để nhập!','err'); return; }
   let parsed;
   try{
-    const obj=JSON.parse(raw);
-    parsed=Array.isArray(obj)?obj:(Array.isArray(obj.posts)?obj.posts:null);
-    if(!parsed||!parsed.length) throw new Error('Không tìm thấy mảng posts');
+    parsed=parseImportPostsRaw(raw);
   }catch(e){ toast('JSON không hợp lệ: '+e.message,'err'); return; }
   const btn=document.getElementById('btnDoImport');
   btn.disabled=true; btn.textContent='Đang nhập…';
   try{
-    const r=await api('POST','/api/fb-posts/import',parsed);
+    const r=await importPostsToCalendar(parsed);
     const ok=document.getElementById('importOk');
-    ok.textContent='✓ Nhập '+r.count+' bài vào lịch thành công!';
+    ok.textContent='✓ Nhập lịch thành công: '+importSummary(r);
     ok.style.display='block';
-    await load(true);
     setTimeout(closeImport,1100);
-    toast('Nhập '+r.count+' bài thành công','ok');
+    toast('Nhập lịch thành công: '+importSummary(r),'ok');
   }catch(e){ toast('Lỗi: '+e.message,'err'); }
   finally{ btn.disabled=false; btn.textContent='Nhập Lịch'; }
 }
@@ -632,24 +697,40 @@ Tính toán ngày cụ thể cho mỗi slot từ ngày đó (T2 = __WEEK_START__
 OUTPUT — Chỉ trả về JSON, không viết thêm gì khác:
 {"posts":[{"topic":"Tiêu đề SEO","pillar":"knowledge|product|combo|engagement|trust|promo","status":"scheduled","caption":"Nội dung bài...","hashtags":"#BongBanViet #...","cta":"Inbox/Zalo 096.1269.386 để tư vấn.","website_link":"https://bongbanviet.com","image_prompt":"English 1080x1080 image prompt","scheduled_time":"2026-MM-DDTHH:MM:00","source_notes":"Mục tiêu slot"}]}`;
 
+const LOCAL_IMPORT_APPENDIX=`
+
+BỔ SUNG BẮT BUỘC CHO WORKFLOW LOCAL → DASHBOARD:
+- Mỗi bài phải có "source_id" ổn định theo slot để dashboard tự cập nhật khi import lại, không tạo bản trùng.
+- source_id format: "bbv-facebook-YYYYMMDD-HHMM" ví dụ "bbv-facebook-20260518-0730".
+- scheduled_time phải dùng ISO local: "YYYY-MM-DDTHH:MM:00".
+- Nếu bạn đang chạy trong Antigravity/Codex/Claude local có quyền ghi file, hãy lưu đúng JSON thuần vào:
+  C:\\Users\\dungvuq1920\\Desktop\\facebook-posts.json
+- Nếu server local đang chạy bằng "npm run dev", dashboard sẽ tự theo dõi file này, tự import/cập nhật lịch và tự hiển thị bài mới.
+- Không cần copy JSON và không cần bấm nút Nhập JSON thủ công.
+- Nếu server chưa chạy, hãy chạy lệnh trong thư mục dự án:
+  npm run dev
+
+SCHEMA CUỐI CÙNG:
+{"posts":[{"source_id":"bbv-facebook-YYYYMMDD-HHMM","topic":"Tiêu đề SEO","pillar":"knowledge|product|combo|engagement|trust|promo","status":"scheduled","caption":"Nội dung bài...","hashtags":"#BongBanViet #...","cta":"Inbox/Zalo 096.1269.386 để tư vấn.","website_link":"https://bongbanviet.com","image_prompt":"English 1080x1080 image prompt","scheduled_time":"YYYY-MM-DDTHH:MM:00","source_notes":"Mục tiêu slot"}]}`;
+
 function buildPrompt(){
-  const weekDate=document.getElementById('importWeekDate')?.value||'';
-  return MASTER_PROMPT.replace(/__WEEK_START__/g, weekDate||'(điền ngày Thứ 2)');
+  const weekDate=getPromptWeekDate();
+  return (MASTER_PROMPT+LOCAL_IMPORT_APPENDIX).replace(/__WEEK_START__/g, weekDate||'(điền ngày Thứ 2)');
 }
 
 async function copyMasterPrompt(){
-  const weekDate=document.getElementById('importWeekDate')?.value||'';
+  const weekDate=setPromptWeekDate(getPromptWeekDate());
   if(!weekDate){ toast('Chọn tuần bắt đầu trước khi copy prompt!','err'); return; }
   try{ await navigator.clipboard.writeText(buildPrompt()); toast('Đã copy prompt với tuần '+weekDate,'ok'); }
   catch{ toast('Lỗi copy','err'); }
 }
 
 function downloadMasterPrompt(){
-  const weekDate=document.getElementById('importWeekDate')?.value||'';
+  const weekDate=setPromptWeekDate(getPromptWeekDate());
   const blob=new Blob([buildPrompt()],{type:'text/plain;charset=utf-8'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url; a.download='master-prompt-bongbanviet.txt'; a.click();
+  a.href=url; a.download='master-prompt-bongbanviet-'+weekDate+'.txt'; a.click();
   URL.revokeObjectURL(url);
   toast('Đã tải Master Prompt!','ok');
 }
@@ -661,6 +742,70 @@ function loadImportFile(e){
   const reader=new FileReader();
   reader.onload=ev=>{ document.getElementById('importArea').value=ev.target.result.trim(); };
   reader.readAsText(f,'UTF-8');
+}
+
+function readTextFile(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=ev=>resolve(String(ev.target.result||'').trim());
+    reader.onerror=()=>reject(new Error('Không đọc được file'));
+    reader.readAsText(file,'UTF-8');
+  });
+}
+
+async function loadAndImportTopFile(e){
+  const f=e.target.files[0];
+  if(!f)return;
+  try{
+    const raw=await readTextFile(f);
+    const parsed=parseImportPostsRaw(raw);
+    toast('Đang nhập '+parsed.length+' bài từ '+f.name+'...','ok');
+    const r=await importPostsToCalendar(parsed);
+    toast('Nhập JSON thành công: '+importSummary(r),'ok');
+  }catch(err){
+    toast('Lỗi import JSON: '+err.message,'err');
+  }finally{
+    e.target.value='';
+  }
+}
+
+function updateAutoImportChip(state){
+  const chip=document.getElementById('autoImportChip');
+  if(!chip)return;
+  chip.className='auto-chip';
+  if(!state||!state.enabled){
+    chip.textContent='Auto JSON: off';
+    chip.classList.add('off');
+    return;
+  }
+  if(state.last_error){
+    chip.textContent='Auto JSON: lỗi';
+    chip.classList.add('err');
+    chip.title=state.last_error;
+    return;
+  }
+  const result=state.last_result;
+  chip.textContent=result?`Auto JSON: ${result.count||0} bài`:'Auto JSON: đang chờ file';
+  chip.title=state.file||'Desktop/facebook-posts.json';
+}
+
+async function pollAutoImportState(){
+  try{
+    const state=await api('GET','/api/fb-posts/import-state');
+    updateAutoImportChip(state);
+    if(_autoImportRevision===null){
+      _autoImportRevision=state.revision||0;
+      return;
+    }
+    if((state.revision||0)!==_autoImportRevision){
+      _autoImportRevision=state.revision||0;
+      await load(true);
+      const result=state.last_result||{};
+      toast('Auto JSON đã cập nhật lịch: '+importSummary(result),'ok');
+    }
+  }catch(e){
+    updateAutoImportChip({enabled:false});
+  }
 }
 
 // ─── Calendar ─────────────────────────────────────────────────────────────────
@@ -678,7 +823,7 @@ function renderCalendar(list){
   const displayList=list||posts;
 
   if(!posts.length){
-    wrap.innerHTML=`<div class="empty"><h3>Chưa có bài nào</h3><div class="empty-wf">Bấm <b>+ Nhập</b> → chọn tuần → <b>📋 Copy Prompt</b><br>→ Dán vào Claude/GPT → Copy JSON kết quả<br>→ Dán vào ô nhập → <b>Nhập Lịch</b></div></div>`;
+    wrap.innerHTML=`<div class="empty"><h3>Chưa có bài nào</h3><div class="empty-wf">Bấm <b>📋 Copy Master Prompt</b> → dán vào Claude/GPT/Codex<br>→ yêu cầu AI lưu file <b>Desktop/facebook-posts.json</b><br>→ server local tự nhập JSON và lịch tự cập nhật</div></div>`;
     return;
   }
 
@@ -779,7 +924,10 @@ function toast(msg,type){
   _tt=setTimeout(()=>el.className='toast',2200);
 }
 
+initPromptWeekDate();
 load();
+pollAutoImportState();
+setInterval(pollAutoImportState,3000);
 </script>
 </body>
 </html>

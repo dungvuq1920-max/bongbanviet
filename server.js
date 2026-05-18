@@ -6,6 +6,7 @@ const multer = require('multer');
 const ExcelJS = require('exceljs');
 const db = require('./db');
 const crypto = require('crypto');
+const os = require('os');
 const axios = require('axios');
 const FormData = require('form-data');
 
@@ -16,6 +17,10 @@ const DATA_DIR = process.env.DATA_DIR
   : __dirname;
 const SHOPEE_AI_CONFIG_FILE = path.join(DATA_DIR, 'shopee-ai-config.json');
 const FACEBOOK_CONFIG_FILE = path.join(DATA_DIR, 'facebook-config.json');
+const FACEBOOK_LOCAL_IMPORT_FILE = path.resolve(
+  process.env.FACEBOOK_IMPORT_JSON_FILE ||
+  path.join(os.homedir(), 'Desktop', 'facebook-posts.json')
+);
 
 app.use(cors());
 app.use(express.json());
@@ -4809,23 +4814,172 @@ app.get('/api/fb-posts', (req, res) => {
   res.json(rows.map(r => ({ ...r, source_urls: JSON.parse(r.source_urls || '[]') })));
 });
 
+function cleanFbSourceId(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9._:-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 120);
+}
+
+function getFbSourceId(post) {
+  const explicit = cleanFbSourceId(post.source_id);
+  if (explicit) return explicit;
+  const slot = String(post.scheduled_time || '').trim();
+  if (!slot) return '';
+  const key = slot.replace(/[^0-9]/g, '').slice(0, 12);
+  return key ? `bbv-facebook-${key}` : '';
+}
+
+function normalizeFbImportPost(post) {
+  const p = post && typeof post === 'object' ? post : {};
+  const sourceUrls = Array.isArray(p.source_urls)
+    ? p.source_urls.filter(Boolean)
+    : (typeof p.source_urls === 'string' && p.source_urls.trim() ? [p.source_urls.trim()] : []);
+  return {
+    source_id: getFbSourceId(p),
+    topic: String(p.topic || '').trim(),
+    pillar: String(p.pillar || 'knowledge').trim() || 'knowledge',
+    status: String(p.status || 'scheduled').trim() || 'scheduled',
+    brand_voice: String(p.brand_voice || '').trim(),
+    source_type: String(p.source_type || 'direct-prompt').trim() || 'direct-prompt',
+    source_urls: JSON.stringify(sourceUrls),
+    source_notes: String(p.source_notes || '').trim(),
+    fact_summary: String(p.fact_summary || '').trim(),
+    caption: String(p.caption || '').trim(),
+    hashtags: String(p.hashtags || '').trim(),
+    cta: String(p.cta || '').trim(),
+    website_link: String(p.website_link || 'https://bongbanviet.com').trim() || 'https://bongbanviet.com',
+    image_prompt: String(p.image_prompt || '').trim(),
+    scheduled_time: String(p.scheduled_time || '').trim(),
+  };
+}
+
+function importFacebookPosts(posts) {
+  if (!posts.length) throw new Error('No posts');
+  const findBySource = db.prepare('SELECT id FROM fb_posts WHERE source_id=? LIMIT 1');
+  const insert = db.prepare(`INSERT INTO fb_posts (id,source_id,topic,pillar,status,brand_voice,source_type,source_urls,source_notes,fact_summary,caption,hashtags,cta,website_link,image_prompt,scheduled_time) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
+  const update = db.prepare(`UPDATE fb_posts SET topic=?,pillar=?,status=?,brand_voice=?,source_type=?,source_urls=?,source_notes=?,fact_summary=?,caption=?,hashtags=?,cta=?,website_link=?,image_prompt=?,scheduled_time=?,updated_at=datetime('now') WHERE source_id=?`);
+  const run = db.transaction(() => {
+    const ids = [];
+    let created = 0;
+    let updated = 0;
+    for (const raw of posts) {
+      const p = normalizeFbImportPost(raw);
+      const existing = p.source_id ? findBySource.get(p.source_id) : null;
+      if (existing) {
+        update.run(p.topic, p.pillar, p.status, p.brand_voice, p.source_type, p.source_urls, p.source_notes, p.fact_summary, p.caption, p.hashtags, p.cta, p.website_link, p.image_prompt, p.scheduled_time, p.source_id);
+        ids.push(existing.id);
+        updated += 1;
+      } else {
+        const id = Date.now().toString(36) + Math.random().toString(36).slice(2,5);
+        insert.run(id, p.source_id, p.topic, p.pillar, p.status, p.brand_voice, p.source_type, p.source_urls, p.source_notes, p.fact_summary, p.caption, p.hashtags, p.cta, p.website_link, p.image_prompt, p.scheduled_time);
+        ids.push(id);
+        created += 1;
+      }
+    }
+    return { ids, created, updated };
+  });
+  const result = run();
+  return { ok: true, count: result.ids.length, created: result.created, updated: result.updated, ids: result.ids };
+}
+
 app.post('/api/fb-posts/import', (req, res) => {
-  const posts = Array.isArray(req.body) ? req.body : (req.body.posts || []);
-  if (!posts.length) return res.status(400).json({ error: 'No posts' });
-  const insert = db.prepare(`INSERT INTO fb_posts (id,topic,pillar,status,brand_voice,source_type,source_urls,source_notes,fact_summary,caption,hashtags,cta,website_link,image_prompt,scheduled_time) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
-  const run = db.transaction(() => posts.map(p => {
-    const id = Date.now().toString(36) + Math.random().toString(36).slice(2,5);
-    insert.run(id, p.topic||'', p.pillar||'knowledge', p.status||'draft', p.brand_voice||'', p.source_type||'direct-prompt', JSON.stringify(p.source_urls||[]), p.source_notes||'', p.fact_summary||'', p.caption||'', p.hashtags||'', p.cta||'', p.website_link||'https://bongbanviet.com', p.image_prompt||'', p.scheduled_time||'');
-    return id;
-  }));
-  const ids = run();
-  res.json({ ok: true, count: ids.length, ids });
+  try {
+    const body = req.body || {};
+    const posts = Array.isArray(body) ? body : (Array.isArray(body.posts) ? body.posts : []);
+    if (!posts.length) return res.status(400).json({ error: 'No posts' });
+    res.json(importFacebookPosts(posts));
+  } catch (e) {
+    res.status(400).json({ error: e.message || 'Import failed' });
+  }
+});
+
+const facebookJsonImportState = {
+  enabled: false,
+  file: FACEBOOK_LOCAL_IMPORT_FILE,
+  revision: 0,
+  last_hash: '',
+  last_imported_at: '',
+  last_error: '',
+  last_result: null,
+};
+
+function parseFacebookJsonImport(raw) {
+  const parsed = JSON.parse(raw);
+  const posts = Array.isArray(parsed) ? parsed : (Array.isArray(parsed.posts) ? parsed.posts : null);
+  if (!posts || !posts.length) throw new Error('JSON must be an array or an object with posts: []');
+  return posts;
+}
+
+function hashFacebookImportFile(file) {
+  if (!fs.existsSync(file)) return '';
+  return crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+}
+
+function shouldStartFacebookJsonAutoImporter() {
+  if (process.env.FACEBOOK_AUTO_IMPORT === '0') return false;
+  if (process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_PROJECT_ID) {
+    return process.env.FACEBOOK_AUTO_IMPORT === '1';
+  }
+  return true;
+}
+
+function startFacebookJsonAutoImporter() {
+  if (!shouldStartFacebookJsonAutoImporter()) return;
+  facebookJsonImportState.enabled = true;
+  let lastHash = '';
+  let timer = null;
+  let running = false;
+
+  const sync = (reason) => {
+    if (running) {
+      clearTimeout(timer);
+      timer = setTimeout(() => sync('queued'), 800);
+      return;
+    }
+    running = true;
+    try {
+      const file = facebookJsonImportState.file;
+      const currentHash = hashFacebookImportFile(file);
+      if (!currentHash || currentHash === lastHash) return;
+      lastHash = currentHash;
+      facebookJsonImportState.last_hash = currentHash;
+      const raw = fs.readFileSync(file, 'utf8').trim();
+      const posts = parseFacebookJsonImport(raw);
+      const result = importFacebookPosts(posts);
+      facebookJsonImportState.revision += 1;
+      facebookJsonImportState.last_imported_at = new Date().toISOString();
+      facebookJsonImportState.last_error = '';
+      facebookJsonImportState.last_result = { ...result, reason };
+      console.log(`[Facebook JSON Auto Import] ${result.count} posts (${result.created} created, ${result.updated} updated) from ${file}`);
+    } catch (e) {
+      facebookJsonImportState.last_error = e.message || String(e);
+      console.error('[Facebook JSON Auto Import]', facebookJsonImportState.last_error);
+    } finally {
+      running = false;
+    }
+  };
+
+  const scheduleSync = (reason) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => sync(reason), 700);
+  };
+
+  console.log(`[Facebook JSON Auto Import] Watching ${facebookJsonImportState.file}`);
+  fs.watchFile(facebookJsonImportState.file, { interval: Number(process.env.FACEBOOK_IMPORT_POLL_MS || 1200) }, () => scheduleSync('file changed'));
+  scheduleSync('startup');
+}
+
+app.get('/api/fb-posts/import-state', (req, res) => {
+  res.json(facebookJsonImportState);
 });
 
 app.post('/api/fb-posts', (req, res) => {
-  const p = req.body;
+  const p = req.body || {};
   const id = Date.now().toString(36) + Math.random().toString(36).slice(2,5);
-  db.prepare(`INSERT INTO fb_posts (id,topic,pillar,status,brand_voice,source_type,source_urls,source_notes,fact_summary,caption,hashtags,cta,website_link,image_prompt,scheduled_time) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(id, p.topic||'', p.pillar||'knowledge', p.status||'draft', p.brand_voice||'', p.source_type||'direct-prompt', JSON.stringify(p.source_urls||[]), p.source_notes||'', p.fact_summary||'', p.caption||'', p.hashtags||'', p.cta||'', p.website_link||'https://bongbanviet.com', p.image_prompt||'', p.scheduled_time||'');
+  db.prepare(`INSERT INTO fb_posts (id,source_id,topic,pillar,status,brand_voice,source_type,source_urls,source_notes,fact_summary,caption,hashtags,cta,website_link,image_prompt,scheduled_time) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(id, cleanFbSourceId(p.source_id), p.topic||'', p.pillar||'knowledge', p.status||'draft', p.brand_voice||'', p.source_type||'direct-prompt', JSON.stringify(p.source_urls||[]), p.source_notes||'', p.fact_summary||'', p.caption||'', p.hashtags||'', p.cta||'', p.website_link||'https://bongbanviet.com', p.image_prompt||'', p.scheduled_time||'');
   res.json({ ok: true, id });
 });
 
@@ -4999,6 +5153,7 @@ function startServer() {
     startTracker();
     syncFacebookDedupeHistory();
     startFacebookAutoScheduler();
+    startFacebookJsonAutoImporter();
   });
   server.on('error', err => {
     if (err.code === 'EADDRINUSE') {
