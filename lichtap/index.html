@@ -215,7 +215,11 @@ function parseFee(s){
 
 function fmtMoney(n){
   if(!n)return '0';
-  if(n>=1e6){const v=n/1e6;return (v%1===0?v:v.toFixed(1))+'tr';}
+  if(n>=1e6){
+    const tr=Math.floor(n/1e6);
+    const k=Math.round((n%1e6)/1e3);
+    return tr+'tr'+(k>0?k+'k':'');
+  }
   if(n>=1e3)return Math.round(n/1e3)+'k';
   return n+'';
 }
@@ -314,9 +318,9 @@ function addSession(sid){
   scheduleSave();
   rerenderCard(sid);
   const {total,paid}=calcStats(s);
-  if(paid>0&&total>=paid){
+  if(paid>0&&paid>total-parseFee(fee)&&total>=paid){
     setTimeout(()=>{
-      if(confirm('Đã học đủ số tiền thanh toán trước ('+fmtMoney(paid)+').\nCó lưu lại thông tin và reset buổi học không?')){
+      if(confirm('Đã học đủ số buổi tương đương với số tiền thanh toán trước ('+fmtMoney(paid)+').\nCó lưu lại thông tin và reset buổi học không?')){
         archiveAndReset(sid,null);
       }
     },150);
@@ -572,7 +576,7 @@ function buildCard(s){
     <span>Các Buổi Đã Học</span>
     <span style="display:flex;align-items:center;gap:6px">
       <span class="sec-badge" id="stc-${s.id}">${count} buổi</span>
-      <button class="btn-add-sched" onclick="toggleSessForm('${s.id}')">+ Buổi</button>
+      <button class="btn-add-sched" onclick="toggleSessForm('${s.id}')">Thêm</button>
     </span>
   </div>
   <div class="sess-list">${rows}</div>
@@ -587,11 +591,12 @@ function buildCard(s){
 
   <div class="stats">
     <span class="st">Tổng: <b id="sttot-${s.id}">${fmtMoney(total)}</b></span>
+    ${paid>total&&paid>0?`<span class="st" id="prepaid-${s.id}">Thanh toán trước: <b style="color:var(--warn)">${fmtMoney(paid)}</b></span>`:''}
   </div>
 
   <div class="sec-sched">
     <span class="sec-lbl">Lịch Tập Trong Tuần</span>
-    <button class="btn-add-sched" onclick="toggleSchedForm('${s.id}')">+Lịch</button>
+    <button class="btn-add-sched" onclick="toggleSchedForm('${s.id}')">Thêm</button>
   </div>
   <div class="sched-pills">${pills}</div>
   <div class="conflict-msg" id="cw-${s.id}">
@@ -610,7 +615,7 @@ function buildCard(s){
     <span>Thanh Toán</span>
     <span style="display:flex;align-items:center;gap:6px">
       <span class="sec-badge">${payments.length>0?payments.length+' lần':''}</span>
-      <button class="btn-add-sched" onclick="togglePayForm('${s.id}')">+ Thanh Toán</button>
+      <button class="btn-add-sched" onclick="togglePayForm('${s.id}')">Thêm</button>
     </span>
   </div>
   <div class="pay-list">${payChips}</div>
