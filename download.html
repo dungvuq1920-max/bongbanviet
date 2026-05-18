@@ -1044,6 +1044,15 @@ function dl(videoUrl, filename){
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
 
+// Download by aweme_id via stream endpoint (re-resolves fresh URL via TikWM — avoids IP-restricted CDN URLs)
+function dlById(awemeId, filename){
+  if(!awemeId) return;
+  var a=document.createElement('a');
+  a.href='/api/douyin/stream/'+encodeURIComponent(awemeId);
+  a.download=filename||'';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
 // ── LINK VIDEO (batch) ────────────────────────────────────────────────────────
 function getUrls(){ return $('bArea').value.split('\n').map(function(l){return l.trim();}).filter(Boolean).slice(0,50); }
 
@@ -1120,18 +1129,21 @@ function renderBatch(results){
 }
 
 function dlBatchItem(i,btn){
-  var item=_bResolved[i]; if(!item||!item.video||!item.video.play_url) return;
+  var item=_bResolved[i]; if(!item||!item.video) return;
   if(btn){btn.disabled=true;btn.textContent='...';}
-  dl(item.video.play_url, item.video.filename||'video.mp4');
+  var v=item.video;
+  if(v.aweme_id) dlById(v.aweme_id, v.filename||'video.mp4');
+  else if(v.play_url) dl(v.play_url, v.filename||'video.mp4');
   setTimeout(function(){if(btn){btn.disabled=false;btn.textContent='Tải';}},4000);
 }
 
 function dlAll(){
   var delay=0;
   _bResolved.forEach(function(item){
-    if(item.video&&item.video.play_url&&item.video.media_type!=='gallery'){
-      var pu=item.video.play_url, fn=item.video.filename||'video.mp4';
-      setTimeout(function(){dl(pu,fn);},delay); delay+=700;
+    if(item.video&&item.video.media_type!=='gallery'){
+      var v=item.video;
+      if(v.aweme_id){ setTimeout(function(){dlById(v.aweme_id,v.filename||'video.mp4');},delay); delay+=700; }
+      else if(v.play_url){ setTimeout(function(){dl(v.play_url,v.filename||'video.mp4');},delay); delay+=700; }
     }
   });
 }
@@ -1208,9 +1220,10 @@ function renderUser(d,first,startIdx){
 }
 
 function dlUserItem(i,btn){
-  var v=_uVideos[i]; if(!v||!v.play_url) return;
+  var v=_uVideos[i]; if(!v) return;
   if(btn){btn.disabled=true;btn.textContent='...';}
-  dl(v.play_url, v.filename||'video.mp4');
+  if(v.aweme_id) dlById(v.aweme_id, v.filename||'video.mp4');
+  else if(v.play_url) dl(v.play_url, v.filename||'video.mp4');
   setTimeout(function(){if(btn){btn.disabled=false;btn.textContent='Tải';}},4000);
 }
 
@@ -1310,10 +1323,11 @@ function renderSearchResults(videos,startIdx,first){
 }
 
 function dlSrItem(i,btn){
-  var v=_srResults[i]; if(!v||!v.play_url) return;
+  var v=_srResults[i]; if(!v) return;
   if(btn){btn.disabled=true;btn.textContent='...';}
   var fn=(v.title||'video').slice(0,60).replace(/[\\/:*?"<>|#\r\n]/g,'_')+'.mp4';
-  dl(v.play_url,fn);
+  if(v.aweme_id) dlById(v.aweme_id, fn);
+  else if(v.play_url) dl(v.play_url, fn);
   setTimeout(function(){if(btn){btn.disabled=false;btn.textContent='Tải';}},4000);
 }
 

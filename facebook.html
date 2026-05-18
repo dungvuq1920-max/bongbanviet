@@ -425,6 +425,26 @@
         </div>
 
         <section class="panel">
+          <div class="panel-title">
+            <div>
+              <h2>Kết nối Facebook Page</h2>
+              <p id="connectionState">Đang tải cấu hình kết nối...</p>
+            </div>
+            <span class="chip" id="connectionChip">Setup</span>
+          </div>
+          <div class="controls">
+            <div class="field span-2"><label>Page ID</label><input id="fbPageId" placeholder="Facebook Page ID"></div>
+            <div class="field span-2"><label>Graph API</label><input id="fbGraphVersion" placeholder="v24.0"></div>
+            <div class="field span-3"><label>Page Access Token</label><input id="fbPageToken" type="password" placeholder="Dán token mới để cập nhật"></div>
+            <div class="field span-3"><label>OpenAI API key</label><input id="fbOpenAiKey" type="password" placeholder="Dán key mới để cập nhật"></div>
+            <div class="field span-3"><label>Gemini API key</label><input id="fbGeminiKey" type="password" placeholder="Tùy chọn"></div>
+            <div class="field span-3"><label>Claude API key</label><input id="fbClaudeKey" type="password" placeholder="Tùy chọn"></div>
+            <button class="btn dark span-2" id="saveConnection"><i data-lucide="plug-zap"></i> Lưu kết nối</button>
+            <button class="btn span-2" id="verifyBtnInline"><i data-lucide="badge-check"></i> Kiểm tra token</button>
+          </div>
+        </section>
+
+        <section class="panel">
           <div class="controls">
             <div class="field span-2">
               <label>Ngày bắt đầu</label>
@@ -445,6 +465,7 @@
             </div>
             <label class="toggle span-2"><input type="checkbox" id="autoApprove"> Tự duyệt sau khi tạo</label>
             <label class="toggle span-2"><input type="checkbox" id="autoScheduler"> Auto schedule</label>
+            <label class="toggle span-2"><input type="checkbox" id="replaceFutureIdeas"> Thay topic tương lai</label>
             <button class="btn primary span-2" id="collectBtn"><i data-lucide="database-zap"></i> Thu thập topic</button>
           </div>
         </section>
@@ -479,6 +500,7 @@
               <option value="combo">Combo</option>
               <option value="news">Tin tức</option>
               <option value="engagement">Tương tác</option>
+              <option value="trust">Trust</option>
               <option value="promo">Promo</option>
             </select>
             <input class="btn" id="searchBox" placeholder="Tìm topic..." style="justify-content:flex-start;min-width:220px;">
@@ -510,7 +532,7 @@
           <div class="field span-2"><label>Pillar</label><select id="editPillar">
             <option value="knowledge">Kiến thức</option><option value="product">Sản phẩm</option>
             <option value="combo">Combo</option><option value="news">Tin tức</option>
-            <option value="engagement">Tương tác</option><option value="promo">Promo</option>
+            <option value="engagement">Tương tác</option><option value="trust">Trust</option><option value="promo">Promo</option>
           </select></div>
           <div class="field span-2"><label>Status</label><select id="editStatus">
             <option value="idea">Idea</option><option value="draft">Draft</option><option value="approved">Approved</option>
@@ -588,7 +610,7 @@
 
     function pillarLabel(pillar) {
       return {
-        knowledge:'Kiến thức', product:'Sản phẩm', combo:'Combo', news:'Tin tức', engagement:'Tương tác', promo:'Promo'
+        knowledge:'Kiến thức', product:'Sản phẩm', combo:'Combo', news:'Tin tức', engagement:'Tương tác', trust:'Trust', promo:'Promo'
       }[pillar] || pillar || 'Khác';
     }
 
@@ -615,7 +637,19 @@
       $('postsPerDay').value = cfg.dailyPostCount || 4;
       $('autoApprove').checked = !!cfg.autoApproveGenerated;
       $('autoScheduler').checked = !!cfg.autoSchedulerEnabled;
-      $('cfgState').textContent = `AI: ${(cfg.aiProviders || []).join(', ') || 'chưa cấu hình'} | FB: ${cfg.pageIdConfigured && cfg.pageTokenConfigured ? 'đã cấu hình' : 'thiếu token'}`;
+      $('fbPageId').value = cfg.pageId || '';
+      $('fbGraphVersion').value = cfg.graphVersion || 'v24.0';
+      const tokenText = cfg.pageTokenConfigured ? `đã có token${cfg.pageTokenTail ? ' ...' + cfg.pageTokenTail : ''}` : 'thiếu token';
+      $('fbPageToken').placeholder = cfg.pageTokenConfigured ? 'Để trống nếu không đổi token' : 'Dán Page Access Token';
+      $('fbOpenAiKey').placeholder = cfg.aiKeys?.openai?.configured ? `Để trống nếu không đổi key ...${cfg.aiKeys.openai.tail || ''}` : 'Dán OpenAI API key';
+      $('fbGeminiKey').placeholder = cfg.aiKeys?.gemini?.configured ? `Để trống nếu không đổi key ...${cfg.aiKeys.gemini.tail || ''}` : 'Tùy chọn';
+      $('fbClaudeKey').placeholder = cfg.aiKeys?.claude?.configured ? `Để trống nếu không đổi key ...${cfg.aiKeys.claude.tail || ''}` : 'Tùy chọn';
+      const fbReady = cfg.pageIdConfigured && cfg.pageTokenConfigured;
+      const aiReady = (cfg.aiProviders || []).length > 0;
+      $('connectionChip').textContent = fbReady && aiReady ? 'Ready' : 'Thiếu cấu hình';
+      $('connectionChip').className = 'chip ' + (fbReady && aiReady ? 'approved' : 'failed');
+      $('connectionState').textContent = `Facebook: ${fbReady ? 'đã cấu hình' : tokenText} | AI: ${(cfg.aiProviders || []).join(', ') || 'chưa cấu hình'}`;
+      $('cfgState').textContent = `AI: ${(cfg.aiProviders || []).join(', ') || 'chưa cấu hình'} | FB: ${fbReady ? 'đã cấu hình' : 'thiếu token'}`;
       renderScheduleStrategy();
     }
 
@@ -713,6 +747,23 @@
         })
       });
       renderConfig();
+    }
+
+    async function saveConnection() {
+      state.cfg = await api('/api/facebook/config', {
+        method:'PUT',
+        body: JSON.stringify({
+          pageId: $('fbPageId').value.trim(),
+          pageAccessToken: $('fbPageToken').value.trim(),
+          graphVersion: $('fbGraphVersion').value.trim(),
+          openaiApiKey: $('fbOpenAiKey').value.trim(),
+          geminiApiKey: $('fbGeminiKey').value.trim(),
+          claudeApiKey: $('fbClaudeKey').value.trim()
+        })
+      });
+      ['fbPageToken','fbOpenAiKey','fbGeminiKey','fbClaudeKey'].forEach(id => $(id).value = '');
+      renderConfig();
+      toast('Đã lưu kết nối Facebook');
     }
 
     async function bulk(endpoint, body = {}, message = 'Đã xử lý') {
@@ -818,6 +869,7 @@
         if (btn.id === 'newBtn') return openEditor();
         if (btn.id === 'closeModal') return $('editModal').classList.remove('open');
         if (btn.id === 'saveEdit') return saveEditor();
+        if (btn.id === 'saveConnection') return saveConnection();
         if (btn.id === 'collectBtn') {
           await saveConfig();
           const data = await api('/api/facebook/collect', {
@@ -825,7 +877,8 @@
             body: JSON.stringify({
               startDate: $('startDate').value,
               days: $('days').value,
-              postsPerDay: $('postsPerDay').value
+              postsPerDay: $('postsPerDay').value,
+              replaceFutureIdeas: $('replaceFutureIdeas').checked
             })
           });
           const skipped = data.skippedDuplicates ? `, bỏ qua ${data.skippedDuplicates} trùng` : '';
@@ -836,7 +889,7 @@
         if (btn.id === 'imgBtn') return bulk('/api/facebook/images', { count: 12 }, 'Đã tạo ảnh');
         if (btn.id === 'approveBtn') return bulk('/api/facebook/approve', {}, 'Đã duyệt bài');
         if (btn.id === 'scheduleBtn') return bulk('/api/facebook/schedule', {}, 'Đã gửi lịch đăng');
-        if (btn.id === 'verifyBtn') {
+        if (btn.id === 'verifyBtn' || btn.id === 'verifyBtnInline') {
           const data = await api('/api/facebook/verify-token', { method:'POST', body:'{}' });
           return toast(data.valid ? `Token hợp lệ: ${data.page?.name || data.page?.id || ''}` : `Token lỗi: ${data.error}`);
         }

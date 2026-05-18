@@ -1176,6 +1176,7 @@ const FACEBOOK_PILLARS = {
   combo:      { label: 'Combo & tư vấn chọn đồ', voice: 'gần gũi, tư vấn đúng trình độ' },
   news:       { label: 'Tin tức & cộng đồng',   voice: 'cập nhật, khách quan' },
   engagement: { label: 'Tương tác cộng đồng',   voice: 'thân thiện, gợi mở bình luận' },
+  trust:      { label: 'Niềm tin & chính hãng', voice: 'minh bạch, chắc chắn, không phóng đại' },
   promo:      { label: 'Bán hàng mềm',          voice: 'rõ lợi ích, không thúc ép quá đà' },
 };
 
@@ -1214,14 +1215,14 @@ const FACEBOOK_GROWTH_SCHEDULE = {
   ],
   5: [
     { time: '07:30:00', pillar: 'knowledge', bucket: 'Knowledge', label: 'Checklist cuối tuần', intent: 'Chuẩn bị cho người chơi đi đánh cuối tuần.' },
-    { time: '10:30:00', pillar: 'product', bucket: 'Product', label: 'Sản phẩm dễ mua', intent: 'Tập trung sản phẩm phổ thông/còn hàng.' },
+    { time: '10:30:00', pillar: 'trust', bucket: 'Trust', label: 'Chính hãng & quy trình tư vấn', intent: 'Xây niềm tin bằng dữ liệu sản phẩm, quy trình tư vấn và cam kết rõ ràng.' },
     { time: '12:15:00', pillar: 'promo', bucket: 'Promo', label: 'Ưu đãi cuối tuần', intent: 'CTA rõ nhưng không chiếm quá nhiều lịch.' },
     { time: '15:30:00', pillar: 'engagement', bucket: 'Community', label: 'Poll cuối tuần', intent: 'Kéo bình luận nhẹ trước cuối tuần.' },
     { time: '21:15:00', pillar: 'combo', bucket: 'Combo', label: 'Setup đi đánh cuối tuần', intent: 'Gợi ý combo thực dụng cho người chơi phong trào.' },
   ],
   6: [
     { time: '08:30:00', pillar: 'knowledge', bucket: 'Knowledge', label: 'Tip thực chiến cuối tuần', intent: 'Nội dung dễ xem trước khi đi chơi/đi đánh.' },
-    { time: '11:00:00', pillar: 'product', bucket: 'Product', label: 'Ảnh kho/sản phẩm', intent: 'Tạo trust bằng hình ảnh thật và thông tin gọn.' },
+    { time: '11:00:00', pillar: 'trust', bucket: 'Trust', label: 'Ảnh kho/sản phẩm', intent: 'Tạo trust bằng hình ảnh thật và thông tin gọn.' },
     { time: '16:00:00', pillar: 'engagement', bucket: 'Community', label: 'Poll trận đấu', intent: 'Tận dụng thời gian cộng đồng rảnh thảo luận.' },
     { time: '20:30:00', pillar: 'engagement', bucket: 'Community', label: 'Recap cộng đồng', intent: 'Hỏi trải nghiệm trong ngày, gom insight cho tuần sau.' },
   ],
@@ -1391,16 +1392,22 @@ function facebookScheduleTemplate() {
 }
 
 function getFacebookConfig() {
+  const runtime = facebookRuntimeSummary();
   return {
     siteUrl: FACEBOOK_SITE_URL,
     autoSchedulerEnabled: fbSetting('facebook_auto_scheduler_enabled', '0') === '1',
     dailyPostCount: Math.max(3, Math.min(6, Number(fbSetting('facebook_daily_post_count', '5')) || 5)),
     defaultDays: Math.max(1, Math.min(30, Number(fbSetting('facebook_default_days', '7')) || 7)),
     autoApproveGenerated: fbSetting('facebook_auto_approve_generated', '0') === '1',
-    pageIdConfigured: !!process.env.FACEBOOK_PAGE_ID,
-    pageTokenConfigured: !!process.env.FACEBOOK_PAGE_ACCESS_TOKEN,
-    graphVersion: process.env.FACEBOOK_GRAPH_VERSION || 'v24.0',
-    aiProviders: shopeeCopyProviderPlan('auto'),
+    pageIdConfigured: runtime.pageIdConfigured,
+    pageTokenConfigured: runtime.pageTokenConfigured,
+    pageId: runtime.pageId,
+    pageIdSource: runtime.pageIdSource,
+    pageTokenSource: runtime.pageTokenSource,
+    pageTokenTail: runtime.pageTokenTail,
+    graphVersion: runtime.graphVersion,
+    aiProviders: runtime.aiProviders,
+    aiKeys: runtime.aiKeys,
     scheduleMode: 'growth',
     scheduleTemplate: facebookScheduleTemplate(),
     contentMix: FACEBOOK_CONTENT_MIX,
@@ -1598,6 +1605,71 @@ function fbScheduleSlots(days, postsPerDay, startDate) {
   return slots;
 }
 
+function fbCompactText(value, max = 220) {
+  const text = String(value || '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (text.length <= max) return text;
+  return text.slice(0, max).replace(/\s+\S*$/, '').trim() + '...';
+}
+
+function fbCategoryLabel(slug) {
+  return {
+    'cot-vot': 'cốt vợt',
+    'mat-vot': 'mặt vợt',
+    'combo-vot': 'combo vợt',
+    bong: 'bóng',
+    ban: 'bàn',
+    'do-thi-dau': 'đồ thi đấu',
+  }[slug] || slug || 'sản phẩm';
+}
+
+function fbProductFacts(product) {
+  if (!product) return '';
+  const specs = parseJSON(product.specs, {});
+  const details = [
+    `Tên: ${product.name}`,
+    `Nhóm: ${fbCategoryLabel(product.category_slug)}`,
+    product.brand_slug ? `Thương hiệu: ${String(product.brand_slug).toUpperCase()}` : '',
+    product.price ? `Giá niêm yết: ${product.price}` : '',
+    product.condition ? `Tình trạng: ${product.condition}` : '',
+    specs.speed ? `Tốc độ: ${specs.speed}` : '',
+    specs.control ? `Kiểm soát: ${specs.control}` : '',
+    specs.spin ? `Độ xoáy: ${specs.spin}` : '',
+    product.description ? `Mô tả ngắn: ${fbCompactText(product.description, 260)}` : '',
+  ].filter(Boolean);
+  return `Dữ liệu sản phẩm BongBanViet. ${details.join('. ')}.`;
+}
+
+function fbArticleFacts(article) {
+  if (!article) return '';
+  return `Bài kiến thức BongBanViet: ${article.title}. ${fbCompactText(article.excerpt || article.content || '', 320)}`;
+}
+
+function fbComboFallback(index, products) {
+  const blades = products.filter(p => p.category_slug === 'cot-vot');
+  const rubbers = products.filter(p => p.category_slug === 'mat-vot');
+  const blade = blades.length ? blades[index % blades.length] : null;
+  const fh = rubbers.length ? rubbers[(index + 1) % rubbers.length] : null;
+  const bh = rubbers.length ? rubbers[(index + 2) % rubbers.length] : null;
+  if (!blade || !fh) return null;
+  const names = [blade.name, fh.name, bh?.name].filter(Boolean).join(' + ');
+  return {
+    topic: `Gợi ý setup vợt ${names} cho người chơi phong trào`,
+    product: blade,
+    website_link: fbFullUrl(`/san-pham.html?id=${blade.slug}`),
+    image_path: parseJSON(blade.images, [])[0] || '',
+    fact_summary: [
+      'Combo gợi ý tự động từ dữ liệu sản phẩm còn hàng của BongBanViet.',
+      `Cốt: ${blade.name}.`,
+      `FH: ${fh.name}.`,
+      bh ? `BH: ${bh.name}.` : '',
+      'Cần tư vấn lại theo trình độ, lối đánh và ngân sách trước khi chốt setup.',
+    ].filter(Boolean).join(' '),
+  };
+}
+
 function fbSourceBundle(pillar, product = null) {
   const urls = [];
   const add = (name, url, type = 'official') => urls.push({ name, url, type });
@@ -1611,6 +1683,10 @@ function fbSourceBundle(pillar, product = null) {
       add(`${product.brand_slug.toUpperCase()} Official`, FACEBOOK_BRAND_SOURCES[product.brand_slug], 'brand');
     }
     add('ITTF Equipment', 'https://equipment.ittf.com/');
+  } else if (pillar === 'trust') {
+    add('BongBanViet Product Data', product?.slug ? fbFullUrl(`/san-pham.html?id=${product.slug}`) : fbFullUrl('/san-pham.html'), 'internal');
+    add('BongBanViet Return Policy', fbFullUrl('/chinh-sach-doi-tra.html'), 'internal');
+    add('BongBanViet Contact', fbFullUrl('/lien-he.html'), 'internal');
   } else if (pillar === 'news') {
     add('World Table Tennis', 'https://www.worldtabletennis.com/');
     add('Báo Nhân Dân - Bóng bàn quốc gia', 'https://nhandan.vn/chu-de/giai-bong-ban-quoc-gia-bao-nhan-dan-latest-704471.html', 'vietnam');
@@ -1635,17 +1711,35 @@ function fbTopicForSlot(slot, index, products, combos, articles) {
       product,
       website_link: fbFullUrl(`/san-pham.html?id=${product.slug}`),
       image_path: parseJSON(product.images, [])[0] || '',
-      fact_summary: `Sản phẩm trong hệ thống BongBanViet: ${product.name}. Danh mục ${product.category_slug || ''}, thương hiệu ${product.brand_slug || ''}.`,
+      fact_summary: fbProductFacts(product),
     };
   }
 
-  if (pillar === 'combo' && combo) {
+  if (pillar === 'combo') {
+    if (combo) {
+      return {
+        topic: `Gợi ý combo vợt ${combo.name} cho người chơi phong trào`,
+        product: combo,
+        website_link: fbFullUrl(`/san-pham.html?id=${combo.slug}`),
+        image_path: parseJSON(combo.images, [])[0] || '',
+        fact_summary: `Combo nội bộ BongBanViet: ${combo.name}. Cốt: ${combo.blade || 'chưa ghi'}, FH: ${combo.rubber_fh || 'chưa ghi'}, BH: ${combo.rubber_bh || 'chưa ghi'}.`,
+      };
+    }
+    const fallbackCombo = fbComboFallback(index, products);
+    if (fallbackCombo) return fallbackCombo;
+  }
+
+  if (pillar === 'trust') {
     return {
-      topic: `Gợi ý combo vợt ${combo.name} cho người chơi phong trào`,
-      product: combo,
-      website_link: fbFullUrl(`/san-pham.html?id=${combo.slug}`),
-      image_path: parseJSON(combo.images, [])[0] || '',
-      fact_summary: `Combo nội bộ BongBanViet: ${combo.name}. Cốt: ${combo.blade || 'chưa ghi'}, FH: ${combo.rubber_fh || 'chưa ghi'}, BH: ${combo.rubber_bh || 'chưa ghi'}.`,
+      topic: product
+        ? `BongBanViet tư vấn và kiểm tra sản phẩm ${product.name} như thế nào?`
+        : 'Quy trình tư vấn trước khi chốt vợt tại BongBanViet',
+      product,
+      website_link: product?.slug ? fbFullUrl(`/san-pham.html?id=${product.slug}`) : fbFullUrl('/lien-he.html'),
+      image_path: product ? (parseJSON(product.images, [])[0] || '') : '',
+      fact_summary: product
+        ? `${fbProductFacts(product)} Nội dung trust cần nhấn mạnh tư vấn đúng trình độ, hàng chính hãng, thông tin minh bạch, không hứa quá mức.`
+        : 'Nội dung trust cần nhấn mạnh quy trình tư vấn, hàng chính hãng, thông tin minh bạch và hỗ trợ sau mua.',
     };
   }
 
@@ -1656,7 +1750,7 @@ function fbTopicForSlot(slot, index, products, combos, articles) {
     return {
       topic,
       website_link: article?.slug ? fbFullUrl(`/kien-thuc.html#${article.slug}`) : fbFullUrl('/kien-thuc.html'),
-      fact_summary: article?.excerpt || 'Bài kiến thức cần bám nguyên tắc kỹ thuật, tránh khẳng định tuyệt đối nếu chỉ là kinh nghiệm thực chiến.',
+      fact_summary: article ? fbArticleFacts(article) : 'Bài kiến thức cần bám nguyên tắc kỹ thuật, tránh khẳng định tuyệt đối nếu chỉ là kinh nghiệm thực chiến.',
     };
   }
 
@@ -1685,6 +1779,7 @@ function fallbackFacebookContent(post) {
     combo: '#ComboVot #TuVanBongBan #VotBongBan #NguoiMoiChoi',
     news: '#WTT #ITTF #BongBanTheGioi #BongBanVietNam',
     engagement: '#HoiDapBongBan #CongDongBongBan #DamMeBongBan',
+    trust: '#HangChinhHang #TuVanBongBan #BongBanViet',
     promo: '#UuDaiBongBan #ComboVot #HangChinhHang',
   };
   const caption = `${topic}\n\nĐây là chủ đề BongBanViet chọn để anh em dễ hiểu hơn về ${pillar.label.toLowerCase()}.\n\n1. Ưu tiên đúng trình độ trước khi chạy theo thông số.\n2. Kiểm tra nguồn thông tin và trải nghiệm thực tế trước khi quyết định.\n3. Nếu chọn thiết bị, hãy cân bằng giữa kiểm soát, độ xoáy và ngân sách.\n\n💡 Lời khuyên: chọn đúng thường giúp tiến bộ nhanh hơn chọn quá mạnh.\n\nAnh em đang gặp vấn đề gì ở chủ đề này? Comment để BongBanViet tư vấn tiếp.\n\nBóng Bàn Việt - Tư Vấn Chuẩn, Hàng Chính Hãng\nWebsite: bongbanviet.com\nHotline/Zalo: 096.1269.386`;
@@ -1754,22 +1849,22 @@ function parseFacebookAiJson(raw, fallback) {
 
 async function generateFacebookContent(post, provider = 'auto') {
   const fallback = fallbackFacebookContent(post);
-  const plan = shopeeCopyProviderPlan(provider);
+  const plan = facebookProviderPlan(provider);
   if (!plan.length) return { ...fallback, usedFallback: true, providerError: 'Chưa có API key AI.' };
 
   const prompt = buildFacebookPrompt(post);
   const errors = [];
   for (const aiProvider of plan) {
     try {
-      const raw = await callShopeeTextProvider(aiProvider, prompt);
+      const raw = await callFacebookTextProvider(aiProvider, prompt);
       return {
         ...parseFacebookAiJson(raw, fallback),
         usedFallback: false,
         provider: aiProvider,
-        providerLabel: shopeeProviderLabel(aiProvider),
+        providerLabel: facebookProviderLabel(aiProvider),
       };
     } catch (e) {
-      errors.push(`${shopeeProviderLabel(aiProvider)}: ${e.message}`);
+      errors.push(`${facebookProviderLabel(aiProvider)}: ${e.message}`);
     }
   }
   return { ...fallback, usedFallback: true, providerError: errors.join(' | ') };
@@ -1864,6 +1959,64 @@ async function generateFacebookInfographic(post) {
   return '/images/facebook/' + filename;
 }
 
+async function verifyFacebookPageToken() {
+  const cfg = requireFacebookPageRuntime();
+  const res = await facebookGraphRequest(() => axios.get(facebookGraphUrl(cfg, 'me'), {
+    params: { access_token: cfg.pageAccessToken, fields: 'id,name' },
+    timeout: 10000,
+  }));
+  return {
+    valid: true,
+    page: res.data,
+    graphVersion: cfg.graphVersion,
+    pageIdSource: cfg.pageIdSource,
+    pageTokenSource: cfg.pageTokenSource,
+  };
+}
+
+async function scheduleFacebookTextPost(message, scheduledUnixTs) {
+  const cfg = requireFacebookPageRuntime();
+  const res = await facebookGraphRequest(() => axios.post(facebookGraphUrl(cfg, `${cfg.pageId}/feed`), {
+    message,
+    published: false,
+    scheduled_publish_time: scheduledUnixTs,
+    access_token: cfg.pageAccessToken,
+  }, { timeout: 15000 }));
+  return { success: true, postId: res.data?.id || '' };
+}
+
+async function scheduleFacebookPhotoPost(message, scheduledUnixTs, imagePath) {
+  const cfg = requireFacebookPageRuntime();
+  const url = facebookGraphUrl(cfg, `${cfg.pageId}/photos`);
+  if (/^https?:\/\//i.test(imagePath)) {
+    const res = await facebookGraphRequest(() => axios.post(url, {
+      url: imagePath,
+      message,
+      published: false,
+      scheduled_publish_time: scheduledUnixTs,
+      access_token: cfg.pageAccessToken,
+    }, { timeout: 30000 }));
+    return { success: true, postId: res.data?.post_id || res.data?.id || '' };
+  }
+
+  if (!fs.existsSync(imagePath)) {
+    return { success: false, error: `File ảnh không tồn tại: ${imagePath}` };
+  }
+  const form = new FormData();
+  form.append('source', fs.createReadStream(imagePath));
+  form.append('message', message);
+  form.append('published', 'false');
+  form.append('scheduled_publish_time', String(scheduledUnixTs));
+  form.append('access_token', cfg.pageAccessToken);
+  const res = await facebookGraphRequest(() => axios.post(url, form, {
+    headers: form.getHeaders(),
+    timeout: 60000,
+    maxContentLength: Infinity,
+    maxBodyLength: Infinity,
+  }));
+  return { success: true, postId: res.data?.post_id || res.data?.id || '' };
+}
+
 function parseFacebookScheduledTime(value) {
   if (!value) return NaN;
   const raw = String(value).trim().replace('T', ' ');
@@ -1891,12 +2044,11 @@ async function scheduleFacebookPost(row) {
     throw new Error(`Bài trùng với nội dung đã đánh dấu đăng: ${conflict.topic || conflict.post_id || dedupeKey}`);
   }
 
-  const { schedulePost, schedulePostWithPhoto } = require('./fb-agent/src/facebook_client');
   const message = [post.caption.trim(), post.hashtags?.trim()].filter(Boolean).join('\n\n');
   const imagePath = post.image_path ? fbPublicPathToFile(post.image_path) : '';
   const result = imagePath
-    ? await schedulePostWithPhoto(message, unixTs, imagePath)
-    : await schedulePost(message, unixTs);
+    ? await scheduleFacebookPhotoPost(message, unixTs, imagePath)
+    : await scheduleFacebookTextPost(message, unixTs);
 
   if (!result.success) throw new Error(result.error || 'Facebook API không trả về thành công.');
   const postedAt = new Date().toISOString();
@@ -2908,11 +3060,38 @@ app.get('/api/facebook/config', requireAuth, (req, res) => {
 });
 
 app.put('/api/facebook/config', requireAuth, (req, res) => {
-  const { autoSchedulerEnabled, dailyPostCount, defaultDays, autoApproveGenerated } = req.body || {};
+  const {
+    autoSchedulerEnabled,
+    dailyPostCount,
+    defaultDays,
+    autoApproveGenerated,
+    pageId,
+    pageAccessToken,
+    graphVersion,
+    openaiApiKey,
+    geminiApiKey,
+    claudeApiKey,
+  } = req.body || {};
   if (autoSchedulerEnabled !== undefined) setFbSetting('facebook_auto_scheduler_enabled', autoSchedulerEnabled ? '1' : '0');
   if (dailyPostCount !== undefined) setFbSetting('facebook_daily_post_count', Math.max(3, Math.min(6, Number(dailyPostCount) || 5)));
   if (defaultDays !== undefined) setFbSetting('facebook_default_days', Math.max(1, Math.min(30, Number(defaultDays) || 7)));
   if (autoApproveGenerated !== undefined) setFbSetting('facebook_auto_approve_generated', autoApproveGenerated ? '1' : '0');
+  const fileCfg = readFacebookRuntimeConfig();
+  let shouldWriteConfig = false;
+  const setRuntimeValue = (key, value, { secret = false } = {}) => {
+    if (value === undefined) return;
+    const next = String(value || '').trim();
+    if (secret && !next) return;
+    fileCfg[key] = next;
+    shouldWriteConfig = true;
+  };
+  setRuntimeValue('pageId', pageId);
+  setRuntimeValue('pageAccessToken', pageAccessToken, { secret: true });
+  setRuntimeValue('graphVersion', graphVersion);
+  setRuntimeValue('openaiApiKey', openaiApiKey, { secret: true });
+  setRuntimeValue('geminiApiKey', geminiApiKey, { secret: true });
+  setRuntimeValue('claudeApiKey', claudeApiKey, { secret: true });
+  if (shouldWriteConfig) writeFacebookRuntimeConfig(fileCfg);
   res.json(getFacebookConfig());
 });
 
@@ -3260,8 +3439,7 @@ app.post('/api/facebook/posts/:id/mark-posted', requireAuth, (req, res) => {
 
 app.post('/api/facebook/verify-token', requireAuth, async (req, res) => {
   try {
-    const { verifyToken } = require('./fb-agent/src/facebook_client');
-    res.json(await verifyToken());
+    res.json(await verifyFacebookPageToken());
   } catch (e) {
     res.status(400).json({ valid: false, error: e.message });
   }
