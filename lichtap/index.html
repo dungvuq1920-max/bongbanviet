@@ -6,6 +6,7 @@
   <title>Lịch Tập Bóng Bàn</title>
   <link rel="icon" type="image/svg+xml" href="/lichtap/favicon.svg">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     :root {
       --bg:#f0f4f8; --surface:#ffffff; --s2:#f1f5f9; --s3:#e2e8f0;
@@ -142,6 +143,18 @@
     .hist-batch:last-child{margin-bottom:0}
     .hist-batch-hd{color:var(--muted);font-size:11px;margin-bottom:5px;padding:0 2px}
     .hist-chips{display:flex;flex-wrap:wrap;gap:4px}
+
+    /* export button */
+    .btn-export{margin-left:auto;background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.2);color:var(--blue);border-radius:6px;padding:3px 11px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:inherit;transition:background .15s}
+    .btn-export:hover{background:rgba(37,99,235,.16)}
+
+    /* export modal */
+    #export-modal{position:fixed;inset:0;z-index:200;background:rgba(15,23,42,.75);display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;padding:20px}
+    #export-card{background:#fff;border-radius:14px;padding:22px 26px;min-width:300px;max-width:440px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.35);font-family:'Inter',sans-serif;font-size:13px;color:#1e293b}
+    .exp-actions{display:flex;gap:8px}
+    .exp-btn{border:none;border-radius:8px;padding:9px 18px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .15s}
+    .exp-btn:hover{opacity:.85}
+    #export-toast{color:#fff;font-size:13px;opacity:0;transition:opacity .4s;min-height:18px}
 
     /* empty state */
     .empty-state{text-align:center;color:var(--muted);padding:60px 20px;font-size:16px}
@@ -375,6 +388,118 @@ function editSession(sid,sesid){
   sessList.insertAdjacentElement('afterend',row);
 }
 
+function editPayment(sid,pid){
+  const s=D.students.find(s=>s.id===sid);
+  if(!s)return;
+  const p=(s.payments||[]).find(p=>p.id===pid);
+  if(!p)return;
+  const old=document.getElementById('per-'+pid);
+  if(old){old.remove();return;}
+  const payList=document.querySelector('#card-'+sid+' .pay-list');
+  if(!payList)return;
+  const today=new Date().toISOString().slice(0,10);
+  const row=document.createElement('div');
+  row.className='sess-edit-row';
+  row.id='per-'+pid;
+  row.innerHTML=`
+    <input type="date" id="pe-date-${pid}" value="${p.date||today}" style="width:130px">
+    <input type="text" id="pe-amt-${pid}" value="${p.amount}" style="width:90px" placeholder="250k, 2tr…">
+    <button class="btn-save" onclick="saveEditPayment('${sid}','${pid}')">Lưu</button>
+    <button class="btn-del-sess" onclick="delPayment('${sid}','${pid}')">Xóa</button>
+    <button class="btn-cancel" onclick="document.getElementById('per-${pid}').remove()">Hủy</button>`;
+  payList.insertAdjacentElement('afterend',row);
+}
+
+function saveEditPayment(sid,pid){
+  const s=D.students.find(s=>s.id===sid);
+  if(!s)return;
+  const p=(s.payments||[]).find(p=>p.id===pid);
+  if(!p)return;
+  p.date=document.getElementById('pe-date-'+pid).value||p.date;
+  p.amount=document.getElementById('pe-amt-'+pid).value||p.amount;
+  scheduleSave();
+  rerenderCard(sid);
+}
+
+let _exportSid=null;
+
+function exportCard(sid){
+  _exportSid=sid;
+  const s=D.students.find(s=>s.id===sid);
+  if(!s)return;
+  const sessions=[...(s.sessions||[])].sort((a,b)=>a.date.localeCompare(b.date));
+  const {count,total,paid}=calcStats(s);
+  const now=new Date();
+  const dateStr=`${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()}`;
+  const sessRows=sessions.length
+    ? sessions.map(se=>{
+        const[y,m,d]=se.date.split('-');
+        return `<tr>
+          <td style="padding:5px 12px 5px 0;color:#2563eb;font-weight:700;white-space:nowrap">${+d}/${+m}</td>
+          <td style="padding:5px 8px;color:#059669;font-weight:600">${esc(se.type)}</td>
+          <td style="padding:5px 8px;color:#64748b">${esc(se.duration)}</td>
+          <td style="padding:5px 0 5px 8px;color:#d97706;font-weight:600;font-family:monospace;text-align:right">${esc(se.fee)}</td>
+        </tr>`;
+      }).join('')
+    : `<tr><td colspan="4" style="color:#94a3b8;font-style:italic;padding:8px 0">Chưa có buổi học</td></tr>`;
+  const statsHTML=`
+    <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px">
+      <span style="color:#64748b">Tổng buổi</span><span style="font-weight:700">${count} buổi</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:14px">
+      <span style="color:#64748b">Tổng tiền</span><span style="font-weight:700;color:#1e293b">${fmtMoney(total)}đ</span>
+    </div>
+    ${paid>0?`<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px">
+      <span style="color:#64748b">Đã thanh toán</span><span style="font-weight:600;color:#059669">${fmtMoney(paid)}đ</span>
+    </div>`:''}
+    ${total>paid&&paid>0?`<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px">
+      <span style="color:#64748b">Còn lại</span><span style="font-weight:600;color:#dc2626">${fmtMoney(total-paid)}đ</span>
+    </div>`:''}`;
+  document.getElementById('export-card').innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;padding-bottom:12px;margin-bottom:12px;border-bottom:2px solid #e2e8f0">
+      <span style="width:14px;height:14px;border-radius:50%;background:${s.color};flex-shrink:0;display:inline-block"></span>
+      <div>
+        <div style="font-size:17px;font-weight:700;color:#1e293b">${esc(s.name)}</div>
+        <div style="font-size:12px;color:#64748b;margin-top:1px">Sổ buổi tập • ${dateStr}</div>
+      </div>
+    </div>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:12px">${sessRows}</table>
+    <div style="padding-top:10px;border-top:2px solid #e2e8f0">${statsHTML}</div>
+    <div style="margin-top:12px;font-size:11px;color:#94a3b8;text-align:right">🏓 Lịch Tập Bóng Bàn</div>`;
+  document.getElementById('export-modal').style.display='flex';
+}
+
+async function copyExportImg(){
+  const card=document.getElementById('export-card');
+  const canvas=await html2canvas(card,{scale:2,backgroundColor:'#ffffff',useCORS:true});
+  canvas.toBlob(async blob=>{
+    try{
+      await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
+      showExportToast('✓ Đã copy ảnh vào clipboard!');
+    }catch(e){
+      showExportToast('Trình duyệt không hỗ trợ copy ảnh — hãy dùng Tải xuống.');
+    }
+  });
+}
+
+async function downloadExportImg(){
+  const s=D.students.find(s=>s.id===_exportSid);
+  const card=document.getElementById('export-card');
+  const canvas=await html2canvas(card,{scale:2,backgroundColor:'#ffffff',useCORS:true});
+  const link=document.createElement('a');
+  link.download=`lich-tap-${s?s.name.replace(/\s+/g,'-'):'export'}.png`;
+  link.href=canvas.toDataURL('image/png');
+  link.click();
+}
+
+function showExportToast(msg){
+  const t=document.getElementById('export-toast');
+  if(!t)return;
+  t.textContent=msg;
+  t.style.opacity='1';
+  setTimeout(()=>t.style.opacity='0',2800);
+}
+
 function saveEditSess(sid,sesid){
   const s=D.students.find(s=>s.id===sid);
   if(!s)return;
@@ -587,7 +712,7 @@ function buildCard(s){
     ? payments.map(p=>`<span class="pay-chip">
         ${p.date?`<span class="pd">${fmtDate(p.date)}</span>`:''}
         <span class="pa">${esc(p.amount)}</span>
-        <button class="xbtn" onclick="delPayment('${s.id}','${p.id}')">×</button>
+        <button class="edit-btn" onclick="editPayment('${s.id}','${p.id}')" title="Sửa">✎</button>
       </span>`).join('')
     : '<span class="pay-empty">Chưa có thanh toán</span>';
 
@@ -655,6 +780,7 @@ function buildCard(s){
   <div class="stats">
     <span class="st">Tổng: <b id="sttot-${s.id}">${fmtMoney(total)}</b></span>
     ${paid>total&&paid>0?`<span class="st" id="prepaid-${s.id}">Thanh toán trước: <b style="color:var(--warn)">${fmtMoney(paid)}</b></span>`:''}
+    <button class="btn-export" onclick="exportCard('${s.id}')">Xuất</button>
   </div>
 
   <div class="sec-sched">
@@ -711,5 +837,15 @@ function render(){
 
 load();
 </script>
+
+<div id="export-modal" onclick="if(event.target===this)this.style.display='none'">
+  <div id="export-card"></div>
+  <div class="exp-actions">
+    <button class="exp-btn" style="background:#2563eb;color:#fff" onclick="copyExportImg()">📋 Copy ảnh</button>
+    <button class="exp-btn" style="background:#1e293b;color:#fff" onclick="downloadExportImg()">⬇ Tải xuống</button>
+    <button class="exp-btn" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.25)" onclick="document.getElementById('export-modal').style.display='none'">Đóng</button>
+  </div>
+  <div id="export-toast"></div>
+</div>
 </body>
 </html>
