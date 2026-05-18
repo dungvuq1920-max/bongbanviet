@@ -245,7 +245,7 @@ function sortSched(arr){return[...arr].sort((a,b)=>DAYS.indexOf(a.day)-DAYS.inde
 function calcStats(s){
   const total=(s.sessions||[]).reduce((acc,se)=>acc+parseFee(se.fee),0);
   const pmts=s.payments||[];
-  const paid=pmts.length>0
+  const paid=s.payments!==undefined
     ? pmts.reduce((acc,p)=>acc+parseFee(p.amount),0)
     : parseFee(s.paidAmount);
   return{count:(s.sessions||[]).length,total,paid,owed:Math.max(0,total-paid)};
