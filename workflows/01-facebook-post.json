@@ -1,0 +1,162 @@
+{
+  "name": "01_BBV_FACEBOOK_POST_AUTOMATION",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "01-facebook-manual",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-1200, -180]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * *"
+            }
+          ]
+        }
+      },
+      "id": "01-facebook-cron",
+      "name": "Cron Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-1200, 0]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bbv/facebook-post",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "01-facebook-webhook",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-1200, 180]
+    },
+    {
+      "parameters": {
+        "url": "={{$json.source_url || $env.SOURCE_PRODUCT_API_URL}}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "source_id",
+              "value": "={{$json.source_id || ''}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "01-facebook-fetch",
+      "name": "Fetch Source Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-940, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\nconst errors = [];\nfor (const field of ['title', 'description', 'source_id']) {\n  if (!data[field]) errors.push(`${field} is required`);\n}\nif (data.price !== undefined && Number(data.price) <= 0) errors.push('price must be positive when provided');\nif (errors.length) throw new Error(`Invalid Facebook source data: ${errors.join(', ')}`);\nreturn [{ json: data }];"
+      },
+      "id": "01-facebook-validate",
+      "name": "Validate Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-680, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\nconst price = data.price ? `Gia tham khao: ${Number(data.price).toLocaleString('vi-VN')} VND` : '';\nconst message = [\n  `Ban dang tim ${data.title}?`,\n  '',\n  data.description,\n  '',\n  'Diem dang chu y:',\n  data.category ? `- Phu hop nhom: ${data.category}` : '',\n  price ? `- ${price}` : '',\n  '- Tu van theo trinh do, ngan sach va loi choi.',\n  '',\n  'Nhan tin de BongBanViet tu van setup phu hop.',\n  data.product_url || '',\n  '',\n  '#BongBanViet #BongBan #TableTennis #TuVanBongBan'\n].filter(Boolean).join('\\n');\nreturn [{ json: { ...data, facebook_message: message } }];"
+      },
+      "id": "01-facebook-generate",
+      "name": "Generate Facebook Content",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-420, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\n// TODO: Replace with image generation/CDN pipeline if needed.\nreturn [{ json: { ...data, prepared_image_url: data.image_url || '' } }];"
+      },
+      "id": "01-facebook-image",
+      "name": "Prepare Image",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-160, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{'https://graph.facebook.com/' + ($env.FACEBOOK_GRAPH_VERSION || 'v19.0') + '/' + $env.FACEBOOK_PAGE_ID + ($json.prepared_image_url ? '/photos' : '/feed')}}",
+        "sendBody": true,
+        "contentType": "json",
+        "jsonBody": "={{$json.prepared_image_url ? { url: $json.prepared_image_url, message: $json.facebook_message, access_token: $env.FACEBOOK_PAGE_ACCESS_TOKEN } : { message: $json.facebook_message, access_token: $env.FACEBOOK_PAGE_ACCESS_TOKEN }}}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "01-facebook-publish",
+      "name": "Publish to Facebook Page via Meta Graph API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [100, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = $input.first().json;\n// TODO: Persist result to internal DB/API if SOURCE_RESULT_WEBHOOK_URL is configured.\nreturn [{ json: { channel: 'facebook', ok: true, result, saved_at: new Date().toISOString() } }];"
+      },
+      "id": "01-facebook-save",
+      "name": "Save Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [360, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "// TODO: Configure this workflow as the Error Workflow in n8n settings, or route failed executions here via a dedicated error workflow.\nreturn [{ json: { error_handler: 'configured-placeholder', time: new Date().toISOString() } }];"
+      },
+      "id": "01-facebook-error",
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [360, 220]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [[{ "node": "Fetch Source Data", "type": "main", "index": 0 }]]
+    },
+    "Cron Trigger": {
+      "main": [[{ "node": "Fetch Source Data", "type": "main", "index": 0 }]]
+    },
+    "Webhook Trigger": {
+      "main": [[{ "node": "Fetch Source Data", "type": "main", "index": 0 }]]
+    },
+    "Fetch Source Data": {
+      "main": [[{ "node": "Validate Data", "type": "main", "index": 0 }]]
+    },
+    "Validate Data": {
+      "main": [[{ "node": "Generate Facebook Content", "type": "main", "index": 0 }]]
+    },
+    "Generate Facebook Content": {
+      "main": [[{ "node": "Prepare Image", "type": "main", "index": 0 }]]
+    },
+    "Prepare Image": {
+      "main": [[{ "node": "Publish to Facebook Page via Meta Graph API", "type": "main", "index": 0 }]]
+    },
+    "Publish to Facebook Page via Meta Graph API": {
+      "main": [[{ "node": "Save Result", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
+

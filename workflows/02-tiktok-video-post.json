@@ -1,0 +1,161 @@
+{
+  "name": "02_BBV_TIKTOK_VIDEO_POST_AUTOMATION",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "02-tiktok-manual",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-1200, -180]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 9 * * *"
+            }
+          ]
+        }
+      },
+      "id": "02-tiktok-cron",
+      "name": "Cron Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-1200, 0]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bbv/tiktok-video-post",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "02-tiktok-webhook",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-1200, 180]
+    },
+    {
+      "parameters": {
+        "url": "={{$json.source_url || $env.SOURCE_VIDEO_API_URL}}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "source_id",
+              "value": "={{$json.source_id || ''}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "02-tiktok-fetch",
+      "name": "Fetch Video",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-940, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\nconst errors = [];\nif (!data.video_url) errors.push('video_url is required');\nif (!data.title) errors.push('title is required');\nif (!data.source_id) errors.push('source_id is required');\nif (data.video_url && !String(data.video_url).startsWith('http')) errors.push('video_url must be absolute');\nif (errors.length) throw new Error(`Invalid video data: ${errors.join(', ')}`);\nreturn [{ json: data }];"
+      },
+      "id": "02-tiktok-validate",
+      "name": "Validate Video",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-680, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\nconst tags = Array.isArray(data.hashtags) ? data.hashtags.map(t => String(t).startsWith('#') ? t : `#${t}`).join(' ') : '#BongBanViet #TableTennis #BongBan';\nconst caption = [\n  data.product_name ? `${data.product_name}: co gi dang chu y?` : data.title,\n  data.description || 'Goi y nhanh cho nguoi choi bong ban phong trao.',\n  'Xem het video va nhan tin neu ban can tu van setup.',\n  tags\n].join('\\n');\nreturn [{ json: { ...data, caption } }];"
+      },
+      "id": "02-tiktok-caption",
+      "name": "Generate Caption",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-420, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://open.tiktokapis.com/v2/post/publish/video/init/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.TIKTOK_ACCESS_TOKEN}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json; charset=UTF-8"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "jsonBody": "={{ { post_info: { title: $json.caption, privacy_level: 'PUBLIC_TO_EVERYONE', disable_duet: false, disable_comment: false, disable_stitch: false }, source_info: { source: 'PULL_FROM_URL', video_url: $json.video_url } } }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "02-tiktok-upload",
+      "name": "Upload/Post TikTok via TikTok Content Posting API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-160, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = $input.first().json;\n// TODO: Persist publish_id/status to internal source system.\nreturn [{ json: { channel: 'tiktok', ok: true, result, saved_at: new Date().toISOString() } }];"
+      },
+      "id": "02-tiktok-save",
+      "name": "Save Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [100, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "// TODO: Configure as a dedicated n8n error workflow for failed TikTok executions.\nreturn [{ json: { error_handler: 'configured-placeholder', time: new Date().toISOString() } }];"
+      },
+      "id": "02-tiktok-error",
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [100, 220]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [[{ "node": "Fetch Video", "type": "main", "index": 0 }]]
+    },
+    "Cron Trigger": {
+      "main": [[{ "node": "Fetch Video", "type": "main", "index": 0 }]]
+    },
+    "Webhook Trigger": {
+      "main": [[{ "node": "Fetch Video", "type": "main", "index": 0 }]]
+    },
+    "Fetch Video": {
+      "main": [[{ "node": "Validate Video", "type": "main", "index": 0 }]]
+    },
+    "Validate Video": {
+      "main": [[{ "node": "Generate Caption", "type": "main", "index": 0 }]]
+    },
+    "Generate Caption": {
+      "main": [[{ "node": "Upload/Post TikTok via TikTok Content Posting API", "type": "main", "index": 0 }]]
+    },
+    "Upload/Post TikTok via TikTok Content Posting API": {
+      "main": [[{ "node": "Save Result", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

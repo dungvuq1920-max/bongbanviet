@@ -1,0 +1,163 @@
+{
+  "name": "03_BBV_SHOPEE_PRODUCT_SYNC",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "03-shopee-manual",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-1400, -180]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 2 * * *"
+            }
+          ]
+        }
+      },
+      "id": "03-shopee-cron",
+      "name": "Cron Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-1400, 0]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bbv/shopee-product-sync",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "03-shopee-webhook",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-1400, 180]
+    },
+    {
+      "parameters": {
+        "url": "={{$json.source_url || $env.SOURCE_PRODUCT_API_URL}}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "sku",
+              "value": "={{$json.sku || ''}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "03-shopee-fetch",
+      "name": "Fetch Product Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-1140, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\nconst product = {\n  name: String(data.name || '').trim().slice(0, 120),\n  description: String(data.description || '').trim(),\n  price: Number(data.price || 0),\n  stock: Math.max(0, Number(data.stock || 0)),\n  sku: String(data.sku || '').trim(),\n  images: Array.isArray(data.images) ? data.images.filter(Boolean) : [],\n  category: String(data.category || '').trim(),\n  attributes: data.attributes || {},\n  weight: data.weight ? Number(data.weight) : undefined,\n  dimensions: data.dimensions || {}\n};\nreturn [{ json: product }];"
+      },
+      "id": "03-shopee-normalize",
+      "name": "Normalize Product",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-880, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const product = $input.first().json;\n// TODO: Call Shopee Open Platform category/attribute endpoints and map exact category_id + attribute list.\nreturn [{ json: { ...product, shopee_category_id: product.shopee_category_id || product.category_id || 0, shopee_attributes: product.attributes || {} } }];"
+      },
+      "id": "03-shopee-map",
+      "name": "Get/Map Shopee Category Attributes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-620, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\nconst errors = [];\nif (!data.name) errors.push('name is required');\nif (!data.description) errors.push('description is required');\nif (Number(data.price) <= 0) errors.push('price must be positive');\nif (Number(data.stock) < 0) errors.push('stock must be zero or positive');\nif (!data.sku) errors.push('sku is required');\nif (!Array.isArray(data.images) || data.images.length === 0) errors.push('images are required');\nif (!data.category) errors.push('category is required');\nif (errors.length) throw new Error(`Invalid Shopee product: ${errors.join(', ')}`);\nreturn [{ json: data }];"
+      },
+      "id": "03-shopee-validate",
+      "name": "Validate Product",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-360, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{($env.SHOPEE_API_BASE_URL || 'https://partner.shopeemobile.com') + '/api/v2/product/add_item'}}",
+        "sendBody": true,
+        "contentType": "json",
+        "jsonBody": "={{ { item_name: $json.name, description: $json.description, original_price: $json.price, stock: $json.stock, item_sku: $json.sku, category_id: $json.shopee_category_id } }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "03-shopee-publish",
+      "name": "Create/Update Shopee Listing via Shopee Open Platform API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-100, 0],
+      "notes": "TODO: Add Shopee Open Platform authentication query params/signature before activating."
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = $input.first().json;\n// TODO: Persist Shopee item_id/update status to source system.\nreturn [{ json: { channel: 'shopee', ok: true, result, saved_at: new Date().toISOString() } }];"
+      },
+      "id": "03-shopee-save",
+      "name": "Save Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [160, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "// TODO: Configure as a dedicated n8n error workflow for failed Shopee executions.\nreturn [{ json: { error_handler: 'configured-placeholder', time: new Date().toISOString() } }];"
+      },
+      "id": "03-shopee-error",
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [160, 220]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [[{ "node": "Fetch Product Data", "type": "main", "index": 0 }]]
+    },
+    "Cron Trigger": {
+      "main": [[{ "node": "Fetch Product Data", "type": "main", "index": 0 }]]
+    },
+    "Webhook Trigger": {
+      "main": [[{ "node": "Fetch Product Data", "type": "main", "index": 0 }]]
+    },
+    "Fetch Product Data": {
+      "main": [[{ "node": "Normalize Product", "type": "main", "index": 0 }]]
+    },
+    "Normalize Product": {
+      "main": [[{ "node": "Get/Map Shopee Category Attributes", "type": "main", "index": 0 }]]
+    },
+    "Get/Map Shopee Category Attributes": {
+      "main": [[{ "node": "Validate Product", "type": "main", "index": 0 }]]
+    },
+    "Validate Product": {
+      "main": [[{ "node": "Create/Update Shopee Listing via Shopee Open Platform API", "type": "main", "index": 0 }]]
+    },
+    "Create/Update Shopee Listing via Shopee Open Platform API": {
+      "main": [[{ "node": "Save Result", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
+

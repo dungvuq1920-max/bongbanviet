@@ -1,0 +1,188 @@
+{
+  "name": "04_BBV_TIKTOK_SHOP_PRODUCT_CONTENT",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "04-tts-manual",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-1400, -180]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 3 * * *"
+            }
+          ]
+        }
+      },
+      "id": "04-tts-cron",
+      "name": "Cron Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-1400, 0]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bbv/tiktok-shop-post",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "04-tts-webhook",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-1400, 180]
+    },
+    {
+      "parameters": {
+        "url": "={{$json.product_source_url || $env.SOURCE_PRODUCT_API_URL}}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "source_id",
+              "value": "={{$json.source_id || ''}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "04-tts-fetch-product",
+      "name": "Fetch Product Info",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-1140, -80]
+    },
+    {
+      "parameters": {
+        "url": "={{$json.video_source_url || $env.SOURCE_VIDEO_API_URL}}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "source_id",
+              "value": "={{$json.source_id || ''}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "04-tts-fetch-video",
+      "name": "Fetch/Prepare Video",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-1140, 120]
+    },
+    {
+      "parameters": {
+        "jsCode": "const product = $('Fetch Product Info').first().json;\nconst video = $('Fetch/Prepare Video').first().json;\nconst name = product.product_name || product.name || video.product_name || video.title;\nconst content = [\n  `${name} - goi y nhanh cho nguoi choi bong ban`,\n  product.description || video.description || '',\n  product.price ? `Gia: ${Number(product.price).toLocaleString('vi-VN')} VND` : '',\n  'Dat hang tren TikTok Shop va nhan tu van setup phu hop.',\n  '#BongBanViet #TikTokShop #BongBan'\n].filter(Boolean).join('\\n');\nreturn [{ json: { product, video, tiktok_shop_content: content } }];"
+      },
+      "id": "04-tts-content",
+      "name": "Generate TikTok Shop Content",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-840, 20]
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst p = input.product || {};\nconst v = input.video || {};\nconst mapped = {\n  product_name: p.product_name || p.name || v.product_name || v.title,\n  description: input.tiktok_shop_content,\n  price: Number(p.price || 0),\n  stock: Number(p.stock || 0),\n  images: Array.isArray(p.images) ? p.images : [],\n  video_url: v.video_url || p.video_url || '',\n  sku: p.sku || p.source_id || v.source_id,\n  category: p.category || '',\n  source_id: p.source_id || v.source_id || ''\n};\nreturn [{ json: mapped }];"
+      },
+      "id": "04-tts-map",
+      "name": "Map Product Fields",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-580, 20]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{($env.TIKTOK_SHOP_API_BASE_URL || 'https://open-api.tiktokglobalshop.com') + '/product/202309/products'}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-tts-access-token",
+              "value": "={{$env.TIKTOK_SHOP_ACCESS_TOKEN}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "jsonBody": "={{ { save_mode: 'LISTING', product_name: $json.product_name, description: $json.description, skus: [{ seller_sku: $json.sku, price: { amount: String($json.price), currency: 'VND' }, inventory: [{ quantity: $json.stock }] }] } }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "04-tts-publish",
+      "name": "Create/Update Product or Content via TikTok Shop official API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-320, 20],
+      "notes": "TODO: Add TikTok Shop official signature, exact category mapping, image upload IDs, and product update-vs-create branching."
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = $input.first().json;\n// TODO: Persist TikTok Shop product/content IDs to source system.\nreturn [{ json: { channel: 'tiktok-shop', ok: true, result, saved_at: new Date().toISOString() } }];"
+      },
+      "id": "04-tts-save",
+      "name": "Save Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-60, 20]
+    },
+    {
+      "parameters": {
+        "jsCode": "// TODO: Configure as a dedicated n8n error workflow for failed TikTok Shop executions.\nreturn [{ json: { error_handler: 'configured-placeholder', time: new Date().toISOString() } }];"
+      },
+      "id": "04-tts-error",
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-60, 240]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [[{ "node": "Fetch Product Info", "type": "main", "index": 0 }, { "node": "Fetch/Prepare Video", "type": "main", "index": 0 }]]
+    },
+    "Cron Trigger": {
+      "main": [[{ "node": "Fetch Product Info", "type": "main", "index": 0 }, { "node": "Fetch/Prepare Video", "type": "main", "index": 0 }]]
+    },
+    "Webhook Trigger": {
+      "main": [[{ "node": "Fetch Product Info", "type": "main", "index": 0 }, { "node": "Fetch/Prepare Video", "type": "main", "index": 0 }]]
+    },
+    "Fetch Product Info": {
+      "main": [[{ "node": "Generate TikTok Shop Content", "type": "main", "index": 0 }]]
+    },
+    "Fetch/Prepare Video": {
+      "main": [[{ "node": "Generate TikTok Shop Content", "type": "main", "index": 0 }]]
+    },
+    "Generate TikTok Shop Content": {
+      "main": [[{ "node": "Map Product Fields", "type": "main", "index": 0 }]]
+    },
+    "Map Product Fields": {
+      "main": [[{ "node": "Create/Update Product or Content via TikTok Shop official API", "type": "main", "index": 0 }]]
+    },
+    "Create/Update Product or Content via TikTok Shop official API": {
+      "main": [[{ "node": "Save Result", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
+
