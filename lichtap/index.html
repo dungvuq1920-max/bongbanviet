@@ -543,12 +543,16 @@ function buildCard(s){
   // history (collapsed, only if has data)
   const histHTML=hist.length?`
     <button class="hist-toggle" onclick="toggleHistory('${s.id}')">
-      ▸ Lịch sử: ${hist.reduce((a,b)=>a+b.sessions.length,0)} buổi · ${fmtMoney(hist.reduce((a,b)=>a+b.sessions.reduce((acc,se)=>acc+parseFee(se.fee),0),0))}đ · ${hist.length} lần reset
+      ▸ Lịch sử
     </button>
     <div class="hist-body" id="hist-${s.id}" style="display:none">
-      ${hist.slice().reverse().map(batch=>`
+      ${hist.slice().reverse().map(batch=>{
+        const bTotal=batch.sessions.reduce((acc,se)=>acc+parseFee(se.fee),0);
+        const [by,bm,bd]=batch.at.split('-');
+        const bDate=`${+bd}-${+bm}-${by}`;
+        return `
         <div class="hist-batch">
-          <div class="hist-batch-hd">Reset ngày ${batch.at} — ${batch.sessions.length} buổi${batch.payments&&batch.payments.length?' · Đã trả: '+batch.payments.map(p=>p.amount).join(', '):''}</div>
+          <div class="hist-batch-hd">${batch.sessions.length} buổi &nbsp;|&nbsp; ${fmtMoney(bTotal)}đ &nbsp;|&nbsp; ${bDate}</div>
           <div class="hist-chips">${batch.sessions.map(se=>`
             <span class="sess-chip">
               <span class="top">
@@ -559,7 +563,7 @@ function buildCard(s){
               <span class="bot"><span class="fee">${esc(se.fee)}</span></span>
             </span>`).join('')}
           </div>
-        </div>`).join('')}
+        </div>`;}).join('')}
     </div>`:'';
 
   return `<div class="sc" id="card-${s.id}">
