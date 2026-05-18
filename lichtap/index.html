@@ -1,14 +1,488 @@
 <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/lichtap/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Lịch Tập Bóng Bàn</title>
-    <script type="module" crossorigin src="/lichtap/assets/index-D0z1bh1B.js"></script>
-    <link rel="stylesheet" crossorigin href="/lichtap/assets/index-DO4zOu8y.css">
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lịch Tập Bóng Bàn</title>
+  <link rel="icon" type="image/svg+xml" href="/lichtap/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#0b1120; --surface:#111827; --s2:#1a2535; --s3:#212f42;
+      --text:#e2e8f0; --muted:#64748b; --line:rgba(255,255,255,.08);
+      --blue:#3b82f6; --blue2:#60a5fa; --green:#10b981; --warn:#f59e0b; --red:#ef4444;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
+
+    /* ── Header ── */
+    .app-header{background:var(--surface);border-bottom:1px solid var(--line);padding:13px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20}
+    .app-title{font-size:18px;font-weight:700;background:linear-gradient(90deg,#60a5fa,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:flex;align-items:center;gap:8px}
+    .header-right{display:flex;align-items:center;gap:10px}
+    #save-status{font-size:12px;color:var(--muted);min-width:70px;text-align:right}
+    #save-status.saving{color:var(--warn)}
+    #save-status.saved{color:var(--green)}
+    #save-status.err{color:var(--red)}
+    .btn-primary{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s}
+    .btn-primary:hover{background:var(--blue2)}
+
+    /* ── Grid ── */
+    .grid{max-width:1440px;margin:0 auto;padding:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(560px,1fr));gap:20px;align-items:start}
+
+    /* ── Student card ── */
+    .sc{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+
+    /* card header */
+    .sc-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--line);gap:8px}
+    .sc-title{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+    .cdot{width:13px;height:13px;border-radius:50%;flex-shrink:0;cursor:pointer;transition:transform .15s}
+    .cdot:hover{transform:scale(1.3)}
+    .cpicker{display:none}
+    .sc-name{font-size:15px;font-weight:700;outline:none;border-radius:4px;padding:2px 5px;flex:1;background:transparent}
+    .sc-name:focus{background:var(--s2)}
+    .sc-del{background:none;border:none;cursor:pointer;color:var(--muted);padding:4px 6px;border-radius:6px;font-size:14px;line-height:1;transition:all .15s}
+    .sc-del:hover{color:var(--red);background:rgba(239,68,68,.1)}
+
+    /* meta row */
+    .sc-meta{display:flex;gap:8px;padding:9px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+    .mf{display:flex;align-items:center;gap:5px;flex:1;min-width:160px}
+    .mf label{color:var(--muted);font-size:11px;white-space:nowrap}
+    .mf input{flex:1;background:var(--s2);border:1px solid var(--line);color:var(--text);border-radius:6px;padding:4px 7px;font-size:13px;font-family:inherit;min-width:0}
+    .mf input:focus{outline:none;border-color:var(--blue)}
+
+    /* section heading */
+    .sec{display:flex;align-items:center;justify-content:space-between;padding:9px 14px 5px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-top:1px solid var(--line)}
+    .sec-badge{font-size:11px;color:var(--blue);background:rgba(59,130,246,.12);border-radius:999px;padding:1px 7px}
+
+    /* sessions table */
+    .tbl-wrap{overflow-x:auto}
+    .sess-tbl{width:100%;border-collapse:separate;border-spacing:0 2px;font-size:13px;padding:0 6px}
+    .sess-tbl thead th{color:var(--muted);font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.04em;padding:5px 7px 2px;text-align:left;white-space:nowrap}
+    .sess-tbl tbody td{padding:6px 7px;background:rgba(255,255,255,.025)}
+    .sess-tbl tbody tr:hover td{background:rgba(255,255,255,.06)}
+    .sess-tbl tbody td:first-child{border-radius:5px 0 0 5px}
+    .sess-tbl tbody td:last-child{border-radius:0 5px 5px 0;text-align:center}
+    td.d{color:var(--blue);font-weight:600;white-space:nowrap}
+    td.t span{display:inline-block;background:rgba(16,185,129,.15);color:var(--green);border-radius:999px;padding:1px 6px;font-size:12px;font-weight:600}
+    td.fee{font-family:monospace;color:var(--warn)}
+    td.nt{color:var(--muted);font-size:12px;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .erow td{text-align:center;color:var(--muted);padding:12px;font-style:italic}
+
+    /* del button */
+    .xbtn{background:none;border:none;cursor:pointer;color:var(--muted);padding:2px 4px;border-radius:4px;font-size:14px;line-height:1;transition:all .12s}
+    .xbtn:hover{color:var(--red);background:rgba(239,68,68,.1)}
+
+    /* add forms */
+    .af{display:flex;gap:5px;padding:7px 10px;flex-wrap:wrap;align-items:center;border-top:1px solid var(--line)}
+    .af select,.af input[type=text],.af input[type=date],.af input[type=time]{background:var(--s2);border:1px solid var(--line);color:var(--text);border-radius:6px;padding:4px 7px;font-size:13px;font-family:inherit}
+    .af select:focus,.af input:focus{outline:none;border-color:var(--blue)}
+    .w-date{width:130px} .w-type{width:68px} .w-dur{width:68px} .w-fee{width:68px} .w-note{flex:1;min-width:70px} .w-time{width:88px} .w-day{width:90px} .w-dmin{width:72px}
+    .af .btn-add{background:var(--blue);color:#fff;border:none;border-radius:6px;padding:4px 11px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:inherit;transition:background .15s}
+    .af .btn-add:hover{background:var(--blue2)}
+
+    /* stats row */
+    .stats{display:flex;gap:16px;padding:9px 14px;border-top:1px solid var(--line);background:rgba(255,255,255,.02);flex-wrap:wrap}
+    .st{font-size:13px;color:var(--muted)}
+    .st b{color:var(--text)}
+    .st.ow b{color:var(--red)}
+    .st .pv{color:var(--green)}
+
+    /* schedule pills */
+    .scheds{display:flex;flex-wrap:wrap;gap:6px;padding:8px 14px 6px}
+    .spill{display:inline-flex;align-items:center;gap:4px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.22);border-radius:999px;padding:3px 7px 3px 9px;font-size:13px}
+    .spill .sd{color:var(--blue);font-weight:600;min-width:50px}
+    .spill .st2{color:var(--text)}
+    .spill .sdur{color:var(--muted);font-size:11px;margin-left:1px}
+    .spill .sxbtn{background:none;border:none;cursor:pointer;color:var(--muted);padding:0 2px;font-size:15px;line-height:1;transition:color .1s;margin-left:2px}
+    .spill .sxbtn:hover{color:var(--red)}
+    .no-sched{color:var(--muted);font-size:13px;padding:2px 0;font-style:italic}
+
+    /* conflict warning */
+    .conflict-msg{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:6px;padding:6px 10px;font-size:12px;color:var(--warn);margin:0 10px 6px;display:none;flex-wrap:wrap;align-items:center;gap:6px}
+
+    /* empty state */
+    .empty-state{grid-column:1/-1;text-align:center;color:var(--muted);padding:60px 20px;font-size:16px}
+
+    @media(max-width:620px){
+      .grid{padding:12px;gap:12px;grid-template-columns:1fr}
+      .app-header{padding:11px 14px}
+    }
+  </style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="app-title">🏓 Lịch Tập Bóng Bàn</div>
+  <div class="header-right">
+    <span id="save-status"></span>
+    <button class="btn-primary" onclick="addStudent()">+ Thêm học viên</button>
+  </div>
+</header>
+
+<div class="grid" id="grid"></div>
+
+<script>
+const DAYS=['T2','T3','T4','T5','T6','T7','CN'];
+const DL={T2:'Thứ 2',T3:'Thứ 3',T4:'Thứ 4',T5:'Thứ 5',T6:'Thứ 6',T7:'Thứ 7',CN:'Chủ Nhật'};
+const COLORS=['#3b82f6','#10b981','#f59e0b','#ef4444','#a78bfa','#f472b6','#06b6d4','#84cc16','#fb923c','#e879f9'];
+
+let D={students:[]};
+let _saveT=null;
+
+// ── Load / Save ──────────────────────────────────────────────────────────────
+
+async function load(){
+  try{
+    const r=await fetch('/api/lichtap');
+    D=await r.json();
+    if(!Array.isArray(D.students)) D.students=[];
+  }catch(e){ D={students:[]}; }
+  render();
+}
+
+function scheduleSave(){
+  clearTimeout(_saveT);
+  ss('saving');
+  _saveT=setTimeout(async()=>{
+    try{
+      await fetch('/api/lichtap',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(D)});
+      ss('saved');
+    }catch(e){ ss('err'); }
+  },700);
+}
+
+function ss(s){
+  const el=document.getElementById('save-status');
+  if(!el)return;
+  el.className=s;
+  el.textContent=s==='saving'?'Đang lưu…':s==='saved'?'✓ Đã lưu':'⚠ Lỗi lưu';
+  if(s==='saved') setTimeout(()=>{if(el)el.textContent='';},2500);
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function gid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5)}
+
+function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+function tmin(t){const[h,m]=(t||'0:0').split(':').map(Number);return h*60+(m||0)}
+
+function parseFee(s){
+  s=String(s||'').toLowerCase().trim();
+  if(!s||s==='0')return 0;
+  if(s.endsWith('tr'))return parseFloat(s)*1e6;
+  if(s.endsWith('k'))return parseFloat(s)*1e3;
+  return parseFloat(s)||0;
+}
+
+function fmtMoney(n){
+  if(!n)return '0';
+  if(n>=1e6){const v=n/1e6;return (v%1===0?v:v.toFixed(1))+'tr';}
+  if(n>=1e3)return Math.round(n/1e3)+'k';
+  return n+'';
+}
+
+function fmtDur(m){
+  if(m===30)return '30p'; if(m===45)return '45p'; if(m===60)return '1h';
+  if(m===90)return '1.5h'; if(m===120)return '2h'; return m+'p';
+}
+
+function fmtDate(d){
+  if(!d)return '';
+  const[y,mo,dy]=d.split('-');
+  return dy+'/'+mo;
+}
+
+function sortSched(arr){return[...arr].sort((a,b)=>DAYS.indexOf(a.day)-DAYS.indexOf(b.day))}
+
+function calcStats(s){
+  const total=(s.sessions||[]).reduce((acc,se)=>acc+parseFee(se.fee),0);
+  const paid=parseFee(s.paidAmount);
+  return{count:(s.sessions||[]).length,total,paid,owed:Math.max(0,total-paid)};
+}
+
+// ── Conflict check ────────────────────────────────────────────────────────────
+
+function schedsConflict(a,b){
+  if(a.day!==b.day)return false;
+  const as=tmin(a.startTime),ae=as+(+a.duration||60);
+  const bs=tmin(b.startTime),be=bs+(+b.duration||60);
+  return as<be&&bs<ae;
+}
+
+function findConflicts(sid,ns){
+  const res=[];
+  for(const s of D.students){
+    if(s.id===sid)continue;
+    for(const f of(s.fixedSchedules||[])){
+      if(schedsConflict(ns,f)) res.push({name:s.name,f});
+    }
+  }
+  return res;
+}
+
+// ── Student mutations ─────────────────────────────────────────────────────────
+
+function addStudent(){
+  const name=prompt('Tên học viên:','');
+  if(!name||!name.trim())return;
+  D.students.push({
+    id:gid(),name:name.trim(),note:'',paidAmount:'0',
+    color:COLORS[D.students.length%COLORS.length],
+    fixedSchedules:[],sessions:[]
+  });
+  scheduleSave();render();
+}
+
+function deleteStudent(id){
+  const s=D.students.find(s=>s.id===id);
+  if(!s||!confirm('Xóa học viên "'+s.name+'"?'))return;
+  D.students=D.students.filter(s=>s.id!==id);
+  scheduleSave();render();
+}
+
+function updateField(id,field,val){
+  const s=D.students.find(s=>s.id===id);
+  if(!s)return;
+  s[field]=val;
+  if(field==='paidAmount'||field==='sessions') refreshStats(id);
+  scheduleSave();
+}
+
+function updateColor(id,color){
+  const s=D.students.find(s=>s.id===id);
+  if(!s)return;
+  s.color=color;
+  const dot=document.getElementById('dot-'+id);
+  if(dot)dot.style.background=color;
+  scheduleSave();
+}
+
+// ── Session mutations ─────────────────────────────────────────────────────────
+
+function addSession(sid){
+  const s=D.students.find(s=>s.id===sid);
+  if(!s)return;
+  const date=V('ns-date-'+sid);
+  const type=V('ns-type-'+sid);
+  const dur=V('ns-dur-'+sid);
+  const fee=V('ns-fee-'+sid);
+  const note=V('ns-note-'+sid);
+  if(!date){alert('Chọn ngày.');return;}
+  s.sessions.push({id:gid(),date,type,duration:dur,fee,note});
+  s.sessions.sort((a,b)=>b.date.localeCompare(a.date));
+  scheduleSave();
+  rerenderCard(sid);
+}
+
+function delSession(sid,sesid){
+  const s=D.students.find(s=>s.id===sid);
+  if(!s)return;
+  s.sessions=s.sessions.filter(se=>se.id!==sesid);
+  scheduleSave();
+  rerenderCard(sid);
+}
+
+// ── Schedule mutations ────────────────────────────────────────────────────────
+
+function addSched(sid){
+  const s=D.students.find(s=>s.id===sid);
+  if(!s)return;
+  const day=V('nf-day-'+sid);
+  const time=V('nf-time-'+sid);
+  const dur=parseInt(V('nf-dur-'+sid));
+  if(!time){alert('Nhập giờ bắt đầu.');return;}
+  const ns={id:gid(),day,startTime:time,duration:dur};
+  const conflicts=findConflicts(sid,ns);
+  if(conflicts.length){
+    const msgs=conflicts.map(c=>c.name+': '+DL[c.f.day]+' '+c.f.startTime+' ('+fmtDur(c.f.duration)+')');
+    const warn=document.getElementById('cw-'+sid);
+    const msgEl=document.getElementById('cw-msg-'+sid);
+    if(warn){
+      if(msgEl) msgEl.innerHTML='⚠ Trùng lịch với: <b>'+msgs.join(', ')+'</b>.';
+      warn.style.display='flex';
+      warn.dataset.pending=JSON.stringify(ns);
+      return;
+    }
+  }
+  commitSched(sid,ns);
+}
+
+function addSchedConfirm(sid){
+  const warn=document.getElementById('cw-'+sid);
+  if(!warn||!warn.dataset.pending)return;
+  const ns=JSON.parse(warn.dataset.pending);
+  warn.style.display='none';
+  delete warn.dataset.pending;
+  commitSched(sid,ns);
+}
+
+function commitSched(sid,ns){
+  const s=D.students.find(s=>s.id===sid);
+  if(!s)return;
+  s.fixedSchedules=sortSched([...(s.fixedSchedules||[]),ns]);
+  scheduleSave();
+  rerenderCard(sid);
+}
+
+function delSched(sid,fid){
+  const s=D.students.find(s=>s.id===sid);
+  if(!s)return;
+  s.fixedSchedules=(s.fixedSchedules||[]).filter(f=>f.id!==fid);
+  scheduleSave();
+  rerenderCard(sid);
+}
+
+// ── DOM helpers ───────────────────────────────────────────────────────────────
+
+function V(id){const el=document.getElementById(id);return el?el.value:'';}
+
+function refreshStats(sid){
+  const s=D.students.find(s=>s.id===sid);
+  if(!s)return;
+  const {count,total,paid,owed}=calcStats(s);
+  const q=(id)=>document.getElementById(id);
+  if(q('stc-'+sid)) q('stc-'+sid).textContent=count+' buổi';
+  if(q('sttot-'+sid)) q('sttot-'+sid).textContent=fmtMoney(total);
+  if(q('stpaid-'+sid)) q('stpaid-'+sid).textContent=fmtMoney(paid);
+  if(q('stow-'+sid)){
+    q('stow-'+sid).textContent=fmtMoney(owed);
+    const wrap=q('stow-wrap-'+sid);
+    if(wrap) wrap.className='st'+(owed>0?' ow':'');
+  }
+}
+
+function rerenderCard(sid){
+  const s=D.students.find(s=>s.id===sid);
+  if(!s)return;
+  const el=document.getElementById('card-'+sid);
+  if(!el)return;
+  el.outerHTML=buildCard(s);
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+
+function buildCard(s){
+  const {count,total,paid,owed}=calcStats(s);
+  const scheds=sortSched(s.fixedSchedules||[]);
+  const sessions=[...(s.sessions||[])].sort((a,b)=>b.date.localeCompare(a.date));
+  const today=new Date().toISOString().slice(0,10);
+
+  // day options
+  const dayOpts=DAYS.map(d=>`<option value="${d}">${DL[d]}</option>`).join('');
+  // duration options for schedule
+  const durOpts=[30,45,60,90,120].map(m=>`<option value="${m}"${m===60?' selected':''}>${fmtDur(m)}</option>`).join('');
+  // type options for session
+  const typeOpts=['1:1','1:2','1:3','nhóm'].map(t=>`<option value="${t}">${t}</option>`).join('');
+  // duration options for session
+  const sdurOpts=['30p','45p','1h','1.5h','2h'].map(d=>`<option value="${d}"${d==='1h'?' selected':''}>${d}</option>`).join('');
+
+  // schedule pills
+  const pills=scheds.length
+    ? scheds.map(f=>`<span class="spill">
+        <span class="sd">${DL[f.day]}</span>
+        <span class="st2">${f.startTime}</span>
+        <span class="sdur">(${fmtDur(f.duration)})</span>
+        <button class="sxbtn" onclick="delSched('${s.id}','${f.id}')" title="Xóa">×</button>
+      </span>`).join('')
+    : '<span class="no-sched">Chưa có lịch cố định</span>';
+
+  // session rows
+  const rows=sessions.length
+    ? sessions.map(se=>`<tr>
+        <td class="d">${fmtDate(se.date)}</td>
+        <td class="t"><span>${esc(se.type)}</span></td>
+        <td>${esc(se.duration)}</td>
+        <td class="fee">${esc(se.fee)}</td>
+        <td class="nt" title="${esc(se.note)}">${esc(se.note||'')}</td>
+        <td><button class="xbtn" onclick="delSession('${s.id}','${se.id}')">×</button></td>
+      </tr>`).join('')
+    : '<tr class="erow"><td colspan="6">Chưa có buổi học</td></tr>';
+
+  return `<div class="sc" id="card-${s.id}">
+  <div class="sc-head">
+    <div class="sc-title">
+      <span class="cdot" id="dot-${s.id}" style="background:${s.color}" title="Đổi màu"
+        onclick="document.getElementById('cp-${s.id}').click()"></span>
+      <input type="color" id="cp-${s.id}" class="cpicker" value="${s.color}"
+        oninput="updateColor('${s.id}',this.value)">
+      <span class="sc-name" contenteditable="true"
+        onblur="updateField('${s.id}','name',this.textContent.trim())"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
+      >${esc(s.name)}</span>
+    </div>
+    <button class="sc-del" onclick="deleteStudent('${s.id}')" title="Xóa học viên">🗑</button>
+  </div>
+
+  <div class="sc-meta">
+    <div class="mf">
+      <label>Ghi chú:</label>
+      <input type="text" value="${esc(s.note||'')}" placeholder="Ghi chú…"
+        onchange="updateField('${s.id}','note',this.value)">
+    </div>
+    <div class="mf">
+      <label>Đã trả:</label>
+      <input type="text" value="${esc(s.paidAmount||'0')}" placeholder="0"
+        onchange="updateField('${s.id}','paidAmount',this.value)">
+    </div>
+  </div>
+
+  <div class="sec" style="border-top:none;padding-top:8px">
+    <span>Các Buổi Đã Học</span>
+    <span class="sec-badge" id="stc-${s.id}">${count} buổi</span>
+  </div>
+  <div class="tbl-wrap">
+    <table class="sess-tbl">
+      <thead><tr>
+        <th>Ngày</th><th>Loại</th><th>T.Lượng</th><th>Học phí</th><th>Ghi chú</th><th></th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>
+  <div class="af">
+    <input type="date" id="ns-date-${s.id}" class="w-date" value="${today}">
+    <select id="ns-type-${s.id}" class="w-type">${typeOpts}</select>
+    <select id="ns-dur-${s.id}" class="w-dur">${sdurOpts}</select>
+    <input type="text" id="ns-fee-${s.id}" class="w-fee" placeholder="250k">
+    <input type="text" id="ns-note-${s.id}" class="w-note" placeholder="Ghi chú">
+    <button class="btn-add" onclick="addSession('${s.id}')">+ Buổi</button>
+  </div>
+
+  <div class="stats">
+    <span class="st">Tổng: <b id="sttot-${s.id}">${fmtMoney(total)}</b></span>
+    <span class="st">Đã trả: <b class="pv" id="stpaid-${s.id}">${fmtMoney(paid)}</b></span>
+    <span class="st${owed>0?' ow':''}" id="stow-wrap-${s.id}">Còn nợ: <b id="stow-${s.id}">${fmtMoney(owed)}</b></span>
+  </div>
+
+  <div class="sec">
+    <span>Lịch Tập Trong Tuần</span>
+  </div>
+  <div class="scheds" id="scheds-${s.id}">${pills}</div>
+  <div class="conflict-msg" id="cw-${s.id}">
+    <span id="cw-msg-${s.id}"></span>
+    <button class="btn-add" style="padding:2px 8px;font-size:12px" onclick="addSchedConfirm('${s.id}')">Vẫn thêm</button>
+    <button class="xbtn" onclick="document.getElementById('cw-${s.id}').style.display='none'">Hủy</button>
+  </div>
+  <div class="af">
+    <select id="nf-day-${s.id}" class="w-day">${dayOpts}</select>
+    <input type="time" id="nf-time-${s.id}" class="w-time" value="17:30">
+    <select id="nf-dur-${s.id}" class="w-dmin">${durOpts}</select>
+    <button class="btn-add" onclick="addSched('${s.id}')">+ Lịch</button>
+  </div>
+</div>`;
+}
+
+function render(){
+  const g=document.getElementById('grid');
+  if(!g)return;
+  if(!D.students.length){
+    g.innerHTML='<div class="empty-state">Chưa có học viên. Bấm <b>+ Thêm học viên</b> để bắt đầu.</div>';
+    return;
+  }
+  g.innerHTML=D.students.map(buildCard).join('');
+}
+
+load();
+</script>
+</body>
 </html>
