@@ -122,6 +122,40 @@ input,textarea,select{font-family:inherit;font-size:inherit;outline:none}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.ok{border-color:var(--green);color:var(--green)}
 .toast.err{border-color:var(--red);color:var(--red)}
+
+/* ── Calendar ── */
+.cal-wrap{padding:14px 20px 80px;overflow-x:auto}
+.cal-nav{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.cal-wk-label{font-weight:700;font-size:13px;color:var(--text);min-width:160px;text-align:center}
+.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(148px,1fr));gap:10px;min-width:1036px}
+.cal-day{background:var(--surf);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.cal-day.today{border-color:rgba(59,130,246,.55)}
+.cal-day-hd{background:var(--surf2);padding:9px 10px;text-align:center;border-bottom:1px solid var(--line)}
+.cal-day.today .cal-day-hd{background:rgba(59,130,246,.13)}
+.cal-day-hd .dn{font-size:12px;font-weight:700;color:var(--text)}
+.cal-day-hd .dd{font-size:11px;color:var(--muted)}
+.cal-slots{padding:7px;display:flex;flex-direction:column;gap:5px;min-height:80px}
+.cal-post{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;cursor:pointer;transition:border-color .15s}
+.cal-post:hover{border-color:rgba(59,130,246,.35)}
+.cal-post-time{font-size:10px;color:var(--muted);margin-bottom:2px}
+.cal-post-topic{font-size:11px;font-weight:600;line-height:1.35;color:var(--text)}
+.cal-post-meta{display:flex;align-items:center;gap:5px;margin-bottom:3px}
+.cal-badge{border-radius:3px;padding:1px 5px;font-size:9.5px;font-weight:700;letter-spacing:.03em}
+.cal-sdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.cal-sdot.draft{background:var(--muted)}
+.cal-sdot.scheduled{background:var(--warn)}
+.cal-sdot.posted{background:var(--green)}
+.cal-empty{color:var(--muted);font-size:11px;text-align:center;padding:16px 0;opacity:.6}
+.cal-count{font-size:10px;color:var(--muted);padding:4px 7px;text-align:center;border-top:1px solid var(--line)}
+/* ── View toggle ── */
+.view-toggle{display:flex;gap:2px;background:var(--bg);border-radius:8px;padding:3px;flex-shrink:0}
+.vtab{background:none;color:var(--muted);border-radius:6px;padding:4px 11px;font-size:12px;font-weight:600;border:none;cursor:pointer;transition:all .15s}
+.vtab.active{background:var(--surf2);color:var(--text)}
+.vtab:hover:not(.active){color:var(--text)}
+/* ── File import ── */
+.file-lbl{display:inline-flex;align-items:center;gap:6px;background:var(--surf2);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:6px 13px;font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s}
+.file-lbl:hover{background:var(--surf3)}
+input[type=file]{display:none}
 </style>
 </head>
 <body>
@@ -138,6 +172,10 @@ input,textarea,select{font-family:inherit;font-size:inherit;outline:none}
     <button class="stab" data-s="scheduled" onclick="setStatus('scheduled')">Lên Lịch</button>
     <button class="stab" data-s="posted" onclick="setStatus('posted')">Đã Đăng</button>
   </div>
+  <div class="view-toggle">
+    <button class="vtab active" id="vtGrid" onclick="setView('grid')">⊞ Grid</button>
+    <button class="vtab" id="vtCal" onclick="setView('cal')">📅 Lịch</button>
+  </div>
   <div class="hdr-right">
     <span class="count-chip" id="countChip">0 bài</span>
     <button class="btn-import" onclick="openImport()">+ Nhập từ AI</button>
@@ -146,6 +184,7 @@ input,textarea,select{font-family:inherit;font-size:inherit;outline:none}
 
 <div class="pbar" id="pbar"></div>
 <div class="grid" id="grid"></div>
+<div class="cal-wrap" id="calWrap" style="display:none"></div>
 
 <!-- ── Import modal ── -->
 <div class="ov" id="ovImport" style="display:none" onclick="if(event.target===this)closeImport()">
@@ -168,12 +207,19 @@ input,textarea,select{font-family:inherit;font-size:inherit;outline:none}
         <div class="prompt-strip">
           <span>MASTER PROMPT FACEBOOK PAGE BONG BAN VIET</span>
           <button class="btn-cp" onclick="copyMasterPrompt()">📋 Copy</button>
+          <button class="btn-cp" style="background:var(--surf2);border:1px solid var(--line);color:var(--text);margin-left:3px" onclick="downloadMasterPrompt()">⬇ .txt</button>
         </div>
       </div>
       <div class="fld">
         <label>Dán JSON từ AI vào đây</label>
         <textarea class="import-ta" id="importArea" placeholder='{"posts":[{"topic":"...","pillar":"knowledge","caption":"...","hashtags":"...","cta":"...","image_prompt":"...","scheduled_time":""}]}'></textarea>
-        <div class="import-hint">Chấp nhận: <code>{"posts":[...]}</code> hoặc <code>[{...}]</code></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:7px">
+          <span style="font-size:12px;color:var(--muted)">Hoặc import từ file:</span>
+          <label class="file-lbl" for="importFileTxt">📂 Chọn .txt / .json</label>
+          <input type="file" id="importFileTxt" accept=".txt,.json,.txt" onchange="loadImportFile(event)">
+          <span id="importFileName" style="font-size:11px;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+        </div>
+        <div class="import-hint" style="margin-top:4px">Chấp nhận: <code>{"posts":[...]}</code> hoặc <code>[{...}]</code></div>
       </div>
       <div class="import-ok" id="importOk"></div>
     </div>
@@ -287,8 +333,12 @@ input,textarea,select{font-family:inherit;font-size:inherit;outline:none}
 var posts = [];
 var activeStatus = 'all';
 var activePillar = 'all';
+var activeView = 'grid';
+var calWeekStart = null;
 var _editId = null;
 var _copyPost = null;
+
+const POST_FOOTER = '\n\n——\nBóng Bàn Việt - Đồng Hành Cùng Mọi Tay Vợt\n📍 Website: bongbanviet.com\n📞 Hotline/Zalo: 096.1269.386\n#BongBanViet #KyThuatBongBan #GiatPhai #HaTayBongBan';
 
 const PILLARS = {
   knowledge:  { label:'Kiến Thức',  bg:'rgba(59,130,246,.18)',  color:'#93c5fd' },
@@ -310,8 +360,9 @@ async function api(method, path, body) {
 }
 
 // ─── Load ─────────────────────────────────────────────────────────────────────
-async function load() {
+async function load(resetCal) {
   posts = await api('GET', '/api/fb-posts');
+  if(resetCal) calWeekStart = null;
   buildPBar();
   render();
 }
@@ -339,6 +390,16 @@ function setStatus(s) {
 
 function setPillar(p) { activePillar = p; buildPBar(); render(); }
 
+// ─── View toggle ─────────────────────────────────────────────────────────────
+function setView(v) {
+  activeView = v;
+  document.getElementById('vtGrid').classList.toggle('active', v === 'grid');
+  document.getElementById('vtCal').classList.toggle('active', v === 'cal');
+  document.getElementById('grid').style.display = v === 'grid' ? '' : 'none';
+  document.getElementById('calWrap').style.display = v === 'cal' ? '' : 'none';
+  render();
+}
+
 // ─── Render ───────────────────────────────────────────────────────────────────
 function render() {
   const list = posts.filter(p => {
@@ -347,6 +408,16 @@ function render() {
     return true;
   });
   document.getElementById('countChip').textContent = list.length + ' bài';
+
+  if (activeView === 'cal') {
+    document.getElementById('grid').style.display = 'none';
+    document.getElementById('calWrap').style.display = '';
+    renderCalendar(list);
+    return;
+  }
+
+  document.getElementById('grid').style.display = '';
+  document.getElementById('calWrap').style.display = 'none';
   const grid = document.getElementById('grid');
   if (!list.length) {
     grid.innerHTML = `<div class="empty">
@@ -413,7 +484,7 @@ function openCopy(id){
   if(!p)return;
   _copyPost=p;
   document.getElementById('copyTitle').textContent=p.topic||'Copy Bài Đăng';
-  const text=[p.caption,p.hashtags,p.cta].filter(Boolean).join('\n\n');
+  const text=[p.caption,p.hashtags,p.cta].filter(Boolean).join('\n\n')+POST_FOOTER;
   document.getElementById('copyBox').textContent=text;
   const hasImg=!!p.image_prompt;
   document.getElementById('imgSection').style.display=hasImg?'block':'none';
@@ -426,7 +497,7 @@ function closeCopy(){ document.getElementById('ovCopy').style.display='none'; _c
 
 async function copyAll(){
   if(!_copyPost)return;
-  const text=[_copyPost.caption,_copyPost.hashtags,_copyPost.cta].filter(Boolean).join('\n\n');
+  const text=[_copyPost.caption,_copyPost.hashtags,_copyPost.cta].filter(Boolean).join('\n\n')+POST_FOOTER;
   try{ await navigator.clipboard.writeText(text); toast('Đã copy bài đăng!','ok'); } catch{ toast('Copy thất bại','err'); }
 }
 
@@ -536,7 +607,7 @@ async function doImport(){
     const ok=document.getElementById('importOk');
     ok.textContent='✓ Đã tạo '+r.count+' draft thành công!';
     ok.style.display='block';
-    await load();
+    await load(true);
     setTimeout(closeImport,1100);
     toast('Nhập '+r.count+' bài thành công','ok');
   }catch(e){ toast('Lỗi: '+e.message,'err'); }
@@ -592,6 +663,114 @@ YÊU CẦU OUTPUT — Trả về JSON hợp lệ, KHÔNG viết gì ngoài JSON:
 
 async function copyMasterPrompt(){
   try{ await navigator.clipboard.writeText(MASTER_PROMPT); toast('Đã copy Master Prompt!','ok'); } catch{ toast('Lỗi copy','err'); }
+}
+
+function downloadMasterPrompt(){
+  const blob=new Blob([MASTER_PROMPT],{type:'text/plain;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='master-prompt-bongbanviet.txt'; a.click();
+  URL.revokeObjectURL(url);
+  toast('Đã tải Master Prompt!','ok');
+}
+
+function loadImportFile(e){
+  const f=e.target.files[0];
+  if(!f)return;
+  document.getElementById('importFileName').textContent=f.name;
+  const reader=new FileReader();
+  reader.onload=ev=>{ document.getElementById('importArea').value=ev.target.result.trim(); };
+  reader.readAsText(f,'UTF-8');
+}
+
+// ─── Calendar ─────────────────────────────────────────────────────────────────
+function getMonday(date){
+  const d=new Date(date);
+  const day=d.getDay();
+  const diff=day===0?-6:1-day;
+  d.setDate(d.getDate()+diff);
+  d.setHours(0,0,0,0);
+  return d;
+}
+
+function renderCalendar(list){
+  const wrap=document.getElementById('calWrap');
+  // auto-pick week from earliest scheduled post if not set
+  if(!calWeekStart){
+    const withTime=(list||posts).filter(p=>p.scheduled_time);
+    if(withTime.length){
+      const earliest=withTime.reduce((a,b)=>a.scheduled_time<b.scheduled_time?a:b);
+      calWeekStart=getMonday(new Date(earliest.scheduled_time));
+    } else {
+      calWeekStart=getMonday(new Date());
+    }
+  }
+
+  const days=[];
+  for(let i=0;i<7;i++){
+    const d=new Date(calWeekStart);
+    d.setDate(d.getDate()+i);
+    days.push(d);
+  }
+
+  const DAY_NAMES=['Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7','CN'];
+  const todayKey=new Date().toISOString().slice(0,10);
+
+  // group posts by date
+  const byDay={};
+  (list||posts).forEach(p=>{
+    if(!p.scheduled_time)return;
+    const key=p.scheduled_time.slice(0,10);
+    if(!byDay[key])byDay[key]=[];
+    byDay[key].push(p);
+  });
+  Object.values(byDay).forEach(arr=>arr.sort((a,b)=>a.scheduled_time.localeCompare(b.scheduled_time)));
+
+  const totalInWeek=days.reduce((acc,d)=>acc+(byDay[d.toISOString().slice(0,10)]||[]).length,0);
+  const wLabel=`${days[0].getDate()}/${days[0].getMonth()+1} – ${days[6].getDate()}/${days[6].getMonth()+1}/${days[6].getFullYear()}`;
+
+  wrap.innerHTML=`
+    <div class="cal-nav">
+      <button class="btn-c" style="padding:5px 13px;font-size:12px" onclick="calNav(-1)">‹ Tuần trước</button>
+      <span class="cal-wk-label">${wLabel}</span>
+      <button class="btn-c" style="padding:5px 13px;font-size:12px" onclick="calNav(1)">Tuần sau ›</button>
+      <span style="margin-left:8px;font-size:12px;color:var(--muted)">${totalInWeek} bài trong tuần</span>
+    </div>
+    <div class="cal-grid">
+      ${days.map((d,i)=>{
+        const key=d.toISOString().slice(0,10);
+        const dp=byDay[key]||[];
+        const isToday=key===todayKey;
+        return `<div class="cal-day${isToday?' today':''}">
+          <div class="cal-day-hd">
+            <div class="dn">${DAY_NAMES[i]}</div>
+            <div class="dd">${d.getDate()}/${d.getMonth()+1}</div>
+          </div>
+          <div class="cal-slots">
+            ${dp.length?dp.map(p=>{
+              const pl=PILLARS[p.pillar]||{bg:'rgba(100,116,139,.15)',color:'#94a3b8',label:'?'};
+              const tm=(p.scheduled_time||'').match(/[T ](\d{2}:\d{2})/);
+              const tStr=tm?tm[1]:'';
+              return `<div class="cal-post" onclick="openEdit('${p.id}')" title="${esc(p.topic||'')}">
+                ${tStr?`<div class="cal-post-time">🕐 ${tStr}</div>`:''}
+                <div class="cal-post-meta">
+                  <span class="cal-badge" style="background:${pl.bg};color:${pl.color}">${pl.label}</span>
+                  <span class="cal-sdot ${p.status||'draft'}"></span>
+                </div>
+                <div class="cal-post-topic">${esc((p.topic||'').length>55?p.topic.slice(0,52)+'…':p.topic||'(Chưa đặt tên)')}</div>
+              </div>`;
+            }).join(''):`<div class="cal-empty">Trống</div>`}
+          </div>
+          ${dp.length?`<div class="cal-count">${dp.length} bài</div>`:''}
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function calNav(dir){
+  if(!calWeekStart)calWeekStart=getMonday(new Date());
+  calWeekStart.setDate(calWeekStart.getDate()+dir*7);
+  renderCalendar();
 }
 
 // ─── Keyboard ─────────────────────────────────────────────────────────────────
