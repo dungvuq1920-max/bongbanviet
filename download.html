@@ -367,7 +367,7 @@
   <div class="pv-box">
     <button class="pv-close-btn" onclick="closePv()">×</button>
     <div class="pv-media" id="pvMedia">
-      <video id="pvVideo" controls playsinline preload="metadata" style="display:none"></video>
+      <video id="pvVideo" controls playsinline preload="auto" muted style="display:none"></video>
       <img id="pvCover" class="pv-cover" alt="">
     </div>
     <div class="pv-info">
@@ -560,6 +560,27 @@ var MUSIC_LIB = [
   {t:'Double Drift',     g:'Chill',     src:'https://freepd.com/music/Double%20Drift.mp3'},
   {t:'Monkeys Spinning', g:'Quirky',    src:'https://freepd.com/music/Monkeys%20Spinning%20Monkeys.mp3'},
   {t:'Retro Soul',       g:'Soul',      src:'https://freepd.com/music/Retro%20Soul.mp3'},
+  // ── FreePD / Kevin MacLeod – Energetic & Sport ────────────────────────────
+  {t:'Sneaky Snitch',    g:'Quirky',    src:'https://freepd.com/music/Sneaky%20Snitch.mp3'},
+  {t:'Wholesome',        g:'Pop',       src:'https://freepd.com/music/Wholesome.mp3'},
+  {t:'Investigations',   g:'Ambient',   src:'https://freepd.com/music/Investigations.mp3'},
+  {t:'Royale',           g:'Hip-hop',   src:'https://freepd.com/music/Royale.mp3'},
+  {t:'Undaunted',        g:'Cinematic', src:'https://freepd.com/music/Undaunted.mp3'},
+  {t:'Airport Lounge',   g:'Jazz',      src:'https://freepd.com/music/Airport%20Lounge.mp3'},
+  {t:'Cheery Monday',    g:'Pop',       src:'https://freepd.com/music/Cheery%20Monday.mp3'},
+  {t:'Backed Vibes',     g:'Chill',     src:'https://freepd.com/music/Backed%20Vibes%20Clean.mp3'},
+  {t:'Sunshine',         g:'Pop',       src:'https://freepd.com/music/Sunshine.mp3'},
+  {t:'Happy Bee',        g:'Quirky',    src:'https://freepd.com/music/Happy%20Bee.mp3'},
+  {t:'Pixel Peeker',     g:'Quirky',    src:'https://freepd.com/music/Pixel%20Peeker%20Polka.mp3'},
+  {t:'Bike Rides',       g:'Acoustic',  src:'https://freepd.com/music/Bike%20Rides.mp3'},
+  {t:'Upbeat Forever',   g:'Pop',       src:'https://freepd.com/music/Upbeat%20Forever.mp3'},
+  {t:'Ghost Dance',      g:'Electronic',src:'https://freepd.com/music/Ghost%20Dance.mp3'},
+  {t:'Hyperfun',         g:'EDM',       src:'https://freepd.com/music/Hyperfun.mp3'},
+  {t:'Easy Lemon',       g:'Jazz',      src:'https://freepd.com/music/Easy%20Lemon.mp3'},
+  {t:'Fluidscape',       g:'Ambient',   src:'https://freepd.com/music/Fluidscape.mp3'},
+  {t:'Carefree',         g:'Acoustic',  src:'https://freepd.com/music/Carefree.mp3'},
+  {t:'Gymnopedie No.1',  g:'Classical', src:'https://freepd.com/music/Gymnopedie%20No%201.mp3'},
+  {t:'Canon in D',       g:'Classical', src:'https://freepd.com/music/Canon%20in%20D.mp3'},
 ];
 MUSIC_LIB.forEach(function(t){ t.url='/api/proxy-audio?url='+encodeURIComponent(t.src); });
 
@@ -623,10 +644,19 @@ function openPv(videoUrl, filename, title, author, dur, cover){
   $('pvTitle').textContent=title||'Không có tiêu đề';
   $('pvSub').textContent='@'+(author||'')+(dur?' · '+fmtDur(dur):'');
   var vid=$('pvVideo'), cov=$('pvCover');
-  var src=videoUrl
+  var primarySrc=videoUrl
     ?'/api/douyin/stream-url?url='+encodeURIComponent(videoUrl)+'&filename='+encodeURIComponent(filename||'video.mp4')+'&inline=1'
-    :'/api/douyin/preview/'+encodeURIComponent(_pvAwemeId);
-  vid.src=src;
+    :'';
+  var fallbackSrc=_pvAwemeId?'/api/douyin/preview/'+encodeURIComponent(_pvAwemeId):'';
+  // If CDN URL is stale, onerror retries via aweme_id re-resolve
+  vid.onerror=function(){
+    if(fallbackSrc&&vid.src.indexOf('/api/douyin/preview/')<0){
+      vid.onerror=null;
+      vid.src=fallbackSrc; vid.load();
+      vid.play().catch(function(){});
+    }
+  };
+  vid.src=primarySrc||fallbackSrc;
   if(cover){ vid.poster=thumbUrl(cover); }
   else{ vid.removeAttribute('poster'); }
   vid.style.display='block'; cov.style.display='none';
@@ -634,7 +664,10 @@ function openPv(videoUrl, filename, title, author, dur, cover){
   $('pvModal').classList.add('open');
   document.body.style.overflow='hidden';
   vid.load();
-  requestAnimationFrame(function(){ requestAnimationFrame(function(){ vid.play().catch(function(){}); }); });
+  // Call play() directly — nested rAF loses Chrome's user-gesture context
+  vid.play().catch(function(err){
+    if(err&&err.name==='NotAllowedError'){ vid.muted=true; vid.play().catch(function(){}); }
+  });
 }
 
 function closePv(){
@@ -818,6 +851,86 @@ function genHashtags(title){
   return base.filter(function(t){ if(seen[t])return false; seen[t]=1; return true; });
 }
 
+// ── TikTok SEO Caption Generator ─────────────────────────────────────────────
+function genTtCaption(rawTitle){
+  var t=(rawTitle||'').toLowerCase();
+  var isHighlight=/highlight|amazing|incredible|siêu đỉnh|精彩|巅峰|最强|超强/.test(t);
+  var isTraining=/train|practice|drill|tập|luyện|练习|训练|教学|tutorial/.test(t);
+  var isMatch=/match|vs |final|chung kết|比赛|决赛|world|olympic|championship/.test(t);
+  var isTech=/technique|backhand|forehand|serve|loop|smash|chop|spin|kỹ thuật|技术|发球/.test(t);
+  var isNew=/new|mới|最新|2024|2025|2026/.test(t);
+  var playerMap=[
+    [['fan zhendong','樊振东','fanzd'],'Fan Zhendong'],
+    [['ma long','马龙','malong'],'Ma Long'],
+    [['xu xin','许昕'],'Xu Xin'],
+    [['wang manyu','王曼昱'],'Wang Manyu'],
+    [['chen meng','陈梦'],'Chen Meng'],
+    [['sun yingsha','孙颖莎','sunyingsha'],'Sun Yingsha'],
+    [['zhang jike','张继科'],'Zhang Jike'],
+    [['ding ning','丁宁'],'Ding Ning'],
+    [['harimoto'],'Harimoto'],
+    [['ovtcharov'],'Ovtcharov'],
+    [['lebrun'],'Lebrun'],
+    [['calderano'],'Calderano'],
+    [['timo boll','boll '],'Timo Boll'],
+    [['lin gaoyuan','林高远'],'Lin Gaoyuan'],
+    [['wang chuqin','王楚钦'],'Wang Chuqin'],
+    [['trần mẫn','陈梦'],'Chen Meng'],
+  ];
+  var playerName='';
+  for(var pi=0;pi<playerMap.length;pi++){
+    if(playerMap[pi][0].some(function(k){return t.includes(k);})){
+      playerName=playerMap[pi][1]; break;
+    }
+  }
+  var pool;
+  if(playerName&&isMatch) pool=[
+    playerName+' thi đấu đỉnh cao - khoảnh khắc không thể bỏ qua 🏓🔥',
+    'Siêu phẩm của '+playerName+' khiến triệu người trầm trồ ⚡🏓',
+    playerName+' và những đường bóng xuất thần không tưởng 🎯🔥',
+  ];
+  else if(playerName&&isHighlight) pool=[
+    playerName+' - pha bóng siêu đỉnh không thể tin nổi 🔥⚡',
+    'Top khoảnh khắc ấn tượng nhất của '+playerName+' 🏓✨',
+  ];
+  else if(playerName) pool=[
+    playerName+' | Kỹ thuật và phong cách bóng bàn đỉnh cao 🏓⚡',
+    'Theo dõi '+playerName+' - huyền thoại bóng bàn thế giới 🔥🎯',
+  ];
+  else if(isHighlight) pool=[
+    'Những pha bóng siêu đỉnh không thể tin nổi 🔥🏓',
+    'Khoảnh khắc bóng bàn đỉnh cao triệu người mê ⚡🏓',
+    'Top pha bóng xuất sắc - xem là nghiện ngay 🏓✨',
+    'Bóng bàn đỉnh cao - những khoảnh khắc không thể quên 🎯🔥',
+  ];
+  else if(isTraining) pool=[
+    'Bí quyết tập bóng bàn nhanh tiến bộ từ chuyên gia 💪🏓',
+    'Học kỹ thuật bóng bàn chuẩn từ VĐV đỉnh cao 🎯✨',
+    'Mẹo luyện bóng bàn mỗi ngày để nâng trình 🏓⚡',
+    'Tập luyện bóng bàn đúng cách - tiến bộ thấy rõ 💪🎯',
+  ];
+  else if(isTech) pool=[
+    'Kỹ thuật bóng bàn đỉnh cao - học ngay để nâng level 🏓⚡',
+    'Phân tích kỹ thuật chi tiết giúp cải thiện màn chơi 🎯🏓',
+    'Cách đánh bóng bàn chuẩn kỹ thuật như VĐV chuyên nghiệp 🏓✨',
+  ];
+  else if(isMatch) pool=[
+    'Trận đấu bóng bàn đỉnh cao - căng thẳng đến từng điểm 🏓🔥',
+    'Màn so tài kịch tính không thể rời mắt ⚡🏓',
+  ];
+  else if(isNew) pool=[
+    'Nội dung bóng bàn mới nhất - cập nhật ngay hôm nay 🏓🔥',
+    'Bóng bàn mới nhất | Nội dung không thể bỏ qua ⚡🎯',
+  ];
+  else pool=[
+    'Bóng bàn đỉnh cao - nội dung không thể bỏ qua hôm nay 🏓🔥',
+    'Khoảnh khắc bóng bàn tuyệt vời bạn không nên bỏ lỡ ⚡🏓',
+    'Video bóng bàn hay nhất - xem ngay và theo dõi 🏓✨',
+    'Bóng bàn siêu đỉnh | Theo dõi để không bỏ lỡ 🔥🎯',
+  ];
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
 // ── TikTok Upload Modal ───────────────────────────────────────────────────────
 var _ttUpKey='', _ttUpTags=[];
 
@@ -827,7 +940,7 @@ function openTtUp(cardKey){
   _ttUpKey=cardKey;
   var rawTitle=(r.title||r.name||'').replace(/_bgnhac\.mp4$/i,'').replace(/\.mp4$/i,'').replace(/_/g,' ').trim();
   _ttUpTags=genHashtags(rawTitle).slice();
-  $('ttUpCaption').value=rawTitle;
+  $('ttUpCaption').value=genTtCaption(rawTitle);
   ttUpCapCount();
   renderTtTags();
   $('ttUpPrivacy').value='PUBLIC_TO_EVERYONE';
