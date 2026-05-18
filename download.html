@@ -636,7 +636,10 @@ function openPvIdx(type, i){
   if(!v||!v.play_url) return;
   var fn=v.filename||((v.title||'video').slice(0,60).replace(/[\\/:*?"<>|#\r\n]/g,'_')+'.mp4');
   _pvAwemeId=v.aweme_id||'';
-  openPv(v.play_url, fn, v.title, v.author, v.duration, v.cover_url);
+  // Search results: CDN play_url may be inaccessible from server; skip directly to preview/:id
+  var streamUrl=(type==='sr'&&_pvAwemeId)?'':v.play_url;
+  openPv(streamUrl, fn, v.title, v.author, v.duration, v.cover_url);
+  if(type==='sr') _pvUrl=v.play_url; // restore for "Tải Video" button
 }
 
 function openPv(videoUrl, filename, title, author, dur, cover){
@@ -663,8 +666,7 @@ function openPv(videoUrl, filename, title, author, dur, cover){
   $('pvDlBtn').disabled=false; $('pvDlBtn').innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Tải Video';
   $('pvModal').classList.add('open');
   document.body.style.overflow='hidden';
-  vid.load();
-  // Call play() directly — nested rAF loses Chrome's user-gesture context
+  // src assignment already triggers load; explicit load() can cause AbortError race
   vid.play().catch(function(err){
     if(err&&err.name==='NotAllowedError'){ vid.muted=true; vid.play().catch(function(){}); }
   });
@@ -990,7 +992,16 @@ async function doTtUpload(){
     if(ttStatus.configured){
       if(confirm('Chưa kết nối TikTok. Kết nối ngay?')){ closeTtUp(); ttConnect(); }
     }else{
-      window.open('https://www.tiktok.com/upload','_blank');
+      // No API key: auto-download video + copy caption → user just selects file & pastes
+      var cap=$('ttUpCaption').value.trim()||'Bóng bàn';
+      var tags=_ttUpTags.join(' ');
+      var fullCap=(cap+(tags?'\n'+tags:'')).trim();
+      var a=document.createElement('a'); a.href=r.url; a.download=r.name;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      navigator.clipboard.writeText(fullCap).catch(function(){});
+      setTimeout(function(){window.open('https://www.tiktok.com/upload','_blank');},700);
+      $('ttUpStatus').textContent='✓ Video đã tải xuống, caption đã copy! Chọn video → Dán tiêu đề (Ctrl+V) → Đăng.';
+      $('ttUpStatus').style.color='var(--green)';
     }
     return;
   }

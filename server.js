@@ -6,6 +6,8 @@ const multer = require('multer');
 const ExcelJS = require('exceljs');
 const db = require('./db');
 const crypto = require('crypto');
+const axios = require('axios');
+const FormData = require('form-data');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,6 +15,7 @@ const DATA_DIR = process.env.DATA_DIR
   ? path.resolve(process.env.DATA_DIR)
   : __dirname;
 const SHOPEE_AI_CONFIG_FILE = path.join(DATA_DIR, 'shopee-ai-config.json');
+const FACEBOOK_CONFIG_FILE = path.join(DATA_DIR, 'facebook-config.json');
 
 app.use(cors());
 app.use(express.json());
@@ -130,6 +133,107 @@ async function callShopeeTextProvider(provider, prompt) {
     },
     body: JSON.stringify({
       model: process.env.OPENAI_TEXT_MODEL || 'gpt-5.4-mini',
+      input: prompt,
+    }),
+    signal: AbortSignal.timeout(45000),
+  });
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error?.message || `OpenAI HTTP ${r.status}`);
+  return data.output_text || data.output?.flatMap(o => o.content || []).map(c => c.text || '').join('\n') || '';
+}
+
+function readFacebookRuntimeConfig() {
+  try {
+    if (!fs.existsSync(FACEBOOK_CONFIG_FILE)) return {};
+    return JSON.parse(fs.readFileSync(FACEBOOK_CONFIG_FILE, 'utf8'));
+  } catch {
+    return {};
+  }
+}
+
+function writeFacebookRuntimeConfig(next) {
+  fs.mkdirSync(path.dirname(FACEBOOK_CONFIG_FILE), { recursive: true });
+  fs.writeFileSync(FACEBOOK_CONFIG_FILE, JSON.stringify(next, null, 2));
+}
+
+function facebookProviderLabel(provider) {
+  if (provider === 'openai') return 'ChatGPT / OpenAI';
+  if (provider === 'gemini') return 'Gemini';
+  if (provider === 'claude') return 'Claude';
+  return 'AI';
+}
+
+function getFacebookAiKey(provider) {
+  const cfg = readFacebookRuntimeConfig();
+  if (provider === 'openai') return process.env.FACEBOOK_OPENAI_API_KEY || process.env.OPENAI_API_KEY || cfg.openaiApiKey || '';
+  if (provider === 'gemini') return process.env.FACEBOOK_GEMINI_API_KEY || process.env.GEMINI_API_KEY || cfg.geminiApiKey || '';
+  if (provider === 'claude') return process.env.FACEBOOK_ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY || cfg.claudeApiKey || '';
+  return '';
+}
+
+function facebookProviderPlan(requestedProvider = 'auto') {
+  const plan = [];
+  const pushIfReady = (provider) => {
+    if (getFacebookAiKey(provider) && !plan.includes(provider)) plan.push(provider);
+  };
+
+  if (requestedProvider === 'auto') {
+    pushIfReady('openai');
+    pushIfReady('gemini');
+    pushIfReady('claude');
+    return plan;
+  }
+
+  pushIfReady(requestedProvider);
+  if (requestedProvider === 'openai') pushIfReady('gemini');
+  return plan;
+}
+
+async function callFacebookTextProvider(provider, prompt) {
+  if (provider === 'gemini') {
+    const geminiKey = getFacebookAiKey('gemini');
+    const model = process.env.FACEBOOK_GEMINI_MODEL || process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+      signal: AbortSignal.timeout(45000),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error?.message || `Gemini HTTP ${r.status}`);
+    return data.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('\n') || '';
+  }
+
+  if (provider === 'claude') {
+    const claudeKey = getFacebookAiKey('claude');
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': claudeKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: process.env.FACEBOOK_CLAUDE_MODEL || process.env.CLAUDE_MODEL || 'claude-sonnet-4-5',
+        max_tokens: 2200,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+      signal: AbortSignal.timeout(45000),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error?.message || `Claude HTTP ${r.status}`);
+    return data.content?.map(p => p.text || '').join('\n') || '';
+  }
+
+  const openaiKey = getFacebookAiKey('openai');
+  const r = await fetch('https://api.openai.com/v1/responses', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${openaiKey}`,
+    },
+    body: JSON.stringify({
+      model: process.env.FACEBOOK_OPENAI_TEXT_MODEL || process.env.OPENAI_TEXT_MODEL || 'gpt-5.4-mini',
       input: prompt,
     }),
     signal: AbortSignal.timeout(45000),
@@ -996,6 +1100,75 @@ function generateId() {
 const FACEBOOK_SITE_URL = (process.env.SITE_URL || process.env.PUBLIC_SITE_URL || 'https://bongbanviet.com').replace(/\/+$/, '');
 const FACEBOOK_IMAGE_DIR = path.join(DATA_DIR, 'images', 'facebook');
 fs.mkdirSync(FACEBOOK_IMAGE_DIR, { recursive: true });
+const FACEBOOK_RETRYABLE_CODES = new Set([1, 2, 4, 17, 341]);
+
+function normalizeFacebookGraphVersion(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return 'v24.0';
+  return raw.startsWith('v') ? raw : `v${raw}`;
+}
+
+function getFacebookPageRuntime() {
+  const fileCfg = readFacebookRuntimeConfig();
+  return {
+    pageId: process.env.FACEBOOK_PAGE_ID || fileCfg.pageId || '',
+    pageAccessToken: process.env.FACEBOOK_PAGE_ACCESS_TOKEN || fileCfg.pageAccessToken || '',
+    graphVersion: normalizeFacebookGraphVersion(process.env.FACEBOOK_GRAPH_VERSION || fileCfg.graphVersion || 'v24.0'),
+    pageIdSource: process.env.FACEBOOK_PAGE_ID ? 'env' : (fileCfg.pageId ? 'file' : ''),
+    pageTokenSource: process.env.FACEBOOK_PAGE_ACCESS_TOKEN ? 'env' : (fileCfg.pageAccessToken ? 'file' : ''),
+  };
+}
+
+function facebookRuntimeSummary() {
+  const page = getFacebookPageRuntime();
+  return {
+    pageIdConfigured: !!page.pageId,
+    pageTokenConfigured: !!page.pageAccessToken,
+    pageId: page.pageId || '',
+    pageIdSource: page.pageIdSource,
+    pageTokenSource: page.pageTokenSource,
+    pageTokenTail: keyTail(page.pageAccessToken),
+    graphVersion: page.graphVersion,
+    aiProviders: facebookProviderPlan('auto'),
+    aiKeys: {
+      openai: { configured: !!getFacebookAiKey('openai'), tail: keyTail(getFacebookAiKey('openai')) },
+      gemini: { configured: !!getFacebookAiKey('gemini'), tail: keyTail(getFacebookAiKey('gemini')) },
+      claude: { configured: !!getFacebookAiKey('claude'), tail: keyTail(getFacebookAiKey('claude')) },
+    },
+  };
+}
+
+function requireFacebookPageRuntime() {
+  const cfg = getFacebookPageRuntime();
+  if (!cfg.pageId) throw new Error('Thiếu Facebook Page ID.');
+  if (!cfg.pageAccessToken) throw new Error('Thiếu Facebook Page Access Token.');
+  return cfg;
+}
+
+function facebookGraphUrl(cfg, endpoint) {
+  return `https://graph.facebook.com/${cfg.graphVersion}/${endpoint.replace(/^\/+/, '')}`;
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function facebookGraphRequest(work, attempt = 0) {
+  try {
+    return await work();
+  } catch (err) {
+    const status = err.response?.status;
+    const fbError = err.response?.data?.error;
+    const fbCode = fbError?.code;
+    const fbMsg = fbError?.message || err.message;
+    const retry = attempt < 3 && ((!err.response && err.code) || status >= 500 || FACEBOOK_RETRYABLE_CODES.has(fbCode));
+    if (retry) {
+      await sleep(2000 * Math.pow(2, attempt));
+      return facebookGraphRequest(work, attempt + 1);
+    }
+    throw new Error(fbError ? `[FB #${fbCode}] ${fbMsg}` : `[HTTP ${status || 'network'}] ${fbMsg}`);
+  }
+}
 
 const FACEBOOK_PILLARS = {
   knowledge:  { label: 'Kiến thức kỹ thuật',    voice: 'chuyên gia ân cần, thực chiến' },
