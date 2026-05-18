@@ -42,6 +42,8 @@
     .sc-name:focus{background:var(--s2)}
     .sc-del{background:none;border:none;cursor:pointer;color:var(--muted);padding:4px 6px;border-radius:6px;font-size:14px;line-height:1;transition:all .15s}
     .sc-del:hover{color:var(--red);background:rgba(239,68,68,.1)}
+    .btn-reset-hd{background:none;border:none;cursor:pointer;color:var(--muted);padding:4px 6px;border-radius:6px;font-size:14px;line-height:1;transition:all .15s}
+    .btn-reset-hd:hover{color:var(--warn);background:rgba(245,158,11,.1)}
 
     /* meta row */
     .sc-meta{display:flex;gap:8px;padding:9px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
@@ -311,6 +313,14 @@ function addSession(sid){
   s.sessions.sort((a,b)=>b.date.localeCompare(a.date));
   scheduleSave();
   rerenderCard(sid);
+  const {total,paid}=calcStats(s);
+  if(paid>0&&total>=paid){
+    setTimeout(()=>{
+      if(confirm('Đã học đủ số tiền thanh toán trước ('+fmtMoney(paid)+').\nCó lưu lại thông tin và reset buổi học không?')){
+        archiveAndReset(sid,null);
+      }
+    },150);
+  }
 }
 
 function delSession(sid,sesid){
@@ -379,6 +389,12 @@ function addPayment(sid){
   const date=V('np-date-'+sid);
   const amt=V('np-amt-'+sid).trim();
   if(!amt){alert('Nhập số tiền thanh toán.');return;}
+  const paidAmt=parseFee(amt);
+  const {total}=calcStats(s);
+  if(paidAmt>0&&total>0&&paidAmt===total){
+    archiveAndReset(sid,{date,amount:amt});
+    return;
+  }
   if(!s.payments)s.payments=[];
   s.payments.push({id:gid(),date,amount:amt});
   scheduleSave();
@@ -400,9 +416,18 @@ function resetSessions(sid){
   if(!s)return;
   if(!s.sessions.length){alert('Chưa có buổi học để reset.');return;}
   if(!confirm('Reset '+s.sessions.length+' buổi học của '+s.name+'?\nDữ liệu sẽ được lưu lại trong Lịch Sử.'))return;
+  archiveAndReset(sid,null);
+}
+
+function archiveAndReset(sid,extraPayment){
+  const s=D.students.find(s=>s.id===sid);
+  if(!s)return;
   if(!s.resetHistory)s.resetHistory=[];
-  s.resetHistory.push({at:new Date().toISOString().slice(0,10),sessions:[...s.sessions]});
+  const pmts=[...(s.payments||[])];
+  if(extraPayment) pmts.push({id:gid(),...extraPayment});
+  s.resetHistory.push({at:new Date().toISOString().slice(0,10),sessions:[...s.sessions],payments:pmts});
   s.sessions=[];
+  s.payments=[];
   scheduleSave();
   rerenderCard(sid);
 }
@@ -429,6 +454,13 @@ function toggleSchedForm(sid){
   f.style.display=shown?'none':'flex';
 }
 
+function togglePayForm(sid){
+  const f=document.getElementById('npf-'+sid);
+  if(!f)return;
+  const shown=f.style.display!=='none';
+  f.style.display=shown?'none':'flex';
+}
+
 // ── DOM helpers ───────────────────────────────────────────────────────────────
 
 function V(id){const el=document.getElementById(id);return el?el.value:'';}
@@ -436,16 +468,10 @@ function V(id){const el=document.getElementById(id);return el?el.value:'';}
 function refreshStats(sid){
   const s=D.students.find(s=>s.id===sid);
   if(!s)return;
-  const {count,total,paid,owed}=calcStats(s);
+  const {count,total}=calcStats(s);
   const q=(id)=>document.getElementById(id);
   if(q('stc-'+sid)) q('stc-'+sid).textContent=count+' buổi';
   if(q('sttot-'+sid)) q('sttot-'+sid).textContent=fmtMoney(total);
-  if(q('stpaid-'+sid)) q('stpaid-'+sid).textContent=fmtMoney(paid);
-  if(q('stow-'+sid)){
-    q('stow-'+sid).textContent=fmtMoney(owed);
-    const wrap=q('stow-wrap-'+sid);
-    if(wrap) wrap.className='st'+(owed>0?' ow':'');
-  }
 }
 
 function rerenderCard(sid){
@@ -512,7 +538,7 @@ function buildCard(s){
     <div class="hist-body" id="hist-${s.id}" style="display:none">
       ${hist.slice().reverse().map(batch=>`
         <div class="hist-batch">
-          <div class="hist-batch-hd">Reset ngày ${batch.at} — ${batch.sessions.length} buổi</div>
+          <div class="hist-batch-hd">Reset ngày ${batch.at} — ${batch.sessions.length} buổi${batch.payments&&batch.payments.length?' · Đã trả: '+batch.payments.map(p=>p.amount).join(', '):''}</div>
           <div class="hist-chips">${batch.sessions.map(se=>`
             <span class="sess-chip" style="opacity:.6">
               <span class="top">
@@ -538,17 +564,18 @@ function buildCard(s){
         onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
       >${esc(s.name)}</span>
     </div>
+    <button class="btn-reset-hd" onclick="resetSessions('${s.id}')" title="Reset buổi học">↺</button>
     <button class="sc-del" onclick="deleteStudent('${s.id}')" title="Xóa học viên">🗑</button>
   </div>
 
   <div class="sec" style="border-top:none;padding-top:8px">
     <span>Các Buổi Đã Học</span>
-    <span class="sec-badge" id="stc-${s.id}">${count} buổi</span>
+    <span style="display:flex;align-items:center;gap:6px">
+      <span class="sec-badge" id="stc-${s.id}">${count} buổi</span>
+      <button class="btn-add-sched" onclick="toggleSessForm('${s.id}')">+ Buổi</button>
+    </span>
   </div>
   <div class="sess-list">${rows}</div>
-  <div class="add-toggle-row">
-    <button class="add-toggle-btn" onclick="toggleSessForm('${s.id}')">+ Thêm Buổi Học</button>
-  </div>
   <div class="af" id="nsf-${s.id}" style="display:none">
     <input type="date" id="ns-date-${s.id}" class="w-date" value="${today}">
     <select id="ns-type-${s.id}" class="w-type">${typeOpts}</select>
@@ -560,9 +587,6 @@ function buildCard(s){
 
   <div class="stats">
     <span class="st">Tổng: <b id="sttot-${s.id}">${fmtMoney(total)}</b></span>
-    <span class="st">Đã trả: <b class="pv" id="stpaid-${s.id}">${fmtMoney(paid)}</b></span>
-    <span class="st${owed>0?' ow':''}" id="stow-wrap-${s.id}">Còn nợ: <b id="stow-${s.id}">${fmtMoney(owed)}</b></span>
-    <button class="btn-reset" onclick="resetSessions('${s.id}')">↺ Reset buổi</button>
   </div>
 
   <div class="sec-sched">
@@ -584,13 +608,17 @@ function buildCard(s){
 
   <div class="sec">
     <span>Thanh Toán</span>
-    <span class="sec-badge">${payments.length>0?payments.length+' lần':''}</span>
+    <span style="display:flex;align-items:center;gap:6px">
+      <span class="sec-badge">${payments.length>0?payments.length+' lần':''}</span>
+      <button class="btn-add-sched" onclick="togglePayForm('${s.id}')">+ Thanh Toán</button>
+    </span>
   </div>
   <div class="pay-list">${payChips}</div>
-  <div class="af">
+  <div class="af" id="npf-${s.id}" style="display:none">
     <input type="date" id="np-date-${s.id}" class="w-date" value="${today}">
     <input type="text" id="np-amt-${s.id}" class="w-amt" placeholder="250k, 2tr…">
     <button class="btn-add" onclick="addPayment('${s.id}')">+ Thanh Toán</button>
+    <button class="btn-cancel" onclick="togglePayForm('${s.id}')">Hủy</button>
   </div>
 
   <div class="note-sec">
