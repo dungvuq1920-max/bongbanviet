@@ -4798,6 +4798,48 @@ app.post('/api/prompts/:id/use', (req, res) => {
   res.json({ ok: true });
 });
 
+// ─── Facebook Posts ───────────────────────────────────────────────────────────
+
+app.get('/api/fb-posts', (req, res) => {
+  const { status, pillar, q } = req.query;
+  let rows = db.prepare('SELECT * FROM fb_posts ORDER BY created_at DESC').all();
+  if (status && status !== 'all') rows = rows.filter(r => r.status === status);
+  if (pillar && pillar !== 'all') rows = rows.filter(r => r.pillar === pillar);
+  if (q) { const ql = q.toLowerCase(); rows = rows.filter(r => (r.topic+r.caption+r.hashtags).toLowerCase().includes(ql)); }
+  res.json(rows.map(r => ({ ...r, source_urls: JSON.parse(r.source_urls || '[]') })));
+});
+
+app.post('/api/fb-posts/import', (req, res) => {
+  const posts = Array.isArray(req.body) ? req.body : (req.body.posts || []);
+  if (!posts.length) return res.status(400).json({ error: 'No posts' });
+  const insert = db.prepare(`INSERT INTO fb_posts (id,topic,pillar,status,brand_voice,source_type,source_urls,source_notes,fact_summary,caption,hashtags,cta,website_link,image_prompt,scheduled_time) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
+  const run = db.transaction(() => posts.map(p => {
+    const id = Date.now().toString(36) + Math.random().toString(36).slice(2,5);
+    insert.run(id, p.topic||'', p.pillar||'knowledge', p.status||'draft', p.brand_voice||'', p.source_type||'direct-prompt', JSON.stringify(p.source_urls||[]), p.source_notes||'', p.fact_summary||'', p.caption||'', p.hashtags||'', p.cta||'', p.website_link||'https://bongbanviet.com', p.image_prompt||'', p.scheduled_time||'');
+    return id;
+  }));
+  const ids = run();
+  res.json({ ok: true, count: ids.length, ids });
+});
+
+app.post('/api/fb-posts', (req, res) => {
+  const p = req.body;
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2,5);
+  db.prepare(`INSERT INTO fb_posts (id,topic,pillar,status,brand_voice,source_type,source_urls,source_notes,fact_summary,caption,hashtags,cta,website_link,image_prompt,scheduled_time) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(id, p.topic||'', p.pillar||'knowledge', p.status||'draft', p.brand_voice||'', p.source_type||'direct-prompt', JSON.stringify(p.source_urls||[]), p.source_notes||'', p.fact_summary||'', p.caption||'', p.hashtags||'', p.cta||'', p.website_link||'https://bongbanviet.com', p.image_prompt||'', p.scheduled_time||'');
+  res.json({ ok: true, id });
+});
+
+app.put('/api/fb-posts/:id', (req, res) => {
+  const p = req.body;
+  db.prepare(`UPDATE fb_posts SET topic=?,pillar=?,status=?,brand_voice=?,source_notes=?,fact_summary=?,caption=?,hashtags=?,cta=?,website_link=?,image_prompt=?,scheduled_time=?,updated_at=datetime('now') WHERE id=?`).run(p.topic||'', p.pillar||'knowledge', p.status||'draft', p.brand_voice||'', p.source_notes||'', p.fact_summary||'', p.caption||'', p.hashtags||'', p.cta||'', p.website_link||'https://bongbanviet.com', p.image_prompt||'', p.scheduled_time||'', req.params.id);
+  res.json({ ok: true });
+});
+
+app.delete('/api/fb-posts/:id', (req, res) => {
+  db.prepare('DELETE FROM fb_posts WHERE id=?').run(req.params.id);
+  res.json({ ok: true });
+});
+
 // ─── Start ───────────────────────────────────────────────────────────────────
 
 const { execSync } = require('child_process');

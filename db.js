@@ -197,6 +197,29 @@ db.exec(`
   )
 `);
 
+// Facebook posts table
+db.exec(`
+  CREATE TABLE IF NOT EXISTS fb_posts (
+    id TEXT PRIMARY KEY,
+    topic TEXT DEFAULT '',
+    pillar TEXT DEFAULT 'knowledge',
+    status TEXT DEFAULT 'draft',
+    brand_voice TEXT DEFAULT '',
+    source_type TEXT DEFAULT 'direct-prompt',
+    source_urls TEXT DEFAULT '[]',
+    source_notes TEXT DEFAULT '',
+    fact_summary TEXT DEFAULT '',
+    caption TEXT DEFAULT '',
+    hashtags TEXT DEFAULT '',
+    cta TEXT DEFAULT '',
+    website_link TEXT DEFAULT 'https://bongbanviet.com',
+    image_prompt TEXT DEFAULT '',
+    scheduled_time TEXT DEFAULT '',
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  )
+`);
+
 // Orders table (added later, created via migration)
 db.exec(`
   CREATE TABLE IF NOT EXISTS orders (

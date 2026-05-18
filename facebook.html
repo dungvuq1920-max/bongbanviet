@@ -1,1080 +1,619 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Facebook AI Dashboard | BongBanViet</title>
-  <link rel="icon" type="image/png" href="/favicon.png">
-  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-  <style>
-    :root {
-      --red:#D62B2B;
-      --ink:#111827;
-      --muted:#6B7280;
-      --line:#E5E7EB;
-      --bg:#F4F6F8;
-      --panel:#FFFFFF;
-      --green:#059669;
-      --amber:#D97706;
-      --blue:#2563EB;
-      --rose:#BE123C;
-    }
-    * { box-sizing:border-box; }
-    body {
-      margin:0;
-      font-family:"Be Vietnam Pro", system-ui, sans-serif;
-      color:var(--ink);
-      background:var(--bg);
-      min-height:100vh;
-    }
-    button, input, select, textarea { font:inherit; }
-    button { cursor:pointer; }
-    a { color:inherit; text-decoration:none; }
-    .layout { min-height:100vh; display:grid; grid-template-columns:260px 1fr; }
-    .side {
-      background:#111827;
-      color:#fff;
-      padding:22px 18px;
-      display:flex;
-      flex-direction:column;
-      gap:22px;
-      position:sticky;
-      top:0;
-      height:100vh;
-    }
-    .brand { display:flex; gap:12px; align-items:center; padding-bottom:18px; border-bottom:1px solid rgba(255,255,255,.1); }
-    .brand img { width:44px; height:44px; object-fit:contain; border-radius:50%; background:#fff; }
-    .brand b { display:block; font-size:15px; letter-spacing:.04em; }
-    .brand span { display:block; margin-top:3px; color:rgba(255,255,255,.5); font-size:11px; }
-    .nav { display:flex; flex-direction:column; gap:6px; }
-    .nav a, .nav button {
-      width:100%;
-      display:flex;
-      align-items:center;
-      gap:10px;
-      color:rgba(255,255,255,.72);
-      background:transparent;
-      border:0;
-      padding:10px 12px;
-      text-align:left;
-      border-radius:6px;
-      font-size:13px;
-      font-weight:600;
-    }
-    .nav a.active { background:var(--red); color:#fff; }
-    .side-footer { margin-top:auto; display:grid; gap:8px; color:rgba(255,255,255,.55); font-size:12px; }
-    .main { min-width:0; }
-    .top {
-      height:68px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:0 28px;
-      background:#fff;
-      border-bottom:1px solid var(--line);
-      position:sticky;
-      top:0;
-      z-index:5;
-    }
-    .top h1 { margin:0; font-size:20px; letter-spacing:-.01em; }
-    .top-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
-    .content { padding:24px 28px 40px; }
-    .stats { display:grid; grid-template-columns:repeat(6, minmax(120px, 1fr)); gap:12px; margin-bottom:16px; }
-    .stat {
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:8px;
-      padding:14px;
-      min-width:0;
-    }
-    .stat strong { display:block; font-size:28px; line-height:1; }
-    .stat span { display:block; margin-top:7px; color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.08em; font-weight:700; }
-    .panel {
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:8px;
-      padding:16px;
-      margin-bottom:18px;
-    }
-    .panel-title { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
-    .panel-title h2 { margin:0; font-size:15px; }
-    .panel-title p { margin:3px 0 0; color:var(--muted); font-size:12px; line-height:1.45; }
-    .schedule-board { display:grid; grid-template-columns:repeat(7, minmax(128px, 1fr)); gap:10px; overflow-x:auto; padding-bottom:2px; }
-    .schedule-day { border:1px solid var(--line); border-radius:8px; background:#FAFAFA; min-width:128px; overflow:hidden; }
-    .schedule-day header { padding:9px 10px; border-bottom:1px solid var(--line); background:#fff; }
-    .schedule-day b { display:block; font-size:13px; }
-    .schedule-day span { display:block; margin-top:2px; color:var(--muted); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; }
-    .slot-list { display:grid; gap:6px; padding:8px; }
-    .slot {
-      border:1px solid #E5E7EB;
-      border-left:3px solid var(--red);
-      border-radius:6px;
-      background:#fff;
-      padding:7px;
-      display:grid;
-      gap:3px;
-    }
-    .slot strong { font-size:12px; line-height:1.2; }
-    .slot small { color:var(--muted); font-size:10px; line-height:1.35; }
-    .mix-strip { display:flex; gap:6px; flex-wrap:wrap; margin-top:12px; }
-    .mix-pill { border:1px solid var(--line); border-radius:999px; padding:5px 8px; font-size:11px; font-weight:800; background:#fff; color:#374151; }
-    .controls {
-      display:grid;
-      grid-template-columns:repeat(10, minmax(0, 1fr));
-      gap:10px;
-      align-items:end;
-    }
-    .field { display:grid; gap:6px; min-width:0; }
-    .field label { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.08em; font-weight:800; }
-    .field input, .field select, .field textarea {
-      width:100%;
-      border:1px solid var(--line);
-      border-radius:6px;
-      background:#fff;
-      padding:10px 11px;
-      color:var(--ink);
-      outline:none;
-    }
-    .field textarea { min-height:110px; resize:vertical; line-height:1.5; }
-    .field input:focus, .field select:focus, .field textarea:focus { border-color:var(--red); box-shadow:0 0 0 3px rgba(214,43,43,.08); }
-    .span-2 { grid-column:span 2; }
-    .span-3 { grid-column:span 3; }
-    .span-4 { grid-column:span 4; }
-    .span-5 { grid-column:span 5; }
-    .span-10 { grid-column:span 10; }
-    .btn {
-      border:1px solid var(--line);
-      border-radius:6px;
-      min-height:40px;
-      padding:9px 13px;
-      background:#fff;
-      color:var(--ink);
-      font-size:12px;
-      font-weight:800;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      white-space:nowrap;
-    }
-    .btn svg { width:16px; height:16px; }
-    .btn.primary { background:var(--red); border-color:var(--red); color:#fff; }
-    .btn.dark { background:#111827; border-color:#111827; color:#fff; }
-    .btn.green { background:var(--green); border-color:var(--green); color:#fff; }
-    .btn.blue { background:var(--blue); border-color:var(--blue); color:#fff; }
-    .btn.amber { background:#FFF7ED; border-color:#FED7AA; color:#9A3412; }
-    .btn.danger { background:#FFF1F2; border-color:#FFE4E6; color:#BE123C; }
-    .btn:disabled { opacity:.55; cursor:not-allowed; }
-    .toggle {
-      display:flex;
-      align-items:center;
-      gap:9px;
-      min-height:40px;
-      padding:8px 10px;
-      border:1px solid var(--line);
-      border-radius:6px;
-      background:#fff;
-      color:var(--muted);
-      font-size:12px;
-      font-weight:700;
-    }
-    .toggle input { width:17px; height:17px; accent-color:var(--red); }
-    .bar { display:flex; justify-content:space-between; align-items:center; gap:12px; margin:16px 0; flex-wrap:wrap; }
-    .bar-left, .bar-right { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-    .grid { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:14px; }
-    .post {
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:8px;
-      overflow:hidden;
-      display:flex;
-      flex-direction:column;
-      min-height:430px;
-    }
-    .post-media {
-      height:168px;
-      background:#111827;
-      position:relative;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      overflow:hidden;
-    }
-    .post-media img { width:100%; height:100%; object-fit:cover; display:block; }
-    .media-empty {
-      color:rgba(255,255,255,.7);
-      text-align:center;
-      padding:18px;
-      font-size:13px;
-      line-height:1.5;
-    }
-    .select-box { position:absolute; top:10px; left:10px; width:20px; height:20px; accent-color:var(--red); z-index:2; }
-    .chip {
-      display:inline-flex;
-      align-items:center;
-      gap:5px;
-      border-radius:999px;
-      padding:4px 8px;
-      font-size:10px;
-      font-weight:800;
-      text-transform:uppercase;
-      letter-spacing:.05em;
-      background:#F3F4F6;
-      color:#374151;
-    }
-    .chip.idea { background:#EEF2FF; color:#3730A3; }
-    .chip.draft { background:#FFFBEB; color:#92400E; }
-    .chip.approved { background:#ECFDF5; color:#047857; }
-    .chip.scheduled { background:#EFF6FF; color:#1D4ED8; }
-    .chip.posted { background:#F0FDF4; color:#166534; }
-    .chip.used { background:#F3E8FF; color:#6D28D9; }
-    .chip.failed { background:#FFF1F2; color:#BE123C; }
-    .post-body { padding:14px; display:flex; flex-direction:column; gap:10px; flex:1; }
-    .post-meta { display:flex; align-items:center; justify-content:space-between; gap:8px; }
-    .post-meta > span:first-child { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
-    .post h2 { margin:0; font-size:15px; line-height:1.35; min-height:42px; }
-    .line { color:var(--muted); font-size:12px; line-height:1.45; }
-    .caption {
-      border-top:1px solid var(--line);
-      padding-top:10px;
-      color:#374151;
-      font-size:12px;
-      line-height:1.55;
-      max-height:96px;
-      overflow:hidden;
-      white-space:pre-line;
-    }
-    .hashtags {
-      color:var(--blue);
-      font-size:11px;
-      line-height:1.5;
-      max-height:38px;
-      overflow:hidden;
-    }
-    .post-actions {
-      display:grid;
-      grid-template-columns:repeat(3, 1fr);
-      gap:7px;
-      margin-top:auto;
-    }
-    .post-actions .btn { min-height:34px; padding:7px; font-size:11px; }
-    .empty {
-      background:#fff;
-      border:1px dashed #CBD5E1;
-      border-radius:8px;
-      padding:44px 24px;
-      text-align:center;
-      color:var(--muted);
-    }
-    .prompt-console {
-      display:grid;
-      grid-template-columns:minmax(0, 1.2fr) minmax(280px, .8fr);
-      gap:12px;
-      align-items:stretch;
-    }
-    .prompt-console textarea {
-      min-height:220px;
-      font-family:ui-monospace, SFMono-Regular, Consolas, monospace;
-      font-size:12px;
-    }
-    .prompt-output {
-      border:1px solid var(--line);
-      border-radius:8px;
-      background:#0F172A;
-      color:#E5E7EB;
-      padding:12px;
-      min-height:220px;
-      max-height:360px;
-      overflow:auto;
-      white-space:pre-wrap;
-      font:12px/1.55 ui-monospace, SFMono-Regular, Consolas, monospace;
-    }
-    .run-list { display:grid; gap:8px; margin-top:12px; }
-    .run-card {
-      border:1px solid var(--line);
-      border-radius:8px;
-      padding:10px;
-      display:grid;
-      gap:6px;
-      background:#FAFAFA;
-    }
-    .run-card strong { font-size:12px; }
-    .run-card pre {
-      margin:0;
-      max-height:90px;
-      overflow:hidden;
-      white-space:pre-wrap;
-      color:#374151;
-      font:11px/1.45 ui-monospace, SFMono-Regular, Consolas, monospace;
-    }
-    .login {
-      position:fixed;
-      inset:0;
-      background:#111827;
-      z-index:50;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:20px;
-    }
-    .login.hidden { display:none; }
-    .login-box {
-      width:380px;
-      max-width:100%;
-      background:#1F2937;
-      color:#fff;
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:8px;
-      padding:28px;
-    }
-    .login-box img { width:60px; height:60px; object-fit:contain; border-radius:50%; background:#fff; display:block; margin:0 auto 16px; }
-    .login-box h2 { margin:0 0 6px; text-align:center; font-size:18px; }
-    .login-box p { margin:0 0 20px; text-align:center; color:rgba(255,255,255,.55); font-size:12px; }
-    .login-box input {
-      width:100%;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.06);
-      color:#fff;
-      border-radius:6px;
-      padding:12px;
-      outline:none;
-    }
-    .login-error { color:#FCA5A5; min-height:18px; font-size:12px; margin-top:10px; text-align:center; }
-    .modal {
-      position:fixed;
-      inset:0;
-      display:none;
-      align-items:center;
-      justify-content:center;
-      background:rgba(17,24,39,.62);
-      z-index:40;
-      padding:22px;
-    }
-    .modal.open { display:flex; }
-    .modal-box {
-      width:min(1040px, 96vw);
-      max-height:90vh;
-      overflow:auto;
-      background:#fff;
-      border-radius:8px;
-      border:1px solid var(--line);
-    }
-    .modal-head {
-      height:58px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:0 18px;
-      border-bottom:1px solid var(--line);
-      position:sticky;
-      top:0;
-      background:#fff;
-      z-index:2;
-    }
-    .modal-head h3 { margin:0; font-size:16px; }
-    .modal-body { padding:18px; }
-    .toast {
-      position:fixed;
-      right:18px;
-      bottom:18px;
-      z-index:60;
-      background:#111827;
-      color:#fff;
-      border-radius:8px;
-      padding:12px 14px;
-      max-width:420px;
-      box-shadow:0 18px 50px rgba(0,0,0,.22);
-      display:none;
-      font-size:13px;
-      line-height:1.5;
-    }
-    .toast.show { display:block; }
-    @media (max-width:1200px) {
-      .layout { grid-template-columns:1fr; }
-      .side { position:static; height:auto; flex-direction:row; align-items:center; overflow:auto; }
-      .nav { flex-direction:row; }
-      .side-footer { display:none; }
-      .stats { grid-template-columns:repeat(3, 1fr); }
-      .grid { grid-template-columns:repeat(2, minmax(0, 1fr)); }
-      .controls { grid-template-columns:repeat(6, minmax(0, 1fr)); }
-      .span-3, .span-4, .span-5 { grid-column:span 3; }
-      .span-10 { grid-column:span 6; }
-    }
-    @media (max-width:760px) {
-      .top { height:auto; padding:16px; align-items:flex-start; flex-direction:column; }
-      .content { padding:16px; }
-      .stats, .grid { grid-template-columns:1fr; }
-      .prompt-console { grid-template-columns:1fr; }
-      .controls { grid-template-columns:1fr; }
-      .span-2, .span-3, .span-4, .span-5, .span-10 { grid-column:span 1; }
-      .bar { align-items:stretch; }
-      .bar-left, .bar-right { width:100%; }
-      .bar .btn, .bar select, .bar input { flex:1; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Facebook Dashboard | BÓNG BÀN VIỆT</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f172a;--surf:#1e293b;--surf2:#263347;--surf3:#2d3d55;
+  --line:rgba(255,255,255,.08);--text:#e2e8f0;--muted:#64748b;
+  --blue:#3b82f6;--blue2:#60a5fa;--green:#10b981;--warn:#f59e0b;--red:#ef4444;
+  --r:10px;
+}
+body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
+button{cursor:pointer;border:none;font-family:inherit;font-size:inherit;transition:all .15s}
+input,textarea,select{font-family:inherit;font-size:inherit;outline:none}
+
+/* ── Header ── */
+.hdr{background:var(--surf);border-bottom:1px solid var(--line);padding:0 20px;height:56px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50}
+.hdr-brand{font-size:15px;font-weight:700;color:var(--blue);white-space:nowrap;display:flex;align-items:center;gap:8px}
+.hdr-link{color:var(--muted);font-size:12px;font-weight:400;text-decoration:none;padding:3px 8px;border-radius:5px}
+.hdr-link:hover{background:var(--surf2);color:var(--text)}
+.status-tabs{display:flex;gap:2px;background:var(--bg);border-radius:8px;padding:3px;margin-left:8px}
+.stab{background:none;color:var(--muted);border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;white-space:nowrap}
+.stab.active{background:var(--surf2);color:var(--text)}
+.stab:hover:not(.active){color:var(--text)}
+.hdr-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.count-chip{background:rgba(59,130,246,.12);color:var(--blue);border-radius:999px;padding:3px 10px;font-size:12px;font-weight:600;white-space:nowrap}
+.btn-import{background:var(--blue);color:#fff;border-radius:8px;padding:7px 16px;font-weight:600;font-size:13px;white-space:nowrap}
+.btn-import:hover{background:var(--blue2)}
+
+/* ── Pillar filter bar ── */
+.pbar{padding:9px 20px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line);background:var(--surf)}
+.ppill{background:none;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:3px 12px;font-size:12px;font-weight:500}
+.ppill:hover{border-color:rgba(255,255,255,.2);color:var(--text)}
+
+/* ── Grid ── */
+.grid{padding:18px 20px 80px;columns:3 300px;column-gap:14px}
+@media(max-width:720px){.grid{columns:1;padding:12px 12px 80px}}
+
+/* ── Card ── */
+.card{background:var(--surf);border:1px solid var(--line);border-radius:var(--r);margin-bottom:14px;break-inside:avoid;display:flex;flex-direction:column;transition:border-color .15s}
+.card:hover{border-color:rgba(59,130,246,.3)}
+.card-top{padding:11px 13px 10px;display:flex;align-items:flex-start;gap:7px;border-bottom:1px solid var(--line)}
+.pbadge{border-radius:5px;padding:2px 8px;font-size:11px;font-weight:700;letter-spacing:.04em;white-space:nowrap;flex-shrink:0;margin-top:1px}
+.card-topic{font-size:13px;font-weight:700;flex:1;line-height:1.4}
+.card-time{font-size:11px;color:var(--muted);white-space:nowrap;margin-top:2px;flex-shrink:0}
+.card-caption{padding:10px 13px;font-size:12.5px;color:#cbd5e1;line-height:1.65;white-space:pre-wrap;word-break:break-word;max-height:88px;overflow:hidden;position:relative}
+.card-caption::after{content:'';position:absolute;bottom:0;left:0;right:0;height:28px;background:linear-gradient(transparent,var(--surf))}
+.card-caption.exp{max-height:none}
+.card-caption.exp::after{display:none}
+.btn-more{background:none;border:none;color:var(--muted);font-size:11px;padding:0 13px 7px;text-align:left}
+.btn-more:hover{color:var(--blue)}
+.card-tags{padding:5px 13px 7px;font-size:11px;color:var(--muted);border-top:1px solid var(--line);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.card-foot{padding:7px 9px;border-top:1px solid var(--line);display:flex;align-items:center;gap:3px}
+.ic{background:none;color:var(--muted);border-radius:6px;padding:5px 7px;font-size:13px;line-height:1}
+.ic:hover{background:var(--surf2);color:var(--text)}
+.ic.copy:hover{color:var(--green)}
+.ic.img:hover{color:var(--warn)}
+.ic.edit:hover{color:var(--blue)}
+.ic.del:hover{color:var(--red);background:rgba(239,68,68,.08)}
+.ic.done{color:var(--green)}
+.sdot{width:7px;height:7px;border-radius:50%;margin-left:auto;flex-shrink:0}
+.sdot.draft{background:var(--muted)}
+.sdot.scheduled{background:var(--warn)}
+.sdot.posted{background:var(--green)}
+
+/* ── Empty ── */
+.empty{text-align:center;padding:70px 24px;color:var(--muted)}
+.empty h3{color:var(--text);font-size:16px;margin-bottom:8px}
+.empty-wf{display:inline-block;text-align:left;background:var(--surf);border:1px solid var(--line);border-radius:12px;padding:18px 22px;margin-top:18px;font-size:13px;line-height:2;color:var(--muted)}
+.empty-wf b{color:var(--text)}
+
+/* ── Overlay / Modal ── */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:var(--surf);border:1px solid var(--line);border-radius:14px;width:100%;max-width:640px;max-height:92vh;display:flex;flex-direction:column;animation:.18s ease mIn}
+.modal.wide{max-width:760px}
+@keyframes mIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.mhd{padding:16px 18px 13px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.mhd h3{font-size:15px;font-weight:700}
+.mcls{background:none;color:var(--muted);font-size:18px;border-radius:6px;padding:2px 8px;line-height:1}
+.mcls:hover{background:var(--surf2);color:var(--text)}
+.mbody{padding:16px 18px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
+.mfoot{padding:12px 18px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px;flex-shrink:0}
+.fld label{display:block;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.fld input,.fld textarea,.fld select{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:8px 11px;transition:border-color .15s}
+.fld input:focus,.fld textarea:focus,.fld select:focus{border-color:var(--blue)}
+.fld select option{background:var(--bg)}
+.fld textarea{resize:vertical;font-size:13px;line-height:1.65}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:500px){.frow{grid-template-columns:1fr}}
+.btn-c{background:var(--surf2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px 16px;font-weight:500}
+.btn-c:hover{background:var(--surf3)}
+.btn-s{background:var(--blue);color:#fff;border-radius:8px;padding:7px 18px;font-weight:600}
+.btn-s:hover{background:var(--blue2)}
+.btn-s:disabled{opacity:.5;cursor:default}
+
+/* ── Import extras ── */
+.wf-steps{background:var(--bg);border-radius:8px;padding:12px 14px;font-size:12.5px;line-height:2;color:var(--muted);border:1px solid var(--line)}
+.wf-steps b{color:var(--text)}
+.prompt-strip{display:flex;align-items:center;gap:8px;background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);border-radius:8px;padding:9px 12px}
+.prompt-strip span{flex:1;font-size:12px;color:var(--muted)}
+.btn-cp{background:var(--blue);color:#fff;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:600;white-space:nowrap;flex-shrink:0}
+.btn-cp:hover{background:var(--blue2)}
+.import-ta{width:100%;min-height:130px;max-height:220px;background:var(--bg);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.6;resize:vertical;font-family:monospace}
+.import-ta:focus{border-color:var(--blue)}
+.import-hint{font-size:11.5px;color:var(--muted);margin-top:4px}
+.import-ok{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);border-radius:8px;padding:9px 13px;font-size:13px;color:var(--green);display:none}
+
+/* ── Copy post modal ── */
+.copy-box{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:14px;font-size:13px;line-height:1.75;white-space:pre-wrap;word-break:break-word;max-height:300px;overflow-y:auto;color:var(--text);user-select:all}
+.img-box{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:12px;font-size:12.5px;line-height:1.65;color:#fcd34d;white-space:pre-wrap;word-break:break-word;max-height:140px;overflow-y:auto}
+.slbl{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.btn-copy-all{background:var(--green);color:#fff;border-radius:8px;padding:7px 18px;font-weight:600}
+.btn-copy-all:hover{background:#059669}
+.btn-copy-img{background:rgba(245,158,11,.12);color:var(--warn);border:1px solid rgba(245,158,11,.25);border-radius:8px;padding:7px 14px;font-weight:600;font-size:13px}
+.btn-copy-img:hover{background:rgba(245,158,11,.22)}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--surf);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:9px 18px;font-size:13px;font-weight:500;opacity:0;transition:all .22s;pointer-events:none;white-space:nowrap;z-index:999}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{border-color:var(--green);color:var(--green)}
+.toast.err{border-color:var(--red);color:var(--red)}
+</style>
 </head>
 <body>
-  <div class="login" id="login">
-    <div class="login-box">
-      <img src="/logo_bongbanviet.png" alt="BongBanViet">
-      <h2>Facebook AI Dashboard</h2>
-      <p>BongBanViet Admin</p>
-      <input type="password" id="loginPass" placeholder="Mật khẩu admin" autocomplete="current-password">
-      <button class="btn primary" id="loginBtn" style="width:100%;margin-top:12px;"><i data-lucide="log-in"></i> Đăng nhập</button>
-      <div class="login-error" id="loginErr"></div>
+
+<div class="hdr">
+  <div class="hdr-brand">
+    📘 Facebook
+    <a class="hdr-link" href="/admin.html">Admin</a>
+    <a class="hdr-link" href="/prompt">Prompts</a>
+  </div>
+  <div class="status-tabs">
+    <button class="stab active" data-s="all" onclick="setStatus('all')">Tất Cả</button>
+    <button class="stab" data-s="draft" onclick="setStatus('draft')">Draft</button>
+    <button class="stab" data-s="scheduled" onclick="setStatus('scheduled')">Lên Lịch</button>
+    <button class="stab" data-s="posted" onclick="setStatus('posted')">Đã Đăng</button>
+  </div>
+  <div class="hdr-right">
+    <span class="count-chip" id="countChip">0 bài</span>
+    <button class="btn-import" onclick="openImport()">+ Nhập từ AI</button>
+  </div>
+</div>
+
+<div class="pbar" id="pbar"></div>
+<div class="grid" id="grid"></div>
+
+<!-- ── Import modal ── -->
+<div class="ov" id="ovImport" style="display:none" onclick="if(event.target===this)closeImport()">
+  <div class="modal">
+    <div class="mhd">
+      <h3>Nhập Bài Từ AI</h3>
+      <button class="mcls" onclick="closeImport()">✕</button>
+    </div>
+    <div class="mbody">
+      <div class="wf-steps">
+        <b>Quy trình:</b><br>
+        1. Mở <b>Antigravity / GPT / Claude</b><br>
+        2. Copy Master Prompt bên dưới → Dán vào AI<br>
+        3. Yêu cầu: <i>"Tạo 5–10 bài, trả về JSON"</i><br>
+        4. Copy toàn bộ JSON kết quả → Dán vào ô bên dưới<br>
+        5. Bấm <b>Nhập Draft</b> → Bài xuất hiện trong dashboard
+      </div>
+      <div>
+        <div class="slbl">Master Prompt</div>
+        <div class="prompt-strip">
+          <span>MASTER PROMPT FACEBOOK PAGE BONG BAN VIET</span>
+          <button class="btn-cp" onclick="copyMasterPrompt()">📋 Copy</button>
+        </div>
+      </div>
+      <div class="fld">
+        <label>Dán JSON từ AI vào đây</label>
+        <textarea class="import-ta" id="importArea" placeholder='{"posts":[{"topic":"...","pillar":"knowledge","caption":"...","hashtags":"...","cta":"...","image_prompt":"...","scheduled_time":""}]}'></textarea>
+        <div class="import-hint">Chấp nhận: <code>{"posts":[...]}</code> hoặc <code>[{...}]</code></div>
+      </div>
+      <div class="import-ok" id="importOk"></div>
+    </div>
+    <div class="mfoot">
+      <button class="btn-c" onclick="closeImport()">Hủy</button>
+      <button class="btn-s" id="btnDoImport" onclick="doImport()">Nhập Draft</button>
     </div>
   </div>
+</div>
 
-  <div class="layout">
-    <aside class="side">
-      <div class="brand">
-        <img src="/logo_bongbanviet.png" alt="BongBanViet">
-        <div><b>BONGBANVIET</b><span>Facebook AI Dashboard</span></div>
+<!-- ── Edit modal ── -->
+<div class="ov" id="ovEdit" style="display:none" onclick="if(event.target===this)closeEdit()">
+  <div class="modal wide">
+    <div class="mhd">
+      <h3 id="editTitle">Sửa Bài</h3>
+      <button class="mcls" onclick="closeEdit()">✕</button>
+    </div>
+    <div class="mbody">
+      <div class="frow">
+        <div class="fld">
+          <label>Pillar</label>
+          <select id="ePillar">
+            <option value="knowledge">Knowledge — Kiến Thức</option>
+            <option value="product">Product — Sản Phẩm</option>
+            <option value="combo">Combo</option>
+            <option value="news">News — Tin Tức</option>
+            <option value="engagement">Engagement — Cộng Đồng</option>
+            <option value="trust">Trust — Uy Tín</option>
+            <option value="promo">Promo</option>
+          </select>
+        </div>
+        <div class="fld">
+          <label>Status</label>
+          <select id="eStatus">
+            <option value="draft">Draft</option>
+            <option value="scheduled">Đã lên lịch</option>
+            <option value="posted">Đã đăng</option>
+          </select>
+        </div>
       </div>
-      <nav class="nav">
-        <a href="/facebook" class="active"><i data-lucide="layout-dashboard"></i> Dashboard</a>
-        <a href="/admin.html"><i data-lucide="package"></i> Admin</a>
-        <a href="/index.html" target="_blank"><i data-lucide="globe"></i> Website</a>
-        <button id="logoutBtn"><i data-lucide="log-out"></i> Đăng xuất</button>
-      </nav>
-      <div class="side-footer">
-        <span id="cfgState">Đang tải cấu hình...</span>
-        <span>Page: facebook.com/bongbanviet.official</span>
+      <div class="fld">
+        <label>Topic</label>
+        <input type="text" id="eTopic" placeholder="Tiêu đề ngắn gọn…">
       </div>
-    </aside>
-
-    <main class="main">
-      <header class="top">
-        <div>
-          <h1>Facebook AI Dashboard</h1>
-          <div class="line" id="subtitle">Chạy prompt trực tiếp, tạo nội dung và quản lý bài đăng Facebook Page</div>
+      <div class="frow">
+        <div class="fld">
+          <label>Giờ đăng dự kiến</label>
+          <input type="text" id="eTime" placeholder="2026-05-19 07:30">
         </div>
-        <div class="top-actions">
-          <button class="btn" id="verifyBtn"><i data-lucide="badge-check"></i> Kiểm tra token</button>
-          <button class="btn primary" id="newBtn"><i data-lucide="plus"></i> Thêm bài</button>
+        <div class="fld">
+          <label>Link website</label>
+          <input type="text" id="eLink" placeholder="https://bongbanviet.com">
         </div>
-      </header>
-
-      <section class="content">
-        <div class="stats">
-          <div class="stat"><strong id="sTotal">0</strong><span>Tổng bài</span></div>
-          <div class="stat"><strong id="sIdea">0</strong><span>Idea</span></div>
-          <div class="stat"><strong id="sDraft">0</strong><span>Draft</span></div>
-          <div class="stat"><strong id="sApproved">0</strong><span>Approved</span></div>
-          <div class="stat"><strong id="sScheduled">0</strong><span>Scheduled</span></div>
-          <div class="stat"><strong id="sFailed">0</strong><span>Failed</span></div>
-        </div>
-
-        <section class="panel">
-          <div class="panel-title">
-            <div>
-              <h2>Kết nối Facebook Page</h2>
-              <p id="connectionState">Đang tải cấu hình kết nối...</p>
-            </div>
-            <span class="chip" id="connectionChip">Setup</span>
-          </div>
-          <div class="controls">
-            <div class="field span-2"><label>Page ID</label><input id="fbPageId" placeholder="Facebook Page ID"></div>
-            <div class="field span-2"><label>Graph API</label><input id="fbGraphVersion" placeholder="v24.0"></div>
-            <div class="field span-3"><label>Page Access Token</label><input id="fbPageToken" type="password" placeholder="Dán token mới để cập nhật"></div>
-            <div class="field span-3"><label>OpenAI API key</label><input id="fbOpenAiKey" type="password" placeholder="Dán key mới để cập nhật"></div>
-            <div class="field span-3"><label>Gemini API key</label><input id="fbGeminiKey" type="password" placeholder="Tùy chọn"></div>
-            <div class="field span-3"><label>Claude API key</label><input id="fbClaudeKey" type="password" placeholder="Tùy chọn"></div>
-            <button class="btn dark span-2" id="saveConnection"><i data-lucide="plug-zap"></i> Lưu kết nối</button>
-            <button class="btn span-2" id="verifyBtnInline"><i data-lucide="badge-check"></i> Kiểm tra token</button>
-          </div>
-        </section>
-
-        <section class="panel">
-          <div class="panel-title">
-            <div>
-              <h2>Chạy prompt trực tiếp</h2>
-              <p>Gọi GPT/Gemini/Claude ngay từ server website, không qua n8n. Nếu output là JSON bài đăng, kết quả sẽ được đưa vào grid dashboard.</p>
-            </div>
-            <span class="chip approved">Direct</span>
-          </div>
-          <div class="controls" style="margin-bottom:12px;">
-            <div class="field span-2"><label>AI provider</label><select id="directProvider">
-              <option value="auto">Auto</option>
-              <option value="openai">OpenAI</option>
-              <option value="gemini">Gemini</option>
-              <option value="claude">Claude</option>
-            </select></div>
-            <label class="toggle span-2"><input type="checkbox" id="directSavePosts" checked> Lưu JSON thành bài</label>
-            <label class="toggle span-2"><input type="checkbox" id="directAutoApprove"> Tự duyệt bài tạo ra</label>
-            <label class="toggle span-2"><input type="checkbox" id="directAllowDuplicate"> Cho phép trùng</label>
-            <button class="btn primary span-2" id="runPromptBtn"><i data-lucide="play"></i> Chạy prompt</button>
-          </div>
-          <div class="prompt-console">
-            <div class="field">
-              <label>Prompt</label>
-              <textarea id="directPrompt" placeholder="Dán prompt GPT/Claude tại đây. Nên yêu cầu output JSON có posts: [{ topic, pillar, caption, hashtags, cta, image_prompt, scheduled_time, website_link }] để dashboard tự tạo bài."></textarea>
-            </div>
-            <div>
-              <div class="field">
-                <label>Kết quả mới nhất</label>
-                <div class="prompt-output" id="directPromptOutput">Chưa chạy prompt.</div>
-              </div>
-            </div>
-          </div>
-          <div class="run-list" id="promptRunList"></div>
-        </section>
-
-        <section class="panel">
-          <div class="controls">
-            <div class="field span-2">
-              <label>Ngày bắt đầu</label>
-              <input type="date" id="startDate">
-            </div>
-            <div class="field">
-              <label>Số ngày</label>
-              <input type="number" id="days" min="1" max="30" value="7">
-            </div>
-            <div class="field">
-              <label>Bài/ngày</label>
-              <select id="postsPerDay">
-                <option value="3">3 bài</option>
-                <option value="4">4 bài</option>
-                <option value="5">5 bài</option>
-                <option value="6">6 bài</option>
-              </select>
-            </div>
-            <label class="toggle span-2"><input type="checkbox" id="autoApprove"> Tự duyệt sau khi tạo</label>
-            <label class="toggle span-2"><input type="checkbox" id="autoScheduler"> Auto schedule</label>
-            <label class="toggle span-2"><input type="checkbox" id="replaceFutureIdeas"> Thay topic tương lai</label>
-            <button class="btn primary span-2" id="collectBtn"><i data-lucide="database-zap"></i> Thu thập topic</button>
-          </div>
-        </section>
-
-        <section class="panel">
-          <div class="panel-title">
-            <div>
-              <h2>Lịch tăng trưởng page mới</h2>
-              <p>Tự chia khung giờ theo mục tiêu: nhận diện, cộng đồng, sản phẩm, website và bán hàng mềm.</p>
-            </div>
-            <span class="chip">Growth</span>
-          </div>
-          <div class="schedule-board" id="scheduleBoard"></div>
-          <div class="mix-strip" id="contentMix"></div>
-        </section>
-
-        <div class="bar">
-          <div class="bar-left">
-            <select class="btn" id="statusFilter">
-              <option value="all">Tất cả trạng thái</option>
-              <option value="idea">Idea</option>
-              <option value="draft">Draft</option>
-              <option value="approved">Approved</option>
-              <option value="scheduled">Scheduled</option>
-              <option value="posted">Posted</option>
-              <option value="failed">Failed</option>
-            </select>
-            <select class="btn" id="pillarFilter">
-              <option value="all">Tất cả pillar</option>
-              <option value="knowledge">Kiến thức</option>
-              <option value="product">Sản phẩm</option>
-              <option value="combo">Combo</option>
-              <option value="news">Tin tức</option>
-              <option value="engagement">Tương tác</option>
-              <option value="trust">Trust</option>
-              <option value="promo">Promo</option>
-            </select>
-            <input class="btn" id="searchBox" placeholder="Tìm topic..." style="justify-content:flex-start;min-width:220px;">
-          </div>
-          <div class="bar-right">
-            <button class="btn" id="refreshBtn"><i data-lucide="refresh-cw"></i> Tải lại</button>
-            <button class="btn blue" id="genBtn"><i data-lucide="wand-sparkles"></i> Tạo caption</button>
-            <button class="btn amber" id="imgBtn"><i data-lucide="image-plus"></i> Tạo ảnh</button>
-            <button class="btn green" id="approveBtn"><i data-lucide="check"></i> Duyệt</button>
-            <button class="btn dark" id="scheduleBtn"><i data-lucide="send"></i> Schedule</button>
-          </div>
-        </div>
-
-        <div class="grid" id="postGrid"></div>
-      </section>
-    </main>
-  </div>
-
-  <div class="modal" id="editModal">
-    <div class="modal-box">
-      <div class="modal-head">
-        <h3 id="modalTitle">Chỉnh bài</h3>
-        <button class="btn" id="closeModal"><i data-lucide="x"></i></button>
       </div>
-      <div class="modal-body">
-        <div class="controls">
-          <input type="hidden" id="editId">
-          <div class="field span-5"><label>Topic</label><input id="editTopic"></div>
-          <div class="field span-2"><label>Pillar</label><select id="editPillar">
-            <option value="knowledge">Kiến thức</option><option value="product">Sản phẩm</option>
-            <option value="combo">Combo</option><option value="news">Tin tức</option>
-            <option value="engagement">Tương tác</option><option value="trust">Trust</option><option value="promo">Promo</option>
-          </select></div>
-          <div class="field span-2"><label>Status</label><select id="editStatus">
-            <option value="idea">Idea</option><option value="draft">Draft</option><option value="approved">Approved</option>
-            <option value="scheduled">Scheduled</option><option value="posted">Posted</option><option value="failed">Failed</option>
-          </select></div>
-          <div class="field"><label>Giờ đăng</label><input id="editTime" type="datetime-local"></div>
-          <div class="field span-5"><label>Link website</label><input id="editLink"></div>
-          <div class="field span-5"><label>Ảnh</label><input id="editImage"></div>
-          <div class="field span-10"><label>Fact summary</label><textarea id="editFacts"></textarea></div>
-          <div class="field span-10"><label>Caption</label><textarea id="editCaption"></textarea></div>
-          <div class="field span-10"><label>Hashtag</label><textarea id="editTags"></textarea></div>
-          <div class="field span-10"><label>Nguồn JSON</label><textarea id="editSources"></textarea></div>
-          <div class="field span-10"><label>Image prompt</label><textarea id="editPrompt"></textarea></div>
-          <div class="span-10" style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;">
-            <button class="btn" id="modalGenerate"><i data-lucide="wand-sparkles"></i> Tạo caption</button>
-            <button class="btn amber" id="modalImage"><i data-lucide="image-plus"></i> Tạo ảnh</button>
-            <button class="btn primary" id="saveEdit"><i data-lucide="save"></i> Lưu</button>
-          </div>
-        </div>
+      <div class="fld">
+        <label>Caption</label>
+        <textarea id="eCaption" style="min-height:160px" placeholder="Nội dung bài đăng Facebook…"></textarea>
+      </div>
+      <div class="fld">
+        <label>Hashtags</label>
+        <input type="text" id="eHashtags" placeholder="#BongBanViet #TableTennis…">
+      </div>
+      <div class="fld">
+        <label>CTA</label>
+        <input type="text" id="eCta" placeholder="Comment hoặc inbox để được tư vấn...">
+      </div>
+      <div class="fld">
+        <label>Image Prompt (dùng để tạo ảnh)</label>
+        <textarea id="eImgPrompt" style="min-height:76px" placeholder="English prompt for 1080x1080 infographic…"></textarea>
+      </div>
+      <div class="fld">
+        <label>Fact Summary / Source Notes</label>
+        <textarea id="eSourceNotes" style="min-height:60px" placeholder="Tóm tắt nguồn, insight dùng để viết bài…"></textarea>
       </div>
     </div>
+    <div class="mfoot">
+      <button class="btn-c" onclick="closeEdit()">Hủy</button>
+      <button class="btn-s" id="btnSaveEdit" onclick="saveEdit()">Lưu</button>
+    </div>
   </div>
+</div>
 
-  <div class="toast" id="toast"></div>
+<!-- ── Copy post modal ── -->
+<div class="ov" id="ovCopy" style="display:none" onclick="if(event.target===this)closeCopy()">
+  <div class="modal">
+    <div class="mhd">
+      <h3 id="copyTitle">Copy Bài Đăng</h3>
+      <button class="mcls" onclick="closeCopy()">✕</button>
+    </div>
+    <div class="mbody">
+      <div>
+        <div class="slbl">Nội dung bài</div>
+        <div class="copy-box" id="copyBox"></div>
+      </div>
+      <div id="imgSection" style="display:none">
+        <div class="slbl" style="margin-top:4px">Image Prompt (tạo ảnh)</div>
+        <div class="img-box" id="imgBox"></div>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn-copy-img" id="btnCopyImg" style="display:none" onclick="copyImgFromModal()">📷 Copy Image Prompt</button>
+      <button class="btn-c" onclick="closeCopy()">Đóng</button>
+      <button class="btn-copy-all" onclick="copyAll()">📋 Copy Bài</button>
+    </div>
+  </div>
+</div>
 
-  <script>
-    const $ = (id) => document.getElementById(id);
-    const state = { posts: [], selected: new Set(), cfg: null, runs: [] };
+<div class="toast" id="toast"></div>
 
-    function toast(msg) {
-      const el = $('toast');
-      el.textContent = msg;
-      el.classList.add('show');
-      clearTimeout(window.__toastTimer);
-      window.__toastTimer = setTimeout(() => el.classList.remove('show'), 3600);
+<script>
+var posts = [];
+var activeStatus = 'all';
+var activePillar = 'all';
+var _editId = null;
+var _copyPost = null;
+
+const PILLARS = {
+  knowledge:  { label:'Kiến Thức',  bg:'rgba(59,130,246,.18)',  color:'#93c5fd' },
+  product:    { label:'Sản Phẩm',   bg:'rgba(167,139,250,.18)', color:'#c4b5fd' },
+  combo:      { label:'Combo',      bg:'rgba(245,158,11,.18)',  color:'#fcd34d' },
+  news:       { label:'Tin Tức',    bg:'rgba(6,182,212,.18)',   color:'#67e8f9' },
+  engagement: { label:'Cộng Đồng', bg:'rgba(16,185,129,.18)',  color:'#6ee7b7' },
+  trust:      { label:'Uy Tín',    bg:'rgba(45,212,191,.18)',  color:'#5eead4' },
+  promo:      { label:'Promo',     bg:'rgba(239,68,68,.18)',   color:'#fca5a5' },
+};
+
+// ─── API ──────────────────────────────────────────────────────────────────────
+async function api(method, path, body) {
+  const opts = { method, headers: {'Content-Type':'application/json'} };
+  if (body !== undefined) opts.body = JSON.stringify(body);
+  const r = await fetch(path, opts);
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+// ─── Load ─────────────────────────────────────────────────────────────────────
+async function load() {
+  posts = await api('GET', '/api/fb-posts');
+  buildPBar();
+  render();
+}
+
+// ─── Pillar bar ───────────────────────────────────────────────────────────────
+function buildPBar() {
+  const used = [...new Set(posts.map(p => p.pillar).filter(Boolean))];
+  const bar = document.getElementById('pbar');
+  const items = [{ p:'all', label:'Tất Cả' }, ...used.map(p => ({ p, label:(PILLARS[p]||{}).label||p }))];
+  bar.innerHTML = items.map(({ p, label }) => {
+    const pl = PILLARS[p] || {};
+    const isA = activePillar === p;
+    const sty = isA && p !== 'all' ? `background:${pl.bg};color:${pl.color};border-color:${pl.color}`
+              : isA ? 'background:var(--surf2);color:var(--text);border-color:rgba(255,255,255,.2)' : '';
+    return `<button class="ppill" style="${sty}" onclick="setPillar('${p}')">${label}</button>`;
+  }).join('');
+}
+
+// ─── Filters ─────────────────────────────────────────────────────────────────
+function setStatus(s) {
+  activeStatus = s;
+  document.querySelectorAll('.stab').forEach(b => b.classList.toggle('active', b.dataset.s === s));
+  render();
+}
+
+function setPillar(p) { activePillar = p; buildPBar(); render(); }
+
+// ─── Render ───────────────────────────────────────────────────────────────────
+function render() {
+  const list = posts.filter(p => {
+    if (activeStatus !== 'all' && p.status !== activeStatus) return false;
+    if (activePillar !== 'all' && p.pillar !== activePillar) return false;
+    return true;
+  });
+  document.getElementById('countChip').textContent = list.length + ' bài';
+  const grid = document.getElementById('grid');
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty">
+      <h3>Chưa có bài nào</h3>
+      <p>Bấm <b>+ Nhập từ AI</b> để bắt đầu</p>
+      <div class="empty-wf">
+        <b>📋 Quy trình nhanh:</b><br>
+        1. Mở Antigravity / GPT / Claude<br>
+        2. Dán <b>Master Prompt</b> BongBanViet vào AI<br>
+        3. Yêu cầu tạo 5–10 bài → AI trả về JSON<br>
+        4. Copy JSON → Paste vào dashboard<br>
+        5. Review, sửa caption, tạo ảnh, đăng tay lên Facebook
+      </div>
+    </div>`;
+    return;
+  }
+  grid.innerHTML = list.map(p => cardHTML(p)).join('');
+}
+
+function cardHTML(p) {
+  const pl = PILLARS[p.pillar] || { label:p.pillar||'?', bg:'rgba(100,116,139,.15)', color:'#94a3b8' };
+  const timeStr = p.scheduled_time ? fmtTime(p.scheduled_time) : '';
+  const long = (p.caption||'').length > 200;
+  return `<div class="card" id="card-${p.id}">
+    <div class="card-top">
+      <span class="pbadge" style="background:${pl.bg};color:${pl.color}">${pl.label}</span>
+      <span class="card-topic">${esc(p.topic||'(Chưa có tiêu đề)')}</span>
+      ${timeStr?`<span class="card-time">🕐 ${timeStr}</span>`:''}
+    </div>
+    <div class="card-caption" id="cap-${p.id}">${esc(p.caption||'')}</div>
+    ${long?`<button class="btn-more" id="mbtn-${p.id}" onclick="toggleCap('${p.id}')">Xem thêm ›</button>`:''}
+    ${p.hashtags?`<div class="card-tags">${esc(p.hashtags)}</div>`:''}
+    <div class="card-foot">
+      <button class="ic copy" onclick="openCopy('${p.id}')" title="Copy bài đăng">📋</button>
+      ${p.image_prompt?`<button class="ic img" onclick="copyImgDirect('${p.id}')" title="Copy image prompt">🖼</button>`:''}
+      <button class="ic edit" onclick="openEdit('${p.id}')" title="Sửa bài">✏️</button>
+      <button class="ic${p.status==='posted'?' done':''}" onclick="togglePosted('${p.id}')" title="${p.status==='posted'?'Bỏ đánh dấu':'Đánh dấu đã đăng'}">✓</button>
+      <button class="ic del" onclick="delPost('${p.id}')" title="Xóa">🗑</button>
+      <span class="sdot ${p.status||'draft'}" style="margin-left:auto" title="${p.status||'draft'}"></span>
+    </div>
+  </div>`;
+}
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function fmtTime(s){
+  if(!s)return '';
+  const m=s.match(/(\d{4})-(\d{2})-(\d{2})[\sT]?(\d{2}:\d{2})?/);
+  if(!m)return s;
+  return `${+m[3]}/${+m[2]} ${m[4]||''}`.trim();
+}
+
+function toggleCap(id){
+  const el=document.getElementById('cap-'+id);
+  const btn=document.getElementById('mbtn-'+id);
+  if(!el||!btn)return;
+  const exp=el.classList.toggle('exp');
+  btn.textContent=exp?'‹ Thu gọn':'Xem thêm ›';
+}
+
+// ─── Copy ─────────────────────────────────────────────────────────────────────
+function openCopy(id){
+  const p=posts.find(x=>x.id===id);
+  if(!p)return;
+  _copyPost=p;
+  document.getElementById('copyTitle').textContent=p.topic||'Copy Bài Đăng';
+  const text=[p.caption,p.hashtags,p.cta].filter(Boolean).join('\n\n');
+  document.getElementById('copyBox').textContent=text;
+  const hasImg=!!p.image_prompt;
+  document.getElementById('imgSection').style.display=hasImg?'block':'none';
+  document.getElementById('btnCopyImg').style.display=hasImg?'inline-flex':'none';
+  if(hasImg) document.getElementById('imgBox').textContent=p.image_prompt;
+  document.getElementById('ovCopy').style.display='flex';
+}
+
+function closeCopy(){ document.getElementById('ovCopy').style.display='none'; _copyPost=null; }
+
+async function copyAll(){
+  if(!_copyPost)return;
+  const text=[_copyPost.caption,_copyPost.hashtags,_copyPost.cta].filter(Boolean).join('\n\n');
+  try{ await navigator.clipboard.writeText(text); toast('Đã copy bài đăng!','ok'); } catch{ toast('Copy thất bại','err'); }
+}
+
+async function copyImgFromModal(){
+  if(!_copyPost||!_copyPost.image_prompt)return;
+  try{ await navigator.clipboard.writeText(_copyPost.image_prompt); toast('Đã copy image prompt!','ok'); } catch{ toast('Lỗi copy','err'); }
+}
+
+async function copyImgDirect(id){
+  const p=posts.find(x=>x.id===id);
+  if(!p||!p.image_prompt)return;
+  try{ await navigator.clipboard.writeText(p.image_prompt); toast('Đã copy image prompt!','ok'); } catch{ toast('Lỗi copy','err'); }
+}
+
+// ─── Toggle posted ────────────────────────────────────────────────────────────
+async function togglePosted(id){
+  const p=posts.find(x=>x.id===id);
+  if(!p)return;
+  const ns=p.status==='posted'?'draft':'posted';
+  await api('PUT','/api/fb-posts/'+id,{...p,status:ns,source_urls:[]});
+  p.status=ns; render();
+  toast(ns==='posted'?'✓ Đã đăng!':'Chuyển về Draft','ok');
+}
+
+// ─── Delete ───────────────────────────────────────────────────────────────────
+async function delPost(id){
+  const p=posts.find(x=>x.id===id);
+  if(!p||!confirm('Xóa bài "'+(p.topic||'này')+'"?'))return;
+  await api('DELETE','/api/fb-posts/'+id);
+  posts=posts.filter(x=>x.id!==id);
+  buildPBar(); render();
+  toast('Đã xóa','ok');
+}
+
+// ─── Edit ─────────────────────────────────────────────────────────────────────
+function openEdit(id){
+  const p=posts.find(x=>x.id===id);
+  if(!p)return;
+  _editId=id;
+  document.getElementById('editTitle').textContent='Sửa: '+(p.topic||'Bài viết');
+  document.getElementById('ePillar').value=p.pillar||'knowledge';
+  document.getElementById('eStatus').value=p.status||'draft';
+  document.getElementById('eTopic').value=p.topic||'';
+  document.getElementById('eTime').value=p.scheduled_time||'';
+  document.getElementById('eLink').value=p.website_link||'https://bongbanviet.com';
+  document.getElementById('eCaption').value=p.caption||'';
+  document.getElementById('eHashtags').value=p.hashtags||'';
+  document.getElementById('eCta').value=p.cta||'';
+  document.getElementById('eImgPrompt').value=p.image_prompt||'';
+  document.getElementById('eSourceNotes').value=p.source_notes||'';
+  document.getElementById('ovEdit').style.display='flex';
+  setTimeout(()=>document.getElementById('eTopic').focus(),80);
+}
+
+function closeEdit(){ document.getElementById('ovEdit').style.display='none'; _editId=null; }
+
+async function saveEdit(){
+  if(!_editId)return;
+  const btn=document.getElementById('btnSaveEdit');
+  btn.disabled=true;
+  const body={
+    topic: document.getElementById('eTopic').value.trim(),
+    pillar: document.getElementById('ePillar').value,
+    status: document.getElementById('eStatus').value,
+    scheduled_time: document.getElementById('eTime').value.trim(),
+    website_link: document.getElementById('eLink').value.trim()||'https://bongbanviet.com',
+    caption: document.getElementById('eCaption').value.trim(),
+    hashtags: document.getElementById('eHashtags').value.trim(),
+    cta: document.getElementById('eCta').value.trim(),
+    image_prompt: document.getElementById('eImgPrompt').value.trim(),
+    source_notes: document.getElementById('eSourceNotes').value.trim(),
+    brand_voice:'', fact_summary:'',
+  };
+  try{
+    await api('PUT','/api/fb-posts/'+_editId,body);
+    const idx=posts.findIndex(x=>x.id===_editId);
+    if(idx!==-1) posts[idx]={...posts[idx],...body};
+    closeEdit(); buildPBar(); render();
+    toast('Đã cập nhật','ok');
+  }catch{ toast('Lỗi khi lưu','err'); }
+  finally{ btn.disabled=false; }
+}
+
+// ─── Import ───────────────────────────────────────────────────────────────────
+function openImport(){
+  document.getElementById('importArea').value='';
+  document.getElementById('importOk').style.display='none';
+  document.getElementById('ovImport').style.display='flex';
+  setTimeout(()=>document.getElementById('importArea').focus(),80);
+}
+
+function closeImport(){ document.getElementById('ovImport').style.display='none'; }
+
+async function doImport(){
+  const raw=document.getElementById('importArea').value.trim();
+  if(!raw){ toast('Chưa có JSON để nhập!','err'); return; }
+  let parsed;
+  try{
+    const obj=JSON.parse(raw);
+    parsed=Array.isArray(obj)?obj:(Array.isArray(obj.posts)?obj.posts:null);
+    if(!parsed||!parsed.length) throw new Error('Không tìm thấy mảng posts');
+  }catch(e){ toast('JSON không hợp lệ: '+e.message,'err'); return; }
+  const btn=document.getElementById('btnDoImport');
+  btn.disabled=true; btn.textContent='Đang nhập…';
+  try{
+    const r=await api('POST','/api/fb-posts/import',parsed);
+    const ok=document.getElementById('importOk');
+    ok.textContent='✓ Đã tạo '+r.count+' draft thành công!';
+    ok.style.display='block';
+    await load();
+    setTimeout(closeImport,1100);
+    toast('Nhập '+r.count+' bài thành công','ok');
+  }catch(e){ toast('Lỗi: '+e.message,'err'); }
+  finally{ btn.disabled=false; btn.textContent='Nhập Draft'; }
+}
+
+// ─── Master Prompt ────────────────────────────────────────────────────────────
+const MASTER_PROMPT=`Bạn là Facebook Content Strategist, Table Tennis Research Assistant và Social Commerce Planner cho BongBanViet.
+
+Nhiệm vụ:
+- Thu thập thông tin từ nguồn uy tín về bóng bàn
+- Biên thành bài đăng Facebook ngắn gọn, chính xác, dễ đọc, có khả năng kéo follow/comment/share
+- Tạo caption, hashtag, CTA, image prompt/infographic prompt
+- Quảng bá website bongbanviet.com theo hướng tư vấn mềm, không spam bán hàng
+
+THÔNG TIN THƯƠNG HIỆU
+Tên: BongBanViet / bongbanviet.com
+Định vị: Tư Vấn Chuẩn, Hàng Chính Hãng
+Hotline/Zalo: 096.1269.386
+Đối tượng: Người chơi bóng bàn phong trào Việt Nam, từ mới chơi đến nâng cao
+
+GIỌNG VĂN
+- Chuyên nghiệp nhưng gần gũi, giải thích dễ hiểu
+- Không nói quá, không claim tuyệt đối như "tốt nhất thị trường"
+- Ưu tiên tư vấn đúng trình độ, đúng ngân sách, đúng lối chơi
+
+CONTENT PILLARS
+- Knowledge 35%: kỹ thuật, luật, drill, lỗi thường gặp, footwork
+- Community 20%: poll, câu hỏi A/B, "anh em chọn gì?"
+- Product 20%: review mềm, sản phẩm phù hợp với ai, so sánh cốt/mặt
+- Website 10%: link bài kiến thức, hub tư vấn
+- Trust 10%: hàng chính hãng, ảnh kho, feedback
+- Promo 5%: ưu đãi, combo cuối tuần, CTA inbox/Zalo
+
+YÊU CẦU OUTPUT — Trả về JSON hợp lệ, KHÔNG viết gì ngoài JSON:
+{
+  "posts": [
+    {
+      "topic": "Tên chủ đề ngắn gọn",
+      "pillar": "knowledge|product|combo|news|engagement|trust|promo",
+      "status": "draft",
+      "source_notes": "Lý do chọn chủ đề và mục tiêu slot",
+      "fact_summary": "Tóm tắt fact/insight dùng để viết bài",
+      "caption": "Nội dung bài đăng Facebook đầy đủ, 120-230 từ tiếng Việt",
+      "hashtags": "#BongBanViet #BongBanVietCom #BongBan #TableTennis #PingPong",
+      "cta": "Comment/inbox/Zalo 096.1269.386 để được tư vấn.",
+      "website_link": "https://bongbanviet.com",
+      "image_prompt": "English prompt for a 1080x1080 Facebook infographic",
+      "scheduled_time": ""
     }
+  ]
+}`;
 
-    const rawFetch = window.fetch.bind(window);
-    async function api(url, opts = {}) {
-      const token = sessionStorage.getItem('adminToken');
-      opts.headers = Object.assign({ 'Content-Type': 'application/json' }, opts.headers || {});
-      if (token) opts.headers['x-admin-token'] = token;
-      const res = await rawFetch(url, opts);
-      if (res.status === 401) {
-        sessionStorage.removeItem('adminToken');
-        $('login').classList.remove('hidden');
-        throw new Error('Chưa đăng nhập');
-      }
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || data.message || `HTTP ${res.status}`);
-      return data;
-    }
+async function copyMasterPrompt(){
+  try{ await navigator.clipboard.writeText(MASTER_PROMPT); toast('Đã copy Master Prompt!','ok'); } catch{ toast('Lỗi copy','err'); }
+}
 
-    function todayVn() {
-      const parts = new Intl.DateTimeFormat('en-CA', {
-        timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit'
-      }).formatToParts(new Date()).reduce((a, p) => (a[p.type] = p.value, a), {});
-      return `${parts.year}-${parts.month}-${parts.day}`;
-    }
+// ─── Keyboard ─────────────────────────────────────────────────────────────────
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    if(document.getElementById('ovCopy').style.display!=='none'){closeCopy();return;}
+    if(document.getElementById('ovEdit').style.display!=='none'){closeEdit();return;}
+    if(document.getElementById('ovImport').style.display!=='none'){closeImport();return;}
+  }
+});
 
-    function dateTimeForInput(value) {
-      if (!value) return '';
-      return String(value).replace(' ', 'T').slice(0, 16);
-    }
+// ─── Toast ────────────────────────────────────────────────────────────────────
+var _tt;
+function toast(msg,type){
+  const el=document.getElementById('toast');
+  el.textContent=msg;
+  el.className='toast show'+(type?' '+type:'');
+  clearTimeout(_tt);
+  _tt=setTimeout(()=>el.className='toast',2200);
+}
 
-    function fromDateTimeInput(value) {
-      return value ? value.replace('T', ' ') + (value.length === 16 ? ':00' : '') : '';
-    }
-
-    function statusLabel(status) {
-      return {
-        idea:'Idea', draft:'Draft', approved:'Approved', scheduled:'Scheduled', posted:'Posted', failed:'Failed'
-      }[status] || status || 'Unknown';
-    }
-
-    function pillarLabel(pillar) {
-      return {
-        knowledge:'Kiến thức', product:'Sản phẩm', combo:'Combo', news:'Tin tức', engagement:'Tương tác', trust:'Trust', promo:'Promo'
-      }[pillar] || pillar || 'Khác';
-    }
-
-    function esc(s) {
-      return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    }
-
-    function selectedIds() {
-      return [...state.selected];
-    }
-
-    function shortText(value, max = 360) {
-      const text = String(value || '').trim();
-      if (text.length <= max) return text;
-      return text.slice(0, max).replace(/\s+\S*$/, '').trim() + '...';
-    }
-
-    function renderStats(stats) {
-      $('sTotal').textContent = stats.total || 0;
-      $('sIdea').textContent = stats.idea || 0;
-      $('sDraft').textContent = stats.draft || 0;
-      $('sApproved').textContent = stats.approved || 0;
-      $('sScheduled').textContent = stats.scheduled || 0;
-      $('sFailed').textContent = stats.failed || 0;
-    }
-
-    function renderConfig() {
-      const cfg = state.cfg || {};
-      $('days').value = cfg.defaultDays || 7;
-      $('postsPerDay').value = cfg.dailyPostCount || 4;
-      $('autoApprove').checked = !!cfg.autoApproveGenerated;
-      $('autoScheduler').checked = !!cfg.autoSchedulerEnabled;
-      $('fbPageId').value = cfg.pageId || '';
-      $('fbGraphVersion').value = cfg.graphVersion || 'v24.0';
-      const tokenText = cfg.pageTokenConfigured ? `đã có token${cfg.pageTokenTail ? ' ...' + cfg.pageTokenTail : ''}` : 'thiếu token';
-      $('fbPageToken').placeholder = cfg.pageTokenConfigured ? 'Để trống nếu không đổi token' : 'Dán Page Access Token';
-      $('fbOpenAiKey').placeholder = cfg.aiKeys?.openai?.configured ? `Để trống nếu không đổi key ...${cfg.aiKeys.openai.tail || ''}` : 'Dán OpenAI API key';
-      $('fbGeminiKey').placeholder = cfg.aiKeys?.gemini?.configured ? `Để trống nếu không đổi key ...${cfg.aiKeys.gemini.tail || ''}` : 'Tùy chọn';
-      $('fbClaudeKey').placeholder = cfg.aiKeys?.claude?.configured ? `Để trống nếu không đổi key ...${cfg.aiKeys.claude.tail || ''}` : 'Tùy chọn';
-      const fbReady = cfg.pageIdConfigured && cfg.pageTokenConfigured;
-      const aiReady = (cfg.aiProviders || []).length > 0;
-      $('connectionChip').textContent = fbReady && aiReady ? 'Ready' : 'Thiếu cấu hình';
-      $('connectionChip').className = 'chip ' + (fbReady && aiReady ? 'approved' : 'failed');
-      $('connectionState').textContent = `Facebook: ${fbReady ? 'đã cấu hình' : tokenText} | AI: ${(cfg.aiProviders || []).join(', ') || 'chưa cấu hình'}`;
-      $('cfgState').textContent = `AI: ${(cfg.aiProviders || []).join(', ') || 'chưa cấu hình'} | FB: ${fbReady ? 'đã cấu hình' : 'thiếu token'}`;
-      renderScheduleStrategy();
-    }
-
-    function renderPromptRuns() {
-      const list = $('promptRunList');
-      const runs = state.runs || [];
-      if (!runs.length) {
-        list.innerHTML = '<div class="empty" style="padding:18px;">Chưa có prompt run nào.</div>';
-        return;
-      }
-      list.innerHTML = runs.slice(0, 6).map(run => {
-        const created = Array.isArray(run.created_posts) ? run.created_posts.filter(p => p.id).length : 0;
-        const skipped = Array.isArray(run.created_posts) ? run.created_posts.filter(p => p.skipped).length : 0;
-        const body = run.status === 'failed' ? run.error_message : (run.raw_output || '');
-        return `<article class="run-card">
-          <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;">
-            <strong>${esc(run.provider || 'AI')} · ${esc(run.created_at || '')}</strong>
-            <span class="chip ${run.status === 'failed' ? 'failed' : 'approved'}">${esc(run.status || '')}</span>
-          </div>
-          <div class="line">${created} bài đã tạo${skipped ? ` · ${skipped} trùng bị bỏ qua` : ''} · ${Number(run.duration_ms || 0)}ms</div>
-          <pre>${esc(shortText(body, 520))}</pre>
-        </article>`;
-      }).join('');
-    }
-
-    function renderScheduleStrategy() {
-      const cfg = state.cfg || {};
-      const board = $('scheduleBoard');
-      const mix = $('contentMix');
-      const template = cfg.scheduleTemplate || [];
-      board.innerHTML = template.map(day => `
-        <article class="schedule-day">
-          <header><b>${esc(day.label)}</b><span>${day.recommendedCount || 0} slot đề xuất</span></header>
-          <div class="slot-list">
-            ${(day.slots || []).map(slot => `
-              <div class="slot">
-                <strong>${esc(String(slot.time || '').slice(0, 5))} · ${esc(pillarLabel(slot.pillar))}</strong>
-                <small>${esc(slot.label || slot.bucket || '')}</small>
-              </div>
-            `).join('')}
-          </div>
-        </article>
-      `).join('');
-      mix.innerHTML = (cfg.contentMix || []).map(item =>
-        `<span class="mix-pill">${esc(item.bucket)} ${Number(item.percent || 0)}%</span>`
-      ).join('');
-    }
-
-    function renderPosts() {
-      const grid = $('postGrid');
-      if (!state.posts.length) {
-        grid.innerHTML = '<div class="empty" style="grid-column:1/-1;">Chưa có bài nào trong bộ lọc hiện tại.</div>';
-        return;
-      }
-      grid.innerHTML = state.posts.map(p => {
-        const img = p.image_path ? `<img src="${esc(p.image_path)}" alt="${esc(p.topic)}">` : `<div class="media-empty">Chưa có ảnh<br>${p.image_prompt ? 'Đã có prompt visual' : 'Có thể tạo infographic'}</div>`;
-        const sources = Array.isArray(p.source_urls) ? p.source_urls.length : 0;
-        const usedChip = p.is_used && p.status !== 'posted' && p.status !== 'scheduled'
-          ? '<span class="chip used">Đã dùng</span>'
-          : '';
-        return `<article class="post">
-          <div class="post-media">
-            <input class="select-box" type="checkbox" data-select="${esc(p.id)}" ${state.selected.has(p.id) ? 'checked' : ''}>
-            ${img}
-          </div>
-          <div class="post-body">
-            <div class="post-meta"><span><span class="chip ${esc(p.status)}">${statusLabel(p.status)}</span>${usedChip}</span><span class="chip">${pillarLabel(p.pillar)}</span></div>
-            <h2>${esc(p.topic)}</h2>
-            <div class="line">${esc(p.scheduled_time || 'Chưa có lịch')} · ${sources} nguồn</div>
-            ${p.source_notes ? `<div class="line">${esc(p.source_notes)}</div>` : ''}
-            <div class="line">${p.website_link ? `<a href="${esc(p.website_link)}" target="_blank">${esc(p.website_link)}</a>` : 'Chưa có link web'}</div>
-            <div class="caption">${esc(p.caption || p.fact_summary || 'Chưa tạo caption')}</div>
-            <div class="hashtags">${esc(p.hashtags || '')}</div>
-            ${p.error_message ? `<div class="line" style="color:#BE123C">${esc(p.error_message)}</div>` : ''}
-            <div class="post-actions">
-              <button class="btn" data-edit="${esc(p.id)}"><i data-lucide="pen-line"></i> Sửa</button>
-              <button class="btn amber" data-image="${esc(p.id)}"><i data-lucide="image-plus"></i> Ảnh</button>
-              <button class="btn blue" data-generate="${esc(p.id)}"><i data-lucide="wand-sparkles"></i> AI</button>
-              <button class="btn green" data-approve="${esc(p.id)}"><i data-lucide="check"></i> Duyệt</button>
-              <button class="btn dark" data-schedule="${esc(p.id)}"><i data-lucide="send"></i> Đăng</button>
-              <button class="btn" data-mark="${esc(p.id)}"><i data-lucide="badge-check"></i> Đã đăng</button>
-              <button class="btn danger" data-delete="${esc(p.id)}"><i data-lucide="trash-2"></i> Xóa</button>
-            </div>
-          </div>
-        </article>`;
-      }).join('');
-      lucide.createIcons();
-    }
-
-    async function loadAll() {
-      const q = new URLSearchParams({
-        status: $('statusFilter').value,
-        pillar: $('pillarFilter').value,
-        q: $('searchBox').value.trim(),
-        limit: '400'
-      });
-      const [cfg, stats, posts, runs] = await Promise.all([
-        api('/api/facebook/config'),
-        api('/api/facebook/stats'),
-        api('/api/facebook/posts?' + q.toString()),
-        api('/api/facebook/prompt-runs?limit=8')
-      ]);
-      state.cfg = cfg;
-      state.posts = posts;
-      state.runs = runs;
-      renderConfig();
-      renderStats(stats);
-      renderPromptRuns();
-      renderPosts();
-    }
-
-    async function saveConfig() {
-      state.cfg = await api('/api/facebook/config', {
-        method:'PUT',
-        body: JSON.stringify({
-          dailyPostCount: $('postsPerDay').value,
-          defaultDays: $('days').value,
-          autoApproveGenerated: $('autoApprove').checked,
-          autoSchedulerEnabled: $('autoScheduler').checked
-        })
-      });
-      renderConfig();
-    }
-
-    async function saveConnection() {
-      state.cfg = await api('/api/facebook/config', {
-        method:'PUT',
-        body: JSON.stringify({
-          pageId: $('fbPageId').value.trim(),
-          pageAccessToken: $('fbPageToken').value.trim(),
-          graphVersion: $('fbGraphVersion').value.trim(),
-          openaiApiKey: $('fbOpenAiKey').value.trim(),
-          geminiApiKey: $('fbGeminiKey').value.trim(),
-          claudeApiKey: $('fbClaudeKey').value.trim()
-        })
-      });
-      ['fbPageToken','fbOpenAiKey','fbGeminiKey','fbClaudeKey'].forEach(id => $(id).value = '');
-      renderConfig();
-      toast('Đã lưu kết nối Facebook');
-    }
-
-    async function bulk(endpoint, body = {}, message = 'Đã xử lý') {
-      const ids = selectedIds();
-      await api(endpoint, { method:'POST', body: JSON.stringify(Object.assign({ ids }, body)) });
-      toast(message);
-      await loadAll();
-    }
-
-    async function runDirectPrompt() {
-      const prompt = $('directPrompt').value.trim();
-      if (prompt.length < 10) {
-        $('directPrompt').focus();
-        throw new Error('Nhập prompt trước khi chạy.');
-      }
-      $('runPromptBtn').disabled = true;
-      $('directPromptOutput').textContent = 'Đang gọi AI trực tiếp từ server...';
-      try {
-        const data = await api('/api/facebook/prompt/run', {
-          method:'POST',
-          body: JSON.stringify({
-            prompt,
-            provider: $('directProvider').value,
-            saveAsPosts: $('directSavePosts').checked,
-            autoApprove: $('directAutoApprove').checked,
-            allowDuplicate: $('directAllowDuplicate').checked
-          })
-        });
-        const run = data.run || {};
-        const created = Array.isArray(run.created_posts) ? run.created_posts.filter(p => p.id).length : 0;
-        const skipped = Array.isArray(run.created_posts) ? run.created_posts.filter(p => p.skipped).length : 0;
-        $('directPromptOutput').textContent = [
-          `Provider: ${run.provider || ''}`,
-          `Status: ${run.status || ''}`,
-          `Created posts: ${created}`,
-          skipped ? `Skipped duplicates: ${skipped}` : '',
-          '',
-          run.raw_output || ''
-        ].filter(line => line !== '').join('\n');
-        toast(created ? `Đã chạy prompt và tạo ${created} bài trên dashboard` : 'Đã chạy prompt, xem kết quả bên dưới');
-        await loadAll();
-      } finally {
-        $('runPromptBtn').disabled = false;
-      }
-    }
-
-    function openEditor(post = null) {
-      $('editId').value = post?.id || '';
-      $('editTopic').value = post?.topic || '';
-      $('editPillar').value = post?.pillar || 'knowledge';
-      $('editStatus').value = post?.status || 'idea';
-      $('editTime').value = dateTimeForInput(post?.scheduled_time || '');
-      $('editLink').value = post?.website_link || '';
-      $('editImage').value = post?.image_path || '';
-      $('editFacts').value = post?.fact_summary || '';
-      $('editCaption').value = post?.caption || '';
-      $('editTags').value = post?.hashtags || '';
-      $('editPrompt').value = post?.image_prompt || '';
-      $('editSources').value = JSON.stringify(post?.source_urls || [], null, 2);
-      $('modalTitle').textContent = post ? 'Chỉnh bài' : 'Thêm bài mới';
-      $('editModal').classList.add('open');
-      lucide.createIcons();
-    }
-
-    async function saveEditor() {
-      let sourceUrls = [];
-      try { sourceUrls = JSON.parse($('editSources').value || '[]'); } catch { throw new Error('Nguồn JSON không hợp lệ'); }
-      const payload = {
-        topic: $('editTopic').value.trim(),
-        pillar: $('editPillar').value,
-        status: $('editStatus').value,
-        scheduled_time: fromDateTimeInput($('editTime').value),
-        website_link: $('editLink').value.trim(),
-        image_path: $('editImage').value.trim(),
-        fact_summary: $('editFacts').value,
-        caption: $('editCaption').value,
-        hashtags: $('editTags').value,
-        image_prompt: $('editPrompt').value,
-        source_urls: sourceUrls
-      };
-      const id = $('editId').value;
-      if (id) {
-        await api('/api/facebook/posts/' + encodeURIComponent(id), { method:'PUT', body: JSON.stringify(payload) });
-      } else {
-        await api('/api/facebook/posts', { method:'POST', body: JSON.stringify(payload) });
-      }
-      $('editModal').classList.remove('open');
-      toast('Đã lưu bài');
-      await loadAll();
-    }
-
-    async function login() {
-      $('loginErr').textContent = '';
-      try {
-        const data = await rawFetch('/api/admin/login', {
-          method:'POST',
-          headers:{ 'Content-Type':'application/json' },
-          body: JSON.stringify({ password: $('loginPass').value })
-        }).then(r => r.json().then(d => ({ ok:r.ok, data:d })));
-        if (!data.ok) throw new Error(data.data.error || 'Sai mật khẩu');
-        sessionStorage.setItem('adminToken', data.data.token);
-        $('login').classList.add('hidden');
-        await loadAll();
-      } catch (e) {
-        $('loginErr').textContent = e.message;
-      }
-    }
-
-    async function verifySession() {
-      const token = sessionStorage.getItem('adminToken');
-      $('startDate').value = todayVn();
-      if (!token) return;
-      try {
-        const res = await rawFetch('/api/admin/verify', { headers:{ 'x-admin-token':token } });
-        if (!res.ok) throw new Error('expired');
-        $('login').classList.add('hidden');
-        await loadAll();
-      } catch {
-        sessionStorage.removeItem('adminToken');
-      }
-    }
-
-    document.addEventListener('click', async (e) => {
-      const btn = e.target.closest('button');
-      const checkbox = e.target.closest('[data-select]');
-      if (checkbox) {
-        const id = checkbox.dataset.select;
-        checkbox.checked ? state.selected.add(id) : state.selected.delete(id);
-        return;
-      }
-      if (!btn) return;
-      try {
-        if (btn.id === 'loginBtn') return login();
-        if (btn.id === 'logoutBtn') {
-          sessionStorage.removeItem('adminToken');
-          $('login').classList.remove('hidden');
-          return;
-        }
-        if (btn.id === 'refreshBtn') return loadAll();
-        if (btn.id === 'newBtn') return openEditor();
-        if (btn.id === 'closeModal') return $('editModal').classList.remove('open');
-        if (btn.id === 'saveEdit') return saveEditor();
-        if (btn.id === 'saveConnection') return saveConnection();
-        if (btn.id === 'runPromptBtn') return runDirectPrompt();
-        if (btn.id === 'collectBtn') {
-          await saveConfig();
-          const data = await api('/api/facebook/collect', {
-            method:'POST',
-            body: JSON.stringify({
-              startDate: $('startDate').value,
-              days: $('days').value,
-              postsPerDay: $('postsPerDay').value,
-              replaceFutureIdeas: $('replaceFutureIdeas').checked
-            })
-          });
-          const skipped = data.skippedDuplicates ? `, bỏ qua ${data.skippedDuplicates} trùng` : '';
-          toast(`Đã thu thập ${data.created} topic${skipped}`);
-          return loadAll();
-        }
-        if (btn.id === 'genBtn') return bulk('/api/facebook/generate', { count: 12, autoApprove: $('autoApprove').checked }, 'Đã tạo caption');
-        if (btn.id === 'imgBtn') return bulk('/api/facebook/images', { count: 12 }, 'Đã tạo ảnh');
-        if (btn.id === 'approveBtn') return bulk('/api/facebook/approve', {}, 'Đã duyệt bài');
-        if (btn.id === 'scheduleBtn') return bulk('/api/facebook/schedule', {}, 'Đã gửi lịch đăng');
-        if (btn.id === 'verifyBtn' || btn.id === 'verifyBtnInline') {
-          const data = await api('/api/facebook/verify-token', { method:'POST', body:'{}' });
-          return toast(data.valid ? `Token hợp lệ: ${data.page?.name || data.page?.id || ''}` : `Token lỗi: ${data.error}`);
-        }
-        if (btn.id === 'modalGenerate') return bulk('/api/facebook/generate', { ids: [$('editId').value], autoApprove:false }, 'Đã tạo caption');
-        if (btn.id === 'modalImage') return bulk('/api/facebook/images', { ids: [$('editId').value], force:true }, 'Đã tạo ảnh');
-        const id = btn.dataset.edit || btn.dataset.generate || btn.dataset.image || btn.dataset.approve || btn.dataset.schedule || btn.dataset.mark || btn.dataset.delete;
-        if (!id) return;
-        if (btn.dataset.edit) return openEditor(state.posts.find(p => p.id === id));
-        if (btn.dataset.generate) return bulk('/api/facebook/generate', { ids:[id], autoApprove:false }, 'Đã tạo caption');
-        if (btn.dataset.image) return bulk('/api/facebook/images', { ids:[id], force:true }, 'Đã tạo ảnh');
-        if (btn.dataset.approve) return bulk('/api/facebook/approve', { ids:[id] }, 'Đã duyệt bài');
-        if (btn.dataset.schedule) return bulk('/api/facebook/schedule', { ids:[id] }, 'Đã gửi lịch đăng');
-        if (btn.dataset.mark && confirm('Đánh dấu bài này là đã đăng để chặn trùng về sau?')) {
-          await api('/api/facebook/posts/' + encodeURIComponent(id) + '/mark-posted', { method:'POST', body:'{}' });
-          toast('Đã đánh dấu bài đã đăng');
-          return loadAll();
-        }
-        if (btn.dataset.delete && confirm('Xóa bài này?')) {
-          await api('/api/facebook/posts/' + encodeURIComponent(id), { method:'DELETE' });
-          state.selected.delete(id);
-          toast('Đã xóa bài');
-          return loadAll();
-        }
-      } catch (err) {
-        toast(err.message);
-      }
-    });
-
-    ['statusFilter','pillarFilter'].forEach(id => $(id).addEventListener('change', () => loadAll().catch(e => toast(e.message))));
-    $('searchBox').addEventListener('input', () => {
-      clearTimeout(window.__searchTimer);
-      window.__searchTimer = setTimeout(() => loadAll().catch(e => toast(e.message)), 250);
-    });
-    ['postsPerDay','days','autoApprove','autoScheduler'].forEach(id => $(id).addEventListener('change', () => saveConfig().catch(e => toast(e.message))));
-    $('loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
-    $('editModal').addEventListener('click', e => { if (e.target.id === 'editModal') $('editModal').classList.remove('open'); });
-
-    lucide.createIcons();
-    verifySession();
-  </script>
+load();
+</script>
 </body>
 </html>
