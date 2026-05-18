@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prompt Library | BÓNG BÀN VIỆT</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f172a;--surface:#1e293b;--surface2:#263347;--border:rgba(255,255,255,.08);
+  --text:#e2e8f0;--muted:#94a3b8;--accent:#3b82f6;--accent-hover:#60a5fa;
+  --green:#10b981;--warn:#f59e0b;--red:#ef4444;--radius:10px;
+}
+body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
+button{cursor:pointer;border:none;font-family:inherit;font-size:inherit;transition:all .15s}
+input,textarea,select{font-family:inherit;font-size:inherit;outline:none}
+a{color:inherit;text-decoration:none}
+
+/* ── Top bar ─────────────────────────────────── */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:58px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100}
+.topbar-brand{font-size:15px;font-weight:700;color:var(--accent);white-space:nowrap;display:flex;align-items:center;gap:8px}
+.topbar-brand span{opacity:.5;font-weight:400;font-size:13px}
+.search-wrap{flex:1;max-width:480px;position:relative}
+.search-wrap input{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 36px 8px 14px;transition:border-color .15s}
+.search-wrap input:focus{border-color:var(--accent)}
+.search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;color:var(--muted);padding:2px 4px;border-radius:4px;display:none}
+.search-clear:hover{color:var(--text);background:rgba(255,255,255,.08)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.btn-add{background:var(--accent);color:#fff;border-radius:8px;padding:7px 16px;font-weight:600;font-size:13px;white-space:nowrap}
+.btn-add:hover{background:var(--accent-hover)}
+.count-chip{background:rgba(59,130,246,.15);color:var(--accent);border-radius:999px;padding:3px 10px;font-size:12px;font-weight:600}
+
+/* ── Tag filter bar ───────────────────────────── */
+.tagbar{padding:14px 24px 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--border)}
+.tag-pill{background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:999px;padding:4px 14px;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.tag-pill:hover{border-color:var(--accent);color:var(--accent)}
+.tag-pill.active{background:rgba(59,130,246,.18);border-color:var(--accent);color:var(--accent)}
+.tagbar-label{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;margin-right:4px}
+
+/* ── Main grid ────────────────────────────────── */
+.main{padding:20px 24px 80px;columns:3 320px;column-gap:16px}
+@media(max-width:700px){.main{columns:1;padding:14px 12px 80px}}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px;break-inside:avoid;display:flex;flex-direction:column;gap:10px;transition:border-color .15s}
+.card:hover{border-color:rgba(59,130,246,.35)}
+.card-title{font-size:14px;font-weight:700;color:var(--text);line-height:1.4}
+.card-preview{font-size:12.5px;color:var(--muted);line-height:1.6;white-space:pre-wrap;word-break:break-word;max-height:120px;overflow:hidden;position:relative}
+.card-preview::after{content:'';position:absolute;bottom:0;left:0;right:0;height:32px;background:linear-gradient(transparent,var(--surface))}
+.card-preview.expanded{max-height:none}
+.card-preview.expanded::after{display:none}
+.card-tags{display:flex;flex-wrap:wrap;gap:5px}
+.card-tag{background:rgba(59,130,246,.12);color:#93c5fd;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:500}
+.card-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:4px;border-top:1px solid var(--border)}
+.use-count{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px}
+.card-actions{display:flex;gap:4px}
+.ic-btn{background:none;color:var(--muted);border-radius:6px;padding:5px 8px;font-size:13px;line-height:1}
+.ic-btn:hover{background:rgba(255,255,255,.08);color:var(--text)}
+.ic-btn.copy-btn:hover{color:var(--green)}
+.ic-btn.edit-btn:hover{color:var(--accent)}
+.ic-btn.del-btn:hover{color:var(--red);background:rgba(239,68,68,.1)}
+.btn-expand{background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:3px 10px;font-size:11px}
+.btn-expand:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ── Empty state ──────────────────────────────── */
+.empty{text-align:center;padding:80px 24px;color:var(--muted)}
+.empty h3{color:var(--text);font-size:16px;margin-bottom:8px}
+.empty p{font-size:13px}
+
+/* ── Modal ────────────────────────────────────── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;width:100%;max-width:580px;max-height:90vh;display:flex;flex-direction:column;animation:.2s cubic-bezier(.16,1,.3,1) modalIn}
+@keyframes modalIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.modal-head{padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-head h3{font-size:15px;font-weight:700}
+.modal-close{background:none;color:var(--muted);font-size:18px;border-radius:6px;padding:2px 8px;line-height:1}
+.modal-close:hover{background:rgba(255,255,255,.08);color:var(--text)}
+.modal-body{padding:18px 20px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:14px}
+.modal-foot{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+.fld label{display:block;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.fld input,.fld textarea{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px 12px;transition:border-color .15s}
+.fld input:focus,.fld textarea:focus{border-color:var(--accent)}
+.fld textarea{resize:vertical;min-height:200px;font-size:13px;line-height:1.65}
+.tags-hint{font-size:11px;color:var(--muted);margin-top:4px}
+.btn-cancel{background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px 18px;font-weight:500}
+.btn-cancel:hover{background:var(--surface)}
+.btn-save{background:var(--accent);color:#fff;border-radius:8px;padding:8px 20px;font-weight:600}
+.btn-save:hover{background:var(--accent-hover)}
+
+/* ── Toast ────────────────────────────────────── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);background:#1e293b;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:10px 20px;font-size:13px;font-weight:500;opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap;z-index:999}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{border-color:var(--green);color:var(--green)}
+.toast.err{border-color:var(--red);color:var(--red)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">📝 Prompts <span>/ BBV</span></div>
+  <div class="search-wrap">
+    <input type="text" id="searchInput" placeholder="Tìm kiếm prompt…" autocomplete="off">
+    <button class="search-clear" id="searchClear" onclick="clearSearch()">✕</button>
+  </div>
+  <div class="topbar-right">
+    <span class="count-chip" id="countChip">0 prompts</span>
+    <button class="btn-add" onclick="openModal()">+ Thêm</button>
+  </div>
+</div>
+
+<div class="tagbar" id="tagbar">
+  <span class="tagbar-label">Tag:</span>
+</div>
+
+<div class="main" id="grid"></div>
+
+<!-- Modal thêm/sửa -->
+<div class="overlay" id="overlay" style="display:none" onclick="overlayClick(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modalTitle">Thêm Prompt Mới</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="fld">
+        <label>Tiêu đề *</label>
+        <input type="text" id="fTitle" placeholder="Tên gợi nhớ ngắn gọn…">
+      </div>
+      <div class="fld">
+        <label>Nội dung prompt *</label>
+        <textarea id="fContent" placeholder="Nội dung prompt đầy đủ…"></textarea>
+      </div>
+      <div class="fld">
+        <label>Tags</label>
+        <input type="text" id="fTags" placeholder="marketing, seo, email, viết, code…">
+        <div class="tags-hint">Phân cách bằng dấu phẩy</div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal()">Hủy</button>
+      <button class="btn-save" id="btnSave" onclick="savePrompt()">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var prompts = [];
+var activeTag = 'all';
+var searchQ = '';
+var editId = null;
+
+// ─── API ──────────────────────────────────────────────────────────────────────
+async function api(method, path, body) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(path, opts);
+  return r.json();
+}
+
+// ─── Load ─────────────────────────────────────────────────────────────────────
+async function load() {
+  prompts = await api('GET', '/api/prompts');
+  buildTagBar();
+  render();
+}
+
+// ─── Tag bar ──────────────────────────────────────────────────────────────────
+function buildTagBar() {
+  const all = new Set();
+  prompts.forEach(p => (p.tags || []).forEach(t => all.add(t)));
+  const bar = document.getElementById('tagbar');
+  bar.innerHTML = '<span class="tagbar-label">Tag:</span>';
+  const pills = [{ tag: 'all', label: 'Tất Cả' }, ...[...all].sort().map(t => ({ tag: t, label: t }))];
+  pills.forEach(({ tag, label }) => {
+    const b = document.createElement('button');
+    b.className = 'tag-pill' + (activeTag === tag ? ' active' : '');
+    b.textContent = label;
+    b.onclick = () => { activeTag = tag; buildTagBar(); render(); };
+    bar.appendChild(b);
+  });
+}
+
+// ─── Render ───────────────────────────────────────────────────────────────────
+function render() {
+  const q = searchQ.toLowerCase();
+  const list = prompts.filter(p => {
+    if (activeTag !== 'all' && !(p.tags || []).includes(activeTag)) return false;
+    if (q && !p.title.toLowerCase().includes(q) && !p.content.toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  document.getElementById('countChip').textContent = list.length + ' prompts';
+  const grid = document.getElementById('grid');
+
+  if (!list.length) {
+    grid.innerHTML = '<div class="empty"><h3>Không có prompt nào</h3><p>Thêm prompt đầu tiên bằng nút "+ Thêm"</p></div>';
+    return;
+  }
+
+  grid.innerHTML = list.map(p => cardHTML(p)).join('');
+}
+
+function cardHTML(p) {
+  const tags = (p.tags || []).map(t => `<span class="card-tag">${esc(t)}</span>`).join('');
+  const preview = esc(p.content);
+  const needsExpand = p.content.length > 220;
+  return `<div class="card" id="card-${p.id}">
+    <div class="card-title">${esc(p.title)}</div>
+    <div class="card-preview" id="prev-${p.id}">${preview}</div>
+    ${needsExpand ? `<button class="btn-expand" onclick="toggleExpand('${p.id}')">Xem thêm</button>` : ''}
+    ${tags ? `<div class="card-tags">${tags}</div>` : ''}
+    <div class="card-footer">
+      <span class="use-count">📋 Đã dùng ${p.use_count} lần</span>
+      <div class="card-actions">
+        <button class="ic-btn copy-btn" onclick="copyPrompt('${p.id}')" title="Copy">📋</button>
+        <button class="ic-btn edit-btn" onclick="editPrompt('${p.id}')" title="Sửa">✏️</button>
+        <button class="ic-btn del-btn" onclick="delPrompt('${p.id}')" title="Xóa">🗑</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function toggleExpand(id) {
+  const el = document.getElementById('prev-' + id);
+  const btn = el ? el.nextElementSibling : null;
+  if (!el || !btn || btn.tagName !== 'BUTTON') return;
+  const expanded = el.classList.toggle('expanded');
+  btn.textContent = expanded ? 'Thu gọn' : 'Xem thêm';
+}
+
+// ─── Copy ─────────────────────────────────────────────────────────────────────
+async function copyPrompt(id) {
+  const p = prompts.find(x => x.id === id);
+  if (!p) return;
+  try {
+    await navigator.clipboard.writeText(p.content);
+    toast('Đã copy prompt!', 'ok');
+    api('POST', '/api/prompts/' + id + '/use');
+    p.use_count++;
+    const el = document.getElementById('card-' + id);
+    if (el) {
+      const uc = el.querySelector('.use-count');
+      if (uc) uc.textContent = '📋 Đã dùng ' + p.use_count + ' lần';
+    }
+  } catch {
+    toast('Copy thất bại', 'err');
+  }
+}
+
+// ─── Delete ───────────────────────────────────────────────────────────────────
+async function delPrompt(id) {
+  const p = prompts.find(x => x.id === id);
+  if (!p || !confirm('Xóa prompt "' + p.title + '"?')) return;
+  await api('DELETE', '/api/prompts/' + id);
+  prompts = prompts.filter(x => x.id !== id);
+  buildTagBar();
+  render();
+  toast('Đã xóa', 'ok');
+}
+
+// ─── Modal ────────────────────────────────────────────────────────────────────
+function openModal(p) {
+  editId = p ? p.id : null;
+  document.getElementById('modalTitle').textContent = p ? 'Sửa Prompt' : 'Thêm Prompt Mới';
+  document.getElementById('fTitle').value = p ? p.title : '';
+  document.getElementById('fContent').value = p ? p.content : '';
+  document.getElementById('fTags').value = p ? (p.tags || []).join(', ') : '';
+  document.getElementById('overlay').style.display = 'flex';
+  setTimeout(() => document.getElementById('fTitle').focus(), 80);
+}
+
+function closeModal() {
+  document.getElementById('overlay').style.display = 'none';
+  editId = null;
+}
+
+function overlayClick(e) {
+  if (e.target === document.getElementById('overlay')) closeModal();
+}
+
+function editPrompt(id) {
+  const p = prompts.find(x => x.id === id);
+  if (p) openModal(p);
+}
+
+async function savePrompt() {
+  const title = document.getElementById('fTitle').value.trim();
+  const content = document.getElementById('fContent').value.trim();
+  const tagsRaw = document.getElementById('fTags').value;
+  const tags = tagsRaw.split(',').map(t => t.trim()).filter(Boolean);
+
+  if (!title) { toast('Nhập tiêu đề!', 'err'); document.getElementById('fTitle').focus(); return; }
+  if (!content) { toast('Nhập nội dung prompt!', 'err'); document.getElementById('fContent').focus(); return; }
+
+  document.getElementById('btnSave').disabled = true;
+  try {
+    if (editId) {
+      await api('PUT', '/api/prompts/' + editId, { title, content, tags });
+      const idx = prompts.findIndex(x => x.id === editId);
+      if (idx !== -1) prompts[idx] = { ...prompts[idx], title, content, tags };
+      toast('Đã cập nhật', 'ok');
+    } else {
+      const r = await api('POST', '/api/prompts', { title, content, tags });
+      prompts.unshift({ id: r.id, title, content, tags, use_count: 0 });
+      toast('Đã lưu prompt mới', 'ok');
+    }
+    closeModal();
+    buildTagBar();
+    render();
+  } catch {
+    toast('Lỗi khi lưu', 'err');
+  } finally {
+    document.getElementById('btnSave').disabled = false;
+  }
+}
+
+// ─── Search ───────────────────────────────────────────────────────────────────
+document.getElementById('searchInput').addEventListener('input', function() {
+  searchQ = this.value;
+  document.getElementById('searchClear').style.display = searchQ ? 'block' : 'none';
+  render();
+});
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  searchQ = '';
+  document.getElementById('searchClear').style.display = 'none';
+  render();
+}
+
+// ─── Keyboard shortcuts ───────────────────────────────────────────────────────
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    if (document.getElementById('overlay').style.display !== 'none') { closeModal(); return; }
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    document.getElementById('searchInput').focus();
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+    e.preventDefault();
+    openModal();
+  }
+});
+
+// ─── Toast ────────────────────────────────────────────────────────────────────
+var toastTimer;
+function toast(msg, type) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (type ? ' ' + type : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className = 'toast'; }, 2200);
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+load();
+</script>
+</body>
+</html>

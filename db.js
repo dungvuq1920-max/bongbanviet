@@ -171,6 +171,19 @@ db.exec(`
   "ALTER TABLE facebook_post_history ADD COLUMN updated_at TEXT DEFAULT (datetime('now'))",
 ].forEach(sql => { try { db.exec(sql); } catch {} });
 
+// Prompts library
+db.exec(`
+  CREATE TABLE IF NOT EXISTS prompts (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    tags TEXT DEFAULT '[]',
+    use_count INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  )
+`);
+
 // Orders table (added later, created via migration)
 db.exec(`
   CREATE TABLE IF NOT EXISTS orders (

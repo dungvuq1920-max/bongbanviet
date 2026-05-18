@@ -4535,6 +4535,57 @@ const _defBanners = [
 const _bIns = db.prepare(`INSERT OR IGNORE INTO settings (key, value, updated_at) VALUES (?, ?, datetime('now'))`);
 _defBanners.forEach(([k, v]) => _bIns.run(k, v));
 
+// ─── Prompts Library ─────────────────────────────────────────────────────────
+
+app.get('/api/prompts', (req, res) => {
+  const { q, tag } = req.query;
+  let rows = db.prepare('SELECT * FROM prompts ORDER BY use_count DESC, updated_at DESC').all();
+  if (q) {
+    const ql = q.toLowerCase();
+    rows = rows.filter(r => r.title.toLowerCase().includes(ql) || r.content.toLowerCase().includes(ql));
+  }
+  if (tag && tag !== 'all') {
+    rows = rows.filter(r => {
+      try { return JSON.parse(r.tags || '[]').includes(tag); } catch { return false; }
+    });
+  }
+  res.json(rows.map(r => ({ ...r, tags: JSON.parse(r.tags || '[]') })));
+});
+
+app.post('/api/prompts', (req, res) => {
+  const { title, content, tags = [] } = req.body || {};
+  if (!title || !content) return res.status(400).json({ error: 'Thiếu title hoặc content' });
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  db.prepare('INSERT INTO prompts (id,title,content,tags) VALUES (?,?,?,?)').run(
+    id, title.trim(), content.trim(), JSON.stringify(Array.isArray(tags) ? tags : [])
+  );
+  res.json({ ok: true, id });
+});
+
+app.put('/api/prompts/:id', (req, res) => {
+  const { title, content, tags } = req.body || {};
+  const set = [];
+  const vals = [];
+  if (title !== undefined) { set.push('title=?'); vals.push(title.trim()); }
+  if (content !== undefined) { set.push('content=?'); vals.push(content.trim()); }
+  if (tags !== undefined) { set.push('tags=?'); vals.push(JSON.stringify(Array.isArray(tags) ? tags : [])); }
+  if (!set.length) return res.status(400).json({ error: 'Không có gì để cập nhật' });
+  set.push("updated_at=datetime('now')");
+  vals.push(req.params.id);
+  db.prepare(`UPDATE prompts SET ${set.join(',')} WHERE id=?`).run(...vals);
+  res.json({ ok: true });
+});
+
+app.delete('/api/prompts/:id', (req, res) => {
+  db.prepare('DELETE FROM prompts WHERE id=?').run(req.params.id);
+  res.json({ ok: true });
+});
+
+app.post('/api/prompts/:id/use', (req, res) => {
+  db.prepare('UPDATE prompts SET use_count=use_count+1 WHERE id=?').run(req.params.id);
+  res.json({ ok: true });
+});
+
 // ─── Start ───────────────────────────────────────────────────────────────────
 
 const { execSync } = require('child_process');
