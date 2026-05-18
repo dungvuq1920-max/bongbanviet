@@ -568,14 +568,16 @@ function buildCard(s){
   // session chips: top row = date/type/dur, bottom row = fee + delete
   const rows=sessions.length
     ? sessions.map(se=>`<span class="sess-chip">
-        <span class="top"><span class="d">${fmtDate(se.date)}</span></span>
+        <span class="top">
+          <span class="d">${fmtDate(se.date)}</span>
+          <button class="edit-btn" onclick="editSession('${s.id}','${se.id}')" title="Chỉnh sửa">✎</button>
+        </span>
         <span class="bot">
           <span class="t">${esc(se.type)}</span>
           <span class="dur-sep">|</span>
           <span class="dur">${esc(se.duration)}</span>
           <span class="dur-sep">|</span>
           <span class="fee">${esc(se.fee)}</span>
-          <button class="edit-btn" onclick="editSession('${s.id}','${se.id}')" title="Chỉnh sửa">✎</button>
         </span>
       </span>`).join('')
     : '<div class="sess-empty">Chưa có buổi học</div>';
