@@ -58,15 +58,23 @@
 
     /* session chips (2-line: top=date/type/dur, bot=fee centered) */
     .sess-list{padding:6px 10px 8px;display:flex;flex-wrap:wrap;gap:6px}
-    .sess-chip{display:inline-flex;flex-direction:column;align-items:center;background:#f8fafc;border:1px solid var(--line);border-radius:8px;padding:5px 8px;min-width:68px;text-align:center}
+    .sess-chip{display:inline-flex;flex-direction:column;align-items:center;background:#f8fafc;border:1px solid var(--line);border-radius:8px;padding:5px 8px;min-width:68px;text-align:center;cursor:pointer;transition:border-color .15s}
+    .sess-chip:hover{border-color:var(--blue)}
     .sess-chip .top{display:flex;align-items:center;gap:4px;font-size:12px;white-space:nowrap}
     .sess-chip .d{color:var(--blue);font-weight:700}
     .sess-chip .t{color:var(--green);font-weight:600}
     .sess-chip .dur{color:var(--muted)}
     .sess-chip .bot{display:flex;align-items:center;justify-content:center;gap:3px;margin-top:2px}
     .sess-chip .fee{font-family:monospace;color:var(--warn);font-size:11px}
-    .sess-chip .xbtn{font-size:12px;padding:0 1px;line-height:1}
     .sess-empty{color:var(--muted);font-size:13px;font-style:italic;padding:6px 10px}
+    /* session edit row */
+    .sess-edit-row{display:flex;flex-wrap:wrap;gap:5px;align-items:center;padding:7px 10px;background:#eff6ff;border-top:1px solid #bfdbfe;border-bottom:1px solid #bfdbfe}
+    .sess-edit-row select,.sess-edit-row input{background:#fff;border:1px solid #cbd5e1;color:var(--text);border-radius:6px;padding:4px 7px;font-size:13px;font-family:inherit}
+    .sess-edit-row select:focus,.sess-edit-row input:focus{outline:none;border-color:var(--blue)}
+    .btn-save{background:var(--blue);color:#fff;border:none;border-radius:6px;padding:4px 11px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s}
+    .btn-save:hover{background:var(--blue2)}
+    .btn-del-sess{background:#fef2f2;border:1px solid #fca5a5;color:var(--red);border-radius:6px;padding:4px 11px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+    .btn-del-sess:hover{background:#fee2e2}
 
     /* del button */
     .xbtn{background:none;border:none;cursor:pointer;color:var(--muted);padding:2px 4px;border-radius:4px;font-size:14px;line-height:1;transition:all .12s}
@@ -340,6 +348,46 @@ function delSession(sid,sesid){
   rerenderCard(sid);
 }
 
+function editSession(sid,sesid){
+  const s=D.students.find(s=>s.id===sid);
+  if(!s)return;
+  const se=s.sessions.find(se=>se.id===sesid);
+  if(!se)return;
+  // remove any existing edit row
+  const old=document.getElementById('ser-'+sesid);
+  if(old){old.remove();return;}
+  const typeOpts=['1:1','1:2','1:3','nhóm'].map(t=>`<option value="${t}"${t===se.type?' selected':''}>${t}</option>`).join('');
+  const sdurOpts=['30p','45p','1h','1.5h','2h'].map(d=>`<option value="${d}"${d===se.duration?' selected':''}>${d}</option>`).join('');
+  const sessList=document.querySelector('#card-'+sid+' .sess-list');
+  if(!sessList)return;
+  const row=document.createElement('div');
+  row.className='sess-edit-row';
+  row.id='ser-'+sesid;
+  row.innerHTML=`
+    <input type="date" id="se-date-${sesid}" value="${se.date}" style="width:130px">
+    <select id="se-type-${sesid}" style="width:68px">${typeOpts}</select>
+    <select id="se-dur-${sesid}" style="width:68px">${sdurOpts}</select>
+    <input type="text" id="se-fee-${sesid}" value="${se.fee}" style="width:68px" placeholder="250k">
+    <button class="btn-save" onclick="saveEditSess('${sid}','${sesid}')">Lưu</button>
+    <button class="btn-del-sess" onclick="delSession('${sid}','${sesid}')">Xóa buổi</button>
+    <button class="btn-cancel" onclick="document.getElementById('ser-${sesid}').remove()">Hủy</button>`;
+  sessList.insertAdjacentElement('afterend',row);
+}
+
+function saveEditSess(sid,sesid){
+  const s=D.students.find(s=>s.id===sid);
+  if(!s)return;
+  const se=s.sessions.find(se=>se.id===sesid);
+  if(!se)return;
+  se.date=document.getElementById('se-date-'+sesid).value||se.date;
+  se.type=document.getElementById('se-type-'+sesid).value;
+  se.duration=document.getElementById('se-dur-'+sesid).value;
+  se.fee=document.getElementById('se-fee-'+sesid).value||se.fee;
+  s.sessions.sort((a,b)=>b.date.localeCompare(a.date));
+  scheduleSave();
+  rerenderCard(sid);
+}
+
 // ── Schedule mutations ────────────────────────────────────────────────────────
 
 function addSched(sid){
@@ -518,15 +566,14 @@ function buildCard(s){
 
   // session chips: top row = date/type/dur, bottom row = fee + delete
   const rows=sessions.length
-    ? sessions.map(se=>`<span class="sess-chip">
+    ? sessions.map(se=>`<span class="sess-chip" onclick="editSession('${s.id}','${se.id}')">
         <span class="top">
           <span class="d">${fmtDate(se.date)}</span>
           <span class="t">${esc(se.type)}</span>
           <span class="dur">${esc(se.duration)}</span>
         </span>
         <span class="bot">
-          <span class="fee">${esc(se.fee)}</span>
-          <button class="xbtn" onclick="delSession('${s.id}','${se.id}')">×</button>
+          <span class="fee">${fmtMoney(parseFee(se.fee))}</span>
         </span>
       </span>`).join('')
     : '<div class="sess-empty">Chưa có buổi học</div>';
