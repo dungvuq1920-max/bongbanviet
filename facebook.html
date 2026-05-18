@@ -174,7 +174,6 @@ input[type=file]{display:none}
   <div class="hdr-right">
     <span class="count-chip" id="countChip">0 bài</span>
     <button class="btn-import" style="background:var(--surf2);border:1px solid var(--line);color:var(--text)" onclick="openImport()">+ Nhập</button>
-    <button class="btn-import" onclick="openGen()">⚡ Tạo Tuần</button>
   </div>
 </div>
 
@@ -191,11 +190,15 @@ input[type=file]{display:none}
     <div class="mbody">
       <div class="wf-steps">
         <b>Quy trình:</b><br>
-        1. Mở <b>Antigravity / GPT / Claude</b><br>
-        2. Copy Master Prompt bên dưới → Dán vào AI<br>
-        3. Yêu cầu: <i>"Tạo 5–10 bài, trả về JSON"</i><br>
-        4. Copy toàn bộ JSON kết quả → Dán vào ô bên dưới<br>
-        5. Bấm <b>Nhập Draft</b> → Bài xuất hiện trong dashboard
+        1. Chọn tuần cần tạo bài bên dưới<br>
+        2. Bấm <b>📋 Copy</b> → Dán vào Claude hoặc GPT<br>
+        3. AI tự tạo <b>36 bài</b> theo lịch T2–CN, trả về JSON<br>
+        4. Copy JSON hoặc lưu .json → Dán / Upload vào ô dưới<br>
+        5. Bấm <b>Nhập Lịch</b> → Bài vào đúng ô lịch tự động
+      </div>
+      <div class="fld" style="margin-bottom:2px">
+        <label>Tuần bắt đầu từ (Thứ 2)</label>
+        <input type="date" id="importWeekDate" style="background:var(--bg);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:6px 10px;width:100%">
       </div>
       <div>
         <div class="slbl">Master Prompt</div>
@@ -220,7 +223,7 @@ input[type=file]{display:none}
     </div>
     <div class="mfoot">
       <button class="btn-c" onclick="closeImport()">Hủy</button>
-      <button class="btn-s" id="btnDoImport" onclick="doImport()">Nhập Draft</button>
+      <button class="btn-s" id="btnDoImport" onclick="doImport()">Nhập Lịch</button>
     </div>
   </div>
 </div>
@@ -318,32 +321,6 @@ input[type=file]{display:none}
       <button class="btn-copy-img" id="btnCopyImg" style="display:none" onclick="copyImgFromModal()">📷 Copy Image Prompt</button>
       <button class="btn-c" onclick="closeCopy()">Đóng</button>
       <button class="btn-copy-all" onclick="copyAll()">📋 Copy Bài</button>
-    </div>
-  </div>
-</div>
-
-<!-- ── Generate modal ── -->
-<div class="ov" id="ovGen" style="display:none" onclick="if(event.target===this)closeGen()">
-  <div class="modal" style="max-width:420px">
-    <div class="mhd">
-      <h3>⚡ Tạo Bài Tự Động</h3>
-      <button class="mcls" onclick="closeGen()">✕</button>
-    </div>
-    <div class="mbody">
-      <p style="color:var(--muted);font-size:13px;line-height:1.65">AI sẽ tự tạo <b style="color:var(--text)">36 bài</b> theo lịch tăng trưởng page (T2–CN) và lưu thẳng vào dashboard — không cần copy JSON.</p>
-      <div class="fld">
-        <label>Tuần bắt đầu từ (Thứ 2)</label>
-        <input type="date" id="genWeekStart" value="">
-      </div>
-      <div style="font-size:12px;color:var(--muted);background:var(--bg);border-radius:8px;padding:10px 12px;border:1px solid var(--line);line-height:1.8">
-        Yêu cầu: <code style="color:var(--blue2)">ANTHROPIC_API_KEY</code> trong Railway env.<br>
-        Thời gian tạo: ~30–60 giây.
-      </div>
-      <div id="genStatus" style="display:none;font-size:13px;padding:9px 12px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:8px;color:var(--blue2)"></div>
-    </div>
-    <div class="mfoot">
-      <button class="btn-c" onclick="closeGen()">Hủy</button>
-      <button class="btn-s" id="btnDoGen" onclick="doGen()">⚡ Tạo 36 Bài</button>
     </div>
   </div>
 </div>
@@ -569,6 +546,11 @@ async function saveEdit(){
 function openImport(){
   document.getElementById('importArea').value='';
   document.getElementById('importOk').style.display='none';
+  const d=new Date();
+  const day=d.getDay();
+  const diff=day===0?1:day===1?0:8-day;
+  d.setDate(d.getDate()+diff);
+  document.getElementById('importWeekDate').value=d.toISOString().slice(0,10);
   document.getElementById('ovImport').style.display='flex';
   setTimeout(()=>document.getElementById('importArea').focus(),80);
 }
@@ -589,13 +571,13 @@ async function doImport(){
   try{
     const r=await api('POST','/api/fb-posts/import',parsed);
     const ok=document.getElementById('importOk');
-    ok.textContent='✓ Đã tạo '+r.count+' draft thành công!';
+    ok.textContent='✓ Nhập '+r.count+' bài vào lịch thành công!';
     ok.style.display='block';
     await load(true);
     setTimeout(closeImport,1100);
     toast('Nhập '+r.count+' bài thành công','ok');
   }catch(e){ toast('Lỗi: '+e.message,'err'); }
-  finally{ btn.disabled=false; btn.textContent='Nhập Draft'; }
+  finally{ btn.disabled=false; btn.textContent='Nhập Lịch'; }
 }
 
 // ─── Master Prompt ────────────────────────────────────────────────────────────
@@ -643,18 +625,28 @@ promo      → #BongBanViet #UuDai #KhuyenMai #ComboGiaRe #LienHeZalo
 TIÊU ĐỀ (topic): 5–10 từ tiếng Việt, chuẩn SEO, không dùng emoji trong topic.
 CAPTION: 100–180 từ, có emoji phù hợp, kết thúc bằng câu hỏi hoặc CTA nhẹ.
 
-YÊU CẦU: Tạo bài cho TUẦN bắt đầu từ [NHẬP NGÀY THỨ 2, ví dụ: 2026-05-19].
-Điền scheduled_time theo format: "2026-05-19T07:30:00"
+YÊU CẦU: Tạo đủ 36 bài cho TUẦN bắt đầu từ Thứ 2 ngày __WEEK_START__.
+Tính toán ngày cụ thể cho mỗi slot từ ngày đó (T2 = __WEEK_START__, T3 = +1 ngày, ..., CN = +6 ngày).
+Điền scheduled_time theo format ISO: "YYYY-MM-DDTHH:MM:00" — phải có ngày thực tế, không dùng placeholder.
 
 OUTPUT — Chỉ trả về JSON, không viết thêm gì khác:
 {"posts":[{"topic":"Tiêu đề SEO","pillar":"knowledge|product|combo|engagement|trust|promo","status":"scheduled","caption":"Nội dung bài...","hashtags":"#BongBanViet #...","cta":"Inbox/Zalo 096.1269.386 để tư vấn.","website_link":"https://bongbanviet.com","image_prompt":"English 1080x1080 image prompt","scheduled_time":"2026-MM-DDTHH:MM:00","source_notes":"Mục tiêu slot"}]}`;
 
+function buildPrompt(){
+  const weekDate=document.getElementById('importWeekDate')?.value||'';
+  return MASTER_PROMPT.replace(/__WEEK_START__/g, weekDate||'(điền ngày Thứ 2)');
+}
+
 async function copyMasterPrompt(){
-  try{ await navigator.clipboard.writeText(MASTER_PROMPT); toast('Đã copy Master Prompt!','ok'); } catch{ toast('Lỗi copy','err'); }
+  const weekDate=document.getElementById('importWeekDate')?.value||'';
+  if(!weekDate){ toast('Chọn tuần bắt đầu trước khi copy prompt!','err'); return; }
+  try{ await navigator.clipboard.writeText(buildPrompt()); toast('Đã copy prompt với tuần '+weekDate,'ok'); }
+  catch{ toast('Lỗi copy','err'); }
 }
 
 function downloadMasterPrompt(){
-  const blob=new Blob([MASTER_PROMPT],{type:'text/plain;charset=utf-8'});
+  const weekDate=document.getElementById('importWeekDate')?.value||'';
+  const blob=new Blob([buildPrompt()],{type:'text/plain;charset=utf-8'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
   a.href=url; a.download='master-prompt-bongbanviet.txt'; a.click();
@@ -686,7 +678,7 @@ function renderCalendar(list){
   const displayList=list||posts;
 
   if(!posts.length){
-    wrap.innerHTML=`<div class="empty"><h3>Chưa có bài nào</h3><p>Bấm <b>⚡ Tạo Tuần</b> để AI tự tạo 36 bài theo lịch tăng trưởng,<br>hoặc <b>+ Nhập</b> để dán JSON thủ công.</p></div>`;
+    wrap.innerHTML=`<div class="empty"><h3>Chưa có bài nào</h3><div class="empty-wf">Bấm <b>+ Nhập</b> → chọn tuần → <b>📋 Copy Prompt</b><br>→ Dán vào Claude/GPT → Copy JSON kết quả<br>→ Dán vào ô nhập → <b>Nhập Lịch</b></div></div>`;
     return;
   }
 
@@ -768,49 +760,9 @@ function calNav(dir){
   render();
 }
 
-// ─── Generate (AI auto-create) ───────────────────────────────────────────────
-function openGen(){
-  const d=new Date();
-  const day=d.getDay();
-  const diff=day===0?1:day===1?0:8-day;
-  d.setDate(d.getDate()+diff);
-  document.getElementById('genWeekStart').value=d.toISOString().slice(0,10);
-  const stat=document.getElementById('genStatus');
-  stat.style.display='none';stat.style.color='var(--blue2)';
-  document.getElementById('btnDoGen').disabled=false;
-  document.getElementById('btnDoGen').textContent='⚡ Tạo 36 Bài';
-  document.getElementById('ovGen').style.display='flex';
-}
-
-function closeGen(){ document.getElementById('ovGen').style.display='none'; }
-
-async function doGen(){
-  const weekStart=document.getElementById('genWeekStart').value;
-  if(!weekStart){ toast('Chọn ngày bắt đầu tuần!','err'); return; }
-  const btn=document.getElementById('btnDoGen');
-  const stat=document.getElementById('genStatus');
-  btn.disabled=true; btn.textContent='⏳ Đang tạo…';
-  stat.style.display='block'; stat.style.color='var(--blue2)';
-  stat.textContent='⏳ AI đang viết 36 bài theo lịch tăng trưởng… (~30–60s)';
-  try{
-    const r=await api('POST','/api/generate-fb-posts',{week_start:weekStart});
-    stat.style.color='var(--green)';
-    stat.textContent='✓ Đã tạo '+r.count+' bài thành công!';
-    await load(true);
-    setTimeout(closeGen,1400);
-    toast('Tạo '+r.count+' bài thành công!','ok');
-  }catch(e){
-    stat.style.color='var(--red)';
-    stat.textContent='✗ Lỗi: '+e.message;
-    toast('Lỗi: '+e.message,'err');
-    btn.disabled=false; btn.textContent='⚡ Tạo 36 Bài';
-  }
-}
-
 // ─── Keyboard ─────────────────────────────────────────────────────────────────
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
-    if(document.getElementById('ovGen').style.display!=='none'){closeGen();return;}
     if(document.getElementById('ovCopy').style.display!=='none'){closeCopy();return;}
     if(document.getElementById('ovEdit').style.display!=='none'){closeEdit();return;}
     if(document.getElementById('ovImport').style.display!=='none'){closeImport();return;}
