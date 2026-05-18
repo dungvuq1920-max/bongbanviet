@@ -63,7 +63,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const data = $input.first().json;\nconst errors = [];\nfor (const field of ['title', 'description', 'source_id']) {\n  if (!data[field]) errors.push(`${field} is required`);\n}\nif (data.price !== undefined && Number(data.price) <= 0) errors.push('price must be positive when provided');\nif (errors.length) throw new Error(`Invalid Facebook source data: ${errors.join(', ')}`);\nreturn [{ json: data }];"
+        "jsCode": "const data = $input.first().json;\nconst errors = [];\nfor (const field of ['title', 'description', 'source_id']) {\n  if (!data[field]) errors.push(`${field} là bắt buộc`);\n}\nif (data.price !== undefined && Number(data.price) <= 0) errors.push('price phải dương');\nif (errors.length) throw new Error(`Dữ liệu Facebook không hợp lệ: ${errors.join(', ')}`);\nreturn [{ json: data }];"
       },
       "id": "01-facebook-validate",
       "name": "Validate Data",
@@ -73,7 +73,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const data = $input.first().json;\nconst price = data.price ? `Gia tham khao: ${Number(data.price).toLocaleString('vi-VN')} VND` : '';\nconst message = [\n  `Ban dang tim ${data.title}?`,\n  '',\n  data.description,\n  '',\n  'Diem dang chu y:',\n  data.category ? `- Phu hop nhom: ${data.category}` : '',\n  price ? `- ${price}` : '',\n  '- Tu van theo trinh do, ngan sach va loi choi.',\n  '',\n  'Nhan tin de BongBanViet tu van setup phu hop.',\n  data.product_url || '',\n  '',\n  '#BongBanViet #BongBan #TableTennis #TuVanBongBan'\n].filter(Boolean).join('\\n');\nreturn [{ json: { ...data, facebook_message: message } }];"
+        "jsCode": "const data = $input.first().json;\nconst price = data.price ? `Giá tham khảo: ${Number(data.price).toLocaleString('vi-VN')} VND` : '';\nconst bullets = [\n  data.category ? `Phù hợp nhóm: ${data.category}` : '',\n  price,\n  'Tư vấn theo trình độ, ngân sách và lối chơi của bạn.'\n].filter(Boolean);\nconst message = [\n  `Bạn đang tìm ${data.title}?`,\n  '',\n  data.description,\n  '',\n  'Điểm đáng chú ý:',\n  ...bullets.map(b => `• ${b}`),\n  '',\n  'Cần BongBanViet tư vấn setup phù hợp? Nhắn tin hoặc xem chi tiết tại link bên dưới.',\n  data.product_url || '',\n  '',\n  '#BongBanViet #BóngBàn #TableTennis #TưVấnBóngBàn'\n].filter(Boolean).join('\\n');\nreturn [{ json: { ...data, facebook_message: message } }];"
       },
       "id": "01-facebook-generate",
       "name": "Generate Facebook Content",
@@ -83,7 +83,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const data = $input.first().json;\n// TODO: Replace with image generation/CDN pipeline if needed.\nreturn [{ json: { ...data, prepared_image_url: data.image_url || '' } }];"
+        "jsCode": "const data = $input.first().json;\n// Sử dụng image_url từ source data.\n// Nếu cần resize/watermark, thay thế bằng URL CDN đã xử lý.\nconst imageUrl = data.image_url || '';\nreturn [{ json: { ...data, prepared_image_url: imageUrl } }];"
       },
       "id": "01-facebook-image",
       "name": "Prepare Image",
@@ -97,20 +97,20 @@
         "url": "={{'https://graph.facebook.com/' + ($env.FACEBOOK_GRAPH_VERSION || 'v19.0') + '/' + $env.FACEBOOK_PAGE_ID + ($json.prepared_image_url ? '/photos' : '/feed')}}",
         "sendBody": true,
         "contentType": "json",
-        "jsonBody": "={{$json.prepared_image_url ? { url: $json.prepared_image_url, message: $json.facebook_message, access_token: $env.FACEBOOK_PAGE_ACCESS_TOKEN } : { message: $json.facebook_message, access_token: $env.FACEBOOK_PAGE_ACCESS_TOKEN }}}",
+        "jsonBody": "={{\n  $json.prepared_image_url\n    ? { url: $json.prepared_image_url, message: $json.facebook_message, access_token: $env.FACEBOOK_PAGE_ACCESS_TOKEN }\n    : { message: $json.facebook_message, access_token: $env.FACEBOOK_PAGE_ACCESS_TOKEN }\n}}",
         "options": {
           "timeout": 60000
         }
       },
       "id": "01-facebook-publish",
-      "name": "Publish to Facebook Page via Meta Graph API",
+      "name": "Publish to Facebook Page",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [100, 0]
     },
     {
       "parameters": {
-        "jsCode": "const result = $input.first().json;\n// TODO: Persist result to internal DB/API if SOURCE_RESULT_WEBHOOK_URL is configured.\nreturn [{ json: { channel: 'facebook', ok: true, result, saved_at: new Date().toISOString() } }];"
+        "jsCode": "const result = $input.first().json;\nconst data = $('Generate Facebook Content').first().json;\nconst payload = {\n  channel: 'facebook',\n  ok: true,\n  post_id: result.post_id || result.id || '',\n  source_id: data.source_id || '',\n  title: data.title || '',\n  saved_at: new Date().toISOString()\n};\nconst webhook = $env.SOURCE_RESULT_WEBHOOK_URL;\nif (webhook) {\n  const res = await fetch(webhook, {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify(payload)\n  });\n  if (!res.ok) console.warn('Result webhook failed', res.status);\n}\nreturn [{ json: { ...payload, notified: !!webhook } }];"
       },
       "id": "01-facebook-save",
       "name": "Save Result",
@@ -120,7 +120,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// TODO: Configure this workflow as the Error Workflow in n8n settings, or route failed executions here via a dedicated error workflow.\nreturn [{ json: { error_handler: 'configured-placeholder', time: new Date().toISOString() } }];"
+        "jsCode": "const error = $execution.error || {};\nconst webhook = $env.SOURCE_RESULT_WEBHOOK_URL;\nconst payload = {\n  channel: 'facebook',\n  ok: false,\n  error: error.message || 'Unknown error',\n  node: error.node?.name || '',\n  time: new Date().toISOString()\n};\nif (webhook) {\n  await fetch(webhook, {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify(payload)\n  }).catch(() => {});\n}\nreturn [{ json: payload }];"
       },
       "id": "01-facebook-error",
       "name": "Error Handler",
@@ -149,14 +149,14 @@
       "main": [[{ "node": "Prepare Image", "type": "main", "index": 0 }]]
     },
     "Prepare Image": {
-      "main": [[{ "node": "Publish to Facebook Page via Meta Graph API", "type": "main", "index": 0 }]]
+      "main": [[{ "node": "Publish to Facebook Page", "type": "main", "index": 0 }]]
     },
-    "Publish to Facebook Page via Meta Graph API": {
+    "Publish to Facebook Page": {
       "main": [[{ "node": "Save Result", "type": "main", "index": 0 }]]
     }
   },
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "errorWorkflow": ""
   }
 }
-

@@ -1,49 +1,102 @@
-import crypto from "node:crypto";
-import { getEnv, requireEnv } from "../common/env.js";
+import { writeDraft, draftFilename } from "../common/draft-writer.js";
 import type { ProductData } from "../common/validators.js";
-import { retry } from "../common/retry.js";
+import { logger } from "../common/logger.js";
 
-function shopeeSign(path: string, timestamp: number): string {
-  const partnerId = requireEnv("SHOPEE_PARTNER_ID");
-  const partnerKey = requireEnv("SHOPEE_PARTNER_KEY");
-  const shopId = requireEnv("SHOPEE_SHOP_ID");
-  const accessToken = requireEnv("SHOPEE_ACCESS_TOKEN");
-  const base = `${partnerId}${path}${timestamp}${accessToken}${shopId}`;
-  return crypto.createHmac("sha256", partnerKey).update(base).digest("hex");
-}
+export type ShopeeDraftResult = {
+  mode: "draft";
+  jsonPath: string;
+  mdPath: string;
+};
 
-export async function publishShopee(product: ProductData): Promise<{ itemId?: number; raw: unknown }> {
-  const baseUrl = getEnv("SHOPEE_API_BASE_URL", "https://partner.shopeemobile.com").replace(/\/+$/, "");
-  const path = "/api/v2/product/add_item";
-  const timestamp = Math.floor(Date.now() / 1000);
-  const partnerId = requireEnv("SHOPEE_PARTNER_ID");
-  const shopId = requireEnv("SHOPEE_SHOP_ID");
-  const accessToken = requireEnv("SHOPEE_ACCESS_TOKEN");
-  const sign = shopeeSign(path, timestamp);
+export async function publishShopee(product: ProductData): Promise<ShopeeDraftResult> {
+  const sourceId = product.sku || `shopee-${Date.now()}`;
 
-  // TODO: Map category_id, logistics, brand, tax, pre-order, and attributes using Shopee Open Platform.
-  const url = new URL(`${baseUrl}${path}`);
-  url.searchParams.set("partner_id", partnerId);
-  url.searchParams.set("timestamp", String(timestamp));
-  url.searchParams.set("access_token", accessToken);
-  url.searchParams.set("shop_id", shopId);
-  url.searchParams.set("sign", sign);
+  const json = {
+    channel: "shopee",
+    generated_at: new Date().toISOString(),
+    source_id: sourceId,
+    listing: {
+      item_name: product.name,
+      description: product.description,
+      original_price: product.price,
+      stock: product.stock,
+      item_sku: product.sku,
+      category_hint: product.category,
+      images: product.images,
+      attributes: product.attributes || {},
+      weight: product.weight,
+      dimensions: product.dimensions || {}
+    },
+    checklist: [
+      "Vào Shopee Seller Centre → Quản lý sản phẩm → Thêm sản phẩm mới",
+      "Điền tên sản phẩm (item_name) — tối đa 120 ký tự",
+      "Chọn danh mục phù hợp với category_hint",
+      "Upload ảnh từ danh sách images (tối thiểu 1, khuyến nghị 5-9 ảnh)",
+      "Điền mô tả sản phẩm (description)",
+      "Điền giá bán (original_price) theo VND",
+      "Điền tồn kho (stock)",
+      "Điền mã SKU (item_sku)",
+      "Điền cân nặng (weight) nếu có — đơn vị gram",
+      "Điền kích thước (dimensions) nếu có — đơn vị cm",
+      "Điền các thuộc tính sản phẩm (attributes) theo danh mục đã chọn",
+      "Thiết lập vận chuyển (chọn đơn vị vận chuyển, phí ship)",
+      "Xem lại và nhấn Lưu / Đăng sản phẩm"
+    ]
+  };
 
-  return retry(async () => {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        item_name: product.name,
-        description: product.description,
-        original_price: product.price,
-        stock: product.stock,
-        item_sku: product.sku
-      })
-    });
-    const json = await response.json() as { response?: { item_id?: number }; error?: string; message?: string };
-    if (!response.ok || json.error) throw new Error(json.message || json.error || `Shopee HTTP ${response.status}`);
-    return { itemId: json.response?.item_id, raw: json };
+  const attrRows = Object.entries(product.attributes || {})
+    .map(([k, v]) => `| ${k} | ${String(v)} |`)
+    .join("\n") || "| — | — |";
+
+  const imageList = product.images.map((url, i) => `${i + 1}. [Ảnh ${i + 1}](${url})`).join("\n");
+
+  const markdown = `# Shopee Product Draft — ${new Date().toISOString().slice(0, 10)}
+
+## Thông tin sản phẩm
+
+| Trường | Giá trị |
+|--------|---------|
+| SKU | \`${product.sku}\` |
+| Tên sản phẩm | ${product.name} |
+| Giá bán | ${product.price.toLocaleString("vi-VN")} VND |
+| Tồn kho | ${product.stock} |
+| Danh mục gợi ý | ${product.category} |
+| Cân nặng | ${product.weight ? product.weight + " gram" : "—"} |
+| Tạo lúc | ${new Date().toLocaleString("vi-VN")} |
+
+## Mô tả (copy vào Shopee)
+
+\`\`\`
+${product.description}
+\`\`\`
+
+## Ảnh sản phẩm
+
+${imageList}
+
+## Thuộc tính sản phẩm
+
+| Thuộc tính | Giá trị |
+|-----------|---------|
+${attrRows}
+
+## Kích thước
+
+- Dài: ${product.dimensions?.length ?? "—"} cm
+- Rộng: ${product.dimensions?.width ?? "—"} cm
+- Cao: ${product.dimensions?.height ?? "—"} cm
+
+## Checklist đăng thủ công trên Shopee Seller Centre
+
+${json.checklist.map((s, i) => `${i + 1}. ${s}`).join("\n")}
+`;
+
+  const { jsonPath, mdPath } = await writeDraft({
+    filename: draftFilename("shopee", sourceId),
+    json,
+    markdown
   });
-}
 
+  logger.info("Shopee draft exported", { sku: product.sku, jsonPath, mdPath });
+  return { mode: "draft", jsonPath, mdPath };
+}

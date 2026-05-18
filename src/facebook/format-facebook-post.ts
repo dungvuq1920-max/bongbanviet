@@ -1,25 +1,29 @@
 import type { FacebookSourceData } from "../common/validators.js";
 
 export function formatFacebookPost(data: FacebookSourceData): string {
-  const price = data.price ? `Gia tham khao: ${data.price.toLocaleString("vi-VN")} VND` : "";
-  const benefits = [
-    data.category ? `Phu hop nhom: ${data.category}` : "",
+  const price = data.price
+    ? `Giá tham khảo: ${data.price.toLocaleString("vi-VN")} VND`
+    : "";
+
+  const bullets = [
+    data.category ? `Phù hợp nhóm: ${data.category}` : "",
     price,
-    "Thong tin ro rang, uu tien tu van dung trinh do va ngan sach."
+    "Tư vấn theo trình độ, ngân sách và lối chơi của bạn."
   ].filter(Boolean);
 
   return [
-    `Ban dang tim ${data.title}?`,
+    `Bạn đang tìm ${data.title}?`,
     "",
     data.description,
     "",
-    "Diem dang chu y:",
-    ...benefits.map((item) => `- ${item}`),
+    "Điểm đáng chú ý:",
+    ...bullets.map((item) => `• ${item}`),
     "",
-    "Can BongBanViet tu van setup phu hop? Nhan tin hoac xem chi tiet tai link ben duoi.",
+    "Cần BongBanViet tư vấn setup phù hợp? Nhắn tin hoặc xem chi tiết tại link bên dưới.",
     data.product_url || "",
     "",
-    "#BongBanViet #BongBan #TableTennis #TuVanBongBan"
-  ].filter(Boolean).join("\n");
+    "#BongBanViet #BóngBàn #TableTennis #TưVấnBóngBàn"
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
-

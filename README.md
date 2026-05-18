@@ -236,6 +236,144 @@ Avoid editing production workflows directly in the n8n UI. Use the UI mainly for
 
 If you intentionally edit in n8n UI, use `npm run sync:from-n8n` immediately after the edit. If you added a credential such as an API key or Telegram credential in n8n, the workflow credential reference and credential metadata will be synced, but the secret value must remain inside n8n Credentials or ENV variables.
 
+## Manual Posting (TikTok / Shopee / TikTok Shop)
+
+Workflows 02, 03, 04 do not call platform APIs yet. Instead they write two files per run into the `output/` folder (gitignored):
+
+```
+output/
+  tiktok-2025-05-18-source123.json     ← structured data
+  tiktok-2025-05-18-source123.md       ← human-readable checklist
+  shopee-2025-05-18-sku456.json
+  shopee-2025-05-18-sku456.md
+  tiktok-shop-2025-05-18-sku789.json
+  tiktok-shop-2025-05-18-sku789.md
+```
+
+Open the `.md` file for step-by-step instructions and copy-ready caption/description. The `.json` file contains all structured data if you want to paste into another tool.
+
+Change the output directory:
+
+```env
+DRAFT_OUTPUT_DIR=output   # default, change to any absolute or relative path
+```
+
+## AI Content Generation
+
+Set `AI_PROVIDER` in `.env` to enable AI-assisted copy:
+
+| Provider | AI_PROVIDER value | AI_MODEL example |
+|----------|-------------------|------------------|
+| OpenAI | `openai` | `gpt-4o-mini` |
+| Claude (Anthropic) | `claude` | `claude-haiku-4-5-20251001` |
+| Disabled | `none` (default) | — |
+
+```env
+AI_PROVIDER=claude
+AI_API_KEY=sk-ant-...
+AI_MODEL=claude-haiku-4-5-20251001
+```
+
+The fallback template is used when no provider is configured or the API call fails.
+
+## Chạy n8n Local (Hướng dẫn)
+
+### Cách 1 — Docker (khuyên dùng)
+
+Yêu cầu: [Docker Desktop](https://www.docker.com/products/docker-desktop/) đã cài và đang chạy.
+
+```powershell
+# Tạo thư mục lưu dữ liệu n8n
+mkdir "$env:USERPROFILE\.n8n"
+
+# Chạy n8n container
+docker run -d `
+  --name n8n-local `
+  -p 5678:5678 `
+  -v "$env:USERPROFILE\.n8n:/home/node/.n8n" `
+  -e N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false `
+  n8nio/n8n
+
+# Truy cập giao diện
+Start-Process "http://localhost:5678"
+```
+
+Dừng / khởi động lại:
+
+```powershell
+docker stop n8n-local
+docker start n8n-local
+```
+
+### Cách 2 — npm global
+
+Yêu cầu: Node.js 20+.
+
+```powershell
+npm install -g n8n
+n8n start
+# Giao diện tại http://localhost:5678
+```
+
+### Lấy API Key
+
+1. Vào `http://localhost:5678` → đăng ký tài khoản lần đầu.
+2. Nhấn avatar góc trên phải → **Settings** → **n8n API**.
+3. Tạo API key, copy giá trị.
+4. Điền vào `.env`:
+
+```env
+N8N_BASE_URL=http://localhost:5678
+N8N_API_KEY=<api-key-vừa-copy>
+```
+
+### Import workflows vào n8n local
+
+```powershell
+# Copy .env.example → .env và điền N8N_BASE_URL + N8N_API_KEY
+copy .env.example .env
+
+# Import tất cả workflows
+npm run import:workflows
+```
+
+Sau khi import, workflows xuất hiện trong giao diện n8n. Mở từng workflow, thêm credentials (Facebook Page Token, v.v.) rồi kích hoạt.
+
+### Chạy workflow thủ công
+
+1. Mở n8n tại `http://localhost:5678`.
+2. Chọn workflow cần test (ví dụ `01_BBV_FACEBOOK_POST_AUTOMATION`).
+3. Nhấn **Execute workflow** (nút tam giác) để chạy ngay với Manual Trigger.
+4. Xem kết quả ở từng node bằng cách nhấn vào node đó sau khi chạy xong.
+
+### Xem file draft xuất ra (TikTok / Shopee / TikTok Shop)
+
+Sau khi chạy workflow 02/03/04, file được ghi vào thư mục `output/` trong project:
+
+```powershell
+# Xem danh sách file draft mới nhất
+Get-ChildItem output | Sort-Object LastWriteTime -Descending | Select-Object -First 10
+
+# Mở file markdown để đọc checklist
+notepad output\tiktok-2025-05-18-source123.md
+```
+
+### Cấu hình môi trường cho n8n (tuỳ chọn)
+
+Trong giao diện n8n: **Settings → Variables** → thêm các biến môi trường (`FACEBOOK_PAGE_ID`, v.v.) để workflow đọc qua `$env.VARIABLE_NAME`.
+
+Hoặc truyền trực tiếp vào Docker:
+
+```powershell
+docker run -d `
+  --name n8n-local `
+  -p 5678:5678 `
+  -v "$env:USERPROFILE\.n8n:/home/node/.n8n" `
+  -e FACEBOOK_PAGE_ID=your_page_id `
+  -e FACEBOOK_PAGE_ACCESS_TOKEN=your_token `
+  n8nio/n8n
+```
+
 ## Debug Failed Executions
 
 Check in this order:

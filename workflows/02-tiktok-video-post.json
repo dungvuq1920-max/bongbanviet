@@ -63,7 +63,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const data = $input.first().json;\nconst errors = [];\nif (!data.video_url) errors.push('video_url is required');\nif (!data.title) errors.push('title is required');\nif (!data.source_id) errors.push('source_id is required');\nif (data.video_url && !String(data.video_url).startsWith('http')) errors.push('video_url must be absolute');\nif (errors.length) throw new Error(`Invalid video data: ${errors.join(', ')}`);\nreturn [{ json: data }];"
+        "jsCode": "const data = $input.first().json;\nconst errors = [];\nif (!data.video_url) errors.push('video_url is required');\nif (!data.title) errors.push('title is required');\nif (!data.source_id) errors.push('source_id is required');\nif (data.video_url && !String(data.video_url).startsWith('http')) errors.push('video_url must be absolute URL');\nif (errors.length) throw new Error(`Invalid video data: ${errors.join(', ')}`);\nreturn [{ json: data }];"
       },
       "id": "02-tiktok-validate",
       "name": "Validate Video",
@@ -73,7 +73,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const data = $input.first().json;\nconst tags = Array.isArray(data.hashtags) ? data.hashtags.map(t => String(t).startsWith('#') ? t : `#${t}`).join(' ') : '#BongBanViet #TableTennis #BongBan';\nconst caption = [\n  data.product_name ? `${data.product_name}: co gi dang chu y?` : data.title,\n  data.description || 'Goi y nhanh cho nguoi choi bong ban phong trao.',\n  'Xem het video va nhan tin neu ban can tu van setup.',\n  tags\n].join('\\n');\nreturn [{ json: { ...data, caption } }];"
+        "jsCode": "const data = $input.first().json;\nconst tags = Array.isArray(data.hashtags)\n  ? data.hashtags.map(t => String(t).startsWith('#') ? t : `#${t}`).join(' ')\n  : '#BongBanViet #TableTennis #BongBan';\nconst caption = [\n  data.product_name ? `${data.product_name}: điểm nổi bật cần biết?` : data.title,\n  data.description || 'Gợi ý nhanh cho người chơi bóng bàn phong trào.',\n  'Xem hết video và nhắn tin nếu bạn cần tư vấn setup.',\n  tags\n].filter(Boolean).join('\\n');\nreturn [{ json: { ...data, caption } }];"
       },
       "id": "02-tiktok-caption",
       "name": "Generate Caption",
@@ -83,37 +83,17 @@
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "https://open.tiktokapis.com/v2/post/publish/video/init/",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{$env.TIKTOK_ACCESS_TOKEN}}"
-            },
-            {
-              "name": "Content-Type",
-              "value": "application/json; charset=UTF-8"
-            }
-          ]
-        },
-        "sendBody": true,
-        "contentType": "json",
-        "jsonBody": "={{ { post_info: { title: $json.caption, privacy_level: 'PUBLIC_TO_EVERYONE', disable_duet: false, disable_comment: false, disable_stitch: false }, source_info: { source: 'PULL_FROM_URL', video_url: $json.video_url } } }}",
-        "options": {
-          "timeout": 120000
-        }
+        "jsCode": "const fs = require('fs');\nconst path = require('path');\nconst data = $input.first().json;\n\nconst tags = Array.isArray(data.hashtags)\n  ? data.hashtags.map(t => String(t).startsWith('#') ? t : `#${t}`).join(' ')\n  : '#BongBanViet #TableTennis #BongBan';\nconst fullCaption = [data.caption, tags].filter((v, i, a) => a.indexOf(v) === i).join('\\n').replace(/\\n{2,}/g, '\\n');\n\nconst sourceId = String(data.source_id || 'unknown');\nconst date = new Date().toISOString().slice(0, 10);\nconst safeId = sourceId.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 40);\nconst basename = `tiktok-${date}-${safeId}`;\nconst outputDir = path.join(process.cwd(), 'output');\nfs.mkdirSync(outputDir, { recursive: true });\n\nconst steps = [\n  '1. Tải video từ link video_url về máy',\n  '2. Mở app TikTok → nhấn dấu + để tạo video mới',\n  '3. Chọn \"Tải lên\" và chọn video vừa tải',\n  '4. Dán nội dung caption vào ô mô tả',\n  '5. Quyền xem: Công khai (Public to Everyone)',\n  '6. Bật Duet / Bình luận / Stitch',\n  '7. Thêm nhạc nền nếu cần',\n  '8. Nhấn Đăng'\n];\n\nconst jsonData = {\n  channel: 'tiktok',\n  generated_at: new Date().toISOString(),\n  source_id: sourceId,\n  video_url: data.video_url,\n  caption: fullCaption,\n  post_info: { privacy_level: 'PUBLIC_TO_EVERYONE', disable_duet: false, disable_comment: false, disable_stitch: false },\n  manual_steps: steps\n};\n\nconst md = [\n  `# TikTok Draft — ${date}`,\n  '',\n  '## Thông tin video',\n  '',\n  `- **Source ID:** \\`${sourceId}\\``,\n  `- **Sản phẩm:** ${data.product_name || data.title || '—'}`,\n  `- **Video URL:** ${data.video_url}`,\n  `- **Tạo lúc:** ${new Date().toLocaleString('vi-VN')}`,\n  '',\n  '## Caption (copy nguyên vào TikTok)',\n  '',\n  '```',\n  fullCaption,\n  '```',\n  '',\n  '## Cài đặt',\n  '',\n  '- Quyền xem: **Công khai**',\n  '- Duet / Bình luận / Stitch: **Bật**',\n  '',\n  '## Các bước đăng thủ công',\n  '',\n  steps.join('\\n')\n].join('\\n');\n\nfs.writeFileSync(path.join(outputDir, `${basename}.json`), JSON.stringify(jsonData, null, 2));\nfs.writeFileSync(path.join(outputDir, `${basename}.md`), md);\n\nreturn [{ json: { channel: 'tiktok', mode: 'draft', source_id: sourceId, json_file: `output/${basename}.json`, md_file: `output/${basename}.md`, caption: fullCaption, generated_at: jsonData.generated_at } }];"
       },
-      "id": "02-tiktok-upload",
-      "name": "Upload/Post TikTok via TikTok Content Posting API",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
+      "id": "02-tiktok-export-draft",
+      "name": "Export Draft File (JSON + Markdown)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [-160, 0]
     },
     {
       "parameters": {
-        "jsCode": "const result = $input.first().json;\n// TODO: Persist publish_id/status to internal source system.\nreturn [{ json: { channel: 'tiktok', ok: true, result, saved_at: new Date().toISOString() } }];"
+        "jsCode": "const result = $input.first().json;\nconst webhook = $env.SOURCE_RESULT_WEBHOOK_URL;\nif (webhook) {\n  const res = await fetch(webhook, {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify(result)\n  });\n  if (!res.ok) console.warn('Result webhook failed', res.status);\n}\nreturn [{ json: { ...result, notified: !!webhook, saved_at: new Date().toISOString() } }];"
       },
       "id": "02-tiktok-save",
       "name": "Save Result",
@@ -123,7 +103,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// TODO: Configure as a dedicated n8n error workflow for failed TikTok executions.\nreturn [{ json: { error_handler: 'configured-placeholder', time: new Date().toISOString() } }];"
+        "jsCode": "const error = $execution.error || {};\nconst webhook = $env.SOURCE_RESULT_WEBHOOK_URL;\nconst payload = { channel: 'tiktok', ok: false, error: error.message || 'Unknown error', time: new Date().toISOString() };\nif (webhook) {\n  await fetch(webhook, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).catch(() => {});\n}\nreturn [{ json: payload }];"
       },
       "id": "02-tiktok-error",
       "name": "Error Handler",
@@ -149,13 +129,14 @@
       "main": [[{ "node": "Generate Caption", "type": "main", "index": 0 }]]
     },
     "Generate Caption": {
-      "main": [[{ "node": "Upload/Post TikTok via TikTok Content Posting API", "type": "main", "index": 0 }]]
+      "main": [[{ "node": "Export Draft File (JSON + Markdown)", "type": "main", "index": 0 }]]
     },
-    "Upload/Post TikTok via TikTok Content Posting API": {
+    "Export Draft File (JSON + Markdown)": {
       "main": [[{ "node": "Save Result", "type": "main", "index": 0 }]]
     }
   },
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "errorWorkflow": ""
   }
 }

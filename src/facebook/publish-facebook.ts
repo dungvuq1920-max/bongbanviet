@@ -7,11 +7,18 @@ export type FacebookPublishInput = {
   scheduledUnixTime?: number;
 };
 
-export async function publishFacebook(input: FacebookPublishInput): Promise<{ id: string }> {
+export type FacebookPublishResult = {
+  id: string;
+  post_id?: string;
+};
+
+export async function publishFacebook(input: FacebookPublishInput): Promise<FacebookPublishResult> {
   const pageId = requireEnv("FACEBOOK_PAGE_ID");
   const token = requireEnv("FACEBOOK_PAGE_ACCESS_TOKEN");
   const graphVersion = getEnv("FACEBOOK_GRAPH_VERSION", "v19.0");
-  const endpoint = input.imageUrl
+
+  const hasImage = Boolean(input.imageUrl);
+  const endpoint = hasImage
     ? `https://graph.facebook.com/${graphVersion}/${pageId}/photos`
     : `https://graph.facebook.com/${graphVersion}/${pageId}/feed`;
 
@@ -20,7 +27,8 @@ export async function publishFacebook(input: FacebookPublishInput): Promise<{ id
     access_token: token
   };
 
-  if (input.imageUrl) body.url = input.imageUrl;
+  if (hasImage) body.url = input.imageUrl!;
+
   if (input.scheduledUnixTime) {
     body.published = false;
     body.scheduled_publish_time = input.scheduledUnixTime;
@@ -32,9 +40,25 @@ export async function publishFacebook(input: FacebookPublishInput): Promise<{ id
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body)
     });
-    const json = await response.json() as { id?: string; post_id?: string; error?: { message?: string } };
-    if (!response.ok) throw new Error(json.error?.message || `Meta Graph HTTP ${response.status}`);
-    return { id: json.post_id || json.id || "" };
+
+    const json = await response.json() as {
+      id?: string;
+      post_id?: string;
+      error?: { message?: string; code?: number; type?: string };
+    };
+
+    if (!response.ok || json.error) {
+      const msg = json.error?.message || `Meta Graph HTTP ${response.status}`;
+      throw new Error(msg);
+    }
+
+    return { id: json.post_id || json.id || "", post_id: json.post_id };
+  }, {
+    attempts: 3,
+    shouldRetry: (error) => {
+      const msg = String((error as Error).message);
+      // Do not retry permanent auth/permission errors
+      return !msg.includes("OAuthException") && !msg.includes("190");
+    }
   });
 }
-

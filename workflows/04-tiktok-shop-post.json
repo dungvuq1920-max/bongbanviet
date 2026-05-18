@@ -78,14 +78,14 @@
         }
       },
       "id": "04-tts-fetch-video",
-      "name": "Fetch/Prepare Video",
+      "name": "Fetch Video Info",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [-1140, 120]
     },
     {
       "parameters": {
-        "jsCode": "const product = $('Fetch Product Info').first().json;\nconst video = $('Fetch/Prepare Video').first().json;\nconst name = product.product_name || product.name || video.product_name || video.title;\nconst content = [\n  `${name} - goi y nhanh cho nguoi choi bong ban`,\n  product.description || video.description || '',\n  product.price ? `Gia: ${Number(product.price).toLocaleString('vi-VN')} VND` : '',\n  'Dat hang tren TikTok Shop va nhan tu van setup phu hop.',\n  '#BongBanViet #TikTokShop #BongBan'\n].filter(Boolean).join('\\n');\nreturn [{ json: { product, video, tiktok_shop_content: content } }];"
+        "jsCode": "const product = $('Fetch Product Info').first().json;\nconst video = $('Fetch Video Info').first().json;\nconst name = product.product_name || product.name || video.product_name || video.title || 'Sản phẩm BongBanViet';\nconst price = product.price ? `Giá: ${Number(product.price).toLocaleString('vi-VN')} VND` : '';\nconst description = [\n  `${name} — gợi ý nhanh cho người chơi bóng bàn`,\n  product.description || video.description || '',\n  price,\n  'Đặt hàng trên TikTok Shop và nhận tư vấn setup phù hợp.',\n  '#BongBanViet #TikTokShop #BongBan'\n].filter(Boolean).join('\\n');\nreturn [{ json: { product, video, tiktok_shop_description: description } }];"
       },
       "id": "04-tts-content",
       "name": "Generate TikTok Shop Content",
@@ -95,48 +95,27 @@
     },
     {
       "parameters": {
-        "jsCode": "const input = $input.first().json;\nconst p = input.product || {};\nconst v = input.video || {};\nconst mapped = {\n  product_name: p.product_name || p.name || v.product_name || v.title,\n  description: input.tiktok_shop_content,\n  price: Number(p.price || 0),\n  stock: Number(p.stock || 0),\n  images: Array.isArray(p.images) ? p.images : [],\n  video_url: v.video_url || p.video_url || '',\n  sku: p.sku || p.source_id || v.source_id,\n  category: p.category || '',\n  source_id: p.source_id || v.source_id || ''\n};\nreturn [{ json: mapped }];"
+        "jsCode": "const input = $input.first().json;\nconst p = input.product || {};\nconst v = input.video || {};\nconst mapped = {\n  product_name: (p.product_name || p.name || v.product_name || v.title || '').slice(0, 255),\n  description: input.tiktok_shop_description,\n  price: Number(p.price || 0),\n  stock: Number(p.stock || 0),\n  images: Array.isArray(p.images) ? p.images.map(String).filter(Boolean) : [],\n  video_url: v.video_url || p.video_url || '',\n  sku: String(p.sku || p.source_id || v.source_id || ''),\n  category: String(p.category || ''),\n  source_id: String(p.source_id || v.source_id || '')\n};\nconst errors = [];\nif (!mapped.product_name) errors.push('product_name bắt buộc');\nif (mapped.price <= 0) errors.push('price phải dương');\nif (!mapped.sku) errors.push('sku bắt buộc');\nif (errors.length) throw new Error(`Dữ liệu không hợp lệ: ${errors.join(', ')}`);\nreturn [{ json: mapped }];"
       },
       "id": "04-tts-map",
-      "name": "Map Product Fields",
+      "name": "Map & Validate Fields",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [-580, 20]
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "={{($env.TIKTOK_SHOP_API_BASE_URL || 'https://open-api.tiktokglobalshop.com') + '/product/202309/products'}}",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "x-tts-access-token",
-              "value": "={{$env.TIKTOK_SHOP_ACCESS_TOKEN}}"
-            },
-            {
-              "name": "Content-Type",
-              "value": "application/json"
-            }
-          ]
-        },
-        "sendBody": true,
-        "contentType": "json",
-        "jsonBody": "={{ { save_mode: 'LISTING', product_name: $json.product_name, description: $json.description, skus: [{ seller_sku: $json.sku, price: { amount: String($json.price), currency: 'VND' }, inventory: [{ quantity: $json.stock }] }] } }}",
-        "options": {
-          "timeout": 120000
-        }
+        "jsCode": "const fs = require('fs');\nconst path = require('path');\nconst input = $input.first().json;\n\nconst sourceId = input.source_id || input.sku || `tts-${Date.now()}`;\nconst date = new Date().toISOString().slice(0, 10);\nconst safeId = sourceId.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 40);\nconst basename = `tiktok-shop-${date}-${safeId}`;\nconst outputDir = path.join(process.cwd(), 'output');\nfs.mkdirSync(outputDir, { recursive: true });\n\nconst checklist = [\n  'Vào TikTok Seller Centre → Sản phẩm → Thêm sản phẩm mới',\n  'Điền tên sản phẩm (product_name)',\n  'Chọn danh mục phù hợp với category_hint',\n  'Upload ảnh sản phẩm từ danh sách images',\n  'Upload video sản phẩm nếu có (video_url)',\n  'Điền mô tả (description)',\n  'Thêm biến thể: điền SKU, giá, tồn kho',\n  'Thiết lập vận chuyển',\n  'Xem lại → Gửi duyệt'\n];\n\nconst jsonData = {\n  channel: 'tiktok-shop',\n  generated_at: new Date().toISOString(),\n  source_id: sourceId,\n  listing: {\n    product_name: input.product_name,\n    description: input.description,\n    price_vnd: input.price,\n    stock: input.stock,\n    seller_sku: input.sku,\n    category_hint: input.category,\n    images: input.images,\n    video_url: input.video_url || null\n  },\n  checklist\n};\n\nconst imageList = (input.images || []).map((u, i) => `${i+1}. ${u}`).join('\\n') || '—';\n\nconst md = [\n  `# TikTok Shop Draft — ${date}`,\n  '',\n  '## Thông tin sản phẩm',\n  '',\n  '| Trường | Giá trị |',\n  '|--------|---------|',\n  `| Source ID | \\`${sourceId}\\` |`,\n  `| SKU | \\`${input.sku}\\` |`,\n  `| Tên sản phẩm | ${input.product_name} |`,\n  `| Giá (VND) | ${Number(input.price).toLocaleString('vi-VN')} |`,\n  `| Tồn kho | ${input.stock} |`,\n  `| Danh mục gợi ý | ${input.category || '—'} |`,\n  `| Video | ${input.video_url ? input.video_url : '—'} |`,\n  `| Tạo lúc | ${new Date().toLocaleString('vi-VN')} |`,\n  '',\n  '## Mô tả (copy vào TikTok Shop)',\n  '',\n  '```',\n  input.description,\n  '```',\n  '',\n  '## Ảnh sản phẩm',\n  '',\n  imageList,\n  '',\n  '## Checklist đăng thủ công',\n  '',\n  checklist.map((s, i) => `${i+1}. ${s}`).join('\\n')\n].join('\\n');\n\nfs.writeFileSync(path.join(outputDir, `${basename}.json`), JSON.stringify(jsonData, null, 2));\nfs.writeFileSync(path.join(outputDir, `${basename}.md`), md);\n\nreturn [{ json: { channel: 'tiktok-shop', mode: 'draft', source_id: sourceId, sku: input.sku, json_file: `output/${basename}.json`, md_file: `output/${basename}.md`, generated_at: jsonData.generated_at } }];"
       },
-      "id": "04-tts-publish",
-      "name": "Create/Update Product or Content via TikTok Shop official API",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [-320, 20],
-      "notes": "TODO: Add TikTok Shop official signature, exact category mapping, image upload IDs, and product update-vs-create branching."
+      "id": "04-tts-export-draft",
+      "name": "Export Draft File (JSON + Markdown)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-320, 20]
     },
     {
       "parameters": {
-        "jsCode": "const result = $input.first().json;\n// TODO: Persist TikTok Shop product/content IDs to source system.\nreturn [{ json: { channel: 'tiktok-shop', ok: true, result, saved_at: new Date().toISOString() } }];"
+        "jsCode": "const result = $input.first().json;\nconst webhook = $env.SOURCE_RESULT_WEBHOOK_URL;\nif (webhook) {\n  const res = await fetch(webhook, {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify(result)\n  });\n  if (!res.ok) console.warn('Result webhook failed', res.status);\n}\nreturn [{ json: { ...result, notified: !!webhook, saved_at: new Date().toISOString() } }];"
       },
       "id": "04-tts-save",
       "name": "Save Result",
@@ -146,7 +125,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// TODO: Configure as a dedicated n8n error workflow for failed TikTok Shop executions.\nreturn [{ json: { error_handler: 'configured-placeholder', time: new Date().toISOString() } }];"
+        "jsCode": "const error = $execution.error || {};\nconst webhook = $env.SOURCE_RESULT_WEBHOOK_URL;\nconst payload = { channel: 'tiktok-shop', ok: false, error: error.message || 'Unknown error', time: new Date().toISOString() };\nif (webhook) {\n  await fetch(webhook, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).catch(() => {});\n}\nreturn [{ json: payload }];"
       },
       "id": "04-tts-error",
       "name": "Error Handler",
@@ -157,32 +136,32 @@
   ],
   "connections": {
     "Manual Trigger": {
-      "main": [[{ "node": "Fetch Product Info", "type": "main", "index": 0 }, { "node": "Fetch/Prepare Video", "type": "main", "index": 0 }]]
+      "main": [[{ "node": "Fetch Product Info", "type": "main", "index": 0 }, { "node": "Fetch Video Info", "type": "main", "index": 0 }]]
     },
     "Cron Trigger": {
-      "main": [[{ "node": "Fetch Product Info", "type": "main", "index": 0 }, { "node": "Fetch/Prepare Video", "type": "main", "index": 0 }]]
+      "main": [[{ "node": "Fetch Product Info", "type": "main", "index": 0 }, { "node": "Fetch Video Info", "type": "main", "index": 0 }]]
     },
     "Webhook Trigger": {
-      "main": [[{ "node": "Fetch Product Info", "type": "main", "index": 0 }, { "node": "Fetch/Prepare Video", "type": "main", "index": 0 }]]
+      "main": [[{ "node": "Fetch Product Info", "type": "main", "index": 0 }, { "node": "Fetch Video Info", "type": "main", "index": 0 }]]
     },
     "Fetch Product Info": {
       "main": [[{ "node": "Generate TikTok Shop Content", "type": "main", "index": 0 }]]
     },
-    "Fetch/Prepare Video": {
+    "Fetch Video Info": {
       "main": [[{ "node": "Generate TikTok Shop Content", "type": "main", "index": 0 }]]
     },
     "Generate TikTok Shop Content": {
-      "main": [[{ "node": "Map Product Fields", "type": "main", "index": 0 }]]
+      "main": [[{ "node": "Map & Validate Fields", "type": "main", "index": 0 }]]
     },
-    "Map Product Fields": {
-      "main": [[{ "node": "Create/Update Product or Content via TikTok Shop official API", "type": "main", "index": 0 }]]
+    "Map & Validate Fields": {
+      "main": [[{ "node": "Export Draft File (JSON + Markdown)", "type": "main", "index": 0 }]]
     },
-    "Create/Update Product or Content via TikTok Shop official API": {
+    "Export Draft File (JSON + Markdown)": {
       "main": [[{ "node": "Save Result", "type": "main", "index": 0 }]]
     }
   },
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "errorWorkflow": ""
   }
 }
-
