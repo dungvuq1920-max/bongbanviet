@@ -437,6 +437,7 @@ function archiveAndReset(sid,extraPayment){
   s.resetHistory.push({at:new Date().toISOString().slice(0,10),sessions:[...s.sessions],payments:pmts});
   s.sessions=[];
   s.payments=[];
+  s.paidAmount='0';
   scheduleSave();
   rerenderCard(sid);
 }
