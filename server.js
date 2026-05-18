@@ -4840,6 +4840,140 @@ app.delete('/api/fb-posts/:id', (req, res) => {
   res.json({ ok: true });
 });
 
+app.post('/api/generate-fb-posts', async (req, res) => {
+  const key = process.env.ANTHROPIC_API_KEY;
+  if (!key) return res.status(400).json({ error: 'ANTHROPIC_API_KEY chưa được cấu hình trong Railway env' });
+
+  function nextMonday() {
+    const d = new Date();
+    const day = d.getDay();
+    const diff = day === 0 ? 1 : day === 1 ? 0 : 8 - day;
+    d.setDate(d.getDate() + diff);
+    return d.toISOString().slice(0, 10);
+  }
+
+  const weekStart = req.body.week_start || nextMonday();
+  const dates = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(weekStart);
+    d.setDate(d.getDate() + i);
+    dates.push(d.toISOString().slice(0, 10));
+  }
+  const [mon, tue, wed, thu, fri, sat, sun] = dates;
+
+  const SCHEDULE = [
+    { date: mon, time: '07:30', pillar: 'knowledge', theme: 'Tip kỹ thuật đầu tuần' },
+    { date: mon, time: '10:30', pillar: 'knowledge', theme: 'Kiến thức kéo web, dẫn về bongbanviet.com' },
+    { date: mon, time: '12:15', pillar: 'product',   theme: 'Product discovery – giới thiệu sản phẩm phù hợp trình độ' },
+    { date: mon, time: '15:30', pillar: 'engagement', theme: 'Poll/câu hỏi cộng đồng đầu tuần' },
+    { date: mon, time: '21:15', pillar: 'engagement', theme: 'Hỏi đáp setup tối' },
+    { date: tue, time: '07:30', pillar: 'knowledge', theme: 'Drill/footwork – bài tập cụ thể' },
+    { date: tue, time: '10:30', pillar: 'combo',     theme: 'Combo vợt theo trình độ (mới/trung/nâng)' },
+    { date: tue, time: '12:15', pillar: 'product',   theme: 'Review mặt vợt hoặc cốt vợt nổi bật' },
+    { date: tue, time: '15:30', pillar: 'engagement', theme: 'So sánh A/B – anh em chọn gì?' },
+    { date: tue, time: '18:30', pillar: 'combo',     theme: 'Setup bóng bàn sau giờ làm, ngân sách hợp lý' },
+    { date: tue, time: '21:15', pillar: 'engagement', theme: 'Hỏi đáp tối – giải đáp thắc mắc cộng đồng' },
+    { date: wed, time: '07:30', pillar: 'knowledge', theme: 'Lỗi kỹ thuật thường gặp và cách sửa' },
+    { date: wed, time: '10:30', pillar: 'knowledge', theme: 'Kiến thức từ nguồn uy tín, link bongbanviet.com' },
+    { date: wed, time: '12:15', pillar: 'product',   theme: 'Sản phẩm nổi bật tuần này tại BongBanViet' },
+    { date: wed, time: '15:30', pillar: 'engagement', theme: 'Mini quiz bóng bàn vui' },
+    { date: wed, time: '18:30', pillar: 'combo',     theme: 'Case tư vấn setup thực tế cho khách' },
+    { date: wed, time: '21:15', pillar: 'product',   theme: 'So sánh review 2 sản phẩm cùng phân khúc' },
+    { date: thu, time: '07:30', pillar: 'knowledge', theme: 'Kỹ thuật giao bóng/trả giao' },
+    { date: thu, time: '10:30', pillar: 'product',   theme: 'Product discovery – phù hợp lối chơi nào?' },
+    { date: thu, time: '12:15', pillar: 'combo',     theme: 'Combo bán mềm – gợi ý setup hoàn chỉnh' },
+    { date: thu, time: '15:30', pillar: 'engagement', theme: 'Câu hỏi mở cho cộng đồng' },
+    { date: thu, time: '18:30', pillar: 'promo',     theme: 'Ưu đãi nhẹ cuối tuần – combo/sản phẩm' },
+    { date: thu, time: '21:15', pillar: 'knowledge', theme: 'Recap kiến thức nổi bật trong tuần' },
+    { date: fri, time: '07:30', pillar: 'knowledge', theme: 'Checklist chuẩn bị đi đánh cuối tuần' },
+    { date: fri, time: '10:30', pillar: 'trust',     theme: 'Hàng chính hãng & quy trình tư vấn tại BongBanViet' },
+    { date: fri, time: '12:15', pillar: 'promo',     theme: 'Ưu đãi cuối tuần – CTA inbox/Zalo' },
+    { date: fri, time: '15:30', pillar: 'engagement', theme: 'Poll cuối tuần – kế hoạch đi đánh?' },
+    { date: fri, time: '21:15', pillar: 'combo',     theme: 'Gợi ý setup đi đánh cuối tuần' },
+    { date: sat, time: '08:30', pillar: 'knowledge', theme: 'Tip thực chiến cho buổi đánh cuối tuần' },
+    { date: sat, time: '11:00', pillar: 'trust',     theme: 'Ảnh kho/sản phẩm thực tế tại cửa hàng' },
+    { date: sat, time: '16:00', pillar: 'engagement', theme: 'Poll trận đấu – ai thắng ai?' },
+    { date: sat, time: '20:30', pillar: 'engagement', theme: 'Recap cộng đồng sau ngày đánh' },
+    { date: sun, time: '08:30', pillar: 'knowledge', theme: 'FAQ người mới bắt đầu chơi bóng bàn' },
+    { date: sun, time: '11:00', pillar: 'knowledge', theme: 'Bài tổng hợp kiến thức – link bongbanviet.com' },
+    { date: sun, time: '16:00', pillar: 'engagement', theme: 'Bình chọn chủ đề muốn học tuần tới' },
+    { date: sun, time: '20:30', pillar: 'engagement', theme: 'Preview lịch tuần tới – hâm nóng cộng đồng' },
+  ];
+
+  const HASHTAGS = {
+    knowledge:  '#BongBanViet #KyThuatBongBan #HocBongBan #MeoChuyenSau #TableTennis',
+    product:    '#BongBanViet #DungCuBongBan #HangChinhHang #CotVot #MatVot #BongBanHaNoi',
+    combo:      '#BongBanViet #ComboVot #TuVanBongBan #SetupBongBan #GoiYSetup',
+    engagement: '#BongBanViet #BongBanCongDong #HoiDapBongBan #BinhChon',
+    trust:      '#BongBanViet #HangChinhHang #UyTin #BongBanVietCom',
+    promo:      '#BongBanViet #UuDai #KhuyenMai #ComboGiaRe #LienHeZalo',
+  };
+
+  const scheduleBlock = SCHEDULE.map((s, i) =>
+    `${i + 1}. ${s.date}T${s.time}:00 | pillar=${s.pillar} | theme="${s.theme}"`
+  ).join('\n');
+
+  const prompt = `Bạn là Facebook Content Writer cho BÓNG BÀN VIỆT — bongbanviet.com, Hà Nội.
+Định vị: Tư Vấn Chuẩn – Hàng Chính Hãng | Zalo: 096.1269.386
+
+NHIỆM VỤ: Viết đúng 36 bài theo lịch sau, theo thứ tự từ 1 đến 36.
+
+LỊCH ĐĂNG TUẦN ${mon} – ${sun}:
+${scheduleBlock}
+
+QUY TẮC:
+- topic: 5–10 từ tiếng Việt, chuẩn SEO Facebook, KHÔNG dùng emoji
+- caption: 100–180 từ tiếng Việt, tự nhiên, có emoji phù hợp, kết thúc bằng câu hỏi hoặc CTA nhẹ
+- hashtags: dùng đúng theo pillar:
+  knowledge → ${HASHTAGS.knowledge}
+  product → ${HASHTAGS.product}
+  combo → ${HASHTAGS.combo}
+  engagement → ${HASHTAGS.engagement}
+  trust → ${HASHTAGS.trust}
+  promo → ${HASHTAGS.promo}
+- image_prompt: tiếng Anh, mô tả ảnh 1080x1080 cho Facebook
+- scheduled_time: lấy đúng từ lịch trên (format YYYY-MM-DDTHH:MM:00)
+- status: "scheduled" cho tất cả
+
+CHỈ TRẢ VỀ JSON, không viết thêm gì:
+{"posts":[{"topic":"...","pillar":"...","status":"scheduled","caption":"...","hashtags":"...","cta":"Inbox hoặc Zalo 096.1269.386 để được tư vấn.","website_link":"https://bongbanviet.com","image_prompt":"...","scheduled_time":"...","source_notes":"..."}]}`;
+
+  try {
+    const response = await axios.post('https://api.anthropic.com/v1/messages', {
+      model: 'claude-opus-4-7',
+      max_tokens: 16000,
+      messages: [{ role: 'user', content: prompt }]
+    }, {
+      headers: {
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json'
+      },
+      timeout: 120000
+    });
+
+    const text = response.data.content[0].text;
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('AI không trả về JSON hợp lệ');
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    const genPosts = Array.isArray(parsed) ? parsed : (parsed.posts || []);
+    if (!genPosts.length) throw new Error('Không tạo được bài nào');
+
+    const insert = db.prepare(`INSERT INTO fb_posts (id,topic,pillar,status,brand_voice,source_type,source_urls,source_notes,fact_summary,caption,hashtags,cta,website_link,image_prompt,scheduled_time) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
+    const run = db.transaction(() => genPosts.map(p => {
+      const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+      insert.run(id, p.topic || '', p.pillar || 'knowledge', p.status || 'scheduled', '', 'ai-generated', '[]', p.source_notes || '', p.fact_summary || '', p.caption || '', p.hashtags || '', p.cta || '', p.website_link || 'https://bongbanviet.com', p.image_prompt || '', p.scheduled_time || '');
+      return id;
+    }));
+    const ids = run();
+    res.json({ ok: true, count: ids.length, ids });
+  } catch (e) {
+    console.error('generate-fb-posts error:', e.response?.data || e.message);
+    res.status(500).json({ error: e.response?.data?.error?.message || e.message || 'Lỗi tạo bài' });
+  }
+});
+
 // ─── Start ───────────────────────────────────────────────────────────────────
 
 const { execSync } = require('child_process');

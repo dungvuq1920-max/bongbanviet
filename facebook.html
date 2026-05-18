@@ -162,9 +162,8 @@ input[type=file]{display:none}
 
 <div class="hdr">
   <div class="hdr-brand">
-    📘 Facebook
+    📅 Lịch Post
     <a class="hdr-link" href="/admin.html">Admin</a>
-    <a class="hdr-link" href="/prompt">Prompts</a>
   </div>
   <div class="status-tabs">
     <button class="stab active" data-s="all" onclick="setStatus('all')">Tất Cả</button>
@@ -172,19 +171,15 @@ input[type=file]{display:none}
     <button class="stab" data-s="scheduled" onclick="setStatus('scheduled')">Lên Lịch</button>
     <button class="stab" data-s="posted" onclick="setStatus('posted')">Đã Đăng</button>
   </div>
-  <div class="view-toggle">
-    <button class="vtab active" id="vtGrid" onclick="setView('grid')">⊞ Grid</button>
-    <button class="vtab" id="vtCal" onclick="setView('cal')">📅 Lịch</button>
-  </div>
   <div class="hdr-right">
     <span class="count-chip" id="countChip">0 bài</span>
-    <button class="btn-import" onclick="openImport()">+ Nhập từ AI</button>
+    <button class="btn-import" style="background:var(--surf2);border:1px solid var(--line);color:var(--text)" onclick="openImport()">+ Nhập</button>
+    <button class="btn-import" onclick="openGen()">⚡ Tạo Tuần</button>
   </div>
 </div>
 
 <div class="pbar" id="pbar"></div>
-<div class="grid" id="grid"></div>
-<div class="cal-wrap" id="calWrap" style="display:none"></div>
+<div class="cal-wrap" id="calWrap"></div>
 
 <!-- ── Import modal ── -->
 <div class="ov" id="ovImport" style="display:none" onclick="if(event.target===this)closeImport()">
@@ -327,13 +322,38 @@ input[type=file]{display:none}
   </div>
 </div>
 
+<!-- ── Generate modal ── -->
+<div class="ov" id="ovGen" style="display:none" onclick="if(event.target===this)closeGen()">
+  <div class="modal" style="max-width:420px">
+    <div class="mhd">
+      <h3>⚡ Tạo Bài Tự Động</h3>
+      <button class="mcls" onclick="closeGen()">✕</button>
+    </div>
+    <div class="mbody">
+      <p style="color:var(--muted);font-size:13px;line-height:1.65">AI sẽ tự tạo <b style="color:var(--text)">36 bài</b> theo lịch tăng trưởng page (T2–CN) và lưu thẳng vào dashboard — không cần copy JSON.</p>
+      <div class="fld">
+        <label>Tuần bắt đầu từ (Thứ 2)</label>
+        <input type="date" id="genWeekStart" value="">
+      </div>
+      <div style="font-size:12px;color:var(--muted);background:var(--bg);border-radius:8px;padding:10px 12px;border:1px solid var(--line);line-height:1.8">
+        Yêu cầu: <code style="color:var(--blue2)">ANTHROPIC_API_KEY</code> trong Railway env.<br>
+        Thời gian tạo: ~30–60 giây.
+      </div>
+      <div id="genStatus" style="display:none;font-size:13px;padding:9px 12px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:8px;color:var(--blue2)"></div>
+    </div>
+    <div class="mfoot">
+      <button class="btn-c" onclick="closeGen()">Hủy</button>
+      <button class="btn-s" id="btnDoGen" onclick="doGen()">⚡ Tạo 36 Bài</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
 var posts = [];
 var activeStatus = 'all';
 var activePillar = 'all';
-var activeView = 'grid';
 var calWeekStart = null;
 var _editId = null;
 var _copyPost = null;
@@ -390,16 +410,6 @@ function setStatus(s) {
 
 function setPillar(p) { activePillar = p; buildPBar(); render(); }
 
-// ─── View toggle ─────────────────────────────────────────────────────────────
-function setView(v) {
-  activeView = v;
-  document.getElementById('vtGrid').classList.toggle('active', v === 'grid');
-  document.getElementById('vtCal').classList.toggle('active', v === 'cal');
-  document.getElementById('grid').style.display = v === 'grid' ? '' : 'none';
-  document.getElementById('calWrap').style.display = v === 'cal' ? '' : 'none';
-  render();
-}
-
 // ─── Render ───────────────────────────────────────────────────────────────────
 function render() {
   const list = posts.filter(p => {
@@ -408,33 +418,7 @@ function render() {
     return true;
   });
   document.getElementById('countChip').textContent = list.length + ' bài';
-
-  if (activeView === 'cal') {
-    document.getElementById('grid').style.display = 'none';
-    document.getElementById('calWrap').style.display = '';
-    renderCalendar(list);
-    return;
-  }
-
-  document.getElementById('grid').style.display = '';
-  document.getElementById('calWrap').style.display = 'none';
-  const grid = document.getElementById('grid');
-  if (!list.length) {
-    grid.innerHTML = `<div class="empty">
-      <h3>Chưa có bài nào</h3>
-      <p>Bấm <b>+ Nhập từ AI</b> để bắt đầu</p>
-      <div class="empty-wf">
-        <b>📋 Quy trình nhanh:</b><br>
-        1. Mở Antigravity / GPT / Claude<br>
-        2. Dán <b>Master Prompt</b> BongBanViet vào AI<br>
-        3. Yêu cầu tạo 5–10 bài → AI trả về JSON<br>
-        4. Copy JSON → Paste vào dashboard<br>
-        5. Review, sửa caption, tạo ảnh, đăng tay lên Facebook
-      </div>
-    </div>`;
-    return;
-  }
-  grid.innerHTML = list.map(p => cardHTML(p)).join('');
+  renderCalendar(list);
 }
 
 function cardHTML(p) {
@@ -615,51 +599,55 @@ async function doImport(){
 }
 
 // ─── Master Prompt ────────────────────────────────────────────────────────────
-const MASTER_PROMPT=`Bạn là Facebook Content Strategist, Table Tennis Research Assistant và Social Commerce Planner cho BongBanViet.
-
-Nhiệm vụ:
-- Thu thập thông tin từ nguồn uy tín về bóng bàn
-- Biên thành bài đăng Facebook ngắn gọn, chính xác, dễ đọc, có khả năng kéo follow/comment/share
-- Tạo caption, hashtag, CTA, image prompt/infographic prompt
-- Quảng bá website bongbanviet.com theo hướng tư vấn mềm, không spam bán hàng
+const MASTER_PROMPT=`Bạn là Facebook Content Strategist cho BÓNG BÀN VIỆT - bongbanviet.com
 
 THÔNG TIN THƯƠNG HIỆU
-Tên: BongBanViet / bongbanviet.com
-Định vị: Tư Vấn Chuẩn, Hàng Chính Hãng
+Tên: BÓNG BÀN VIỆT | Website: bongbanviet.com
+Định vị: Tư Vấn Chuẩn – Hàng Chính Hãng
 Hotline/Zalo: 096.1269.386
-Đối tượng: Người chơi bóng bàn phong trào Việt Nam, từ mới chơi đến nâng cao
+Địa chỉ: 286 Nguyễn Xiển, Hà Nội
+Đối tượng: Người chơi bóng bàn phong trào Việt Nam, mới đến nâng cao
 
-GIỌNG VĂN
-- Chuyên nghiệp nhưng gần gũi, giải thích dễ hiểu
-- Không nói quá, không claim tuyệt đối như "tốt nhất thị trường"
-- Ưu tiên tư vấn đúng trình độ, đúng ngân sách, đúng lối chơi
+GIỌNG VĂN: Chuyên nghiệp, gần gũi, đam mê bóng bàn. Không spam, không phô trương.
 
-CONTENT PILLARS
-- Knowledge 35%: kỹ thuật, luật, drill, lỗi thường gặp, footwork
-- Community 20%: poll, câu hỏi A/B, "anh em chọn gì?"
-- Product 20%: review mềm, sản phẩm phù hợp với ai, so sánh cốt/mặt
-- Website 10%: link bài kiến thức, hub tư vấn
-- Trust 10%: hàng chính hãng, ảnh kho, feedback
-- Promo 5%: ưu đãi, combo cuối tuần, CTA inbox/Zalo
+═══════════════════════════════════════════════
+LỊCH TĂNG TRƯỞNG PAGE — 36 BÀI/TUẦN
+═══════════════════════════════════════════════
+T2 (5 bài): 07:30 Kiến thức | 10:30 Kiến thức | 12:15 Sản phẩm | 15:30 Tương tác | 21:15 Tương tác
+T3 (6 bài): 07:30 Kiến thức | 10:30 Combo | 12:15 Sản phẩm | 15:30 Tương tác | 18:30 Combo | 21:15 Tương tác
+T4 (6 bài): 07:30 Kiến thức | 10:30 Kiến thức | 12:15 Sản phẩm | 15:30 Tương tác | 18:30 Combo | 21:15 Sản phẩm
+T5 (6 bài): 07:30 Kiến thức | 10:30 Sản phẩm | 12:15 Combo | 15:30 Tương tác | 18:30 Promo | 21:15 Kiến thức
+T6 (5 bài): 07:30 Kiến thức | 10:30 Trust | 12:15 Promo | 15:30 Tương tác | 21:15 Combo
+T7 (4 bài): 08:30 Kiến thức | 11:00 Trust | 16:00 Tương tác | 20:30 Tương tác
+CN (4 bài): 08:30 Kiến thức | 11:00 Kiến thức | 16:00 Tương tác | 20:30 Tương tác
 
-YÊU CẦU OUTPUT — Trả về JSON hợp lệ, KHÔNG viết gì ngoài JSON:
-{
-  "posts": [
-    {
-      "topic": "Tên chủ đề ngắn gọn",
-      "pillar": "knowledge|product|combo|news|engagement|trust|promo",
-      "status": "draft",
-      "source_notes": "Lý do chọn chủ đề và mục tiêu slot",
-      "fact_summary": "Tóm tắt fact/insight dùng để viết bài",
-      "caption": "Nội dung bài đăng Facebook đầy đủ, 120-230 từ tiếng Việt",
-      "hashtags": "#BongBanViet #BongBanVietCom #BongBan #TableTennis #PingPong",
-      "cta": "Comment/inbox/Zalo 096.1269.386 để được tư vấn.",
-      "website_link": "https://bongbanviet.com",
-      "image_prompt": "English prompt for a 1080x1080 Facebook infographic",
-      "scheduled_time": ""
-    }
-  ]
-}`;
+CHỦ ĐỀ GỢI Ý THEO SLOT:
+T2 07:30 → Tip kỹ thuật đầu tuần | T2 10:30 → Kiến thức kéo web
+T3 07:30 → Drill/footwork | T3 10:30 → Combo theo trình độ
+T4 07:30 → Lỗi kỹ thuật thường gặp | T4 10:30 → Nguồn uy tín + website
+T5 07:30 → Giao bóng/trả giao | T5 21:15 → Recap kiến thức
+T6 07:30 → Checklist cuối tuần | T6 10:30 → Hàng chính hãng & tư vấn
+T6 12:15 → Ưu đãi cuối tuần | T6 21:15 → Setup đi đánh cuối tuần
+T7 08:30 → Tip thực chiến | T7 11:00 → Ảnh kho/sản phẩm
+CN 08:30 → FAQ người mới | CN 11:00 → Bài tổng hợp website
+Engagement slots → Poll, câu hỏi A/B, mini quiz, hỏi đáp, bình chọn chủ đề
+
+HASHTAG THEO PILLAR:
+knowledge  → #BongBanViet #KyThuatBongBan #HocBongBan #MeoChuyenSau #TableTennis
+product    → #BongBanViet #DungCuBongBan #HangChinhHang #CotVot #MatVot #BongBanHaNoi
+combo      → #BongBanViet #ComboVot #TuVanBongBan #SetupBongBan #GoiYSetup
+engagement → #BongBanViet #BongBanCongDong #HoiDapBongBan #BinhChon
+trust      → #BongBanViet #HangChinhHang #UyTin #BongBanVietCom
+promo      → #BongBanViet #UuDai #KhuyenMai #ComboGiaRe #LienHeZalo
+
+TIÊU ĐỀ (topic): 5–10 từ tiếng Việt, chuẩn SEO, không dùng emoji trong topic.
+CAPTION: 100–180 từ, có emoji phù hợp, kết thúc bằng câu hỏi hoặc CTA nhẹ.
+
+YÊU CẦU: Tạo bài cho TUẦN bắt đầu từ [NHẬP NGÀY THỨ 2, ví dụ: 2026-05-19].
+Điền scheduled_time theo format: "2026-05-19T07:30:00"
+
+OUTPUT — Chỉ trả về JSON, không viết thêm gì khác:
+{"posts":[{"topic":"Tiêu đề SEO","pillar":"knowledge|product|combo|engagement|trust|promo","status":"scheduled","caption":"Nội dung bài...","hashtags":"#BongBanViet #...","cta":"Inbox/Zalo 096.1269.386 để tư vấn.","website_link":"https://bongbanviet.com","image_prompt":"English 1080x1080 image prompt","scheduled_time":"2026-MM-DDTHH:MM:00","source_notes":"Mục tiêu slot"}]}`;
 
 async function copyMasterPrompt(){
   try{ await navigator.clipboard.writeText(MASTER_PROMPT); toast('Đã copy Master Prompt!','ok'); } catch{ toast('Lỗi copy','err'); }
@@ -695,9 +683,16 @@ function getMonday(date){
 
 function renderCalendar(list){
   const wrap=document.getElementById('calWrap');
+  const displayList=list||posts;
+
+  if(!posts.length){
+    wrap.innerHTML=`<div class="empty"><h3>Chưa có bài nào</h3><p>Bấm <b>⚡ Tạo Tuần</b> để AI tự tạo 36 bài theo lịch tăng trưởng,<br>hoặc <b>+ Nhập</b> để dán JSON thủ công.</p></div>`;
+    return;
+  }
+
   // auto-pick week from earliest scheduled post if not set
   if(!calWeekStart){
-    const withTime=(list||posts).filter(p=>p.scheduled_time);
+    const withTime=displayList.filter(p=>p.scheduled_time);
     if(withTime.length){
       const earliest=withTime.reduce((a,b)=>a.scheduled_time<b.scheduled_time?a:b);
       calWeekStart=getMonday(new Date(earliest.scheduled_time));
@@ -718,7 +713,7 @@ function renderCalendar(list){
 
   // group posts by date
   const byDay={};
-  (list||posts).forEach(p=>{
+  displayList.forEach(p=>{
     if(!p.scheduled_time)return;
     const key=p.scheduled_time.slice(0,10);
     if(!byDay[key])byDay[key]=[];
@@ -770,12 +765,52 @@ function renderCalendar(list){
 function calNav(dir){
   if(!calWeekStart)calWeekStart=getMonday(new Date());
   calWeekStart.setDate(calWeekStart.getDate()+dir*7);
-  renderCalendar();
+  render();
+}
+
+// ─── Generate (AI auto-create) ───────────────────────────────────────────────
+function openGen(){
+  const d=new Date();
+  const day=d.getDay();
+  const diff=day===0?1:day===1?0:8-day;
+  d.setDate(d.getDate()+diff);
+  document.getElementById('genWeekStart').value=d.toISOString().slice(0,10);
+  const stat=document.getElementById('genStatus');
+  stat.style.display='none';stat.style.color='var(--blue2)';
+  document.getElementById('btnDoGen').disabled=false;
+  document.getElementById('btnDoGen').textContent='⚡ Tạo 36 Bài';
+  document.getElementById('ovGen').style.display='flex';
+}
+
+function closeGen(){ document.getElementById('ovGen').style.display='none'; }
+
+async function doGen(){
+  const weekStart=document.getElementById('genWeekStart').value;
+  if(!weekStart){ toast('Chọn ngày bắt đầu tuần!','err'); return; }
+  const btn=document.getElementById('btnDoGen');
+  const stat=document.getElementById('genStatus');
+  btn.disabled=true; btn.textContent='⏳ Đang tạo…';
+  stat.style.display='block'; stat.style.color='var(--blue2)';
+  stat.textContent='⏳ AI đang viết 36 bài theo lịch tăng trưởng… (~30–60s)';
+  try{
+    const r=await api('POST','/api/generate-fb-posts',{week_start:weekStart});
+    stat.style.color='var(--green)';
+    stat.textContent='✓ Đã tạo '+r.count+' bài thành công!';
+    await load(true);
+    setTimeout(closeGen,1400);
+    toast('Tạo '+r.count+' bài thành công!','ok');
+  }catch(e){
+    stat.style.color='var(--red)';
+    stat.textContent='✗ Lỗi: '+e.message;
+    toast('Lỗi: '+e.message,'err');
+    btn.disabled=false; btn.textContent='⚡ Tạo 36 Bài';
+  }
 }
 
 // ─── Keyboard ─────────────────────────────────────────────────────────────────
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
+    if(document.getElementById('ovGen').style.display!=='none'){closeGen();return;}
     if(document.getElementById('ovCopy').style.display!=='none'){closeCopy();return;}
     if(document.getElementById('ovEdit').style.display!=='none'){closeEdit();return;}
     if(document.getElementById('ovImport').style.display!=='none'){closeImport();return;}
