@@ -215,13 +215,18 @@ function parseFee(s){
 
 function fmtMoney(n){
   if(!n)return '0';
-  if(n>=1e6){
-    const tr=Math.floor(n/1e6);
-    const k=Math.round((n%1e6)/1e3);
-    return tr+'tr'+(k>0?k+'k':'');
-  }
-  if(n>=1e3)return Math.round(n/1e3)+'k';
-  return n+'';
+  return n.toLocaleString('vi-VN');
+}
+
+function autoFee(type,dur){
+  const rates={'1:1':250,'1:2':300,'1:3':200,'nhóm':100};
+  const muls={'30p':0.5,'45p':0.75,'1h':1,'1.5h':1.5,'2h':2};
+  return Math.round((rates[type]||250)*(muls[dur]||1))+'k';
+}
+
+function updateAutoFee(sid){
+  const el=document.getElementById('ns-fee-'+sid);
+  if(el) el.value=autoFee(V('ns-type-'+sid),V('ns-dur-'+sid));
 }
 
 function fmtDur(m){
@@ -582,10 +587,10 @@ function buildCard(s){
   <div class="sess-list">${rows}</div>
   <div class="af" id="nsf-${s.id}" style="display:none">
     <input type="date" id="ns-date-${s.id}" class="w-date" value="${today}">
-    <select id="ns-type-${s.id}" class="w-type">${typeOpts}</select>
-    <select id="ns-dur-${s.id}" class="w-dur">${sdurOpts}</select>
-    <input type="text" id="ns-fee-${s.id}" class="w-fee" placeholder="250k">
-    <button class="btn-add" onclick="addSession('${s.id}')">+ Buổi</button>
+    <select id="ns-type-${s.id}" class="w-type" onchange="updateAutoFee('${s.id}')">${typeOpts}</select>
+    <select id="ns-dur-${s.id}" class="w-dur" onchange="updateAutoFee('${s.id}')">${sdurOpts}</select>
+    <input type="text" id="ns-fee-${s.id}" class="w-fee" value="250k" placeholder="250k">
+    <button class="btn-add" onclick="addSession('${s.id}')">Thêm</button>
     <button class="btn-cancel" onclick="toggleSessForm('${s.id}')">Hủy</button>
   </div>
 
@@ -608,7 +613,7 @@ function buildCard(s){
     <select id="nf-day-${s.id}" class="w-day">${dayOpts}</select>
     <input type="time" id="nf-time-${s.id}" class="w-time" value="17:30">
     <select id="nf-dur-${s.id}" class="w-dmin">${durOpts}</select>
-    <button class="btn-add" onclick="addSched('${s.id}')">+ Lịch</button>
+    <button class="btn-add" onclick="addSched('${s.id}')">Thêm</button>
   </div>
 
   <div class="sec">
@@ -622,7 +627,7 @@ function buildCard(s){
   <div class="af" id="npf-${s.id}" style="display:none">
     <input type="date" id="np-date-${s.id}" class="w-date" value="${today}">
     <input type="text" id="np-amt-${s.id}" class="w-amt" placeholder="250k, 2tr…">
-    <button class="btn-add" onclick="addPayment('${s.id}')">+ Thanh Toán</button>
+    <button class="btn-add" onclick="addPayment('${s.id}')">Thêm</button>
     <button class="btn-cancel" onclick="togglePayForm('${s.id}')">Hủy</button>
   </div>
 
