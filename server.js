@@ -4837,9 +4837,14 @@ function normalizeFbImportPost(post) {
   const sourceUrls = Array.isArray(p.source_urls)
     ? p.source_urls.filter(Boolean)
     : (typeof p.source_urls === 'string' && p.source_urls.trim() ? [p.source_urls.trim()] : []);
+  const postText = String(p.post_text || p.full_post || p.post || p.content || p.caption || '').trim();
+  const topicFromText = postText
+    .split('\n')
+    .map(line => line.trim())
+    .find(Boolean)?.replace(/^\[[^\]]+\]\s*-\s*/, '').slice(0, 90) || '';
   return {
     source_id: getFbSourceId(p),
-    topic: String(p.topic || '').trim(),
+    topic: String(p.topic || p.title || topicFromText || '').trim(),
     pillar: String(p.pillar || 'knowledge').trim() || 'knowledge',
     status: String(p.status || 'scheduled').trim() || 'scheduled',
     brand_voice: String(p.brand_voice || '').trim(),
@@ -4847,8 +4852,8 @@ function normalizeFbImportPost(post) {
     source_urls: JSON.stringify(sourceUrls),
     source_notes: String(p.source_notes || '').trim(),
     fact_summary: String(p.fact_summary || '').trim(),
-    caption: String(p.caption || '').trim(),
-    hashtags: String(p.hashtags || '').trim(),
+    caption: postText,
+    hashtags: Array.isArray(p.hashtags) ? p.hashtags.join(' ') : String(p.hashtags || '').trim(),
     cta: String(p.cta || '').trim(),
     website_link: String(p.website_link || 'https://bongbanviet.com').trim() || 'https://bongbanviet.com',
     image_prompt: String(p.image_prompt || '').trim(),

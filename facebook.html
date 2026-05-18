@@ -122,8 +122,8 @@ input,textarea,select{font-family:inherit;font-size:inherit;outline:none}
 .import-ok{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);border-radius:8px;padding:9px 13px;font-size:13px;color:var(--green);display:none}
 
 /* ── Copy post modal ── */
-.copy-box{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:14px;font-size:13px;line-height:1.75;white-space:pre-wrap;word-break:break-word;max-height:300px;overflow-y:auto;color:var(--text);user-select:all}
-.img-box{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:12px;font-size:12.5px;line-height:1.65;color:#fcd34d;white-space:pre-wrap;word-break:break-word;max-height:140px;overflow-y:auto}
+.copy-box{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:14px;font-size:13px;line-height:1.75;white-space:pre-wrap;word-break:break-word;max-height:420px;overflow-y:auto;color:var(--text);user-select:all}
+.img-box{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:12px;font-size:12.5px;line-height:1.65;color:#fcd34d;white-space:pre-wrap;word-break:break-word;max-height:180px;overflow-y:auto;user-select:all}
 .slbl{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
 .btn-copy-all{background:var(--green);color:#fff;border-radius:8px;padding:7px 18px;font-weight:600}
 .btn-copy-all:hover{background:#059669}
@@ -149,10 +149,16 @@ input,textarea,select{font-family:inherit;font-size:inherit;outline:none}
 .cal-day-hd .dd{font-size:11px;color:var(--muted)}
 .cal-slots{padding:7px;display:flex;flex-direction:column;gap:5px;min-height:80px}
 .cal-post{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;cursor:pointer;transition:border-color .15s}
+.cal-post{border-left:3px solid var(--red)}
 .cal-post:hover{border-color:rgba(59,130,246,.35)}
 .cal-post-time{font-size:10px;color:var(--muted);margin-bottom:2px}
 .cal-post-topic{font-size:11px;font-weight:600;line-height:1.35;color:var(--text)}
 .cal-post-meta{display:flex;align-items:center;gap:5px;margin-bottom:3px}
+.cal-post-main{font-size:11px;font-weight:800;line-height:1.25;color:var(--text);margin-bottom:3px}
+.cal-post-sub{font-size:10.5px;color:var(--muted);line-height:1.35}
+.cal-post-actions{display:flex;gap:4px;margin-top:6px}
+.mini-copy{background:var(--surf2);border:1px solid var(--line);color:var(--text);border-radius:5px;padding:3px 6px;font-size:10.5px;font-weight:700}
+.mini-copy:hover{border-color:var(--green);color:var(--green)}
 .cal-badge{border-radius:3px;padding:1px 5px;font-size:9.5px;font-weight:700;letter-spacing:.03em}
 .cal-sdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 .cal-sdot.draft{background:var(--muted)}
@@ -228,7 +234,7 @@ input[type=file]{display:none}
       </div>
       <div class="fld">
         <label>Dán JSON từ AI vào đây</label>
-        <textarea class="import-ta" id="importArea" placeholder='{"posts":[{"topic":"...","pillar":"knowledge","caption":"...","hashtags":"...","cta":"...","image_prompt":"...","scheduled_time":""}]}'></textarea>
+        <textarea class="import-ta" id="importArea" placeholder='{"posts":[{"source_id":"bbv-facebook-YYYYMMDD-HHMM","pillar":"knowledge","post_text":"[Kiến thức] - Tiêu đề\n\nBài viết đầy đủ...","image_prompt":"English prompt...","scheduled_time":"YYYY-MM-DDTHH:MM:00"}]}'></textarea>
         <div style="display:flex;align-items:center;gap:8px;margin-top:7px">
           <span style="font-size:12px;color:var(--muted)">Hoặc import từ file:</span>
           <label class="file-lbl" for="importFileTxt">📂 Chọn .txt / .json</label>
@@ -256,15 +262,14 @@ input[type=file]{display:none}
     <div class="mbody">
       <div class="frow">
         <div class="fld">
-          <label>Pillar</label>
+          <label>Danh mục</label>
           <select id="ePillar">
-            <option value="knowledge">Knowledge — Kiến Thức</option>
-            <option value="product">Product — Sản Phẩm</option>
+            <option value="knowledge">Kiến thức</option>
             <option value="combo">Combo</option>
-            <option value="news">News — Tin Tức</option>
-            <option value="engagement">Engagement — Cộng Đồng</option>
-            <option value="trust">Trust — Uy Tín</option>
+            <option value="product">Sản phẩm</option>
+            <option value="engagement">Tương tác</option>
             <option value="promo">Promo</option>
+            <option value="trust">Trust</option>
           </select>
         </div>
         <div class="fld">
@@ -277,8 +282,8 @@ input[type=file]{display:none}
         </div>
       </div>
       <div class="fld">
-        <label>Topic</label>
-        <input type="text" id="eTopic" placeholder="Tiêu đề ngắn gọn…">
+        <label>Tiêu đề nội bộ</label>
+        <input type="text" id="eTopic" placeholder="Tiêu đề ngắn gọn để hiện trên lịch...">
       </div>
       <div class="frow">
         <div class="fld">
@@ -291,14 +296,14 @@ input[type=file]{display:none}
         </div>
       </div>
       <div class="fld">
-        <label>Caption</label>
-        <textarea id="eCaption" style="min-height:160px" placeholder="Nội dung bài đăng Facebook…"></textarea>
+        <label>Bài đăng hoàn chỉnh</label>
+        <textarea id="eCaption" style="min-height:220px" placeholder="[Kiến thức] - Tiêu đề&#10;&#10;Nội dung đầy đủ, bullet, CTA, hashtag..."></textarea>
       </div>
-      <div class="fld">
+      <div class="fld" style="display:none">
         <label>Hashtags</label>
         <input type="text" id="eHashtags" placeholder="#BongBanViet #TableTennis…">
       </div>
-      <div class="fld">
+      <div class="fld" style="display:none">
         <label>CTA</label>
         <input type="text" id="eCta" placeholder="Comment hoặc inbox để được tư vấn...">
       </div>
@@ -322,16 +327,16 @@ input[type=file]{display:none}
 <div class="ov" id="ovCopy" style="display:none" onclick="if(event.target===this)closeCopy()">
   <div class="modal">
     <div class="mhd">
-      <h3 id="copyTitle">Copy Bài Đăng</h3>
+      <h3 id="copyTitle">Copy bài đăng Facebook</h3>
       <button class="mcls" onclick="closeCopy()">✕</button>
     </div>
     <div class="mbody">
       <div>
-        <div class="slbl">Nội dung bài</div>
+        <div class="slbl">Bài đăng hoàn chỉnh</div>
         <div class="copy-box" id="copyBox"></div>
       </div>
       <div id="imgSection" style="display:none">
-        <div class="slbl" style="margin-top:4px">Image Prompt (tạo ảnh)</div>
+        <div class="slbl" style="margin-top:4px">Prompt tạo ảnh</div>
         <div class="img-box" id="imgBox"></div>
       </div>
     </div>
@@ -387,16 +392,69 @@ function syncPromptWeekDate(origin){
   setPromptWeekDate((source&&source.value)||nextMondayString());
 }
 
-const POST_FOOTER = '\n\n——\nBóng Bàn Việt - Đồng Hành Cùng Mọi Tay Vợt\n📍 Website: bongbanviet.com\n📞 Hotline/Zalo: 096.1269.386\n#BongBanViet #KyThuatBongBan #GiatPhai #HaTayBongBan';
-
 const PILLARS = {
-  knowledge:  { label:'Kiến Thức',  bg:'rgba(59,130,246,.18)',  color:'#93c5fd' },
-  product:    { label:'Sản Phẩm',   bg:'rgba(167,139,250,.18)', color:'#c4b5fd' },
-  combo:      { label:'Combo',      bg:'rgba(245,158,11,.18)',  color:'#fcd34d' },
-  news:       { label:'Tin Tức',    bg:'rgba(6,182,212,.18)',   color:'#67e8f9' },
-  engagement: { label:'Cộng Đồng', bg:'rgba(16,185,129,.18)',  color:'#6ee7b7' },
-  trust:      { label:'Uy Tín',    bg:'rgba(45,212,191,.18)',  color:'#5eead4' },
+  knowledge:  { label:'Kiến thức', bg:'rgba(59,130,246,.18)',  color:'#93c5fd' },
+  combo:      { label:'Combo',     bg:'rgba(245,158,11,.18)',  color:'#fcd34d' },
+  product:    { label:'Sản phẩm',  bg:'rgba(167,139,250,.18)', color:'#c4b5fd' },
+  engagement: { label:'Tương tác', bg:'rgba(16,185,129,.18)',  color:'#6ee7b7' },
   promo:      { label:'Promo',     bg:'rgba(239,68,68,.18)',   color:'#fca5a5' },
+  trust:      { label:'Trust',     bg:'rgba(45,212,191,.18)',  color:'#5eead4' },
+  news:       { label:'Kiến thức', bg:'rgba(59,130,246,.18)',  color:'#93c5fd' },
+};
+
+const PILLAR_ORDER = ['knowledge','combo','product','engagement','promo','trust'];
+
+const SCHEDULE_SLOTS = {
+  0: [
+    ['07:30','knowledge','Tip kỹ thuật đầu tuần'],
+    ['10:30','knowledge','Kiến thức kéo web'],
+    ['12:15','product','Product discovery'],
+    ['15:30','engagement','Poll/câu hỏi cộng đồng'],
+    ['21:15','engagement','Hỏi đáp setup'],
+  ],
+  1: [
+    ['07:30','knowledge','Drill/footwork'],
+    ['10:30','combo','Combo theo trình độ'],
+    ['12:15','product','Review mềm'],
+    ['15:30','engagement','So sánh A/B'],
+    ['18:30','combo','Setup sau giờ làm'],
+    ['21:15','engagement','Hỏi đáp tối'],
+  ],
+  2: [
+    ['07:30','knowledge','Lỗi kỹ thuật thường gặp'],
+    ['10:30','knowledge','Nguồn uy tín + web'],
+    ['12:15','product','Sản phẩm nổi bật'],
+    ['15:30','engagement','Mini quiz'],
+    ['18:30','combo','Case tư vấn setup'],
+    ['21:15','product','So sánh review'],
+  ],
+  3: [
+    ['07:30','knowledge','Giao bóng/trả giao'],
+    ['10:30','product','Product discovery'],
+    ['12:15','combo','Combo bán mềm'],
+    ['15:30','engagement','Câu hỏi cộng đồng'],
+    ['18:30','promo','Ưu đãi nhẹ'],
+    ['21:15','knowledge','Recap kiến thức'],
+  ],
+  4: [
+    ['07:30','knowledge','Checklist cuối tuần'],
+    ['10:30','trust','Chính hãng & quy trình tư vấn'],
+    ['12:15','promo','Ưu đãi cuối tuần'],
+    ['15:30','engagement','Poll cuối tuần'],
+    ['21:15','combo','Setup đi đánh cuối tuần'],
+  ],
+  5: [
+    ['08:30','knowledge','Tip thực chiến cuối tuần'],
+    ['11:00','trust','Ảnh kho/sản phẩm'],
+    ['16:00','engagement','Poll trận đấu'],
+    ['20:30','engagement','Recap cộng đồng'],
+  ],
+  6: [
+    ['08:30','knowledge','FAQ người mới'],
+    ['11:00','knowledge','Bài tổng hợp website'],
+    ['16:00','engagement','Bình chọn chủ đề'],
+    ['20:30','engagement','Lịch tuần tới'],
+  ],
 };
 
 // ─── API ──────────────────────────────────────────────────────────────────────
@@ -418,9 +476,8 @@ async function load(resetCal) {
 
 // ─── Pillar bar ───────────────────────────────────────────────────────────────
 function buildPBar() {
-  const used = [...new Set(posts.map(p => p.pillar).filter(Boolean))];
   const bar = document.getElementById('pbar');
-  const items = [{ p:'all', label:'Tất Cả' }, ...used.map(p => ({ p, label:(PILLARS[p]||{}).label||p }))];
+  const items = [{ p:'all', label:'Tất cả' }, ...PILLAR_ORDER.map(p => ({ p, label:(PILLARS[p]||{}).label||p }))];
   bar.innerHTML = items.map(({ p, label }) => {
     const pl = PILLARS[p] || {};
     const isA = activePillar === p;
@@ -453,16 +510,16 @@ function render() {
 function cardHTML(p) {
   const pl = PILLARS[p.pillar] || { label:p.pillar||'?', bg:'rgba(100,116,139,.15)', color:'#94a3b8' };
   const timeStr = p.scheduled_time ? fmtTime(p.scheduled_time) : '';
-  const long = (p.caption||'').length > 200;
+  const text = buildFacebookPostText(p);
+  const long = text.length > 260;
   return `<div class="card" id="card-${p.id}">
     <div class="card-top">
       <span class="pbadge" style="background:${pl.bg};color:${pl.color}">${pl.label}</span>
       <span class="card-topic">${esc(p.topic||'(Chưa có tiêu đề)')}</span>
       ${timeStr?`<span class="card-time">🕐 ${timeStr}</span>`:''}
     </div>
-    <div class="card-caption" id="cap-${p.id}">${esc(p.caption||'')}</div>
+    <div class="card-caption" id="cap-${p.id}">${esc(text)}</div>
     ${long?`<button class="btn-more" id="mbtn-${p.id}" onclick="toggleCap('${p.id}')">Xem thêm ›</button>`:''}
-    ${p.hashtags?`<div class="card-tags">${esc(p.hashtags)}</div>`:''}
     <div class="card-foot">
       <button class="ic copy" onclick="openCopy('${p.id}')" title="Copy bài đăng">📋</button>
       ${p.image_prompt?`<button class="ic img" onclick="copyImgDirect('${p.id}')" title="Copy image prompt">🖼</button>`:''}
@@ -483,6 +540,58 @@ function fmtTime(s){
   return `${+m[3]}/${+m[2]} ${m[4]||''}`.trim();
 }
 
+function fmtClock(s){
+  const m=String(s||'').match(/[T ](\d{2}:\d{2})/);
+  return m?m[1]:'';
+}
+
+function pillarLabel(pillar){
+  return (PILLARS[pillar]||PILLARS.knowledge).label;
+}
+
+function hasPillarPrefix(text){
+  return /^\s*\[[^\]]+\]\s*-/.test(String(text||''));
+}
+
+const BRAND_FOOTER = 'Bóng Bàn Việt - Đồng Hành Cùng Mọi Tay Vợt\n📌 Website: bongbanviet.com\n📞 Hotline/Zalo: 096.1269.386';
+
+function ensureBrandFooterBeforeHashtags(text){
+  let value=String(text||'').trim();
+  if(!value)return BRAND_FOOTER;
+  if(/Website:\s*bongbanviet\.com/i.test(value)&&/Hotline\/Zalo/i.test(value)) return value;
+  const lines=value.split('\n');
+  let end=lines.length;
+  while(end>0&&!lines[end-1].trim()) end--;
+  let start=end;
+  while(start>0&&(!lines[start-1].trim()||lines[start-1].trim().startsWith('#'))) start--;
+  const hasTrailingTags=lines.slice(start,end).some(line=>line.trim().startsWith('#'));
+  if(hasTrailingTags){
+    const before=lines.slice(0,start).join('\n').trimEnd();
+    const tags=lines.slice(start).join('\n').trimStart();
+    return [before, BRAND_FOOTER, tags].filter(Boolean).join('\n\n');
+  }
+  return [value, BRAND_FOOTER].filter(Boolean).join('\n\n');
+}
+
+function buildFacebookPostText(p){
+  const label=pillarLabel(p.pillar);
+  const body=String(p.caption||p.post_text||p.full_post||'').trim();
+  const parts=[];
+  if(body){
+    parts.push(hasPillarPrefix(body)?body:`[${label}]${p.topic?' - '+p.topic:''}\n\n${body}`);
+  }else{
+    parts.push(`[${label}]${p.topic?' - '+p.topic:''}`);
+  }
+  if(p.cta && !parts.join('\n').includes(p.cta)) parts.push(p.cta.trim());
+  if(p.hashtags && !parts.join('\n').includes('#BongBanViet')) parts.push(p.hashtags.trim());
+  return ensureBrandFooterBeforeHashtags(parts.filter(Boolean).join('\n\n'));
+}
+
+function postPreview(p){
+  const text=buildFacebookPostText(p).replace(/\s+/g,' ').trim();
+  return text.length>74?text.slice(0,71)+'…':text;
+}
+
 function toggleCap(id){
   const el=document.getElementById('cap-'+id);
   const btn=document.getElementById('mbtn-'+id);
@@ -497,7 +606,7 @@ function openCopy(id){
   if(!p)return;
   _copyPost=p;
   document.getElementById('copyTitle').textContent=p.topic||'Copy Bài Đăng';
-  const text=[p.caption,p.hashtags,p.cta].filter(Boolean).join('\n\n')+POST_FOOTER;
+  const text=buildFacebookPostText(p);
   document.getElementById('copyBox').textContent=text;
   const hasImg=!!p.image_prompt;
   document.getElementById('imgSection').style.display=hasImg?'block':'none';
@@ -510,7 +619,7 @@ function closeCopy(){ document.getElementById('ovCopy').style.display='none'; _c
 
 async function copyAll(){
   if(!_copyPost)return;
-  const text=[_copyPost.caption,_copyPost.hashtags,_copyPost.cta].filter(Boolean).join('\n\n')+POST_FOOTER;
+  const text=buildFacebookPostText(_copyPost);
   try{ await navigator.clipboard.writeText(text); toast('Đã copy bài đăng!','ok'); } catch{ toast('Copy thất bại','err'); }
 }
 
@@ -523,6 +632,12 @@ async function copyImgDirect(id){
   const p=posts.find(x=>x.id===id);
   if(!p||!p.image_prompt)return;
   try{ await navigator.clipboard.writeText(p.image_prompt); toast('Đã copy image prompt!','ok'); } catch{ toast('Lỗi copy','err'); }
+}
+
+async function copyPostDirect(id){
+  const p=posts.find(x=>x.id===id);
+  if(!p)return;
+  try{ await navigator.clipboard.writeText(buildFacebookPostText(p)); toast('Đã copy toàn bộ bài đăng!','ok'); } catch{ toast('Lỗi copy','err'); }
 }
 
 // ─── Toggle posted ────────────────────────────────────────────────────────────
@@ -657,6 +772,25 @@ Hotline/Zalo: 096.1269.386
 
 GIỌNG VĂN: Chuyên nghiệp, gần gũi, đam mê bóng bàn. Không spam, không phô trương.
 
+THU THẬP DỮ LIỆU VÀ KIỂM CHỨNG NGUỒN:
+Chia nguồn thành 4 nhóm:
+- Nguồn chính thống: ITTF, WTT, ITTF Equipment, ITTF Education.
+- Nguồn hãng: Butterfly, Tibhar, DHS, Yinhe, Unrex nếu có nguồn đáng tin.
+- Nguồn Việt Nam: Nhân Dân, SGGP Thể thao, Cục TDTT, giải quốc gia.
+- Nguồn cộng đồng/forum: TableTennisDaily, MyTableTennis, OOAK, Reddit r/tabletennis, PingSkills, EmRatThich, TT-NEWS.
+
+Vai trò nguồn:
+- Nguồn chính thống dùng để chốt luật, ranking, lịch giải, tính hợp lệ thiết bị.
+- Nguồn hãng dùng để chốt thông số sản phẩm.
+- Forum dùng để lấy insight, câu hỏi phổ biến, trải nghiệm người chơi; không coi bình luận forum là sự thật tuyệt đối.
+- Website BongBanViet dùng để lấy sản phẩm, ảnh, giá, link bán hàng nếu có.
+
+Checklist trước khi viết:
+- Mỗi fact kỹ thuật/luật/tin tức phải dựa trên nguồn phù hợp.
+- Không bịa ranking, kết quả giải, lịch giải, giá, tồn kho, thông số.
+- Nếu thiếu nguồn chắc chắn, chuyển nội dung sang dạng kinh nghiệm/tư vấn chung.
+- Nội dung product/combo phải tư vấn mềm theo trình độ, ngân sách, lối chơi.
+
 ═══════════════════════════════════════════════
 LỊCH TĂNG TRƯỞNG PAGE — 36 BÀI/TUẦN
 ═══════════════════════════════════════════════
@@ -687,15 +821,24 @@ engagement → #BongBanViet #BongBanCongDong #HoiDapBongBan #BinhChon
 trust      → #BongBanViet #HangChinhHang #UyTin #BongBanVietCom
 promo      → #BongBanViet #UuDai #KhuyenMai #ComboGiaRe #LienHeZalo
 
-TIÊU ĐỀ (topic): 5–10 từ tiếng Việt, chuẩn SEO, không dùng emoji trong topic.
-CAPTION: 100–180 từ, có emoji phù hợp, kết thúc bằng câu hỏi hoặc CTA nhẹ.
+MỤC BÀI BẮT BUỘC:
+- Chỉ dùng 6 danh mục: Kiến thức, Combo, Sản phẩm, Tương tác, Promo, Trust.
+- pillar tương ứng: knowledge, combo, product, engagement, promo, trust.
+- Mỗi bài phải bắt đầu bằng nhãn: [Kiến thức] hoặc [Combo] hoặc [Sản phẩm] hoặc [Tương tác] hoặc [Promo] hoặc [Trust].
+- Không tách riêng caption, hashtag, CTA. Gộp tất cả vào một trường post_text hoàn chỉnh để copy đăng Facebook ngay.
+- post_text phải có: nhãn danh mục, title, đoạn mở, 3–5 bullet sinh động, CTA nhẹ, khối thông tin BongBanViet, hashtag cuối bài.
+- Khối thông tin cuối bài bắt buộc đặt ngay trước hashtag, đúng format:
+Bóng Bàn Việt - Đồng Hành Cùng Mọi Tay Vợt
+📌 Website: bongbanviet.com
+📞 Hotline/Zalo: 096.1269.386
+- Dùng icon/bullet hợp lý, bố trí khoa học, không nhồi bán hàng.
 
 YÊU CẦU: Tạo đủ 36 bài cho TUẦN bắt đầu từ Thứ 2 ngày __WEEK_START__.
 Tính toán ngày cụ thể cho mỗi slot từ ngày đó (T2 = __WEEK_START__, T3 = +1 ngày, ..., CN = +6 ngày).
 Điền scheduled_time theo format ISO: "YYYY-MM-DDTHH:MM:00" — phải có ngày thực tế, không dùng placeholder.
 
 OUTPUT — Chỉ trả về JSON, không viết thêm gì khác:
-{"posts":[{"topic":"Tiêu đề SEO","pillar":"knowledge|product|combo|engagement|trust|promo","status":"scheduled","caption":"Nội dung bài...","hashtags":"#BongBanViet #...","cta":"Inbox/Zalo 096.1269.386 để tư vấn.","website_link":"https://bongbanviet.com","image_prompt":"English 1080x1080 image prompt","scheduled_time":"2026-MM-DDTHH:MM:00","source_notes":"Mục tiêu slot"}]}`;
+{"posts":[{"source_id":"bbv-facebook-YYYYMMDD-HHMM","topic":"Tiêu đề nội bộ ngắn","pillar":"knowledge|combo|product|engagement|promo|trust","status":"scheduled","post_text":"[Kiến thức] - Title\\n\\nBài viết Facebook đầy đủ gồm miêu tả, bullet và CTA.\\n\\nBóng Bàn Việt - Đồng Hành Cùng Mọi Tay Vợt\\n📌 Website: bongbanviet.com\\n📞 Hotline/Zalo: 096.1269.386\\n\\n#BongBanViet #TableTennis","website_link":"https://bongbanviet.com","image_prompt":"English 1080x1080 image prompt","scheduled_time":"2026-MM-DDTHH:MM:00","source_notes":"Mục tiêu slot"}]}`;
 
 const LOCAL_IMPORT_APPENDIX=`
 
@@ -711,7 +854,7 @@ BỔ SUNG BẮT BUỘC CHO WORKFLOW LOCAL → DASHBOARD:
   npm run dev
 
 SCHEMA CUỐI CÙNG:
-{"posts":[{"source_id":"bbv-facebook-YYYYMMDD-HHMM","topic":"Tiêu đề SEO","pillar":"knowledge|product|combo|engagement|trust|promo","status":"scheduled","caption":"Nội dung bài...","hashtags":"#BongBanViet #...","cta":"Inbox/Zalo 096.1269.386 để tư vấn.","website_link":"https://bongbanviet.com","image_prompt":"English 1080x1080 image prompt","scheduled_time":"YYYY-MM-DDTHH:MM:00","source_notes":"Mục tiêu slot"}]}`;
+{"posts":[{"source_id":"bbv-facebook-YYYYMMDD-HHMM","topic":"Tiêu đề nội bộ ngắn","pillar":"knowledge|combo|product|engagement|promo|trust","status":"scheduled","post_text":"[Kiến thức] - Title\\n\\nBài viết Facebook đầy đủ gồm miêu tả, bullet và CTA.\\n\\nBóng Bàn Việt - Đồng Hành Cùng Mọi Tay Vợt\\n📌 Website: bongbanviet.com\\n📞 Hotline/Zalo: 096.1269.386\\n\\n#BongBanViet #TableTennis","website_link":"https://bongbanviet.com","image_prompt":"English 1080x1080 image prompt","scheduled_time":"YYYY-MM-DDTHH:MM:00","source_notes":"Mục tiêu slot"}]}`;
 
 function buildPrompt(){
   const weekDate=getPromptWeekDate();
@@ -818,6 +961,30 @@ function getMonday(date){
   return d;
 }
 
+function renderCalendarPost(p){
+  const pl=PILLARS[p.pillar]||{bg:'rgba(100,116,139,.15)',color:'#94a3b8',label:'?'};
+  const tStr=fmtClock(p.scheduled_time);
+  const preview=postPreview(p);
+  return `<div class="cal-post" onclick="openEdit('${p.id}')" title="${esc(p.topic||'')}">
+    <div class="cal-post-main">${esc(tStr?`${tStr} - ${pl.label}`:pl.label)}</div>
+    <div class="cal-post-sub">${esc(preview||p.topic||'(Chưa đặt nội dung)')}</div>
+    <div class="cal-post-actions">
+      <button class="mini-copy" onclick="event.stopPropagation();copyPostDirect('${p.id}')" title="Copy toàn bộ bài đăng">Copy bài</button>
+      ${p.image_prompt?`<button class="mini-copy" onclick="event.stopPropagation();copyImgDirect('${p.id}')" title="Copy prompt tạo ảnh">Copy ảnh</button>`:''}
+      <span class="cal-sdot ${p.status||'draft'}" style="margin-left:auto;margin-top:6px"></span>
+    </div>
+  </div>`;
+}
+
+function renderSlotPlaceholder(slot){
+  const [time,pillar,hint]=slot;
+  const pl=PILLARS[pillar]||PILLARS.knowledge;
+  return `<div class="cal-post" style="opacity:.62">
+    <div class="cal-post-main">${esc(`${time} - ${pl.label}`)}</div>
+    <div class="cal-post-sub">${esc(hint)}</div>
+  </div>`;
+}
+
 function renderCalendar(list){
   const wrap=document.getElementById('calWrap');
   const displayList=list||posts;
@@ -873,25 +1040,22 @@ function renderCalendar(list){
         const key=d.toISOString().slice(0,10);
         const dp=byDay[key]||[];
         const isToday=key===todayKey;
+        const used=new Set();
+        const slotHtml=(SCHEDULE_SLOTS[i]||[]).map(slot=>{
+          const [time,pillar]=slot;
+          const match=dp.find(p=>!used.has(p.id)&&fmtClock(p.scheduled_time)===time);
+          if(match){ used.add(match.id); return renderCalendarPost(match); }
+          return activeStatus==='all'&&activePillar==='all'?renderSlotPlaceholder(slot):'';
+        }).join('');
+        const extraHtml=dp.filter(p=>!used.has(p.id)).map(renderCalendarPost).join('');
+        const dayHtml=(slotHtml+extraHtml).trim();
         return `<div class="cal-day${isToday?' today':''}">
           <div class="cal-day-hd">
             <div class="dn">${DAY_NAMES[i]}</div>
             <div class="dd">${d.getDate()}/${d.getMonth()+1}</div>
           </div>
           <div class="cal-slots">
-            ${dp.length?dp.map(p=>{
-              const pl=PILLARS[p.pillar]||{bg:'rgba(100,116,139,.15)',color:'#94a3b8',label:'?'};
-              const tm=(p.scheduled_time||'').match(/[T ](\d{2}:\d{2})/);
-              const tStr=tm?tm[1]:'';
-              return `<div class="cal-post" onclick="openEdit('${p.id}')" title="${esc(p.topic||'')}">
-                ${tStr?`<div class="cal-post-time">🕐 ${tStr}</div>`:''}
-                <div class="cal-post-meta">
-                  <span class="cal-badge" style="background:${pl.bg};color:${pl.color}">${pl.label}</span>
-                  <span class="cal-sdot ${p.status||'draft'}"></span>
-                </div>
-                <div class="cal-post-topic">${esc((p.topic||'').length>55?p.topic.slice(0,52)+'…':p.topic||'(Chưa đặt tên)')}</div>
-              </div>`;
-            }).join(''):`<div class="cal-empty">Trống</div>`}
+            ${dayHtml||`<div class="cal-empty">Trống</div>`}
           </div>
           ${dp.length?`<div class="cal-count">${dp.length} bài</div>`:''}
         </div>`;
