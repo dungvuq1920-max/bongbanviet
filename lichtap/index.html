@@ -590,13 +590,15 @@ function buildCard(s){
     </span>
   </div>
   <div class="sess-list">${rows}</div>
-  <div class="af" id="nsf-${s.id}" style="display:none">
-    <input type="date" id="ns-date-${s.id}" class="w-date" value="${today}">
-    <select id="ns-type-${s.id}" class="w-type" onchange="updateAutoFee('${s.id}')">${typeOpts}</select>
-    <select id="ns-dur-${s.id}" class="w-dur" onchange="updateAutoFee('${s.id}')">${sdurOpts}</select>
-    <input type="text" id="ns-fee-${s.id}" class="w-fee" value="250k" placeholder="250k">
-    <button class="btn-add" onclick="addSession('${s.id}')">Thêm</button>
-    <button class="btn-cancel" onclick="toggleSessForm('${s.id}')">Hủy</button>
+  <div class="af" id="nsf-${s.id}" style="display:none;flex-direction:column;gap:6px">
+    <input type="date" id="ns-date-${s.id}" class="w-date" value="${today}" style="width:100%">
+    <div style="display:flex;gap:5px;align-items:center">
+      <select id="ns-type-${s.id}" class="w-type" onchange="updateAutoFee('${s.id}')">${typeOpts}</select>
+      <select id="ns-dur-${s.id}" class="w-dur" onchange="updateAutoFee('${s.id}')">${sdurOpts}</select>
+      <input type="text" id="ns-fee-${s.id}" class="w-fee" value="250k" placeholder="250k">
+      <button class="btn-add" onclick="addSession('${s.id}')">Thêm</button>
+      <button class="btn-cancel" onclick="toggleSessForm('${s.id}')">Hủy</button>
+    </div>
   </div>
 
   <div class="stats">
