@@ -196,6 +196,7 @@ input[type=file]{display:none}
     <label class="top-file-lbl" for="topImportFile" title="Chọn file JSON để nhập thẳng vào lịch">📂 Nhập JSON</label>
     <input type="file" id="topImportFile" accept=".json,.txt" onchange="loadAndImportTopFile(event)">
     <span class="auto-chip" id="autoImportChip" title="Server local tự theo dõi Desktop/facebook-posts.json">Auto JSON</span>
+    <span class="auto-chip off" id="remoteSyncChip" title="Cấu hình FACEBOOK_REMOTE_SYNC_URL để tự đẩy JSON lên web">Web Sync: off</span>
     <span class="count-chip" id="countChip">0 bài</span>
     <button class="btn-import" style="background:var(--surf2);border:1px solid var(--line);color:var(--text)" onclick="openImport()">+ Nhập</button>
   </div>
@@ -218,7 +219,8 @@ input[type=file]{display:none}
         2. Bấm <b>📋 Copy</b> → Dán vào Claude hoặc GPT<br>
         3. AI tự tạo <b>36 bài</b> theo lịch T2–CN và lưu JSON<br>
         4. File đích: <b>C:\Users\dungvuq1920\Desktop\facebook-posts.json</b><br>
-        5. Server local tự import → lịch tự cập nhật, không cần nhập thủ công
+        5. Server local tự import → lịch tự cập nhật, không cần nhập thủ công<br>
+        6. Nếu cấu hình Web Sync, server local tự đẩy cùng JSON lên bongbanviet.com/facebook
       </div>
       <div class="fld" style="margin-bottom:2px">
         <label>Tuần bắt đầu từ (Thứ 2)</label>
@@ -849,6 +851,7 @@ BỔ SUNG BẮT BUỘC CHO WORKFLOW LOCAL → DASHBOARD:
 - Nếu bạn đang chạy trong Antigravity/Codex/Claude local có quyền ghi file, hãy lưu đúng JSON thuần vào:
   C:\\Users\\dungvuq1920\\Desktop\\facebook-posts.json
 - Nếu server local đang chạy bằng "npm run dev", dashboard sẽ tự theo dõi file này, tự import/cập nhật lịch và tự hiển thị bài mới.
+- Nếu server local đã cấu hình FACEBOOK_REMOTE_SYNC_URL và FACEBOOK_REMOTE_SYNC_TOKEN, cùng JSON này sẽ tự được đẩy lên web public bongbanviet.com/facebook sau khi import local thành công.
 - Không cần copy JSON và không cần bấm nút Nhập JSON thủ công.
 - Nếu server chưa chạy, hãy chạy lệnh trong thư mục dự án:
   npm run dev
@@ -932,10 +935,32 @@ function updateAutoImportChip(state){
   chip.title=state.file||'Desktop/facebook-posts.json';
 }
 
+function updateRemoteSyncChip(state){
+  const chip=document.getElementById('remoteSyncChip');
+  if(!chip)return;
+  chip.className='auto-chip';
+  if(!state||!state.remote_sync_enabled){
+    chip.textContent='Web Sync: off';
+    chip.classList.add('off');
+    chip.title='Chưa cấu hình FACEBOOK_REMOTE_SYNC_URL trên server local';
+    return;
+  }
+  if(state.remote_last_error){
+    chip.textContent='Web Sync: lỗi';
+    chip.classList.add('err');
+    chip.title=state.remote_last_error;
+    return;
+  }
+  const r=state.remote_last_result;
+  chip.textContent=r?`Web Sync: ${r.count||0} bài`:'Web Sync: sẵn sàng';
+  chip.title=state.remote_url||'Remote import endpoint';
+}
+
 async function pollAutoImportState(){
   try{
     const state=await api('GET','/api/fb-posts/import-state');
     updateAutoImportChip(state);
+    updateRemoteSyncChip(state);
     if(_autoImportRevision===null){
       _autoImportRevision=state.revision||0;
       return;
@@ -948,6 +973,7 @@ async function pollAutoImportState(){
     }
   }catch(e){
     updateAutoImportChip({enabled:false});
+    updateRemoteSyncChip({remote_sync_enabled:false});
   }
 }
 
@@ -990,7 +1016,7 @@ function renderCalendar(list){
   const displayList=list||posts;
 
   if(!posts.length){
-    wrap.innerHTML=`<div class="empty"><h3>Chưa có bài nào</h3><div class="empty-wf">Bấm <b>📋 Copy Master Prompt</b> → dán vào Claude/GPT/Codex<br>→ yêu cầu AI lưu file <b>Desktop/facebook-posts.json</b><br>→ server local tự nhập JSON và lịch tự cập nhật</div></div>`;
+    wrap.innerHTML=`<div class="empty"><h3>Chưa có bài nào</h3><div class="empty-wf">Bấm <b>📋 Copy Master Prompt</b> → dán vào Claude/GPT/Codex<br>→ yêu cầu AI lưu file <b>Desktop/facebook-posts.json</b><br>→ server local tự nhập JSON, rồi tự đẩy lên web nếu Web Sync đã cấu hình</div></div>`;
     return;
   }
 
