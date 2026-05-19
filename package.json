@@ -8,8 +8,7 @@
     "dev": "node server.js",
     "bot": "node telegram-ai-bot.js",
     "facebook:import-json": "node scripts/import-facebook-json.js",
-    "facebook:watch-json": "node scripts/import-facebook-json.js --watch",
-    "facebook:sync-web": "node scripts/import-facebook-json.js --remote"
+    "facebook:watch-json": "node scripts/import-facebook-json.js --watch"
   },
   "engines": {
     "node": ">=20.0.0"

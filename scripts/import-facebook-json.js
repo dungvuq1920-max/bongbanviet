@@ -26,8 +26,7 @@ loadLocalEnvFile();
 
 const args = process.argv.slice(2);
 const watchMode = args.includes('--watch');
-const remoteMode = args.includes('--remote');
-const positional = args.filter((arg) => !['--watch', '--remote'].includes(arg));
+const positional = args.filter((arg) => arg !== '--watch');
 const inputFile = path.resolve(
   positional[0] ||
   process.env.FACEBOOK_IMPORT_JSON_FILE ||
@@ -41,13 +40,15 @@ function normalizeImportEndpoint(value) {
 }
 
 const endpoint = normalizeImportEndpoint(
-  remoteMode
-    ? (process.env.FACEBOOK_REMOTE_SYNC_URL || process.env.FACEBOOK_IMPORT_URL || process.env.FACEBOOK_DASHBOARD_URL || process.env.BBV_BASE_URL || 'http://localhost:3000')
-    : (process.env.FACEBOOK_IMPORT_URL || process.env.FACEBOOK_DASHBOARD_URL || process.env.BBV_BASE_URL || 'http://localhost:3000')
+  process.env.FACEBOOK_IMPORT_URL ||
+  process.env.FACEBOOK_DASHBOARD_URL ||
+  process.env.BBV_BASE_URL ||
+  'http://localhost:3000'
 );
-const token = remoteMode
-  ? (process.env.FACEBOOK_REMOTE_SYNC_TOKEN || process.env.FACEBOOK_IMPORT_TOKEN || process.env.FACEBOOK_DASHBOARD_TOKEN || process.env.ADMIN_TOKEN || '')
-  : (process.env.FACEBOOK_DASHBOARD_TOKEN || process.env.ADMIN_TOKEN || process.env.FACEBOOK_IMPORT_TOKEN || '');
+const token = process.env.FACEBOOK_DASHBOARD_TOKEN ||
+  process.env.ADMIN_TOKEN ||
+  process.env.FACEBOOK_IMPORT_TOKEN ||
+  '';
 
 function parsePayload(raw) {
   const parsed = JSON.parse(raw);

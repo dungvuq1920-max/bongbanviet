@@ -42,16 +42,6 @@ const FACEBOOK_LOCAL_IMPORT_FILE = path.resolve(
   path.join(os.homedir(), 'Desktop', 'facebook-posts.json')
 );
 const FACEBOOK_IMPORT_TOKEN = process.env.FACEBOOK_IMPORT_TOKEN || '';
-const FACEBOOK_REMOTE_SYNC_URL = normalizeFacebookImportEndpoint(
-  process.env.FACEBOOK_REMOTE_SYNC_URL ||
-  process.env.FACEBOOK_PUBLIC_SYNC_URL ||
-  ''
-);
-const FACEBOOK_REMOTE_SYNC_TOKEN = process.env.FACEBOOK_REMOTE_SYNC_TOKEN || FACEBOOK_IMPORT_TOKEN || '';
-const FACEBOOK_REMOTE_SYNC_TIMEOUT_MS = Math.max(
-  5000,
-  Number(process.env.FACEBOOK_REMOTE_SYNC_TIMEOUT_MS || 30000) || 30000
-);
 
 app.use(cors());
 app.use(express.json({ limit: process.env.JSON_BODY_LIMIT || '5mb' }));
@@ -4863,14 +4853,6 @@ function getFbSourceId(post) {
   return key ? `bbv-facebook-${key}` : '';
 }
 
-function normalizeFacebookImportEndpoint(value) {
-  const raw = String(value || '').trim();
-  if (!raw) return '';
-  const base = raw.replace(/\/+$/, '');
-  if (/\/api\/fb-posts\/import$/i.test(base)) return base;
-  return `${base}/api/fb-posts/import`;
-}
-
 function getFacebookImportRequestToken(req) {
   const auth = String(req.headers.authorization || '').trim();
   if (/^bearer\s+/i.test(auth)) return auth.replace(/^bearer\s+/i, '').trim();
@@ -4977,11 +4959,6 @@ const facebookJsonImportState = {
   last_imported_at: '',
   last_error: '',
   last_result: null,
-  remote_sync_enabled: isFacebookRemoteSyncEnabled(),
-  remote_url: publicRemoteSyncUrl(),
-  remote_last_synced_at: '',
-  remote_last_error: '',
-  remote_last_result: null,
 };
 
 function parseFacebookJsonImport(raw) {
@@ -4989,54 +4966,6 @@ function parseFacebookJsonImport(raw) {
   const posts = Array.isArray(parsed) ? parsed : (Array.isArray(parsed.posts) ? parsed.posts : null);
   if (!posts || !posts.length) throw new Error('JSON must be an array or an object with posts: []');
   return posts;
-}
-
-function isFacebookRemoteSyncEnabled() {
-  if (process.env.FACEBOOK_REMOTE_SYNC === '0') return false;
-  return !!FACEBOOK_REMOTE_SYNC_URL;
-}
-
-function publicRemoteSyncUrl() {
-  if (!FACEBOOK_REMOTE_SYNC_URL) return '';
-  try {
-    const url = new URL(FACEBOOK_REMOTE_SYNC_URL);
-    return `${url.origin}${url.pathname}`;
-  } catch {
-    return FACEBOOK_REMOTE_SYNC_URL.replace(/[?].*$/, '');
-  }
-}
-
-async function syncFacebookPostsToRemote(posts, reason, localResult) {
-  if (!isFacebookRemoteSyncEnabled()) {
-    return { enabled: false, skipped: true, reason: 'FACEBOOK_REMOTE_SYNC_URL is not configured' };
-  }
-  if (!FACEBOOK_REMOTE_SYNC_TOKEN) {
-    throw new Error('FACEBOOK_REMOTE_SYNC_TOKEN is required when remote sync is enabled');
-  }
-
-  const response = await fetch(FACEBOOK_REMOTE_SYNC_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${FACEBOOK_REMOTE_SYNC_TOKEN}`,
-      'X-BBV-Sync-Token': FACEBOOK_REMOTE_SYNC_TOKEN,
-    },
-    body: JSON.stringify({
-      source: 'local-facebook-json-watcher',
-      reason,
-      local_result: localResult,
-      posts,
-    }),
-    signal: AbortSignal.timeout(FACEBOOK_REMOTE_SYNC_TIMEOUT_MS),
-  });
-
-  const text = await response.text();
-  let data;
-  try { data = JSON.parse(text); } catch { data = { error: text }; }
-  if (!response.ok) {
-    throw new Error(data.error || data.message || `Remote sync HTTP ${response.status}`);
-  }
-  return { enabled: true, ok: true, target: publicRemoteSyncUrl(), ...data };
 }
 
 function hashFacebookImportFile(file) {
@@ -5075,26 +5004,10 @@ function startFacebookJsonAutoImporter() {
       const raw = fs.readFileSync(file, 'utf8').trim();
       const posts = parseFacebookJsonImport(raw);
       const result = importFacebookPosts(posts);
-      let remoteResult = null;
-      facebookJsonImportState.remote_sync_enabled = isFacebookRemoteSyncEnabled();
-      facebookJsonImportState.remote_url = publicRemoteSyncUrl();
-      facebookJsonImportState.remote_last_error = '';
-      if (isFacebookRemoteSyncEnabled()) {
-        try {
-          remoteResult = await syncFacebookPostsToRemote(posts, reason, result);
-          facebookJsonImportState.remote_last_synced_at = new Date().toISOString();
-          facebookJsonImportState.remote_last_result = remoteResult;
-          console.log(`[Facebook JSON Remote Sync] ${remoteResult.count || result.count} posts synced to ${remoteResult.target || publicRemoteSyncUrl()}`);
-        } catch (remoteError) {
-          facebookJsonImportState.remote_last_error = remoteError.message || String(remoteError);
-          facebookJsonImportState.remote_last_result = null;
-          console.error('[Facebook JSON Remote Sync]', facebookJsonImportState.remote_last_error);
-        }
-      }
       facebookJsonImportState.revision += 1;
       facebookJsonImportState.last_imported_at = new Date().toISOString();
       facebookJsonImportState.last_error = '';
-      facebookJsonImportState.last_result = { ...result, reason, remote: remoteResult };
+      facebookJsonImportState.last_result = { ...result, reason };
       console.log(`[Facebook JSON Auto Import] ${result.count} posts (${result.created} created, ${result.updated} updated) from ${file}`);
     } catch (e) {
       facebookJsonImportState.last_error = e.message || String(e);
@@ -5115,8 +5028,6 @@ function startFacebookJsonAutoImporter() {
 }
 
 app.get('/api/fb-posts/import-state', (req, res) => {
-  facebookJsonImportState.remote_sync_enabled = isFacebookRemoteSyncEnabled();
-  facebookJsonImportState.remote_url = publicRemoteSyncUrl();
   res.json(facebookJsonImportState);
 });
 
