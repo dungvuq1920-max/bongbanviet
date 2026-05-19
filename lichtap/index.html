@@ -41,6 +41,10 @@
     .cpicker{display:none}
     .sc-name{font-size:15px;font-weight:700;outline:none;border-radius:4px;padding:2px 5px;flex:1;background:transparent}
     .sc-name:focus{background:var(--s2)}
+    .sc-actions{display:flex;align-items:center;gap:3px;flex-shrink:0}
+    .move-btn{background:none;border:none;cursor:pointer;color:var(--muted);padding:4px 6px;border-radius:6px;font-size:12px;line-height:1;transition:all .15s}
+    .move-btn:hover:not(:disabled){color:var(--blue);background:rgba(37,99,235,.08)}
+    .move-btn:disabled{cursor:not-allowed;opacity:.28}
     .sc-del{background:none;border:none;cursor:pointer;color:var(--muted);padding:4px 6px;border-radius:6px;font-size:14px;line-height:1;transition:all .15s}
     .sc-del:hover{color:var(--red);background:rgba(239,68,68,.1)}
     .btn-reset-hd{background:none;border:none;cursor:pointer;color:var(--muted);padding:4px 6px;border-radius:6px;font-size:14px;line-height:1;transition:all .15s}
@@ -311,6 +315,18 @@ function deleteStudent(id){
   if(!s||!confirm('Xóa học viên "'+s.name+'"?'))return;
   D.students=D.students.filter(s=>s.id!==id);
   scheduleSave();render();
+}
+
+function moveStudent(id,dir){
+  const idx=D.students.findIndex(s=>s.id===id);
+  const next=idx+dir;
+  if(idx<0||next<0||next>=D.students.length)return;
+  const [student]=D.students.splice(idx,1);
+  D.students.splice(next,0,student);
+  scheduleSave();
+  render();
+  const card=document.getElementById('card-'+id);
+  if(card) card.scrollIntoView({block:'nearest',behavior:'smooth'});
 }
 
 function updateField(id,field,val){
@@ -670,6 +686,9 @@ function rerenderCard(sid){
 
 function buildCard(s){
   const {count,total,paid,owed}=calcStats(s);
+  const cardIndex=D.students.findIndex(x=>x.id===s.id);
+  const canMoveUp=cardIndex>0;
+  const canMoveDown=cardIndex>=0&&cardIndex<D.students.length-1;
   const scheds=sortSched(s.fixedSchedules||[]);
   const sessions=[...(s.sessions||[])].sort((a,b)=>b.date.localeCompare(a.date));
   const payments=[...(s.payments||[])].reverse();
@@ -754,8 +773,12 @@ function buildCard(s){
         onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
       >${esc(s.name)}</span>
     </div>
-    <button class="btn-reset-hd" onclick="resetSessions('${s.id}')" title="Reset buổi học">↺</button>
-    <button class="sc-del" onclick="deleteStudent('${s.id}')" title="Xóa học viên">🗑</button>
+    <div class="sc-actions">
+      <button class="move-btn" onclick="moveStudent('${s.id}',-1)" title="Di chuyển lên" ${canMoveUp?'':'disabled'}>&#9650;</button>
+      <button class="move-btn" onclick="moveStudent('${s.id}',1)" title="Di chuyển xuống" ${canMoveDown?'':'disabled'}>&#9660;</button>
+      <button class="btn-reset-hd" onclick="resetSessions('${s.id}')" title="Reset buổi học">↺</button>
+      <button class="sc-del" onclick="deleteStudent('${s.id}')" title="Xóa học viên">🗑</button>
+    </div>
   </div>
 
   <div class="sec" style="border-top:none;padding-top:8px">

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BongBanViet Local Tools</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f172a;
+  --surf:#1e293b;
+  --surf2:#263347;
+  --line:rgba(255,255,255,.08);
+  --text:#e2e8f0;
+  --muted:#94a3b8;
+  --blue:#3b82f6;
+  --green:#10b981;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;overflow:hidden}
+.shell{height:100%;display:flex;flex-direction:column}
+.topbar{height:54px;background:var(--surf);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 18px;flex-shrink:0}
+.brand{font-size:14px;font-weight:800;color:var(--text);white-space:nowrap}
+.brand span{color:var(--blue)}
+.tabs{display:flex;gap:3px;background:var(--bg);border-radius:9px;padding:4px}
+.tab{background:none;border:0;color:var(--muted);border-radius:7px;padding:7px 16px;font:700 13px Inter,system-ui,sans-serif;cursor:pointer;white-space:nowrap}
+.tab:hover{color:var(--text)}
+.tab.active{background:var(--surf2);color:var(--text)}
+.open-link{margin-left:auto;color:var(--muted);text-decoration:none;font-size:12px;font-weight:700;border:1px solid var(--line);border-radius:8px;padding:6px 11px}
+.open-link:hover{color:var(--text);background:var(--surf2)}
+.frames{position:relative;flex:1;min-height:0}
+.frame{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff;display:none}
+.frame.active{display:block}
+@media(max-width:640px){
+  .topbar{height:auto;min-height:54px;flex-wrap:wrap;padding:8px 10px}
+  .tabs{order:2;width:100%}
+  .tab{flex:1;padding:7px 8px}
+  .open-link{margin-left:0}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="topbar">
+    <div class="brand"><span>BongBanViet</span> Local</div>
+    <nav class="tabs" aria-label="Local tools">
+      <button class="tab active" data-tab="facebook" onclick="setToolTab('facebook')">Facebook</button>
+      <button class="tab" data-tab="download" onclick="setToolTab('download')">Download Video</button>
+      <button class="tab" data-tab="prompt" onclick="setToolTab('prompt')">Prompt Mẫu</button>
+    </nav>
+    <a class="open-link" id="openCurrent" href="/facebook.html" target="_blank" rel="noopener">Mở tab riêng</a>
+  </header>
+  <main class="frames">
+    <iframe class="frame active" id="frame-facebook" src="/facebook.html" title="Facebook"></iframe>
+    <iframe class="frame" id="frame-download" src="/download.html" title="Download Video"></iframe>
+    <iframe class="frame" id="frame-prompt" src="/prompt" title="Prompt Mẫu"></iframe>
+  </main>
+</div>
+<script>
+const TOOL_TABS = {
+  facebook: { href:'/facebook.html' },
+  download: { href:'/download.html' },
+  prompt: { href:'/prompt' },
+};
+
+function setToolTab(tab){
+  if(!TOOL_TABS[tab]) tab='facebook';
+  document.querySelectorAll('.tab').forEach(btn=>btn.classList.toggle('active', btn.dataset.tab===tab));
+  document.querySelectorAll('.frame').forEach(frame=>frame.classList.toggle('active', frame.id===`frame-${tab}`));
+  document.getElementById('openCurrent').href=TOOL_TABS[tab].href;
+  localStorage.setItem('bbv_local_tool_tab', tab);
+  if(location.hash!==`#${tab}`) history.replaceState(null, '', `#${tab}`);
+}
+
+const initial=(location.hash||'').replace('#','')||localStorage.getItem('bbv_local_tool_tab')||'facebook';
+setToolTab(initial);
+</script>
+</body>
+</html>
