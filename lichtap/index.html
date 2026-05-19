@@ -28,10 +28,10 @@
     .btn-primary:hover{background:var(--blue2)}
 
     /* ── List ── */
-    .grid{max-width:860px;margin:0 auto;padding:20px;display:flex;flex-direction:column;gap:14px}
+    .grid{max-width:1180px;margin:0 auto;padding:20px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
 
     /* ── Student card ── */
-    .sc{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+    .sc{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.07);min-width:0}
 
     /* card header */
     .sc-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--line);gap:8px}
@@ -62,17 +62,22 @@
     .sec-badge{font-size:11px;color:var(--blue);background:rgba(59,130,246,.12);border-radius:999px;padding:1px 7px}
 
     /* session chips (2-line: top=date/type/dur, bot=fee centered) */
-    .sess-list{padding:6px 10px 8px;display:flex;flex-wrap:wrap;gap:6px}
+    .sess-list{padding:6px 10px 8px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
     .sess-chip{display:inline-flex;flex-direction:column;align-items:center;background:#f8fafc;border:1px solid var(--line);border-radius:8px;padding:5px 9px;min-width:80px;text-align:center}
+    .sess-list .sess-chip{width:100%;min-width:0;padding:5px 6px}
     .sess-chip .top{display:flex;align-items:center;justify-content:space-between;width:100%;font-size:13px;font-weight:700;color:var(--blue);white-space:nowrap}
     .sess-chip .bot{display:flex;align-items:center;gap:4px;margin-top:3px;white-space:nowrap}
+    .sess-list .sess-chip .top{font-size:12px}
+    .sess-list .sess-chip .bot{justify-content:center;gap:3px;width:100%}
     .sess-chip .t{color:var(--green);font-weight:600;font-size:12px}
     .sess-chip .dur{color:var(--muted);font-size:12px}
     .sess-chip .dur-sep{color:var(--line);font-size:11px}
     .sess-chip .fee{font-family:monospace;color:var(--warn);font-size:12px;font-weight:600}
+    .sess-list .sess-chip .t,.sess-list .sess-chip .dur,.sess-list .sess-chip .fee{font-size:11px}
     .edit-btn{background:none;border:none;cursor:pointer;color:var(--muted);font-size:13px;padding:0 1px;line-height:1;transition:color .12s}
     .edit-btn:hover{color:var(--blue)}
     .sess-empty{color:var(--muted);font-size:13px;font-style:italic;padding:6px 10px}
+    .sess-list .sess-empty{grid-column:1/-1}
     /* session edit row */
     .sess-edit-row{display:flex;flex-wrap:wrap;gap:5px;align-items:center;padding:7px 10px;background:#eff6ff;border-top:1px solid #bfdbfe;border-bottom:1px solid #bfdbfe}
     .sess-edit-row select,.sess-edit-row input{background:#fff;border:1px solid #cbd5e1;color:var(--text);border-radius:6px;padding:4px 7px;font-size:13px;font-family:inherit}
@@ -161,7 +166,11 @@
     #export-toast{color:#fff;font-size:13px;opacity:0;transition:opacity .4s;min-height:18px}
 
     /* empty state */
-    .empty-state{text-align:center;color:var(--muted);padding:60px 20px;font-size:16px}
+    .empty-state{text-align:center;color:var(--muted);padding:60px 20px;font-size:16px;grid-column:1/-1}
+
+    @media(max-width:760px){
+      .grid{grid-template-columns:1fr;max-width:860px}
+    }
 
     @media(max-width:620px){
       .grid{padding:12px;gap:12px}
