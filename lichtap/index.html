@@ -28,7 +28,7 @@
     .btn-primary:hover{background:var(--blue2)}
 
     /* ── List ── */
-    .grid{max-width:1180px;margin:0 auto;padding:20px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+    .grid{max-width:980px;margin:0 auto;padding:20px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
 
     /* ── Student card ── */
     .sc{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.07);min-width:0}
@@ -62,18 +62,18 @@
     .sec-badge{font-size:11px;color:var(--blue);background:rgba(59,130,246,.12);border-radius:999px;padding:1px 7px}
 
     /* session chips (2-line: top=date/type/dur, bot=fee centered) */
-    .sess-list{padding:6px 10px 8px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-    .sess-chip{display:inline-flex;flex-direction:column;align-items:center;background:#f8fafc;border:1px solid var(--line);border-radius:8px;padding:5px 9px;min-width:80px;text-align:center}
-    .sess-list .sess-chip{width:100%;min-width:0;padding:5px 6px}
-    .sess-chip .top{display:flex;align-items:center;justify-content:space-between;width:100%;font-size:13px;font-weight:700;color:var(--blue);white-space:nowrap}
-    .sess-chip .bot{display:flex;align-items:center;gap:4px;margin-top:3px;white-space:nowrap}
-    .sess-list .sess-chip .top{font-size:12px}
-    .sess-list .sess-chip .bot{justify-content:center;gap:3px;width:100%}
+    .sess-list{padding:6px 10px 8px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+    .sess-chip{display:inline-flex;flex-direction:column;align-items:center;background:#f8fafc;border:1px solid var(--line);border-radius:7px;padding:5px 8px;min-width:80px;text-align:center}
+    .sess-list .sess-chip,.hist-chips .sess-chip{width:100%;min-width:0;padding:5px 5px;min-height:48px}
+    .sess-chip .top{display:flex;align-items:center;justify-content:space-between;width:100%;font-size:13px;font-weight:700;color:var(--blue);white-space:nowrap;line-height:1.1}
+    .sess-chip .bot{display:flex;align-items:center;gap:4px;margin-top:4px;white-space:nowrap;line-height:1.1}
+    .sess-list .sess-chip .top,.hist-chips .sess-chip .top{font-size:12px}
+    .sess-list .sess-chip .bot,.hist-chips .sess-chip .bot{justify-content:center;gap:3px;width:100%}
     .sess-chip .t{color:var(--green);font-weight:600;font-size:12px}
     .sess-chip .dur{color:var(--muted);font-size:12px}
     .sess-chip .dur-sep{color:var(--line);font-size:11px}
     .sess-chip .fee{font-family:monospace;color:var(--warn);font-size:12px;font-weight:600}
-    .sess-list .sess-chip .t,.sess-list .sess-chip .dur,.sess-list .sess-chip .fee{font-size:11px}
+    .sess-list .sess-chip .t,.sess-list .sess-chip .dur,.sess-list .sess-chip .fee,.hist-chips .sess-chip .t,.hist-chips .sess-chip .dur,.hist-chips .sess-chip .fee{font-size:11px}
     .edit-btn{background:none;border:none;cursor:pointer;color:var(--muted);font-size:13px;padding:0 1px;line-height:1;transition:color .12s}
     .edit-btn:hover{color:var(--blue)}
     .sess-empty{color:var(--muted);font-size:13px;font-style:italic;padding:6px 10px}
@@ -151,7 +151,7 @@
     .hist-batch{margin-bottom:10px}
     .hist-batch:last-child{margin-bottom:0}
     .hist-batch-hd{color:var(--muted);font-size:11px;margin-bottom:5px;padding:0 2px}
-    .hist-chips{display:flex;flex-wrap:wrap;gap:4px}
+    .hist-chips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
 
     /* export button */
     .btn-export{margin-left:auto;background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.2);color:var(--blue);border-radius:6px;padding:3px 11px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:inherit;transition:background .15s}
@@ -280,10 +280,17 @@ function sortSched(arr){return[...arr].sort((a,b)=>DAYS.indexOf(a.day)-DAYS.inde
 function calcStats(s){
   const total=(s.sessions||[]).reduce((acc,se)=>acc+parseFee(se.fee),0);
   const pmts=s.payments||[];
-  const paid=s.payments!==undefined
+  const paid=s.payments!==undefined&&pmts.length
     ? pmts.reduce((acc,p)=>acc+parseFee(p.amount),0)
     : parseFee(s.paidAmount);
   return{count:(s.sessions||[]).length,total,paid,owed:Math.max(0,total-paid)};
+}
+
+function todayISO(){return new Date().toISOString().slice(0,10)}
+
+function sessionsThroughToday(s){
+  const today=todayISO();
+  return (s.sessions||[]).filter(se=>!se.date||se.date<=today);
 }
 
 // ── Conflict check ────────────────────────────────────────────────────────────
@@ -360,6 +367,7 @@ function updateColor(id,color){
 function addSession(sid){
   const s=D.students.find(s=>s.id===sid);
   if(!s)return;
+  const before=calcStats(s);
   const date=V('ns-date-'+sid);
   const type=V('ns-type-'+sid);
   const dur=V('ns-dur-'+sid);
@@ -370,10 +378,10 @@ function addSession(sid){
   scheduleSave();
   rerenderCard(sid);
   const {total,paid}=calcStats(s);
-  if(paid>0&&paid>total-parseFee(fee)&&total>=paid){
+  if(paid>0&&date<=todayISO()&&before.total<paid&&total===paid){
     setTimeout(()=>{
       if(confirm('Đã học đủ số buổi tương đương với số tiền thanh toán trước ('+fmtMoney(paid)+').\nCó lưu lại thông tin và reset buổi học không?')){
-        archiveAndReset(sid,null);
+        exportAndArchiveReset(sid);
       }
     },150);
   }
@@ -492,6 +500,59 @@ function exportCard(sid){
     <div style="padding-top:10px;border-top:2px solid #e2e8f0">${statsHTML}</div>
     <div style="margin-top:12px;font-size:11px;color:#94a3b8;text-align:right">🏓 Lịch Tập Bóng Bàn</div>`;
   document.getElementById('export-modal').style.display='flex';
+}
+
+function exportSnapshot(sid,sessions,total,paid,subtitle){
+  _exportSid=sid;
+  const s=D.students.find(s=>s.id===sid);
+  if(!s)return;
+  sessions=[...(sessions||[])].sort((a,b)=>a.date.localeCompare(b.date));
+  const sessRows=sessions.length
+    ? sessions.map(se=>{
+        const[y,m,d]=se.date.split('-');
+        return `<tr>
+          <td style="padding:5px 12px 5px 0;color:#2563eb;font-weight:700;white-space:nowrap">${+d}/${+m}</td>
+          <td style="padding:5px 8px;color:#059669;font-weight:600">${esc(se.type)}</td>
+          <td style="padding:5px 8px;color:#64748b">${esc(se.duration)}</td>
+          <td style="padding:5px 0 5px 8px;color:#d97706;font-weight:600;font-family:monospace;text-align:right">${esc(se.fee)}</td>
+        </tr>`;
+      }).join('')
+    : `<tr><td colspan="4" style="color:#94a3b8;font-style:italic;padding:8px 0">Chưa có buổi học</td></tr>`;
+  const statsHTML=`
+    <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px">
+      <span style="color:#64748b">Tổng buổi</span><span style="font-weight:700">${sessions.length} buổi</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:14px">
+      <span style="color:#64748b">Tổng tiền</span><span style="font-weight:700;color:#1e293b">${fmtMoney(total)}đ</span>
+    </div>
+    ${paid>0?`<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px">
+      <span style="color:#64748b">Đã thanh toán</span><span style="font-weight:600;color:#059669">${fmtMoney(paid)}đ</span>
+    </div>`:''}`;
+  document.getElementById('export-card').innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;padding-bottom:12px;margin-bottom:12px;border-bottom:2px solid #e2e8f0">
+      <span style="width:14px;height:14px;border-radius:50%;background:${s.color};flex-shrink:0;display:inline-block"></span>
+      <div>
+        <div style="font-size:17px;font-weight:700;color:#1e293b">${esc(s.name)}</div>
+        <div style="font-size:12px;color:#64748b;margin-top:1px">${esc(subtitle)}</div>
+      </div>
+    </div>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:12px">${sessRows}</table>
+    <div style="padding-top:10px;border-top:2px solid #e2e8f0">${statsHTML}</div>
+    <div style="margin-top:12px;font-size:11px;color:#94a3b8;text-align:right">🏓 Lịch Tập Bóng Bàn</div>`;
+  document.getElementById('export-modal').style.display='flex';
+}
+
+function exportAndArchiveReset(sid){
+  const s=D.students.find(s=>s.id===sid);
+  if(!s)return;
+  const sessions=sessionsThroughToday(s);
+  const total=sessions.reduce((acc,se)=>acc+parseFee(se.fee),0);
+  const paid=calcStats(s).paid;
+  const now=new Date();
+  const dateStr=`${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()}`;
+  exportSnapshot(sid,sessions,total,paid,`Sổ buổi tập đến ${dateStr}`);
+  archiveAndReset(sid,null,{sessions});
+  showExportToast('Đã xuất ảnh, lưu vào Lịch sử và reset chu kỳ.');
 }
 
 async function copyExportImg(){
@@ -627,14 +688,23 @@ function resetSessions(sid){
   archiveAndReset(sid,null);
 }
 
-function archiveAndReset(sid,extraPayment){
+function archiveAndReset(sid,extraPayment,opts){
   const s=D.students.find(s=>s.id===sid);
   if(!s)return;
+  opts=opts||{};
   if(!s.resetHistory)s.resetHistory=[];
+  const archiveSessions=[...(opts.sessions||s.sessions||[])];
   const pmts=[...(s.payments||[])];
   if(extraPayment) pmts.push({id:gid(),...extraPayment});
-  s.resetHistory.push({at:new Date().toISOString().slice(0,10),sessions:[...s.sessions],payments:pmts});
-  s.sessions=[];
+  const total=archiveSessions.reduce((acc,se)=>acc+parseFee(se.fee),0);
+  const paid=pmts.length?pmts.reduce((acc,p)=>acc+parseFee(p.amount),0):parseFee(s.paidAmount);
+  s.resetHistory.push({at:new Date().toISOString().slice(0,10),sessions:archiveSessions,payments:pmts,total,paid});
+  if(opts.sessions){
+    const archivedIds=new Set(archiveSessions.map(se=>se.id));
+    s.sessions=(s.sessions||[]).filter(se=>!archivedIds.has(se.id));
+  }else{
+    s.sessions=[];
+  }
   s.payments=[];
   s.paidAmount='0';
   scheduleSave();
@@ -751,20 +821,26 @@ function buildCard(s){
     </button>
     <div class="hist-body" id="hist-${s.id}" style="display:none">
       ${hist.slice().reverse().map(batch=>{
-        const bTotal=batch.sessions.reduce((acc,se)=>acc+parseFee(se.fee),0);
+        const bTotal=batch.total!==undefined?batch.total:batch.sessions.reduce((acc,se)=>acc+parseFee(se.fee),0);
+        const bPaid=batch.paid!==undefined?batch.paid:(batch.payments||[]).reduce((acc,p)=>acc+parseFee(p.amount),0);
         const [by,bm,bd]=batch.at.split('-');
         const bDate=`${+bd}-${+bm}-${by}`;
         return `
         <div class="hist-batch">
           <div class="hist-batch-hd">${batch.sessions.length} buổi &nbsp;|&nbsp; ${fmtMoney(bTotal)}đ &nbsp;|&nbsp; ${bDate}</div>
-          <div class="hist-chips">${batch.sessions.map(se=>`
+          ${bPaid>0?`<div class="hist-batch-hd">&#272;&#227; thanh to&#225;n: ${fmtMoney(bPaid)}&#273;</div>`:''}
+          <div class="hist-chips">${[...batch.sessions].sort((a,b)=>b.date.localeCompare(a.date)).map(se=>`
             <span class="sess-chip">
               <span class="top">
                 <span class="d">${fmtDate(se.date)}</span>
-                <span class="t">${esc(se.type)}</span>
-                <span class="dur">${esc(se.duration)}</span>
               </span>
-              <span class="bot"><span class="fee">${esc(se.fee)}</span></span>
+              <span class="bot">
+                <span class="t">${esc(se.type)}</span>
+                <span class="dur-sep">|</span>
+                <span class="dur">${esc(se.duration)}</span>
+                <span class="dur-sep">|</span>
+                <span class="fee">${esc(se.fee)}</span>
+              </span>
             </span>`).join('')}
           </div>
         </div>`;}).join('')}
