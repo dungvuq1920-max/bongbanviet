@@ -4860,6 +4860,7 @@ let vdEditOrderId = null;
 let vdSelectedOrders = new Set();
 let vdCatalog = [];
 let vdInited  = false;
+let vdOrdersLoaded = false;
 
 vdSettings = Object.assign({
   shopName: 'BÓNG BÀN VIỆT', shopAddress: '286 Nguyễn Xiển, Hà Nội',
@@ -4878,6 +4879,74 @@ function vdSave() {
   localStorage.setItem('bbv_settings_v3',  JSON.stringify(vdSettings));
 }
 const fmtMoney = fmtNum;
+
+function vdOrderFromApi(r) {
+  const items = Array.isArray(r.items) ? r.items : [];
+  const totalQty = Number(r.total_qty) || items.reduce((s,it)=>s+(Number(it.qty)||0),0);
+  const totalAmount = Number(r.total_amount) || items.reduce((s,it)=>s+((Number(it.qty)||0)*(Number(it.price)||0)),0);
+  return {
+    id: r.id || '',
+    date: r.order_date || String(r.created_at || '').slice(0,10) || vdTodayISO(),
+    status: r.status || 'pending',
+    customer: {
+      name: r.customer_name || '',
+      phone: r.customer_phone || '',
+      address: r.customer_address || '',
+      province: r.customer_province || '',
+      district: r.customer_district || '',
+      ward: r.customer_ward || ''
+    },
+    carrier: r.carrier || '',
+    trackingCode: r.tracking_code || '',
+    items,
+    notes: r.notes || '',
+    totalQty,
+    totalAmount,
+    createdAt: r.created_at || new Date().toISOString(),
+    updatedAt: r.updated_at || ''
+  };
+}
+
+function vdOrderToApi(o) {
+  return {
+    id: o.id,
+    order_date: o.date || '',
+    customer_name: o.customer?.name || '',
+    customer_phone: o.customer?.phone || '',
+    customer_address: o.customer?.address || '',
+    customer_province: o.customer?.province || '',
+    customer_district: o.customer?.district || '',
+    customer_ward: o.customer?.ward || '',
+    carrier: o.carrier || '',
+    tracking_code: o.trackingCode || '',
+    status: o.status || 'pending',
+    items: o.items || [],
+    notes: o.notes || '',
+    total_qty: Number(o.totalQty) || 0,
+    total_amount: Number(o.totalAmount) || 0
+  };
+}
+
+async function vdLoadOrdersFromServer() {
+  const localOrders = Array.isArray(vdOrders) ? [...vdOrders] : [];
+  try {
+    const rows = await api('/api/orders?limit=1000');
+    if (Array.isArray(rows) && rows.length) {
+      vdOrders = rows.map(vdOrderFromApi);
+    } else if (localOrders.length) {
+      for (const order of localOrders) {
+        await api('/api/orders', 'POST', vdOrderToApi(order));
+      }
+      vdOrders = localOrders;
+      toast(`Đã đồng bộ ${localOrders.length} đơn cũ từ trình duyệt lên server`);
+    } else {
+      vdOrders = [];
+    }
+    vdSave();
+  } catch (e) {
+    toast('Không tải được đơn từ server, đang dùng dữ liệu trình duyệt: '+e.message, 'err');
+  }
+}
 
 function vdNavTo(secId) {
   document.querySelectorAll('#page-don-hang .vd-sec').forEach(s => s.classList.remove('active'));
@@ -5049,18 +5118,28 @@ function newOrder() {
   document.getElementById('labelPreview').innerHTML = '<div style="text-align:center;color:#ccc;padding-top:60px;font-size:12px;">Nhập thông tin để xem trước</div>';
 }
 
-function saveOrder() {
+async function saveOrder() {
   const o = collectForm();
   if (!o.id)               { toast('Vui lòng nhập mã đơn hàng','err'); return; }
   if (!o.customer.name)    { toast('Vui lòng nhập tên khách hàng','err'); return; }
   if (!o.customer.address) { toast('Vui lòng nhập địa chỉ giao hàng','err'); return; }
+  const idx = vdOrders.findIndex(x=>x.id===o.id);
+  try {
+    if (idx>=0) {
+      await api(`/api/orders/${encodeURIComponent(o.id)}`, 'PUT', vdOrderToApi(o));
+    } else {
+      await api('/api/orders', 'POST', vdOrderToApi(o));
+    }
+  } catch(e) {
+    toast('Lỗi lưu đơn lên server: '+e.message,'err');
+    return;
+  }
   if (!vdEditOrderId) {
     o.items.forEach(it => {
       const inv = vdInventory.find(p=>p.name===it.name||p.sku===it.sku);
       if (inv&&inv.stock>0) inv.stock = Math.max(0,inv.stock-it.qty);
     });
   }
-  const idx = vdOrders.findIndex(x=>x.id===o.id);
   if (idx>=0) vdOrders[idx]=o; else vdOrders.unshift(o);
   vdSave();
   localStorage.removeItem('bbv_draft_v3');
@@ -5089,17 +5168,34 @@ function copyOrder() {
   toast('Đã nhân bản đơn — hãy chỉnh sửa và lưu lại');
 }
 
-function deleteOrder(id) {
+async function deleteOrder(id) {
   if (!confirm(`Xóa đơn "${id}"?`)) return;
+  try {
+    await api(`/api/orders/${encodeURIComponent(id)}`, 'DELETE');
+  } catch(e) {
+    toast('Lỗi xóa đơn trên server: '+e.message,'err');
+    return;
+  }
   vdOrders = vdOrders.filter(o=>o.id!==id);
   vdSave();
   renderOrders();
   toast('Đã xóa đơn!');
 }
 
-function setOrderStatus(id, status) {
+async function setOrderStatus(id, status) {
   const o = vdOrders.find(x=>x.id===id);
-  if (o) { o.status=status; vdSave(); renderOrders(); }
+  if (!o) return;
+  const oldStatus = o.status;
+  o.status = status;
+  try {
+    await api(`/api/orders/${encodeURIComponent(id)}`, 'PUT', vdOrderToApi(o));
+    vdSave();
+    renderOrders();
+  } catch(e) {
+    o.status = oldStatus;
+    renderOrders();
+    toast('Lỗi cập nhật trạng thái trên server: '+e.message,'err');
+  }
 }
 
 async function loadCatalog() {
@@ -5613,7 +5709,7 @@ document.addEventListener('keydown', e => {
   if (e.key==='n') { e.preventDefault(); vdNavTo('new-order'); newOrder(); }
 });
 
-function vdInit() {
+async function vdInit() {
   if (!vdInited) {
     vdInited = true;
     const sel = document.getElementById('fProvince');
@@ -5633,6 +5729,11 @@ function vdInit() {
       el.addEventListener('change', vdUpdatePreviewDebounced);
     });
     loadCatalog();
+  }
+  if (!vdOrdersLoaded) {
+    vdOrdersLoaded = true;
+    await vdLoadOrdersFromServer();
+    if (!vdEditOrderId) genOrderId();
   }
   refreshDashboard();
 }

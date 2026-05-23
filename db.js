@@ -223,6 +223,8 @@ db.exec(`
 
 try { db.exec("ALTER TABLE fb_posts ADD COLUMN source_id TEXT DEFAULT ''"); } catch {}
 try { db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_fb_posts_source_id ON fb_posts(source_id) WHERE source_id <> ''"); } catch {}
+try { db.exec("ALTER TABLE orders ADD COLUMN order_date TEXT DEFAULT ''"); } catch {}
+try { db.exec("ALTER TABLE orders ADD COLUMN total_qty INTEGER DEFAULT 0"); } catch {}
 
 // Orders table (added later, created via migration)
 db.exec(`
@@ -239,6 +241,8 @@ db.exec(`
     status TEXT DEFAULT 'pending',
     items TEXT DEFAULT '[]',
     notes TEXT DEFAULT '',
+    order_date TEXT DEFAULT '',
+    total_qty INTEGER DEFAULT 0,
     total_amount INTEGER DEFAULT 0,
     created_at TEXT DEFAULT (datetime('now')),
     updated_at TEXT DEFAULT (datetime('now'))
