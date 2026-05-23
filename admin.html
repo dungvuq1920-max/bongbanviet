@@ -5167,8 +5167,20 @@ function updateItem(id, field, val) {
     const inv = vdInventory.find(p=>field==='name'?p.name===val:p.sku===val);
     if (inv) { row.name=inv.name; row.sku=inv.sku||''; row.price=inv.price||0; }
   }
+  updateItemLineTotal(id);
   updateTotals();
   vdUpdatePreviewDebounced();
+}
+
+function itemLineAmount(row) {
+  const amount = (Number(row?.qty)||0) * (Number(row?.price)||0);
+  return amount ? fmtMoney(amount)+'₫' : '—';
+}
+
+function updateItemLineTotal(id) {
+  const row = vdOrderItems.find(r=>r.id===id);
+  const cell = document.getElementById(`itemLineTotal-${id}`);
+  if (row && cell) cell.textContent = itemLineAmount(row);
 }
 
 function renderItems() {
@@ -5195,8 +5207,8 @@ function renderItems() {
         <input class="inp inp-sm" type="number" min="0" value="${r.price||''}" placeholder="0"
           oninput="updateItem('${r.id}','price',this.value)" style="width:110px;text-align:right;">
       </td>
-      <td style="padding:5px 6px;text-align:right;font-weight:700;font-size:13px;white-space:nowrap;">
-        ${r.qty&&r.price ? fmtMoney(r.qty*r.price)+'₫' : '—'}
+      <td id="itemLineTotal-${r.id}" style="padding:5px 6px;text-align:right;font-weight:700;font-size:13px;white-space:nowrap;">
+        ${itemLineAmount(r)}
       </td>
       <td style="padding:5px 2px;text-align:center;">
         <button onclick="removeItemRow('${r.id}')"
