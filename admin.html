@@ -4932,7 +4932,15 @@ async function vdLoadOrdersFromServer() {
   try {
     const rows = await api('/api/orders?limit=1000');
     if (Array.isArray(rows) && rows.length) {
-      vdOrders = rows.map(vdOrderFromApi);
+      const serverOrders = rows.map(vdOrderFromApi);
+      const serverIds = new Set(serverOrders.map(o => o.id));
+      const missingLocal = localOrders.filter(o => o?.id && !serverIds.has(o.id));
+      for (const order of missingLocal) {
+        await api('/api/orders', 'POST', vdOrderToApi(order));
+      }
+      vdOrders = [...missingLocal, ...serverOrders]
+        .sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+      if (missingLocal.length) toast(`Đã đồng bộ thêm ${missingLocal.length} đơn cũ từ trình duyệt lên server`);
     } else if (localOrders.length) {
       for (const order of localOrders) {
         await api('/api/orders', 'POST', vdOrderToApi(order));
