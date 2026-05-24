@@ -802,6 +802,89 @@ function save() {
   localStorage.setItem('bbv_settings_v3',  JSON.stringify(settings));
 }
 
+async function api(url, method='GET', body=null) {
+  const opts = { method, headers: {} };
+  const token = sessionStorage.getItem('adminToken');
+  if (token) opts.headers['x-admin-token'] = token;
+  if (body) {
+    opts.body = JSON.stringify(body);
+    opts.headers['Content-Type'] = 'application/json';
+  }
+  const res = await fetch(url, opts);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+}
+
+function orderFromApi(r) {
+  const items = Array.isArray(r.items) ? r.items : [];
+  const totalQty = Number(r.total_qty) || items.reduce((s,it)=>s+(Number(it.qty)||0),0);
+  const totalAmount = Number(r.total_amount) || items.reduce((s,it)=>s+((Number(it.qty)||0)*(Number(it.price)||0)),0);
+  return {
+    id: r.id || '',
+    date: r.order_date || String(r.created_at || '').slice(0,10) || todayISO(),
+    status: r.status || 'pending',
+    customer: {
+      name: r.customer_name || '',
+      phone: r.customer_phone || '',
+      address: r.customer_address || '',
+      province: r.customer_province || '',
+      district: r.customer_district || '',
+      ward: r.customer_ward || ''
+    },
+    carrier: r.carrier || '',
+    trackingCode: r.tracking_code || '',
+    items,
+    notes: r.notes || '',
+    totalQty,
+    totalAmount,
+    createdAt: r.created_at || new Date().toISOString(),
+    updatedAt: r.updated_at || ''
+  };
+}
+
+function orderToApi(o) {
+  return {
+    id: o.id,
+    order_date: o.date || '',
+    customer_name: o.customer?.name || '',
+    customer_phone: o.customer?.phone || '',
+    customer_address: o.customer?.address || '',
+    customer_province: o.customer?.province || '',
+    customer_district: o.customer?.district || '',
+    customer_ward: o.customer?.ward || '',
+    carrier: o.carrier || '',
+    tracking_code: o.trackingCode || '',
+    status: o.status || 'pending',
+    items: o.items || [],
+    notes: o.notes || '',
+    total_qty: Number(o.totalQty) || 0,
+    total_amount: Number(o.totalAmount) || 0
+  };
+}
+
+async function loadOrdersFromServer() {
+  const localOrders = Array.isArray(orders) ? [...orders] : [];
+  try {
+    const rows = await api('/api/orders?limit=1000');
+    const serverOrders = Array.isArray(rows) ? rows.map(orderFromApi) : [];
+    const byId = new Map();
+    [...localOrders, ...serverOrders].forEach(o => {
+      if (o?.id) byId.set(o.id, o);
+    });
+    orders = [...byId.values()].sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+    save();
+
+    const serverIds = new Set(serverOrders.map(o => o.id));
+    const missingOnServer = localOrders.filter(o => o?.id && !serverIds.has(o.id));
+    for (const order of missingOnServer) {
+      try { await api('/api/orders', 'POST', orderToApi(order)); } catch(e) {}
+    }
+  } catch (e) {
+    console.warn('Cannot sync orders from server:', e.message);
+  }
+}
+
 // ════════════════════════════════════════════
 // NAVIGATION
 // ════════════════════════════════════════════
@@ -1743,7 +1826,7 @@ document.addEventListener('keydown', e => {
 // ════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════
-(function init() {
+(async function init() {
   // Populate provinces select
   const sel = document.getElementById('fProvince');
   PROVINCES.forEach(p => {
@@ -1796,6 +1879,7 @@ document.addEventListener('keydown', e => {
 
   // Load product catalog from server for autocomplete
   loadCatalog();
+  await loadOrdersFromServer();
 
   // Initial dashboard
   refreshDashboard();
