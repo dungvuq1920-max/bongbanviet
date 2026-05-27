@@ -877,9 +877,9 @@
   /* Shipping label (100×150mm preview) */
   #page-don-hang .label {
     width: 378px; min-height: 567px; background: #fff; color: #000;
-    font-family: 'Be Vietnam Pro', Arial, sans-serif; font-size: 11px; box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif; font-size: 11px; box-sizing: border-box;
   }
-  #page-don-hang .label * { font-family: 'Be Vietnam Pro', Arial, sans-serif !important; color: #000 !important; }
+  #page-don-hang .label * { font-family: Arial, Helvetica, sans-serif !important; color: #000 !important; }
 
   /* Inventory modal (renamed to avoid conflict with admin import modal) */
   .vd-modal { display: none; position: fixed; inset: 0; z-index: 9500; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,.45); }
@@ -5357,23 +5357,23 @@ function buildLabelHTML(o, pfx) {
   const trackCode = o.trackingCode||o.id||'BBV000';
   const cust = o.customer||{};
   const fullAddr = [cust.address,cust.ward,cust.district,cust.province].filter(Boolean).join(', ');
-  const shopQrSize = pfx === 'prt' ? 96 : 84;
+  const shopQrSize = pfx === 'prt' ? 88 : 84;
   const prodRows = items.length
-    ? items.map(it=>`<div style="display:flex;justify-content:space-between;padding:1.5px 0;font-size:9px;">
-        <span style="flex:1;padding-right:4px;">• ${esc(it.name)}</span>
+    ? items.map(it=>`<div style="display:flex;justify-content:space-between;gap:8px;padding:2px 0;font-size:9.5px;line-height:1.35;">
+        <span style="flex:1;min-width:0;padding-right:4px;word-break:break-word;">• ${esc(it.name)}</span>
         <span style="font-weight:700;flex-shrink:0;white-space:nowrap;">×${it.qty||1}${it.price?` · ${fmtMoney((it.qty||1)*it.price)}₫`:''}</span>
       </div>`).join('')
     : `<div style="color:#aaa;font-size:9px;">—</div>`;
-  return `<div style="font-family:'Be Vietnam Pro',Arial,sans-serif;color:#000;width:100%;">
-    <div style="display:flex;align-items:center;gap:7px;padding-bottom:6px;border-bottom:2.5px solid #000;margin-bottom:6px;">
+  return `<div style="font-family:Arial,Helvetica,sans-serif;color:#000;width:100%;line-height:1.25;">
+    <div style="display:flex;align-items:center;gap:9px;padding-bottom:7px;border-bottom:2.5px solid #000;margin-bottom:7px;">
       <img src="/logo_bongbanviet.png" alt="BBV" style="width:30px;height:30px;border-radius:50%;flex-shrink:0;">
-      <div>
-        <div style="font-weight:800;font-size:12.5px;letter-spacing:.04em;line-height:1.1;">${esc(vdSettings.shopName||'BÓNG BÀN VIỆT')}</div>
-        <div style="font-size:8.5px;color:#444;margin-top:1px;">Tư Vấn Chuẩn - Hàng Chính Hãng</div>
-        <div style="font-size:8px;color:#666;">${esc(vdSettings.shopWebsite||'bongbanviet.com')} · ${esc(vdSettings.shopPhone||'096.1269.386')}</div>
+      <div style="min-width:0;line-height:1.2;">
+        <div style="font-weight:800;font-size:12.5px;letter-spacing:.04em;line-height:1.15;">${esc(vdSettings.shopName||'BÓNG BÀN VIỆT')}</div>
+        <div style="font-size:8.5px;color:#444;margin-top:2px;white-space:nowrap;">Tư Vấn Chuẩn - Hàng Chính Hãng</div>
+        <div style="font-size:8px;color:#666;margin-top:1px;white-space:nowrap;">${esc(vdSettings.shopWebsite||'bongbanviet.com')} · ${esc(vdSettings.shopPhone||'096.1269.386')}</div>
       </div>
     </div>
-    <div style="display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:5px;border-bottom:1px dashed #aaa;margin-bottom:5px;">
+    <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-end;padding-bottom:6px;border-bottom:1px dashed #aaa;margin-bottom:6px;">
       <div>
         <div style="font-size:7.5px;text-transform:uppercase;letter-spacing:.1em;color:#888;margin-bottom:1.5px;">Mã đơn hàng</div>
         <div style="font-weight:800;font-size:12px;letter-spacing:.03em;font-family:monospace;">${esc(o.id)}</div>
@@ -5384,36 +5384,36 @@ function buildLabelHTML(o, pfx) {
         <div style="font-weight:600;font-size:11px;">${vdFmtDate(o.date)}</div>
       </div>
     </div>
-    <div style="padding-bottom:5px;border-bottom:1px dashed #aaa;margin-bottom:5px;">
+    <div style="padding-bottom:6px;border-bottom:1px dashed #aaa;margin-bottom:6px;">
       <div style="font-size:7.5px;text-transform:uppercase;letter-spacing:.1em;color:#888;margin-bottom:2px;">Người Nhận</div>
-      <div style="font-weight:800;font-size:13px;line-height:1.2;margin-bottom:2px;">${esc(cust.name||'')}</div>
-      ${cust.phone?`<div style="font-weight:700;font-size:12px;margin-bottom:3px;">${esc(cust.phone)}</div>`:''}
-      <div style="font-size:10.5px;line-height:1.45;color:#111;">${esc(fullAddr)}</div>
+      <div style="font-weight:800;font-size:13px;line-height:1.3;margin-bottom:3px;">${esc(cust.name||'')}</div>
+      ${cust.phone?`<div style="font-weight:700;font-size:12px;line-height:1.3;margin-bottom:3px;">${esc(cust.phone)}</div>`:''}
+      <div style="font-size:10.5px;line-height:1.5;color:#111;word-break:break-word;">${esc(fullAddr)}</div>
     </div>
-    <div style="padding-bottom:5px;border-bottom:1px dashed #aaa;margin-bottom:5px;">
+    <div style="padding-bottom:6px;border-bottom:1px dashed #aaa;margin-bottom:6px;">
       <div style="font-size:7.5px;text-transform:uppercase;letter-spacing:.1em;color:#888;margin-bottom:3px;">Sản Phẩm</div>
       ${prodRows}
-      <div style="display:flex;justify-content:space-between;border-top:1px solid #ddd;margin-top:3px;padding-top:2px;font-size:9px;font-weight:700;">
-        <span>Tổng</span><span>${totalQty} sp${totalAmt?' — '+fmtMoney(totalAmt)+'₫':''}</span>
+      <div style="display:flex;justify-content:space-between;gap:8px;border-top:1px solid #ddd;margin-top:4px;padding-top:3px;font-size:9.5px;font-weight:700;line-height:1.35;">
+        <span>Tổng</span><span style="white-space:nowrap;">${totalQty} sp${totalAmt?' — '+fmtMoney(totalAmt)+'₫':''}</span>
       </div>
     </div>
     ${o.notes?`<div style="padding-bottom:5px;border-bottom:1px dashed #aaa;margin-bottom:5px;">
       <div style="font-size:7.5px;text-transform:uppercase;letter-spacing:.1em;color:#888;margin-bottom:1px;">Ghi Chú</div>
       <div style="font-size:9.5px;font-style:italic;line-height:1.4;">${esc(o.notes)}</div>
     </div>`:''}
-    <div style="margin-bottom:4px;overflow:hidden;"><svg id="${pfx}Barcode" style="width:100%;display:block;"></svg></div>
+    <div style="margin-bottom:7px;overflow:hidden;"><svg id="${pfx}Barcode" style="width:100%;display:block;"></svg></div>
     <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:8px;">
-      <div style="display:flex;align-items:flex-end;gap:6px;">
+      <div style="display:flex;align-items:flex-end;gap:8px;min-width:0;">
         <img id="${pfx}QR" style="width:${shopQrSize}px;height:${shopQrSize}px;display:block;object-fit:contain;" src="${BBV_SHOP_BANK.qrImage}" alt="QR thanh toan">
-        <div style="font-size:7.5px;line-height:1.35;color:#555;padding-bottom:2px;">
+        <div style="font-size:7.5px;line-height:1.45;color:#555;padding-bottom:2px;white-space:nowrap;">
           <div style="font-weight:800;">TECHCOMBANK</div>
           <div>${esc(BBV_SHOP_BANK.account)}</div>
           <div>${esc(BBV_SHOP_BANK.name)}</div>
         </div>
       </div>
-      <div style="text-align:right;">
+      <div style="text-align:right;line-height:1.35;white-space:nowrap;">
         <div style="font-size:8px;color:#888;">${esc(vdSettings.shopWebsite||'bongbanviet.com')}</div>
-        <div style="font-size:7.5px;color:#aaa;margin-top:1px;font-family:monospace;">${esc(trackCode)}</div>
+        <div style="font-size:7.5px;color:#aaa;margin-top:2px;font-family:monospace;">${esc(trackCode)}</div>
       </div>
     </div>
   </div>`;
@@ -5469,13 +5469,183 @@ async function printOrder(id) {
   if (o) await doPrint(o);
 }
 
+function labelLoadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+function labelWrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines=2) {
+  const words = String(text || '').split(/\s+/).filter(Boolean);
+  let line = '';
+  const lines = [];
+  for (const word of words) {
+    const test = line ? line + ' ' + word : word;
+    if (ctx.measureText(test).width > maxWidth && line) {
+      lines.push(line);
+      line = word;
+      if (lines.length >= maxLines) break;
+    } else {
+      line = test;
+    }
+  }
+  if (line && lines.length < maxLines) lines.push(line);
+  lines.forEach((ln, i) => ctx.fillText(ln, x, y + i * lineHeight));
+  return y + Math.max(lines.length, 1) * lineHeight;
+}
+
+function labelMoney(v) {
+  return fmtMoney(v) + '₫';
+}
+
+async function renderOrderLabelCanvas(o, scale=2.11) {
+  const W = 378, H = 567;
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(W * scale);
+  canvas.height = Math.round(H * scale);
+  const ctx = canvas.getContext('2d');
+  ctx.scale(scale, scale);
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#000';
+  ctx.strokeStyle = '#000';
+  ctx.lineWidth = 1;
+  ctx.font = '11px Arial, Helvetica, sans-serif';
+  ctx.textBaseline = 'top';
+
+  const items = (o.items || []).filter(i => i.name && i.name.trim());
+  const totalQty = items.reduce((s, i) => s + (Number(i.qty) || 1), 0);
+  const totalAmt = items.reduce((s, i) => s + ((Number(i.qty) || 1) * (Number(i.price) || 0)), 0);
+  const trackCode = o.trackingCode || o.id || 'BBV000';
+  const cust = o.customer || {};
+  const fullAddr = [cust.address, cust.ward, cust.district, cust.province].filter(Boolean).join(', ');
+  const left = 26, right = W - 26;
+  let y = 26;
+
+  try {
+    const logo = await labelLoadImage('/logo_bongbanviet.png');
+    ctx.drawImage(logo, left, y + 5, 30, 30);
+  } catch(e) {}
+  ctx.font = 'bold 15px Arial, Helvetica, sans-serif';
+  ctx.fillText(vdSettings.shopName || 'BÓNG BÀN VIỆT', left + 40, y + 3);
+  ctx.font = '9px Arial, Helvetica, sans-serif';
+  ctx.fillText('Tư Vấn Chuẩn - Hàng Chính Hãng', left + 40, y + 22);
+  ctx.fillText(`${vdSettings.shopWebsite || 'bongbanviet.com'} · ${vdSettings.shopPhone || '096.1269.386'}`, left + 40, y + 35);
+  y += 52;
+  ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(right, y); ctx.stroke();
+  y += 13;
+
+  ctx.font = '9px Arial, Helvetica, sans-serif';
+  ctx.fillText('MÃ ĐƠN HÀNG', left, y);
+  ctx.textAlign = 'right';
+  ctx.fillText('NGÀY', right, y);
+  ctx.textAlign = 'left';
+  y += 13;
+  ctx.font = 'bold 15px Arial, Helvetica, sans-serif';
+  ctx.fillText(o.id || '', left, y);
+  ctx.textAlign = 'right';
+  ctx.fillText(vdFmtDate(o.date), right, y);
+  ctx.textAlign = 'left';
+  y += 22;
+  ctx.setLineDash([4, 3]);
+  ctx.strokeStyle = '#aaa';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(right, y); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.strokeStyle = '#000';
+  y += 12;
+
+  ctx.font = '9px Arial, Helvetica, sans-serif';
+  ctx.fillText('NGƯỜI NHẬN', left, y);
+  y += 13;
+  ctx.font = 'bold 16px Arial, Helvetica, sans-serif';
+  ctx.fillText(cust.name || '', left, y);
+  y += 20;
+  if (cust.phone) {
+    ctx.font = 'bold 12px Arial, Helvetica, sans-serif';
+    ctx.fillText(cust.phone, left, y);
+    y += 17;
+  }
+  ctx.font = '10.5px Arial, Helvetica, sans-serif';
+  y = labelWrapText(ctx, fullAddr, left, y, right - left, 14, 2) + 4;
+  ctx.setLineDash([4, 3]);
+  ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(right, y); ctx.stroke();
+  ctx.setLineDash([]);
+  y += 12;
+
+  ctx.font = '9px Arial, Helvetica, sans-serif';
+  ctx.fillText('SẢN PHẨM', left, y);
+  y += 14;
+  if (items.length) {
+    for (const it of items.slice(0, 4)) {
+      const qty = Number(it.qty) || 1;
+      const amount = qty * (Number(it.price) || 0);
+      const priceText = `×${qty}${amount ? ' · ' + labelMoney(amount) : ''}`;
+      ctx.textAlign = 'right';
+      ctx.font = 'bold 10px Arial, Helvetica, sans-serif';
+      ctx.fillText(priceText, right, y);
+      ctx.textAlign = 'left';
+      ctx.font = '10px Arial, Helvetica, sans-serif';
+      y = labelWrapText(ctx, '• ' + (it.name || ''), left, y, right - left - 100, 13, 2) + 1;
+    }
+  } else {
+    ctx.fillText('—', left, y);
+    y += 14;
+  }
+  ctx.strokeStyle = '#ddd';
+  ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(right, y); ctx.stroke();
+  y += 7;
+  ctx.strokeStyle = '#000';
+  ctx.font = 'bold 11px Arial, Helvetica, sans-serif';
+  ctx.fillText('Tổng', left, y);
+  ctx.textAlign = 'right';
+  ctx.fillText(`${totalQty} sp${totalAmt ? ' — ' + labelMoney(totalAmt) : ''}`, right, y);
+  ctx.textAlign = 'left';
+  y += 19;
+  ctx.setLineDash([4, 3]);
+  ctx.strokeStyle = '#aaa';
+  ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(right, y); ctx.stroke();
+  ctx.setLineDash([]);
+  y += 10;
+
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  JsBarcode(svg, trackCode, {format:'CODE128', width:1.5, height:32, displayValue:true, fontSize:8, margin:2, background:'#ffffff', lineColor:'#000000'});
+  const barcodeUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(svg));
+  try {
+    const barcode = await labelLoadImage(barcodeUrl);
+    ctx.drawImage(barcode, left, y, right - left - 60, 47);
+  } catch(e) {}
+  y += 57;
+
+  try {
+    const qr = await labelLoadImage(BBV_SHOP_BANK.qrImage);
+    ctx.drawImage(qr, left, y, 84, 84);
+  } catch(e) {}
+  ctx.font = 'bold 10px Arial, Helvetica, sans-serif';
+  ctx.fillText('TECHCOMBANK', left + 94, y + 28);
+  ctx.font = '9px Arial, Helvetica, sans-serif';
+  ctx.fillText(BBV_SHOP_BANK.account, left + 94, y + 42);
+  ctx.fillText(BBV_SHOP_BANK.name, left + 94, y + 55);
+  ctx.textAlign = 'right';
+  ctx.font = '8px Arial, Helvetica, sans-serif';
+  ctx.fillText(vdSettings.shopWebsite || 'bongbanviet.com', right, y + 45);
+  ctx.font = '8px monospace';
+  ctx.fillText(trackCode, right, y + 59);
+  ctx.textAlign = 'left';
+  return canvas;
+}
+
 async function exportPNG() {
   const o = collectForm();
   if (!o.id) { toast('Nhập mã đơn hàng trước','err'); return; }
   await updatePreview();
   await new Promise(r=>setTimeout(r,400));
   try {
-    const canvas = await html2canvas(document.getElementById('labelPreview'),{scale:2.11,useCORS:true,backgroundColor:'#ffffff',logging:false});
+    const canvas = await renderOrderLabelCanvas(o, 2.11);
     const a = document.createElement('a');
     a.download = `tem-${o.id}.png`; a.href = canvas.toDataURL('image/png'); a.click();
     toast('✓ Đã xuất PNG');
@@ -5488,7 +5658,7 @@ async function exportPDF() {
   await updatePreview();
   await new Promise(r=>setTimeout(r,400));
   try {
-    const canvas = await html2canvas(document.getElementById('labelPreview'),{scale:2.11,useCORS:true,backgroundColor:'#ffffff',logging:false});
+    const canvas = await renderOrderLabelCanvas(o, 2.11);
     const {jsPDF} = window.jspdf;
     const pdf = new jsPDF({orientation:'portrait',unit:'mm',format:[100,150]});
     pdf.addImage(canvas.toDataURL('image/png'),'PNG',0,0,100,150);
