@@ -5363,9 +5363,11 @@ function buildLabelHTML(o, pfx) {
       const qty = Number(it.qty) || 1;
       const price = Number(it.price) || 0;
       const amount = qty * price;
-      return `<div style="padding:2.5px 0;font-size:9.5px;line-height:1.35;">
-        <div style="font-weight:700;word-break:break-word;">• ${esc(it.name)}</div>
-        <div style="font-size:8.8px;color:#444;margin-top:1px;padding-left:8px;">SL: ${qty} - Đơn giá: ${fmtMoney(price)}₫ -&gt; ${fmtMoney(amount)}₫</div>
+      return `<div style="display:grid;grid-template-columns:minmax(0,1fr) 24px 58px 66px;gap:6px;align-items:start;padding:3px 0;border-bottom:1px solid #eee;font-size:8.8px;line-height:1.35;">
+        <div style="font-weight:700;font-size:9.5px;word-break:break-word;">${esc(it.name)}</div>
+        <div style="text-align:center;font-weight:700;">${qty}</div>
+        <div style="text-align:right;">${fmtMoney(price)}₫</div>
+        <div style="text-align:right;font-weight:700;">${fmtMoney(amount)}₫</div>
       </div>`;
     }).join('')
     : `<div style="color:#aaa;font-size:9px;">—</div>`;
@@ -5396,10 +5398,19 @@ function buildLabelHTML(o, pfx) {
       <div style="font-size:10.5px;line-height:1.5;color:#111;word-break:break-word;">${esc(fullAddr)}</div>
     </div>
     <div style="padding-bottom:6px;border-bottom:1px dashed #aaa;margin-bottom:6px;">
-      <div style="font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#000;margin-bottom:3px;">Sản Phẩm</div>
+      <div style="font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#000;margin-bottom:4px;">Sản Phẩm</div>
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) 24px 58px 66px;gap:6px;padding:3px 0;border-top:1px solid #111;border-bottom:1px solid #ddd;font-size:7.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#555;">
+        <div>Tên hàng</div>
+        <div style="text-align:center;">SL</div>
+        <div style="text-align:right;">Đơn giá</div>
+        <div style="text-align:right;">Thành tiền</div>
+      </div>
       ${prodRows}
-      <div style="display:flex;justify-content:space-between;gap:8px;border-top:1px solid #ddd;margin-top:4px;padding-top:3px;font-size:9.5px;font-weight:700;line-height:1.35;">
-        <span>Tổng</span><span style="white-space:nowrap;">${totalQty} sp${totalAmt?' — '+fmtMoney(totalAmt)+'₫':''}</span>
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) 24px 58px 66px;gap:6px;margin-top:4px;padding-top:4px;border-top:1.5px solid #111;font-size:10px;font-weight:800;line-height:1.35;">
+        <span>Tổng</span>
+        <span style="text-align:center;">${totalQty}</span>
+        <span></span>
+        <span style="text-align:right;white-space:nowrap;">${totalAmt?fmtMoney(totalAmt)+'₫':'—'}</span>
       </div>
     </div>
     ${o.notes?`<div style="padding-bottom:5px;border-bottom:1px dashed #aaa;margin-bottom:5px;">
@@ -5580,30 +5591,62 @@ async function renderOrderLabelCanvas(o, scale=2.11) {
 
   ctx.font = 'bold 9px Arial, Helvetica, sans-serif';
   ctx.fillText('SẢN PHẨM', left, y);
-  y += 14;
+  y += 13;
+  const colQtyX = right - 142;
+  const colPriceX = right - 70;
+  const colTotalX = right;
+  ctx.strokeStyle = '#111';
+  ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(right, y); ctx.stroke();
+  y += 5;
+  ctx.font = 'bold 7.5px Arial, Helvetica, sans-serif';
+  ctx.fillText('TÊN HÀNG', left, y);
+  ctx.textAlign = 'center';
+  ctx.fillText('SL', colQtyX, y);
+  ctx.textAlign = 'right';
+  ctx.fillText('ĐƠN GIÁ', colPriceX, y);
+  ctx.fillText('THÀNH TIỀN', colTotalX, y);
+  ctx.textAlign = 'left';
+  y += 12;
+  ctx.strokeStyle = '#ddd';
+  ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(right, y); ctx.stroke();
+  y += 5;
   if (items.length) {
     for (const it of items.slice(0, 4)) {
       const qty = Number(it.qty) || 1;
       const price = Number(it.price) || 0;
       const amount = qty * price;
       ctx.font = 'bold 10px Arial, Helvetica, sans-serif';
-      y = labelWrapText(ctx, '• ' + (it.name || ''), left, y, right - left, 13, 2);
+      const itemTop = y;
+      const itemBottom = labelWrapText(ctx, it.name || '', left, y, colQtyX - left - 18, 13, 2);
       ctx.font = '9px Arial, Helvetica, sans-serif';
-      ctx.fillText(`SL: ${qty} - Đơn giá: ${labelMoney(price)} -> ${labelMoney(amount)}`, left + 8, y);
-      y += 13;
+      ctx.textAlign = 'center';
+      ctx.fillText(String(qty), colQtyX, itemTop + 1);
+      ctx.textAlign = 'right';
+      ctx.fillText(labelMoney(price), colPriceX, itemTop + 1);
+      ctx.font = 'bold 9px Arial, Helvetica, sans-serif';
+      ctx.fillText(labelMoney(amount), colTotalX, itemTop + 1);
+      ctx.textAlign = 'left';
+      y = itemBottom + 5;
+      ctx.strokeStyle = '#eee';
+      ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(right, y); ctx.stroke();
+      y += 4;
     }
   } else {
     ctx.fillText('—', left, y);
     y += 14;
   }
-  ctx.strokeStyle = '#ddd';
-  ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(right, y); ctx.stroke();
-  y += 7;
+  y += 1;
   ctx.strokeStyle = '#000';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(right, y); ctx.stroke();
+  ctx.lineWidth = 1;
+  y += 7;
   ctx.font = 'bold 11px Arial, Helvetica, sans-serif';
   ctx.fillText('Tổng', left, y);
+  ctx.textAlign = 'center';
+  ctx.fillText(String(totalQty), colQtyX, y);
   ctx.textAlign = 'right';
-  ctx.fillText(`${totalQty} sp${totalAmt ? ' — ' + labelMoney(totalAmt) : ''}`, right, y);
+  ctx.fillText(totalAmt ? labelMoney(totalAmt) : '—', right, y);
   ctx.textAlign = 'left';
   y += 19;
   ctx.setLineDash([4, 3]);
