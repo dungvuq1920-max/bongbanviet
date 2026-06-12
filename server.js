@@ -9,6 +9,7 @@ const crypto = require('crypto');
 const os = require('os');
 const axios = require('axios');
 const FormData = require('form-data');
+const { execFile } = require('child_process');
 
 function loadLocalEnvFile() {
   const envPath = path.join(__dirname, '.env');
@@ -492,6 +493,37 @@ app.post('/api/tiktok/upload', ttMulter.single('video'), async (req, res) => {
   }
 });
 
+function isLocalRequest(req) {
+  const host = String(req.hostname || req.get('host') || '').split(':')[0].toLowerCase();
+  return ['localhost', '127.0.0.1', '::1'].includes(host);
+}
+
+const LIGHT_THEME_HREF = '/css/light-theme.css?v=20260521';
+
+function sendThemedHtml(res, filePath) {
+  let html = fs.readFileSync(filePath, 'utf8');
+  if (!html.includes(LIGHT_THEME_HREF)) {
+    html = html.replace(
+      /<\/head>/i,
+      `  <link rel="stylesheet" href="${LIGHT_THEME_HREF}">\n</head>`
+    );
+  }
+  res.type('html').send(html);
+}
+
+app.get(['/', '/local'], (req, res, next) => {
+  if (!isLocalRequest(req)) return next();
+  sendThemedHtml(res, path.join(__dirname, 'local.html'));
+});
+
+app.get(/^\/[A-Za-z0-9_-]+(?:\.html)?$/, (req, res, next) => {
+  const rawName = req.path.slice(1);
+  const htmlName = rawName.toLowerCase().endsWith('.html') ? rawName : `${rawName}.html`;
+  const filePath = path.join(__dirname, htmlName);
+  if (!filePath.startsWith(__dirname) || !fs.existsSync(filePath)) return next();
+  sendThemedHtml(res, filePath);
+});
+
 app.use(express.static(__dirname, { extensions: ['html'] }));
 
 // ─── Douyin Downloader (native Node.js, no Python dependency) ────────────────
@@ -850,7 +882,7 @@ app.post('/api/douyin/search', async (req, res) => {
       return res.status(502).json({ detail: 'Search failed — try again later', query_original: String(query).trim(), query_translated: searchTerm });
     }
     const videos = (sd.data.videos || []).map(v => ({
-      aweme_id: String(v.id || ''),
+      aweme_id: String(v.id || v.video_id || v.aweme_id || v.item_id || ''),
       title: v.title || 'Untitled',
       author: (v.author || {}).nickname || '',
       cover_url: v.cover || '',
@@ -1129,6 +1161,44 @@ const FACEBOOK_SITE_URL = (process.env.SITE_URL || process.env.PUBLIC_SITE_URL |
 const FACEBOOK_IMAGE_DIR = path.join(DATA_DIR, 'images', 'facebook');
 fs.mkdirSync(FACEBOOK_IMAGE_DIR, { recursive: true });
 const FACEBOOK_RETRYABLE_CODES = new Set([1, 2, 4, 17, 341]);
+const FACEBOOK_LOGO_IMAGE_SOURCE = 'logo_bongbanviet.png';
+const FACEBOOK_LOGO_IMAGE_PROMPT_SUFFIX = `Use the BongBanViet logo image from ${FACEBOOK_LOGO_IMAGE_SOURCE} in the final design. Place the logo clearly but tastefully in a corner or footer; keep it readable and do not redraw, replace, distort, or invent the logo.`;
+const FACEBOOK_RENDER_LOGO_FILE = fs.existsSync(path.join(__dirname, 'favicon.png'))
+  ? path.join(__dirname, 'favicon.png')
+  : path.join(__dirname, FACEBOOK_LOGO_IMAGE_SOURCE);
+const facebookImageUpload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => cb(null, FACEBOOK_IMAGE_DIR),
+    filename: (req, file, cb) => {
+      const ext = (path.extname(file.originalname || '') || '.jpg').toLowerCase();
+      const safeExt = ['.jpg', '.jpeg', '.png', '.webp'].includes(ext) ? ext : '.jpg';
+      cb(null, `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}${safeExt}`);
+    },
+  }),
+  limits: { fileSize: 15 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (/^image\//i.test(file.mimetype || '')) cb(null, true);
+    else cb(new Error('Chỉ chấp nhận file ảnh'));
+  },
+});
+
+function withFacebookLogoImagePrompt(prompt) {
+  const value = String(prompt || '').trim();
+  if (!value) return '';
+  return /logo_bongbanviet\.png/i.test(value)
+    ? value
+    : `${value}\n\nBrand asset: ${FACEBOOK_LOGO_IMAGE_PROMPT_SUFFIX}`;
+}
+
+function facebookLogoDataUri() {
+  try {
+    if (!fs.existsSync(FACEBOOK_RENDER_LOGO_FILE)) return '';
+    const ext = path.extname(FACEBOOK_RENDER_LOGO_FILE).toLowerCase() === '.jpg' ? 'jpeg' : 'png';
+    return `data:image/${ext};base64,${fs.readFileSync(FACEBOOK_RENDER_LOGO_FILE).toString('base64')}`;
+  } catch {
+    return '';
+  }
+}
 
 function normalizeFacebookGraphVersion(value) {
   const raw = String(value || '').trim();
@@ -1815,7 +1885,7 @@ function fallbackFacebookContent(post) {
     caption,
     hashtags: `${baseTags} ${tagsByPillar[post.pillar] || ''}`.trim(),
     cta: 'Comment hoặc inbox/Zalo 096.1269.386 để được tư vấn.',
-    image_prompt: `Professional square Vietnamese infographic for BongBanViet about "${topic}", table tennis themed, red black white palette, 3 concise points, logo/website footer.`,
+    image_prompt: withFacebookLogoImagePrompt(`Professional square Vietnamese infographic for BongBanViet about "${topic}", table tennis themed, red black white palette, 3 concise points, logo/website footer.`),
   };
 }
 
@@ -1849,13 +1919,15 @@ Nguyên tắc:
 Bóng Bàn Việt - Tư Vấn Chuẩn, Hàng Chính Hãng
 Website: bongbanviet.com
 Hotline/Zalo: 096.1269.386
+- image_prompt phải bằng tiếng Anh cho ảnh Facebook 1080x1080 và bắt buộc ghi rõ dùng logo file "${FACEBOOK_LOGO_IMAGE_SOURCE}".
+- Logo phải xuất hiện rõ nhưng tinh tế ở góc hoặc footer, không bị méo, không bị vẽ lại, không thay bằng logo giả.
 
 Trả về JSON hợp lệ:
 {
   "caption": "...",
   "hashtags": "#BongBanViet ...",
   "cta": "...",
-  "image_prompt": "English prompt for a 1080x1080 Facebook infographic"
+  "image_prompt": "English prompt for a 1080x1080 Facebook infographic. Use the BongBanViet logo image from ${FACEBOOK_LOGO_IMAGE_SOURCE} in the final design."
 }`;
 }
 
@@ -1868,7 +1940,7 @@ function parseFacebookAiJson(raw, fallback) {
       caption: String(parsed.caption || fallback.caption || '').trim(),
       hashtags: String(parsed.hashtags || fallback.hashtags || '').trim(),
       cta: String(parsed.cta || fallback.cta || '').trim(),
-      image_prompt: String(parsed.image_prompt || fallback.image_prompt || '').trim(),
+      image_prompt: withFacebookLogoImagePrompt(parsed.image_prompt || fallback.image_prompt || ''),
     };
   } catch {
     return fallback;
@@ -1976,7 +2048,7 @@ function parseDirectFacebookPromptOutput(raw) {
         cta: String(item.cta || '').trim(),
         website_link: String(item.website_link || item.product_url || item.url || '').trim(),
         image_path: String(item.image_path || item.image_url || '').trim(),
-        image_prompt: String(item.image_prompt || item.visual_prompt || '').trim(),
+        image_prompt: withFacebookLogoImagePrompt(item.image_prompt || item.visual_prompt || ''),
         scheduled_time: String(item.scheduled_time || item.schedule_time || item.time || '').replace('T', ' ').trim(),
       }))
       .filter(item => item.topic || item.caption),
@@ -2020,7 +2092,7 @@ function insertFacebookPostFromPrompt(item, runId, options = {}) {
       item.cta || '',
       item.website_link || FACEBOOK_SITE_URL,
       item.image_path || '',
-      item.image_prompt || '',
+      withFacebookLogoImagePrompt(item.image_prompt || ''),
       item.image_path ? 'Direct prompt image URL/path' : '',
       dedupeKey,
       item.scheduled_time || '',
@@ -2174,18 +2246,197 @@ async function generateFacebookInfographic(post) {
   return '/images/facebook/' + filename;
 }
 
-async function verifyFacebookPageToken() {
-  const cfg = requireFacebookPageRuntime();
+function facebookInfographicPoints(post) {
+  const raw = [post.caption, post.fact_summary].filter(Boolean).join('\n');
+  const lines = raw
+    .split(/\n+/)
+    .map(s => s.replace(/^[\s\d.:\-•]+/, '').trim())
+    .filter(s => s.length > 18 && !/Bóng Bàn Việt|Website:|Hotline/i.test(s));
+  const picked = lines.slice(0, 3);
+  while (picked.length < 3) {
+    picked.push([
+      'Chọn đúng theo trình độ và mục tiêu chơi',
+      'Ưu tiên kiểm soát trước khi tăng tốc độ',
+      'Inbox BongBanViet để được tư vấn setup phù hợp',
+    ][picked.length]);
+  }
+  return picked;
+}
+
+async function generateFacebookInfographic(post) {
+  let sharp;
+  try {
+    sharp = require('sharp');
+  } catch {
+    throw new Error('Chưa cài sharp để tạo infographic PNG.');
+  }
+
+  const pillar = FACEBOOK_PILLARS[post.pillar] || FACEBOOK_PILLARS.knowledge;
+  const font = `Segoe UI, Arial, sans-serif`;
+  const logoUri = facebookLogoDataUri();
+  const titleLines = wrapText(post.topic, 26, 3);
+  const points = facebookInfographicPoints(post).map(p => wrapText(p, 40, 2));
+  const titleSvg = titleLines.map((line, i) =>
+    `<text x="80" y="${186 + i * 62}" font-family="${font}" font-size="54" font-weight="800" fill="#111827">${escapeXml(line)}</text>`
+  ).join('');
+  const pointSvg = points.map((lines, i) => {
+    const y = 444 + i * 128;
+    const body = lines.map((line, j) =>
+      `<text x="178" y="${y + 8 + j * 36}" font-family="${font}" font-size="31" font-weight="700" fill="#1F2937">${escapeXml(line)}</text>`
+    ).join('');
+    return `<circle cx="112" cy="${y - 2}" r="30" fill="#D62B2B"/>
+      <text x="112" y="${y + 10}" text-anchor="middle" font-family="${font}" font-size="32" font-weight="800" fill="#fff">${i + 1}</text>
+      ${body}`;
+  }).join('');
+  const logoSvg = logoUri
+    ? `<image href="${logoUri}" x="812" y="52" width="180" height="96" preserveAspectRatio="xMidYMid meet"/>`
+    : `<text x="812" y="108" font-family="${font}" font-size="28" font-weight="900" fill="#111827">BongBanViet</text>`;
+
+  const svg = `<svg width="1080" height="1080" viewBox="0 0 1080 1080" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1080" height="1080" fill="#FAFAF8"/>
+    <rect x="0" y="0" width="1080" height="18" fill="#D62B2B"/>
+    <circle cx="950" cy="150" r="84" fill="#FEE2E2"/>
+    <circle cx="958" cy="150" r="34" fill="#fff" stroke="#D62B2B" stroke-width="9"/>
+    <path d="M875 238 C940 180 1010 218 1028 286" fill="none" stroke="#111827" stroke-width="18" stroke-linecap="round"/>
+    <text x="80" y="88" font-family="${font}" font-size="26" font-weight="800" fill="#D62B2B" letter-spacing="4">BONG BAN VIET</text>
+    <text x="80" y="124" font-family="${font}" font-size="24" font-weight="700" fill="#6B7280">${escapeXml(pillar.label.toUpperCase())}</text>
+    ${logoSvg}
+    ${titleSvg}
+    <rect x="80" y="365" width="920" height="3" fill="#111827" opacity="0.12"/>
+    ${pointSvg}
+    <rect x="80" y="908" width="920" height="88" rx="8" fill="#111827"/>
+    <text x="112" y="955" font-family="${font}" font-size="30" font-weight="800" fill="#fff">Tư Vấn Chuẩn - Hàng Chính Hãng</text>
+    <text x="112" y="982" font-family="${font}" font-size="22" font-weight="600" fill="#D1D5DB">bongbanviet.com | Zalo 096.1269.386</text>
+  </svg>`;
+
+  const filename = `${post.id}-${Date.now().toString(36)}.png`;
+  const outputPath = path.join(FACEBOOK_IMAGE_DIR, filename);
+  await sharp(Buffer.from(svg)).png().toFile(outputPath);
+  return '/images/facebook/' + filename;
+}
+
+async function verifyFacebookPageToken(input = {}) {
+  const current = getFacebookPageRuntime();
+  const overrideToken = String(input.pageAccessToken || '').trim();
+  const overridePageId = String(input.pageId || '').trim();
+  const overrideGraphVersion = String(input.graphVersion || '').trim();
+  const cfg = {
+    ...current,
+    pageId: overridePageId || current.pageId,
+    pageAccessToken: overrideToken || current.pageAccessToken,
+    graphVersion: normalizeFacebookGraphVersion(overrideGraphVersion || current.graphVersion || 'v24.0'),
+  };
+  if (!cfg.pageAccessToken) throw new Error('Thiáº¿u Facebook Page Access Token.');
   const res = await facebookGraphRequest(() => axios.get(facebookGraphUrl(cfg, 'me'), {
     params: { access_token: cfg.pageAccessToken, fields: 'id,name' },
     timeout: 10000,
   }));
+  const pages = await getFacebookAccountsForToken(cfg, cfg.pageAccessToken).catch(() => []);
+  const matchedPage = cfg.pageId
+    ? pages.find(p => String(p.id) === String(cfg.pageId)) || null
+    : null;
+  const pageIdMatchesToken = cfg.pageId
+    ? String(res.data?.id || '') === String(cfg.pageId) || !!matchedPage
+    : false;
   return {
     valid: true,
     page: res.data,
+    configuredPageId: cfg.pageId,
+    pageIdMatchesToken,
+    matchedPage: matchedPage ? sanitizeFacebookPageAccount(matchedPage) : null,
+    suggestedPageId: cfg.pageId || (pages.length === 1 ? pages[0].id : (res.data?.id || '')),
+    availablePages: pages.map(sanitizeFacebookPageAccount),
     graphVersion: cfg.graphVersion,
     pageIdSource: cfg.pageIdSource,
     pageTokenSource: cfg.pageTokenSource,
+  };
+}
+
+function sanitizeFacebookPageAccount(page) {
+  if (!page) return null;
+  return {
+    id: page.id || '',
+    name: page.name || '',
+    tasks: Array.isArray(page.tasks) ? page.tasks : [],
+    perms: Array.isArray(page.perms) ? page.perms : [],
+    tokenTail: keyTail(page.access_token || ''),
+  };
+}
+
+async function getFacebookAccountsForToken(cfg, accessToken) {
+  const pages = [];
+  let nextUrl = facebookGraphUrl(cfg, 'me/accounts');
+  let params = {
+    access_token: accessToken,
+    fields: 'id,name,access_token,tasks,perms',
+    limit: 100,
+  };
+  for (let i = 0; i < 5 && nextUrl; i++) {
+    const res = await facebookGraphRequest(() => axios.get(nextUrl, { params, timeout: 10000 }));
+    if (Array.isArray(res.data?.data)) pages.push(...res.data.data);
+    nextUrl = res.data?.paging?.next || '';
+    params = undefined;
+  }
+  return pages;
+}
+
+async function connectFacebookPageFromToken(input = {}) {
+  const current = getFacebookPageRuntime();
+  const graphVersion = normalizeFacebookGraphVersion(input.graphVersion || current.graphVersion || 'v24.0');
+  const pageAccessToken = String(input.pageAccessToken || current.pageAccessToken || '').trim();
+  const requestedPageId = String(input.pageId || current.pageId || '').trim();
+  if (!pageAccessToken) throw new Error('Thiếu Page/User Access Token để kiểm tra Facebook Page.');
+
+  const cfg = { ...current, graphVersion, pageAccessToken, pageId: requestedPageId };
+  const meRes = await facebookGraphRequest(() => axios.get(facebookGraphUrl(cfg, 'me'), {
+    params: { access_token: pageAccessToken, fields: 'id,name' },
+    timeout: 10000,
+  }));
+
+  let pages = [];
+  try {
+    pages = await getFacebookAccountsForToken(cfg, pageAccessToken);
+  } catch {}
+
+  let selected = null;
+  let selectedToken = pageAccessToken;
+  if (pages.length) {
+    selected = requestedPageId
+      ? pages.find(p => String(p.id) === requestedPageId)
+      : (pages.length === 1 ? pages[0] : null);
+    if (!selected) {
+      return {
+        connected: false,
+        needsPageSelection: true,
+        tokenSubject: meRes.data,
+        pages: pages.map(sanitizeFacebookPageAccount),
+        state: legacyFbSchedulerSummary(),
+        message: requestedPageId
+          ? 'Token hợp lệ nhưng không thấy Page ID này trong /me/accounts.'
+          : 'Token hợp lệ. Có nhiều Page, hãy nhập Page ID cần dùng rồi bấm kết nối lại.',
+      };
+    }
+    selectedToken = selected.access_token || pageAccessToken;
+  } else {
+    selected = meRes.data;
+    if (requestedPageId && String(meRes.data?.id || '') !== requestedPageId) {
+      throw new Error(`Token đang thuộc ID ${meRes.data?.id || '(không rõ)'}, không khớp Page ID ${requestedPageId}.`);
+    }
+  }
+
+  const fileCfg = readFacebookRuntimeConfig();
+  fileCfg.pageId = selected.id || requestedPageId;
+  fileCfg.pageAccessToken = selectedToken;
+  fileCfg.graphVersion = graphVersion;
+  writeFacebookRuntimeConfig(fileCfg);
+
+  return {
+    connected: true,
+    page: sanitizeFacebookPageAccount(selected),
+    tokenSubject: meRes.data,
+    pages: pages.map(sanitizeFacebookPageAccount),
+    state: legacyFbSchedulerSummary(),
+    message: `Đã kết nối Page ${selected.name || selected.id}.`,
   };
 }
 
@@ -3252,6 +3503,118 @@ app.delete('/api/orders/:id', requireAuth, (req, res) => {
 
 // ─── Stats ───────────────────────────────────────────────────────────────────
 
+function inventoryRow(r) {
+  return {
+    id: r.id,
+    name: r.name || '',
+    sku: r.sku || '',
+    barcode: r.barcode || '',
+    price: Number(r.price) || 0,
+    costPrice: Number(r.cost_price) || 0,
+    stock: Number(r.stock) || 0,
+    lowStockAlert: Number(r.low_stock_alert) || 5,
+    unit: r.unit || 'cai',
+    createdAt: r.created_at || '',
+    updatedAt: r.updated_at || '',
+  };
+}
+
+app.get('/api/inventory', requireAuth, (req, res) => {
+  const { q, limit = 1000 } = req.query;
+  let sql = 'SELECT * FROM inventory_items WHERE 1=1';
+  const params = [];
+  if (q) {
+    sql += ' AND (name LIKE ? OR sku LIKE ? OR barcode LIKE ?)';
+    const p = `%${q}%`;
+    params.push(p, p, p);
+  }
+  sql += ' ORDER BY name COLLATE NOCASE LIMIT ?';
+  params.push(Number(limit));
+  const rows = db.prepare(sql).all(...params);
+  res.json(rows.map(inventoryRow));
+});
+
+app.post('/api/inventory', requireAuth, (req, res) => {
+  const item = req.body || {};
+  const name = String(item.name || '').trim();
+  if (!name) return res.status(400).json({ error: 'Thieu ten san pham' });
+  const id = String(item.id || '').trim() || generateId();
+  const sku = String(item.sku || '').trim();
+  const barcode = String(item.barcode || '').trim();
+
+  const existing = db.prepare(`
+    SELECT * FROM inventory_items
+    WHERE id = ? OR (sku <> '' AND sku = ?) OR lower(name) = lower(?)
+    LIMIT 1
+  `).get(id, sku, name);
+
+  if (existing) {
+    db.prepare(`UPDATE inventory_items SET
+      name=?, sku=?, barcode=?, price=?, cost_price=?, stock=?,
+      low_stock_alert=?, unit=?, updated_at=datetime('now')
+      WHERE id=?`)
+      .run(
+        name,
+        sku || existing.sku || '',
+        barcode || existing.barcode || '',
+        Number(item.price) || 0,
+        Number(item.costPrice ?? item.cost_price) || 0,
+        Number(item.stock) || 0,
+        Number(item.lowStockAlert ?? item.low_stock_alert) || 5,
+        item.unit || existing.unit || 'cai',
+        existing.id
+      );
+    _catalogCache = null;
+    return res.json(inventoryRow(db.prepare('SELECT * FROM inventory_items WHERE id=?').get(existing.id)));
+  }
+
+  db.prepare(`INSERT INTO inventory_items
+    (id,name,sku,barcode,price,cost_price,stock,low_stock_alert,unit,created_at,updated_at)
+    VALUES (?,?,?,?,?,?,?,?,?,datetime('now'),datetime('now'))`)
+    .run(
+      id, name, sku, barcode,
+      Number(item.price) || 0,
+      Number(item.costPrice ?? item.cost_price) || 0,
+      Number(item.stock) || 0,
+      Number(item.lowStockAlert ?? item.low_stock_alert) || 5,
+      item.unit || 'cai'
+    );
+  _catalogCache = null;
+  res.status(201).json(inventoryRow(db.prepare('SELECT * FROM inventory_items WHERE id=?').get(id)));
+});
+
+app.put('/api/inventory/:id', requireAuth, (req, res) => {
+  const item = req.body || {};
+  const existing = db.prepare('SELECT * FROM inventory_items WHERE id = ?').get(req.params.id);
+  if (!existing) return res.status(404).json({ error: 'Khong tim thay san pham kho' });
+  const name = String(item.name ?? existing.name).trim();
+  if (!name) return res.status(400).json({ error: 'Thieu ten san pham' });
+  db.prepare(`UPDATE inventory_items SET
+    name=?, sku=?, barcode=?, price=?, cost_price=?, stock=?,
+    low_stock_alert=?, unit=?, updated_at=datetime('now')
+    WHERE id=?`)
+    .run(
+      name,
+      item.sku ?? existing.sku ?? '',
+      item.barcode ?? existing.barcode ?? '',
+      Number(item.price ?? existing.price) || 0,
+      Number(item.costPrice ?? item.cost_price ?? existing.cost_price) || 0,
+      Number(item.stock ?? existing.stock) || 0,
+      Number(item.lowStockAlert ?? item.low_stock_alert ?? existing.low_stock_alert) || 5,
+      item.unit ?? existing.unit ?? 'cai',
+      existing.id
+    );
+  _catalogCache = null;
+  res.json(inventoryRow(db.prepare('SELECT * FROM inventory_items WHERE id=?').get(existing.id)));
+});
+
+app.delete('/api/inventory/:id', requireAuth, (req, res) => {
+  const info = db.prepare('DELETE FROM inventory_items WHERE id = ?').run(req.params.id);
+  if (info.changes === 0) return res.status(404).json({ error: 'Khong tim thay san pham kho' });
+  _catalogCache = null;
+  res.json({ ok: true });
+});
+
 app.get('/api/stats', (req, res) => {
   res.json({
     products: db.prepare('SELECT COUNT(*) as c FROM products').get().c,
@@ -3308,6 +3671,24 @@ app.put('/api/facebook/config', requireAuth, (req, res) => {
   setRuntimeValue('claudeApiKey', claudeApiKey, { secret: true });
   if (shouldWriteConfig) writeFacebookRuntimeConfig(fileCfg);
   res.json(getFacebookConfig());
+});
+
+app.post('/api/facebook/test-ai-key', requireAuth, async (req, res) => {
+  try {
+    const provider = String(req.body?.provider || 'openai').trim().toLowerCase();
+    if (provider !== 'openai') return res.status(400).json({ error: 'Hiện chỉ hỗ trợ test OpenAI trên dashboard Facebook.' });
+    const key = String(req.body?.openaiApiKey || '').trim() || getFacebookAiKey('openai');
+    if (!key) return res.status(400).json({ error: 'Chưa có OpenAI API key để kiểm tra.' });
+    const r = await fetch('https://api.openai.com/v1/models', {
+      headers: { Authorization: `Bearer ${key}` },
+      signal: AbortSignal.timeout(15000),
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error?.message || `OpenAI HTTP ${r.status}`);
+    res.json({ ok: true, provider: 'openai', tail: keyTail(key), modelCount: Array.isArray(data.data) ? data.data.length : 0 });
+  } catch (e) {
+    res.status(400).json({ ok: false, error: e.message || 'Không kiểm tra được API key.' });
+  }
 });
 
 app.get('/api/facebook/stats', requireAuth, (req, res) => {
@@ -3373,7 +3754,7 @@ app.post('/api/facebook/posts', requireAuth, (req, res) => {
       body.cta || '',
       body.website_link || '',
       body.image_path || '',
-      body.image_prompt || '',
+      withFacebookLogoImagePrompt(body.image_prompt || ''),
       body.image_source || '',
       dedupeKey,
       String(body.scheduled_time || '').replace('T', ' '),
@@ -3413,7 +3794,7 @@ app.put('/api/facebook/posts/:id', requireAuth, (req, res) => {
       body.cta ?? existing.cta,
       body.website_link ?? existing.website_link,
       body.image_path ?? existing.image_path,
-      body.image_prompt ?? existing.image_prompt,
+      body.image_prompt !== undefined ? withFacebookLogoImagePrompt(body.image_prompt) : existing.image_prompt,
       body.image_source ?? existing.image_source,
       dedupeKey,
       String(body.scheduled_time ?? existing.scheduled_time).replace('T', ' '),
@@ -3780,7 +4161,20 @@ app.get('/api/product-catalog', async (req, res) => {
       return { name: p.name, price, brand: p.brand_slug || '', sku: p.slug || '', source: 'web' };
     });
 
-    // 2. Products from price-list Excel (retail column)
+    // 2. Products from inventory (admin order flow)
+    const inventoryProducts = db.prepare(
+      'SELECT name, sku, price FROM inventory_items ORDER BY name COLLATE NOCASE'
+    ).all()
+      .filter(p => p.name)
+      .map(p => ({
+        name: p.name,
+        price: Number(p.price) || 0,
+        brand: '',
+        sku: p.sku || '',
+        source: 'inv',
+      }));
+
+    // 3. Products from price-list Excel (retail column)
     const plProducts = [];
     if (fs.existsSync(PRICE_LIST_FILE)) {
       const wb = new ExcelJS.Workbook();
@@ -3800,11 +4194,14 @@ app.get('/api/product-catalog', async (req, res) => {
       });
     }
 
-    // 3. Deduplicate: SQLite products take priority
+    // 4. Deduplicate: inventory first, then SQLite products, then price list
+    const invNames = new Set(inventoryProducts.map(p => p.name.toLowerCase().trim()));
     const webNames = new Set(webProducts.map(p => p.name.toLowerCase().trim()));
-    const uniquePL = plProducts.filter(p => !webNames.has(p.name.toLowerCase().trim()));
+    const uniqueWeb = webProducts.filter(p => !invNames.has(p.name.toLowerCase().trim()));
+    const takenNames = new Set([...invNames, ...uniqueWeb.map(p => p.name.toLowerCase().trim())]);
+    const uniquePL = plProducts.filter(p => !takenNames.has(p.name.toLowerCase().trim()));
 
-    _catalogCache = [...webProducts, ...uniquePL];
+    _catalogCache = [...inventoryProducts, ...uniqueWeb, ...uniquePL];
     _catalogCacheTime = now;
     res.json(_catalogCache);
   } catch (e) {
@@ -4493,6 +4890,211 @@ app.delete('/api/shopee/ai-config/:provider', requireAuth, (req, res) => {
   res.json({ ok: true });
 });
 
+function parseSubtitleJsonArray(text) {
+  const raw = String(text || '').trim();
+  try {
+    const data = JSON.parse(raw);
+    if (Array.isArray(data)) return data.map(x => String(x ?? ''));
+  } catch {}
+  const match = raw.match(/(\[[\s\S]*\])/);
+  if (match) {
+    const data = JSON.parse(match[1]);
+    if (Array.isArray(data)) return data.map(x => String(x ?? ''));
+  }
+  throw new Error('Không parse được JSON array từ phản hồi AI.');
+}
+
+function parseSrtContent(content) {
+  const normalized = String(content || '').replace(/^\uFEFF/, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const blocks = normalized.split(/\n{2,}/).map(block => block.trim()).filter(Boolean);
+  return blocks.map((block, idx) => {
+    const lines = block.split('\n');
+    let index = String(idx + 1);
+    let time = '';
+    let textStart = 0;
+    if (/^\d+$/.test((lines[0] || '').trim()) && lines[1]?.includes('-->')) {
+      index = lines[0].trim();
+      time = lines[1].trim();
+      textStart = 2;
+    } else if ((lines[0] || '').includes('-->')) {
+      time = lines[0].trim();
+      textStart = 1;
+    }
+    return { index, time, content: lines.slice(textStart).join('\n').trim() };
+  }).filter(item => item.time);
+}
+
+function composeSrtContent(items) {
+  return items.map((item, idx) => [
+    item.index || String(idx + 1),
+    item.time,
+    String(item.content || '').trim(),
+  ].join('\n')).join('\n\n') + '\n';
+}
+
+function subtitleOutputName(originalName) {
+  const ext = path.extname(originalName || 'subtitle.srt') || '.srt';
+  const base = path.basename(originalName || 'subtitle.srt', ext);
+  return `${base}_vi${ext}`;
+}
+
+function subtitlePrompt({ texts, sourceLang, targetLang }) {
+  const payload = texts.map((text, i) => ({ id: i + 1, text }));
+  return `Bạn là công cụ dịch subtitle chuyên nghiệp.
+
+Hãy dịch danh sách subtitle từ ${sourceLang || 'tiếng Trung'} sang ${targetLang || 'tiếng Việt'}.
+
+Yêu cầu bắt buộc:
+- Giữ nguyên ý nghĩa tự nhiên, dễ đọc, phù hợp subtitle video.
+- Không thêm chú thích, không giải thích.
+- Không thêm số thứ tự.
+- Không đổi số lượng phần tử.
+- Nếu text có xuống dòng, cố gắng giữ xuống dòng tự nhiên khi phù hợp.
+- Chỉ trả về JSON array của string.
+- Mỗi phần tử đầu ra tương ứng đúng vị trí với đầu vào.
+
+Đầu vào:
+${JSON.stringify(payload, null, 2)}
+
+Chỉ trả về JSON array, ví dụ:
+["câu 1", "câu 2"]`;
+}
+
+async function translateSubtitleBatch({ texts, model, sourceLang, targetLang, apiKey }) {
+  const r = await fetch('https://api.openai.com/v1/responses', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: model || process.env.OPENAI_TEXT_MODEL || 'gpt-5-mini',
+      input: subtitlePrompt({ texts, sourceLang, targetLang }),
+    }),
+    signal: AbortSignal.timeout(Number(process.env.SUBTITLE_TRANSLATE_TIMEOUT_MS || 180000)),
+  });
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error?.message || `OpenAI HTTP ${r.status}`);
+  const output = data.output_text || data.output?.flatMap(o => o.content || []).map(c => c.text || '').join('\n') || '';
+  const translated = parseSubtitleJsonArray(output);
+  if (translated.length !== texts.length) {
+    throw new Error(`Số lượng câu trả về không khớp. input=${texts.length}, output=${translated.length}`);
+  }
+  return translated;
+}
+
+async function translateSubtitleBatchWithFallback(options, logs) {
+  let lastError = null;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      return await translateSubtitleBatch(options);
+    } catch (e) {
+      lastError = e;
+      logs.push(`Retry ${attempt}/3 vì lỗi batch: ${e.message}`);
+      await new Promise(resolve => setTimeout(resolve, 600 * attempt));
+    }
+  }
+  logs.push('Fallback dịch từng dòng do batch lỗi.');
+  const translated = [];
+  for (const text of options.texts) {
+    try {
+      const one = await translateSubtitleBatch({ ...options, texts: [text] });
+      translated.push(one[0]);
+    } catch {
+      translated.push(text);
+    }
+  }
+  if (lastError) logs.push(`Đã fallback xong. Lỗi gốc: ${lastError.message}`);
+  return translated;
+}
+
+async function runLimited(items, limit, worker) {
+  const results = new Array(items.length);
+  let next = 0;
+  const runners = Array.from({ length: Math.max(1, Math.min(limit, items.length)) }, async () => {
+    while (next < items.length) {
+      const current = next++;
+      results[current] = await worker(items[current], current);
+    }
+  });
+  await Promise.all(runners);
+  return results;
+}
+
+app.post('/api/subtitle-translator/translate', requireAuth, ttMulter.array('files', 80), async (req, res) => {
+  const files = req.files || [];
+  const apiKey = String(req.body?.apiKey || '').trim() || getAiKey('openai');
+  const model = String(req.body?.model || process.env.OPENAI_TEXT_MODEL || 'gpt-5-mini').trim();
+  const sourceLang = String(req.body?.sourceLang || 'tiếng Trung').trim();
+  const targetLang = String(req.body?.targetLang || 'tiếng Việt').trim();
+  const batchSize = Math.max(1, Math.min(300, Number(req.body?.batchSize || 100) || 100));
+  const workers = Math.max(1, Math.min(12, Number(req.body?.workers || 6) || 6));
+  const logs = [];
+
+  if (!apiKey) {
+    files.forEach(file => { try { fs.unlinkSync(file.path); } catch {} });
+    return res.status(400).json({ error: 'Chưa có OpenAI API key. Lưu key trong tab Shopee hoặc nhập key tại tab dịch subtitle.' });
+  }
+  if (!files.length) return res.status(400).json({ error: 'Chưa có file .srt nào.' });
+
+  try {
+    const results = [];
+    for (const file of files) {
+      const originalName = Buffer.from(file.originalname || 'subtitle.srt', 'latin1').toString('utf8');
+      logs.push(`Đang dịch: ${originalName}`);
+      const raw = fs.readFileSync(file.path, 'utf8');
+      const subtitles = parseSrtContent(raw);
+      if (!subtitles.length) {
+        results.push({
+          inputName: originalName,
+          outputName: subtitleOutputName(originalName),
+          content: raw,
+          count: 0,
+          warning: 'File rỗng hoặc không parse được subtitle.',
+        });
+        continue;
+      }
+
+      const batches = [];
+      for (let start = 0; start < subtitles.length; start += batchSize) {
+        batches.push({ start, items: subtitles.slice(start, start + batchSize) });
+      }
+      const translatedByStart = new Map();
+      await runLimited(batches, workers, async (batch) => {
+        const translated = await translateSubtitleBatchWithFallback({
+          texts: batch.items.map(item => item.content),
+          model,
+          sourceLang,
+          targetLang,
+          apiKey,
+        }, logs);
+        translatedByStart.set(batch.start, translated);
+        logs.push(`Batch ${batch.start + 1}-${batch.start + batch.items.length} xong`);
+      });
+
+      const out = subtitles.map(item => ({ ...item }));
+      for (const batch of batches) {
+        const translated = translatedByStart.get(batch.start) || [];
+        translated.forEach((text, offset) => {
+          out[batch.start + offset].content = text;
+        });
+      }
+      results.push({
+        inputName: originalName,
+        outputName: subtitleOutputName(originalName),
+        content: composeSrtContent(out),
+        count: subtitles.length,
+      });
+      logs.push(`Xong: ${originalName} (${subtitles.length} subtitle)`);
+    }
+    res.json({ ok: true, model, batchSize, workers, sourceLang, targetLang, logs, results });
+  } catch (e) {
+    res.status(500).json({ error: e.message || 'Dịch subtitle thất bại', logs });
+  } finally {
+    files.forEach(file => { try { fs.unlinkSync(file.path); } catch {} });
+  }
+});
+
 app.post('/api/shopee/generate-copy', requireAuth, async (req, res) => {
   const { productName, pack, facts, provider = 'openai' } = req.body || {};
   if (!productName) return res.status(400).json({ error: 'Thiếu tên sản phẩm' });
@@ -4828,13 +5430,121 @@ app.post('/api/prompts/:id/use', (req, res) => {
 
 // ─── Facebook Posts ───────────────────────────────────────────────────────────
 
+function isLoopbackRequest(req) {
+  const ip = String(req.ip || req.socket?.remoteAddress || '').replace(/^::ffff:/, '');
+  return ip === '127.0.0.1' || ip === '::1' || ip === 'localhost';
+}
+
+function requireLocalOrAdmin(req, res, next) {
+  const token = req.headers['x-admin-token'];
+  if (isLoopbackRequest(req) || (token && adminTokens.has(token))) return next();
+  res.status(401).json({ error: 'Chưa đăng nhập' });
+}
+
+const LEGACY_FB_PILLAR_LABELS = {
+  knowledge: 'Kiến thức',
+  combo: 'Combo',
+  product: 'Sản phẩm',
+  engagement: 'Tương tác',
+  promo: 'Promo',
+  trust: 'Trust',
+  news: 'Tin tức',
+};
+
+const LEGACY_FB_BRAND_FOOTER = 'Bóng Bàn Việt - Đồng Hành Cùng Mọi Tay Vợt\n📌 Website: bongbanviet.com\n📞 Hotline/Zalo: 096.1269.386';
+
+function safeJsonArray(value) {
+  const parsed = parseJSON(value, []);
+  return Array.isArray(parsed) ? parsed : [];
+}
+
+function ensureLegacyFacebookFooter(text) {
+  let value = String(text || '').trim();
+  if (!value) return LEGACY_FB_BRAND_FOOTER;
+  if (/Website:\s*bongbanviet\.com/i.test(value) && /Hotline\/Zalo/i.test(value)) return value;
+  const lines = value.split('\n');
+  let end = lines.length;
+  while (end > 0 && !lines[end - 1].trim()) end--;
+  let start = end;
+  while (start > 0 && (!lines[start - 1].trim() || lines[start - 1].trim().startsWith('#'))) start--;
+  const hasTrailingTags = lines.slice(start, end).some(line => line.trim().startsWith('#'));
+  if (hasTrailingTags) {
+    return [
+      lines.slice(0, start).join('\n').trimEnd(),
+      LEGACY_FB_BRAND_FOOTER,
+      lines.slice(start).join('\n').trimStart(),
+    ].filter(Boolean).join('\n\n');
+  }
+  return [value, LEGACY_FB_BRAND_FOOTER].filter(Boolean).join('\n\n');
+}
+
+function buildLegacyFacebookPostText(post) {
+  const label = LEGACY_FB_PILLAR_LABELS[post?.pillar] || LEGACY_FB_PILLAR_LABELS.knowledge;
+  const body = String(post?.caption || post?.post_text || post?.full_post || '').trim();
+  const parts = [];
+  if (body) {
+    parts.push(/^\s*\[[^\]]+\]\s*-/.test(body)
+      ? body
+      : `[${label}]${post?.topic ? ` - ${post.topic}` : ''}\n\n${body}`);
+  } else {
+    parts.push(`[${label}]${post?.topic ? ` - ${post.topic}` : ''}`);
+  }
+  const current = () => parts.join('\n\n');
+  if (post?.cta && !current().includes(post.cta)) parts.push(String(post.cta).trim());
+  if (post?.hashtags && !current().includes('#BongBanViet')) parts.push(String(post.hashtags).trim());
+  return ensureLegacyFacebookFooter(parts.filter(Boolean).join('\n\n'));
+}
+
+function legacyFbPostRow(row) {
+  return {
+    ...row,
+    source_urls: safeJsonArray(row.source_urls),
+    is_used: row.status === 'posted',
+    is_facebook_scheduled: !!row.facebook_post_id,
+  };
+}
+
+async function scheduleLegacyFbPost(row, options = {}) {
+  const post = legacyFbPostRow(row);
+  if (post.facebook_post_id && !options.force) {
+    throw new Error('Bài này đã được đẩy lên Facebook schedule.');
+  }
+  if (!post.caption && !post.topic) {
+    throw new Error('Bài cần có nội dung trước khi upload Facebook.');
+  }
+  if (!post.scheduled_time) {
+    throw new Error('Bài cần có scheduled_time trước khi upload Facebook.');
+  }
+  const unixTs = parseFacebookScheduledTime(post.scheduled_time);
+  if (!Number.isFinite(unixTs)) throw new Error(`scheduled_time không hợp lệ: ${post.scheduled_time}`);
+  if (unixTs * 1000 < Date.now() + 11 * 60 * 1000) {
+    throw new Error('scheduled_time phải cách hiện tại ít nhất 11 phút.');
+  }
+  if (unixTs * 1000 > Date.now() + 180 * 24 * 60 * 60 * 1000) {
+    throw new Error('Facebook chỉ cho schedule tối đa khoảng 6 tháng.');
+  }
+
+  const message = buildLegacyFacebookPostText(post);
+  const imagePath = post.image_path ? fbPublicPathToFile(post.image_path) : '';
+  const result = imagePath
+    ? await scheduleFacebookPhotoPost(message, unixTs, imagePath)
+    : await scheduleFacebookTextPost(message, unixTs);
+
+  if (!result.success) throw new Error(result.error || 'Facebook API không trả về thành công.');
+  db.prepare(`UPDATE fb_posts SET
+    status='scheduled', facebook_post_id=?, posted_at=?, error_message='', updated_at=datetime('now')
+    WHERE id=?`)
+    .run(result.postId || '', new Date().toISOString(), post.id);
+  return result;
+}
+
 app.get('/api/fb-posts', (req, res) => {
   const { status, pillar, q } = req.query;
   let rows = db.prepare('SELECT * FROM fb_posts ORDER BY created_at DESC').all();
   if (status && status !== 'all') rows = rows.filter(r => r.status === status);
   if (pillar && pillar !== 'all') rows = rows.filter(r => r.pillar === pillar);
   if (q) { const ql = q.toLowerCase(); rows = rows.filter(r => (r.topic+r.caption+r.hashtags).toLowerCase().includes(ql)); }
-  res.json(rows.map(r => ({ ...r, source_urls: JSON.parse(r.source_urls || '[]') })));
+  res.json(rows.map(legacyFbPostRow));
 });
 
 function cleanFbSourceId(value) {
@@ -4906,16 +5616,18 @@ function normalizeFbImportPost(post) {
     hashtags: Array.isArray(p.hashtags) ? p.hashtags.join(' ') : String(p.hashtags || '').trim(),
     cta: String(p.cta || '').trim(),
     website_link: String(p.website_link || 'https://bongbanviet.com').trim() || 'https://bongbanviet.com',
-    image_prompt: String(p.image_prompt || '').trim(),
+    image_path: String(p.image_path || p.image_url || '').trim(),
+    image_prompt: withFacebookLogoImagePrompt(p.image_prompt || ''),
+    image_source: String(p.image_source || '').trim(),
     scheduled_time: String(p.scheduled_time || '').trim(),
   };
 }
 
 function importFacebookPosts(posts) {
   if (!posts.length) throw new Error('No posts');
-  const findBySource = db.prepare('SELECT id FROM fb_posts WHERE source_id=? LIMIT 1');
-  const insert = db.prepare(`INSERT INTO fb_posts (id,source_id,topic,pillar,status,brand_voice,source_type,source_urls,source_notes,fact_summary,caption,hashtags,cta,website_link,image_prompt,scheduled_time) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
-  const update = db.prepare(`UPDATE fb_posts SET topic=?,pillar=?,status=?,brand_voice=?,source_type=?,source_urls=?,source_notes=?,fact_summary=?,caption=?,hashtags=?,cta=?,website_link=?,image_prompt=?,scheduled_time=?,updated_at=datetime('now') WHERE source_id=?`);
+  const findBySource = db.prepare('SELECT id,status FROM fb_posts WHERE source_id=? LIMIT 1');
+  const insert = db.prepare(`INSERT INTO fb_posts (id,source_id,topic,pillar,status,brand_voice,source_type,source_urls,source_notes,fact_summary,caption,hashtags,cta,website_link,image_path,image_prompt,image_source,scheduled_time) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
+  const update = db.prepare(`UPDATE fb_posts SET topic=?,pillar=?,status=?,brand_voice=?,source_type=?,source_urls=?,source_notes=?,fact_summary=?,caption=?,hashtags=?,cta=?,website_link=?,image_path=CASE WHEN ?<>'' THEN ? ELSE image_path END,image_prompt=?,image_source=CASE WHEN ?<>'' THEN ? ELSE image_source END,scheduled_time=?,error_message='',updated_at=datetime('now') WHERE source_id=?`);
   const run = db.transaction(() => {
     const ids = [];
     let created = 0;
@@ -4924,12 +5636,13 @@ function importFacebookPosts(posts) {
       const p = normalizeFbImportPost(raw);
       const existing = p.source_id ? findBySource.get(p.source_id) : null;
       if (existing) {
-        update.run(p.topic, p.pillar, p.status, p.brand_voice, p.source_type, p.source_urls, p.source_notes, p.fact_summary, p.caption, p.hashtags, p.cta, p.website_link, p.image_prompt, p.scheduled_time, p.source_id);
+        const nextStatus = existing.status === 'posted' && p.status !== 'posted' ? 'posted' : p.status;
+        update.run(p.topic, p.pillar, nextStatus, p.brand_voice, p.source_type, p.source_urls, p.source_notes, p.fact_summary, p.caption, p.hashtags, p.cta, p.website_link, p.image_path, p.image_path, p.image_prompt, p.image_source || (p.image_path ? 'JSON image path' : ''), p.image_source || (p.image_path ? 'JSON image path' : ''), p.scheduled_time, p.source_id);
         ids.push(existing.id);
         updated += 1;
       } else {
         const id = Date.now().toString(36) + Math.random().toString(36).slice(2,5);
-        insert.run(id, p.source_id, p.topic, p.pillar, p.status, p.brand_voice, p.source_type, p.source_urls, p.source_notes, p.fact_summary, p.caption, p.hashtags, p.cta, p.website_link, p.image_prompt, p.scheduled_time);
+        insert.run(id, p.source_id, p.topic, p.pillar, p.status, p.brand_voice, p.source_type, p.source_urls, p.source_notes, p.fact_summary, p.caption, p.hashtags, p.cta, p.website_link, p.image_path, p.image_prompt, p.image_source || (p.image_path ? 'JSON image path' : ''), p.scheduled_time);
         ids.push(id);
         created += 1;
       }
@@ -5029,21 +5742,218 @@ function startFacebookJsonAutoImporter() {
   scheduleSync('startup');
 }
 
+let legacyFbAutoSchedulerStarted = false;
+function startLegacyFbAutoScheduler() {
+  if (legacyFbAutoSchedulerStarted) return;
+  legacyFbAutoSchedulerStarted = true;
+  const tick = async () => {
+    if (fbSetting('facebook_auto_scheduler_enabled', '0') !== '1') return;
+    const runtime = getFacebookPageRuntime();
+    if (!runtime.pageId || !runtime.pageAccessToken) return;
+    const rows = db.prepare(`SELECT * FROM fb_posts
+      WHERE status IN ('scheduled','approved','failed') AND scheduled_time <> '' AND COALESCE(facebook_post_id,'')=''
+      ORDER BY scheduled_time ASC LIMIT 20`).all();
+    for (const row of rows) {
+      try {
+        await scheduleLegacyFbPost(row);
+      } catch (e) {
+        db.prepare(`UPDATE fb_posts SET status='failed', error_message=?, updated_at=datetime('now') WHERE id=?`)
+          .run(e.message, row.id);
+      }
+    }
+  };
+  setInterval(() => tick().catch(e => console.error('[Facebook Legacy Scheduler]', e.message)), 120000);
+  setTimeout(() => tick().catch(e => console.error('[Facebook Legacy Scheduler]', e.message)), 8000);
+}
+
 app.get('/api/fb-posts/import-state', (req, res) => {
   res.json(facebookJsonImportState);
+});
+
+app.post('/api/fb-posts/test-ai-key', requireLocalOrAdmin, async (req, res) => {
+  try {
+    const key = String(req.body?.openaiApiKey || '').trim() || getFacebookAiKey('openai');
+    if (!key) return res.status(400).json({ ok: false, error: 'Chưa có OpenAI API key để kiểm tra.' });
+    const r = await fetch('https://api.openai.com/v1/models', {
+      headers: { Authorization: `Bearer ${key}` },
+      signal: AbortSignal.timeout(15000),
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error?.message || `OpenAI HTTP ${r.status}`);
+    res.json({ ok: true, provider: 'openai', tail: keyTail(key), modelCount: Array.isArray(data.data) ? data.data.length : 0 });
+  } catch (e) {
+    res.status(400).json({ ok: false, error: e.message || 'Không kiểm tra được API key.' });
+  }
+});
+
+function legacyFbSchedulerSummary() {
+  const runtime = facebookRuntimeSummary();
+  return {
+    autoSchedulerEnabled: fbSetting('facebook_auto_scheduler_enabled', '0') === '1',
+    pageIdConfigured: runtime.pageIdConfigured,
+    pageTokenConfigured: runtime.pageTokenConfigured,
+    pageId: runtime.pageId,
+    pageIdSource: runtime.pageIdSource,
+    pageTokenSource: runtime.pageTokenSource,
+    pageTokenTail: runtime.pageTokenTail,
+    graphVersion: runtime.graphVersion,
+    pendingUpload: db.prepare(`SELECT COUNT(*) as c FROM fb_posts
+      WHERE status IN ('scheduled','approved','failed') AND scheduled_time <> '' AND COALESCE(facebook_post_id,'')=''`).get().c,
+    uploaded: db.prepare(`SELECT COUNT(*) as c FROM fb_posts WHERE COALESCE(facebook_post_id,'')<>''`).get().c,
+    failed: db.prepare(`SELECT COUNT(*) as c FROM fb_posts WHERE status='failed'`).get().c,
+  };
+}
+
+app.get('/api/fb-posts/scheduler-state', requireLocalOrAdmin, (req, res) => {
+  res.json(legacyFbSchedulerSummary());
+});
+
+app.put('/api/fb-posts/scheduler-state', requireLocalOrAdmin, async (req, res) => {
+  const body = req.body || {};
+  if (body.autoSchedulerEnabled !== undefined) {
+    setFbSetting('facebook_auto_scheduler_enabled', body.autoSchedulerEnabled ? '1' : '0');
+  }
+
+  if (String(body.pageAccessToken || '').trim()) {
+    try {
+      const connected = await connectFacebookPageFromToken(body);
+      if (!connected.connected) return res.status(409).json(connected);
+      return res.json(legacyFbSchedulerSummary());
+    } catch (e) {
+      return res.status(400).json({ error: e.message, state: legacyFbSchedulerSummary() });
+    }
+  }
+
+  const fileCfg = readFacebookRuntimeConfig();
+  let shouldWriteConfig = false;
+  const setRuntimeValue = (key, value, options = {}) => {
+    if (value === undefined) return;
+    const next = String(value || '').trim();
+    if (options.secret && !next) return;
+    fileCfg[key] = next;
+    shouldWriteConfig = true;
+  };
+  setRuntimeValue('pageId', body.pageId);
+  setRuntimeValue('pageAccessToken', body.pageAccessToken, { secret: true });
+  setRuntimeValue('graphVersion', body.graphVersion);
+  if (shouldWriteConfig) writeFacebookRuntimeConfig(fileCfg);
+  res.json(legacyFbSchedulerSummary());
+});
+
+app.post('/api/fb-posts/verify-token', requireLocalOrAdmin, async (req, res) => {
+  try {
+    res.json(await verifyFacebookPageToken(req.body || {}));
+  } catch (e) {
+    res.status(400).json({ valid: false, error: e.message });
+  }
+});
+
+app.post('/api/fb-posts/connect-page', requireLocalOrAdmin, async (req, res) => {
+  try {
+    res.json(await connectFacebookPageFromToken(req.body || {}));
+  } catch (e) {
+    res.status(400).json({ connected: false, error: e.message, state: legacyFbSchedulerSummary() });
+  }
+});
+
+app.post('/api/fb-posts/schedule', requireLocalOrAdmin, async (req, res) => {
+  try {
+    requireFacebookPageRuntime();
+  } catch (e) {
+    return res.status(400).json({ ok: false, error: e.message, state: legacyFbSchedulerSummary() });
+  }
+  const ids = Array.isArray(req.body?.ids) ? req.body.ids.filter(Boolean) : [];
+  const limit = Math.max(1, Math.min(50, Number(req.body?.limit) || 30));
+  const rows = ids.length
+    ? db.prepare(`SELECT * FROM fb_posts WHERE id IN (${ids.map(() => '?').join(',')})`).all(...ids)
+    : db.prepare(`SELECT * FROM fb_posts
+        WHERE status IN ('scheduled','approved','failed') AND scheduled_time <> '' AND COALESCE(facebook_post_id,'')=''
+        ORDER BY scheduled_time ASC LIMIT ?`).all(limit);
+  const results = [];
+  for (const row of rows) {
+    try {
+      const result = await scheduleLegacyFbPost(row, { force: !!req.body?.force });
+      results.push({ id: row.id, ok: true, facebook_post_id: result.postId || '' });
+    } catch (e) {
+      db.prepare(`UPDATE fb_posts SET status='failed', error_message=?, updated_at=datetime('now') WHERE id=?`).run(e.message, row.id);
+      results.push({ id: row.id, ok: false, error: e.message });
+    }
+  }
+  res.json({ ok: true, processed: results.length, results, state: legacyFbSchedulerSummary() });
+});
+
+app.post('/api/fb-posts/:id/schedule', requireLocalOrAdmin, async (req, res) => {
+  try {
+    requireFacebookPageRuntime();
+  } catch (e) {
+    return res.status(400).json({ ok: false, error: e.message, post: null });
+  }
+  const row = db.prepare('SELECT * FROM fb_posts WHERE id=?').get(req.params.id);
+  if (!row) return res.status(404).json({ error: 'Không tìm thấy bài' });
+  try {
+    const result = await scheduleLegacyFbPost(row, { force: !!req.body?.force });
+    res.json({ ok: true, facebook_post_id: result.postId || '', post: legacyFbPostRow(db.prepare('SELECT * FROM fb_posts WHERE id=?').get(req.params.id)) });
+  } catch (e) {
+    db.prepare(`UPDATE fb_posts SET status='failed', error_message=?, updated_at=datetime('now') WHERE id=?`).run(e.message, row.id);
+    res.status(400).json({ ok: false, error: e.message, post: legacyFbPostRow(db.prepare('SELECT * FROM fb_posts WHERE id=?').get(req.params.id)) });
+  }
+});
+
+function localFacebookImageFile(imagePath) {
+  const file = fbPublicPathToFile(imagePath);
+  if (!file || /^https?:\/\//i.test(file)) return '';
+  const resolved = path.resolve(file);
+  const allowed = [
+    path.resolve(FACEBOOK_IMAGE_DIR),
+    path.resolve(__dirname, 'images', 'facebook'),
+  ];
+  if (!allowed.some(dir => resolved === dir || resolved.startsWith(dir + path.sep))) return '';
+  return fs.existsSync(resolved) ? resolved : '';
+}
+
+app.post('/api/fb-posts/:id/reveal-image', requireLocalOrAdmin, (req, res) => {
+  const row = db.prepare('SELECT image_path FROM fb_posts WHERE id=?').get(req.params.id);
+  if (!row) return res.status(404).json({ error: 'Không tìm thấy bài' });
+  const file = localFacebookImageFile(row.image_path);
+  if (!file) return res.status(404).json({ error: 'Không tìm thấy file ảnh local' });
+  if (process.platform !== 'win32') {
+    return res.json({ ok: false, path: file, error: 'Chỉ hỗ trợ mở Explorer trực tiếp trên Windows.' });
+  }
+  execFile('explorer.exe', [`/select,${file}`], (error) => {
+    if (error) console.error('[Facebook reveal image]', error.message);
+  });
+  res.json({ ok: true, path: file });
+});
+
+app.post('/api/fb-posts/:id/image', requireLocalOrAdmin, (req, res) => {
+  facebookImageUpload.single('image')(req, res, err => {
+    if (err) return res.status(400).json({ error: err.message || 'Upload ảnh thất bại' });
+    const existing = db.prepare('SELECT * FROM fb_posts WHERE id=?').get(req.params.id);
+    if (!existing) {
+      if (req.file?.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+      return res.status(404).json({ error: 'Không tìm thấy bài' });
+    }
+    if (!req.file) return res.status(400).json({ error: 'Chưa chọn file ảnh' });
+    const imagePath = '/images/facebook/' + req.file.filename;
+    db.prepare(`UPDATE fb_posts SET image_path=?, image_source=?, error_message='', updated_at=datetime('now') WHERE id=?`)
+      .run(imagePath, req.file.originalname || 'Manual upload', existing.id);
+    res.json({ ok: true, image_path: imagePath, post: legacyFbPostRow(db.prepare('SELECT * FROM fb_posts WHERE id=?').get(existing.id)) });
+  });
 });
 
 app.post('/api/fb-posts', (req, res) => {
   const p = req.body || {};
   const id = Date.now().toString(36) + Math.random().toString(36).slice(2,5);
-  db.prepare(`INSERT INTO fb_posts (id,source_id,topic,pillar,status,brand_voice,source_type,source_urls,source_notes,fact_summary,caption,hashtags,cta,website_link,image_prompt,scheduled_time) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(id, cleanFbSourceId(p.source_id), p.topic||'', p.pillar||'knowledge', p.status||'draft', p.brand_voice||'', p.source_type||'direct-prompt', JSON.stringify(p.source_urls||[]), p.source_notes||'', p.fact_summary||'', p.caption||'', p.hashtags||'', p.cta||'', p.website_link||'https://bongbanviet.com', p.image_prompt||'', p.scheduled_time||'');
+  db.prepare(`INSERT INTO fb_posts (id,source_id,topic,pillar,status,brand_voice,source_type,source_urls,source_notes,fact_summary,caption,hashtags,cta,website_link,image_path,image_prompt,image_source,scheduled_time,error_message) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+    .run(id, cleanFbSourceId(p.source_id), p.topic||'', p.pillar||'knowledge', p.status||'draft', p.brand_voice||'', p.source_type||'direct-prompt', JSON.stringify(p.source_urls||[]), p.source_notes||'', p.fact_summary||'', p.caption||'', p.hashtags||'', p.cta||'', p.website_link||'https://bongbanviet.com', p.image_path||'', withFacebookLogoImagePrompt(p.image_prompt||''), p.image_source||'', p.scheduled_time||'', p.error_message||'');
   res.json({ ok: true, id });
 });
 
 app.put('/api/fb-posts/:id', (req, res) => {
   const p = req.body;
-  db.prepare(`UPDATE fb_posts SET topic=?,pillar=?,status=?,brand_voice=?,source_notes=?,fact_summary=?,caption=?,hashtags=?,cta=?,website_link=?,image_prompt=?,scheduled_time=?,updated_at=datetime('now') WHERE id=?`).run(p.topic||'', p.pillar||'knowledge', p.status||'draft', p.brand_voice||'', p.source_notes||'', p.fact_summary||'', p.caption||'', p.hashtags||'', p.cta||'', p.website_link||'https://bongbanviet.com', p.image_prompt||'', p.scheduled_time||'', req.params.id);
-  res.json({ ok: true });
+  db.prepare(`UPDATE fb_posts SET topic=?,pillar=?,status=?,brand_voice=?,source_notes=?,fact_summary=?,caption=?,hashtags=?,cta=?,website_link=?,image_path=?,image_prompt=?,image_source=?,scheduled_time=?,error_message=?,updated_at=datetime('now') WHERE id=?`)
+    .run(p.topic||'', p.pillar||'knowledge', p.status||'draft', p.brand_voice||'', p.source_notes||'', p.fact_summary||'', p.caption||'', p.hashtags||'', p.cta||'', p.website_link||'https://bongbanviet.com', p.image_path||'', withFacebookLogoImagePrompt(p.image_prompt||''), p.image_source||'', p.scheduled_time||'', p.error_message||'', req.params.id);
+  res.json({ ok: true, post: legacyFbPostRow(db.prepare('SELECT * FROM fb_posts WHERE id=?').get(req.params.id)) });
 });
 
 app.delete('/api/fb-posts/:id', (req, res) => {
@@ -5142,12 +6052,13 @@ QUY TẮC:
   engagement → ${HASHTAGS.engagement}
   trust → ${HASHTAGS.trust}
   promo → ${HASHTAGS.promo}
-- image_prompt: tiếng Anh, mô tả ảnh 1080x1080 cho Facebook
+- image_prompt: tiếng Anh, mô tả ảnh 1080x1080 cho Facebook, bắt buộc ghi rõ dùng logo file "${FACEBOOK_LOGO_IMAGE_SOURCE}" trong ảnh cuối
+- Logo BongBanViet phải xuất hiện rõ nhưng tinh tế ở góc hoặc footer; không vẽ lại, không làm méo, không thay bằng logo giả.
 - scheduled_time: lấy đúng từ lịch trên (format YYYY-MM-DDTHH:MM:00)
 - status: "scheduled" cho tất cả
 
 CHỈ TRẢ VỀ JSON, không viết thêm gì:
-{"posts":[{"topic":"...","pillar":"...","status":"scheduled","caption":"...","hashtags":"...","cta":"Inbox hoặc Zalo 096.1269.386 để được tư vấn.","website_link":"https://bongbanviet.com","image_prompt":"...","scheduled_time":"...","source_notes":"..."}]}`;
+{"posts":[{"topic":"...","pillar":"...","status":"scheduled","caption":"...","hashtags":"...","cta":"Inbox hoặc Zalo 096.1269.386 để được tư vấn.","website_link":"https://bongbanviet.com","image_prompt":"English 1080x1080 image prompt. Use the BongBanViet logo image from logo_bongbanviet.png in the final design.","scheduled_time":"...","source_notes":"..."}]}`;
 
   try {
     const response = await axios.post('https://api.anthropic.com/v1/messages', {
@@ -5174,7 +6085,7 @@ CHỈ TRẢ VỀ JSON, không viết thêm gì:
     const insert = db.prepare(`INSERT INTO fb_posts (id,topic,pillar,status,brand_voice,source_type,source_urls,source_notes,fact_summary,caption,hashtags,cta,website_link,image_prompt,scheduled_time) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
     const run = db.transaction(() => genPosts.map(p => {
       const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
-      insert.run(id, p.topic || '', p.pillar || 'knowledge', p.status || 'scheduled', '', 'ai-generated', '[]', p.source_notes || '', p.fact_summary || '', p.caption || '', p.hashtags || '', p.cta || '', p.website_link || 'https://bongbanviet.com', p.image_prompt || '', p.scheduled_time || '');
+      insert.run(id, p.topic || '', p.pillar || 'knowledge', p.status || 'scheduled', '', 'ai-generated', '[]', p.source_notes || '', p.fact_summary || '', p.caption || '', p.hashtags || '', p.cta || '', p.website_link || 'https://bongbanviet.com', withFacebookLogoImagePrompt(p.image_prompt || ''), p.scheduled_time || '');
       return id;
     }));
     const ids = run();
@@ -5211,6 +6122,7 @@ function startServer() {
     syncFacebookDedupeHistory();
     startFacebookAutoScheduler();
     startFacebookJsonAutoImporter();
+    startLegacyFbAutoScheduler();
   });
   server.on('error', err => {
     if (err.code === 'EADDRINUSE') {

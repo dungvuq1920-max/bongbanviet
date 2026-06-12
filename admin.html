@@ -537,6 +537,27 @@
                 color: var(--red); padding: 8px 18px; font-size: 11px; font-weight: 700; cursor: pointer; }
 
     /* ─── Responsive ─────────────────────────────────────────────── */
+  /* Subtitle Translator */
+  .st-grid { display:grid; grid-template-columns:minmax(340px, 430px) 1fr; gap:16px; align-items:start; }
+  .st-panel { background:#fff; border:1px solid var(--border); border-radius:6px; padding:16px; }
+  .st-panel h3 { font-size:13px; font-weight:800; margin-bottom:12px; letter-spacing:.04em; text-transform:uppercase; color:var(--dark); }
+  .st-output, .st-log-panel { grid-column:1 / -1; }
+  .st-drop { position:relative; border:1.5px dashed #CBD5E1; border-radius:6px; padding:22px 16px; text-align:center; background:#F8FAFC; color:var(--muted); transition:all .2s; }
+  .st-drop.over, .st-drop:hover { border-color:var(--red); background:#FFF5F5; }
+  .st-drop input[type=file] { display:none; }
+  .st-drop-icon { width:48px; height:48px; border-radius:8px; margin:0 auto 10px; display:flex; align-items:center; justify-content:center; background:#0F172A; color:#fff; font-size:13px; font-weight:900; letter-spacing:.08em; }
+  .st-drop strong { display:block; color:var(--dark); font-size:14px; margin-bottom:4px; }
+  .st-drop p { font-size:12px; margin-bottom:12px; }
+  .st-drop-actions { display:flex; justify-content:center; gap:8px; flex-wrap:wrap; }
+  .st-list, .st-result-list { display:flex; flex-direction:column; gap:8px; max-height:360px; overflow:auto; }
+  .st-file, .st-result { display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center; border:1px solid var(--border); border-radius:6px; padding:10px 12px; background:#fff; }
+  .st-file-name, .st-result-name { font-size:13px; font-weight:700; color:var(--dark); word-break:break-word; }
+  .st-file-meta, .st-result-meta { font-size:11px; color:var(--muted); margin-top:2px; }
+  .st-file button, .st-result button { border:1px solid var(--border); background:#F8FAFC; color:#0F172A; border-radius:5px; padding:6px 9px; font-size:11px; font-weight:800; cursor:pointer; }
+  .st-file button:hover, .st-result button:hover { border-color:var(--dark); background:var(--dark); color:#fff; }
+  .st-empty { border:1.5px dashed var(--border); color:#94A3B8; padding:32px; text-align:center; font-size:13px; border-radius:6px; }
+  .st-log { min-height:180px; max-height:320px; overflow:auto; background:#0F172A; color:#D1FAE5; border-radius:6px; padding:14px; font-size:12px; line-height:1.65; white-space:pre-wrap; font-family:Consolas, monospace; }
+
     @media (max-width: 1024px) { .sidebar { width: 210px; } }
     @media (max-width: 768px) {
       .sidebar { width: 180px; }
@@ -546,6 +567,7 @@
       .btn-save, .btn-del { flex: 1; }
       .f-row2, .f-row3, .f-row4 { grid-template-columns: 1fr; }
       .sp-grid, .sp-row { grid-template-columns: 1fr; }
+      .st-grid { grid-template-columns: 1fr; }
       .sp-generated { grid-template-columns: 1fr; }
     }
 
@@ -1023,6 +1045,10 @@
     <button class="sb-item" id="nav-ai-image" onclick="nav('ai-image')">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="13" rx="2"/><path d="m3 13 4-4 4 4 4-5 4 5"/><circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"/><path d="M8 21h8M12 17v4"/></svg>
       Tạo Ảnh AI
+    </button>
+    <button class="sb-item" id="nav-subtitle-translator" onclick="nav('subtitle-translator')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 10h5M7 14h10"/></svg>
+      Dịch Subtitle
     </button>
     <button class="sb-item" id="nav-banners" onclick="nav('banners')">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
@@ -2761,6 +2787,89 @@ Có chủ đề nào bạn muốn chúng tôi cover? Comment nhé!
     </div>
 
     <!-- ── Ảnh & Banner ──────────────────────────── -->
+    <div class="page" id="page-subtitle-translator">
+      <div class="sec-head">
+        <span class="sec-title">Dịch Subtitle Pro</span>
+        <div class="sec-head-right">
+          <button class="btn-red" id="stTranslateTopBtn" onclick="stTranslate()">Bắt đầu dịch</button>
+        </div>
+      </div>
+
+      <div class="st-grid">
+        <div class="st-panel">
+          <h3>Cấu hình dịch</h3>
+          <div class="sp-row">
+            <div class="sp-field">
+              <label class="sp-label">Ngôn ngữ nguồn</label>
+              <input id="stSourceLang" class="sp-input" value="tiếng Trung">
+            </div>
+            <div class="sp-field">
+              <label class="sp-label">Ngôn ngữ đích</label>
+              <input id="stTargetLang" class="sp-input" value="tiếng Việt">
+            </div>
+          </div>
+          <div class="sp-row">
+            <div class="sp-field">
+              <label class="sp-label">Model</label>
+              <input id="stModel" class="sp-input" value="gpt-5-mini">
+            </div>
+            <div class="sp-field">
+              <label class="sp-label">Batch size</label>
+              <input id="stBatchSize" class="sp-input" type="number" min="1" max="300" value="100">
+            </div>
+          </div>
+          <div class="sp-row">
+            <div class="sp-field">
+              <label class="sp-label">Workers</label>
+              <input id="stWorkers" class="sp-input" type="number" min="1" max="12" value="6">
+            </div>
+            <div class="sp-field">
+              <label class="sp-label">OpenAI API Key</label>
+              <input id="stApiKey" class="sp-input" type="password" autocomplete="off" placeholder="Để trống nếu đã lưu key trong Shopee">
+            </div>
+          </div>
+
+          <div class="st-drop" id="stDropZone">
+            <input id="stFiles" type="file" accept=".srt" multiple onchange="stAddFiles(this.files)">
+            <input id="stFolder" type="file" accept=".srt" multiple webkitdirectory directory onchange="stAddFiles(this.files)">
+            <div class="st-drop-icon">SRT</div>
+            <strong>Kéo thả file .srt vào đây</strong>
+            <p>Hoặc chọn nhiều file / chọn cả folder subtitle</p>
+            <div class="st-drop-actions">
+              <button class="sp-btn light" type="button" onclick="document.getElementById('stFiles').click()">Thêm file</button>
+              <button class="sp-btn light" type="button" onclick="document.getElementById('stFolder').click()">Thêm folder</button>
+            </div>
+          </div>
+
+          <div class="sp-actions">
+            <button class="sp-btn primary" id="stTranslateBtn" onclick="stTranslate()">Bắt đầu dịch</button>
+            <button class="sp-btn light" onclick="stClear()">Xóa danh sách</button>
+            <button class="sp-btn dark" id="stDownloadAllBtn" onclick="stDownloadAll()" disabled>Tải tất cả</button>
+          </div>
+          <div class="sp-status" id="stStatus">Sẵn sàng. Chọn file .srt để bắt đầu.</div>
+        </div>
+
+        <div class="st-panel">
+          <h3>File đầu vào</h3>
+          <div class="st-list" id="stFileList">
+            <div class="st-empty">Chưa có file .srt nào.</div>
+          </div>
+        </div>
+
+        <div class="st-panel st-output">
+          <h3>Kết quả</h3>
+          <div class="st-result-list" id="stResultList">
+            <div class="st-empty">Kết quả dịch sẽ hiển thị tại đây.</div>
+          </div>
+        </div>
+
+        <div class="st-panel st-log-panel">
+          <h3>Log xử lý</h3>
+          <pre class="st-log" id="stLog">Chưa chạy.</pre>
+        </div>
+      </div>
+    </div>
+
     <div class="page" id="page-banners">
       <div class="sec-head">
         <span class="sec-title">Ảnh &amp; Banner</span>
@@ -2933,6 +3042,7 @@ const PAGE_TITLES = { ...CAT_LBL, dashboard:'Dashboard', banners:'Ảnh & Banner
 const loaded = {};
 PAGE_TITLES.shopee = 'Shopee AI';
 PAGE_TITLES['ai-image'] = 'Tạo Ảnh Website / FB / IG';
+PAGE_TITLES['subtitle-translator'] = 'Dịch Subtitle';
 let siteSettings = {};
 
 /* ─── Helpers ──────────────────────────────────────────────── */
@@ -2976,6 +3086,7 @@ function toast(msg, type='ok') {
 
 /* ─── Navigation ───────────────────────────────────────────── */
 function nav(page) {
+  if (location.hash.replace(/^#/, '') !== page) history.replaceState(null, '', '#' + page);
   document.querySelectorAll('.sb-item').forEach(b=>b.classList.remove('active'));
   const btn = document.getElementById('nav-'+page);
   if (btn) btn.classList.add('active');
@@ -3392,6 +3503,7 @@ async function loadSection(cat) {
   if (cat === 'bang-gia')  { bgLoadData(); return; }
   if (cat === 'shopee')    { spLoadAiConfig(); return; }
   if (cat === 'ai-image')  { initAiImageTab(); return; }
+  if (cat === 'subtitle-translator') { stInit(); return; }
   if (cat === 'don-hang')  { vdInit(); return; }
   if (loaded[cat]) return;
   loaded[cat] = true;
@@ -3673,6 +3785,167 @@ function fbCopyHt(id, btn) {
 }
 
 /* ─── Server check ─────────────────────────────────────────── */
+let stFiles = [];
+let stResults = [];
+let stReady = false;
+
+function stInit() {
+  if (stReady) return;
+  stReady = true;
+  const drop = document.getElementById('stDropZone');
+  if (!drop) return;
+  ['dragenter','dragover'].forEach(evt => {
+    drop.addEventListener(evt, e => {
+      e.preventDefault();
+      drop.classList.add('over');
+    });
+  });
+  ['dragleave','drop'].forEach(evt => {
+    drop.addEventListener(evt, e => {
+      e.preventDefault();
+      drop.classList.remove('over');
+    });
+  });
+  drop.addEventListener('drop', e => stAddFiles(e.dataTransfer?.files || []));
+}
+
+function stAddFiles(fileList) {
+  const incoming = Array.from(fileList || []).filter(file => /\.srt$/i.test(file.name));
+  const seen = new Set(stFiles.map(file => `${file.name}:${file.size}:${file.lastModified}`));
+  for (const file of incoming) {
+    const key = `${file.name}:${file.size}:${file.lastModified}`;
+    if (!seen.has(key)) {
+      stFiles.push(file);
+      seen.add(key);
+    }
+  }
+  const filesInput = document.getElementById('stFiles');
+  const folderInput = document.getElementById('stFolder');
+  if (filesInput) filesInput.value = '';
+  if (folderInput) folderInput.value = '';
+  stRenderFiles();
+  stSetStatus(stFiles.length ? `Đã chọn ${stFiles.length} file .srt.` : 'Chưa có file .srt nào.');
+}
+
+function stRenderFiles() {
+  const el = document.getElementById('stFileList');
+  if (!el) return;
+  if (!stFiles.length) {
+    el.innerHTML = '<div class="st-empty">Chưa có file .srt nào.</div>';
+    return;
+  }
+  el.innerHTML = stFiles.map((file, idx) => `
+    <div class="st-file">
+      <div>
+        <div class="st-file-name">${esc(file.webkitRelativePath || file.name)}</div>
+        <div class="st-file-meta">${(file.size / 1024).toFixed(1)} KB</div>
+      </div>
+      <button onclick="stRemoveFile(${idx})">Xóa</button>
+    </div>
+  `).join('');
+}
+
+function stRemoveFile(idx) {
+  stFiles.splice(idx, 1);
+  stRenderFiles();
+  stSetStatus(stFiles.length ? `Còn ${stFiles.length} file .srt.` : 'Đã xóa hết file.');
+}
+
+function stSetStatus(msg, type) {
+  const el = document.getElementById('stStatus');
+  if (!el) return;
+  el.textContent = msg || '';
+  el.style.color = type === 'err' ? '#991B1B' : (type === 'ok' ? '#166534' : '#64748B');
+}
+
+function stSetBusy(busy) {
+  ['stTranslateBtn','stTranslateTopBtn'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) btn.disabled = busy;
+  });
+}
+
+function stDownloadResult(idx) {
+  const result = stResults[idx];
+  if (!result) return;
+  const blob = new Blob([result.content || ''], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = result.outputName || 'subtitle_vi.srt';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+function stDownloadAll() {
+  stResults.forEach((_result, idx) => stDownloadResult(idx));
+}
+
+function stRenderResults() {
+  const el = document.getElementById('stResultList');
+  const allBtn = document.getElementById('stDownloadAllBtn');
+  if (allBtn) allBtn.disabled = !stResults.length;
+  if (!el) return;
+  if (!stResults.length) {
+    el.innerHTML = '<div class="st-empty">Kết quả dịch sẽ hiển thị tại đây.</div>';
+    return;
+  }
+  el.innerHTML = stResults.map((result, idx) => `
+    <div class="st-result">
+      <div>
+        <div class="st-result-name">${esc(result.outputName || result.inputName || 'subtitle_vi.srt')}</div>
+        <div class="st-result-meta">${fmtNum(result.count || 0)} subtitle${result.warning ? ' · ' + esc(result.warning) : ''}</div>
+      </div>
+      <button onclick="stDownloadResult(${idx})">Tải SRT</button>
+    </div>
+  `).join('');
+}
+
+function stClear() {
+  stFiles = [];
+  stResults = [];
+  stRenderFiles();
+  stRenderResults();
+  document.getElementById('stLog').textContent = 'Chưa chạy.';
+  stSetStatus('Sẵn sàng. Chọn file .srt để bắt đầu.');
+}
+
+async function stTranslate() {
+  if (!stFiles.length) {
+    stSetStatus('Chưa có file .srt nào để dịch.', 'err');
+    return;
+  }
+  const fd = new FormData();
+  stFiles.forEach(file => fd.append('files', file, file.webkitRelativePath || file.name));
+  fd.append('apiKey', document.getElementById('stApiKey')?.value.trim() || '');
+  fd.append('model', document.getElementById('stModel')?.value.trim() || 'gpt-5-mini');
+  fd.append('batchSize', document.getElementById('stBatchSize')?.value || '100');
+  fd.append('workers', document.getElementById('stWorkers')?.value || '6');
+  fd.append('sourceLang', document.getElementById('stSourceLang')?.value.trim() || 'tiếng Trung');
+  fd.append('targetLang', document.getElementById('stTargetLang')?.value.trim() || 'tiếng Việt');
+
+  stSetBusy(true);
+  stResults = [];
+  stRenderResults();
+  document.getElementById('stLog').textContent = 'Đang gửi file lên server và dịch...';
+  stSetStatus('Đang dịch. File dài có thể mất vài phút...', 'wait');
+  try {
+    const res = await fetch('/api/subtitle-translator/translate', { method:'POST', body:fd });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    stResults = data.results || [];
+    stRenderResults();
+    document.getElementById('stLog').textContent = (data.logs || []).join('\n') || 'Hoàn tất.';
+    stSetStatus(`Hoàn tất ${stResults.length}/${stFiles.length} file.`, 'ok');
+    toast('Đã dịch subtitle xong', 'ok');
+  } catch (e) {
+    document.getElementById('stLog').textContent = e.message || 'Dịch subtitle thất bại.';
+    stSetStatus('Lỗi dịch subtitle: ' + (e.message || 'không xác định'), 'err');
+    toast('Lỗi dịch subtitle', 'err');
+  } finally {
+    stSetBusy(false);
+  }
+}
+
 /* Shopee AI helpers */
 function spInput() {
   return {
@@ -3909,6 +4182,8 @@ Yêu cầu thiết kế:
 - Thiết kế giống brand lớn trên Shopee Mall
 - Tạo cảm giác uy tín và chuyên nghiệp
 - Bố cục rõ ràng trên mobile
+- Sử dụng logo thương hiệu từ file logo_bongbanviet.png trong ảnh cuối, đặt rõ nhưng tinh tế ở góc hoặc footer
+- Không vẽ lại, bóp méo, thay thế hoặc tạo logo BongBanViet giả
 
 Text trên ảnh:
 - Ngắn gọn
@@ -4708,7 +4983,7 @@ Visual style: premium table tennis equipment retail photography, consistent with
 
 Composition: square 1:1, product centered and dominant, occupying about 70–85% of the frame, fully visible, not cropped. Use realistic studio lighting, sharp focus, natural reflections, and a soft realistic shadow. Add only very subtle background details such as minimal grid lines, light motion accents, or table-tennis-inspired shapes, keeping the layout clean and uncluttered.
 
-Branding: add a small tasteful brand mark "BÓNG BÀN VIỆT" with the slogan "Tư Vấn Chuẩn · Hàng Chính Hãng" in a clean modern sans-serif style similar to Lexend. Place it subtly in a corner or footer area, using black/red brand colors, without covering the product. Do not make it look like a sale banner.
+Branding: use the BongBanViet logo image from logo_bongbanviet.png as the brand asset. Place it subtly but clearly in a corner or footer area, using black/red brand colors, without covering the product. Keep the logo readable and accurate; do not redraw, replace, distort, or invent the logo. Do not make it look like a sale banner.
 
 Text rules: no price, no phone number, no Zalo, no QR code, no external link, no large promotional text. ${headline}
 
@@ -4930,6 +5205,49 @@ function vdOrderToApi(o) {
     total_qty: Number(o.totalQty) || 0,
     total_amount: Number(o.totalAmount) || 0
   };
+}
+
+function vdInventoryFromApi(r) {
+  return {
+    id: r.id || vdUid(),
+    name: r.name || '',
+    sku: r.sku || '',
+    barcode: r.barcode || '',
+    price: Number(r.price) || 0,
+    costPrice: Number(r.costPrice ?? r.cost_price) || 0,
+    stock: Number(r.stock) || 0,
+    lowStockAlert: Number(r.lowStockAlert ?? r.low_stock_alert) || 5,
+    unit: r.unit || 'cai'
+  };
+}
+
+function vdInventoryToApi(item) {
+  return {
+    id: item.id,
+    name: item.name || '',
+    sku: item.sku || '',
+    barcode: item.barcode || '',
+    price: Number(item.price) || 0,
+    costPrice: Number(item.costPrice) || 0,
+    stock: Number(item.stock) || 0,
+    lowStockAlert: Number(item.lowStockAlert) || 5,
+    unit: item.unit || 'cai'
+  };
+}
+
+async function vdLoadInventoryFromServer() {
+  const localItems = Array.isArray(vdInventory) ? [...vdInventory] : [];
+  try {
+    const rows = await api('/api/inventory?limit=2000');
+    const serverItems = Array.isArray(rows) ? rows.map(vdInventoryFromApi) : [];
+    const serverKeys = new Set(serverItems.map(p => (p.sku || p.name || '').toLowerCase().trim()).filter(Boolean));
+    const missingLocal = localItems.filter(p => p?.name && !serverKeys.has((p.sku || p.name).toLowerCase().trim()));
+    for (const item of missingLocal) await api('/api/inventory', 'POST', vdInventoryToApi(item));
+    vdInventory = [...serverItems, ...missingLocal].sort((a,b)=>a.name.localeCompare(b.name,'vi'));
+    vdSave();
+  } catch (e) {
+    toast('Khong tai duoc kho tu server, dang dung du lieu trinh duyet: '+e.message, 'err');
+  }
 }
 
 async function vdLoadOrdersFromServer() {
@@ -5218,6 +5536,49 @@ async function loadCatalog() {
   } catch { vdCatalog = []; }
 }
 
+function vdProductKey(row) {
+  return String(row?.sku || row?.name || '').toLowerCase().trim();
+}
+
+function vdFindProductByNameOrSku(name, sku='') {
+  const keyName = String(name || '').toLowerCase().trim();
+  const keySku = String(sku || '').toLowerCase().trim();
+  return vdInventory.find(p =>
+    (keySku && String(p.sku || '').toLowerCase().trim() === keySku) ||
+    (keyName && String(p.name || '').toLowerCase().trim() === keyName)
+  );
+}
+
+function vdApplyPriceToMatchingItems(sourceRow) {
+  const key = vdProductKey(sourceRow);
+  if (!key || !sourceRow.price) return;
+  vdOrderItems.forEach(row => {
+    if (row.id !== sourceRow.id && vdProductKey(row) === key) row.price = sourceRow.price;
+  });
+}
+
+async function vdUpsertInventoryFromOrderItem(row) {
+  if (!row?.name || !Number(row.price)) return;
+  const existing = vdFindProductByNameOrSku(row.name, row.sku);
+  const item = existing || { id: vdUid(), stock: 0, lowStockAlert: vdSettings.lowStockAlert || 5, unit: 'cai' };
+  item.name = row.name;
+  item.sku = row.sku || item.sku || '';
+  item.price = Number(row.price) || 0;
+  try {
+    const saved = await api(existing ? `/api/inventory/${encodeURIComponent(item.id)}` : '/api/inventory', existing ? 'PUT' : 'POST', vdInventoryToApi(item));
+    const normalized = vdInventoryFromApi(saved);
+    const idx = vdInventory.findIndex(p => p.id === normalized.id);
+    if (idx >= 0) vdInventory[idx] = normalized; else vdInventory.push(normalized);
+    vdSave();
+    await vdLoadInventoryFromServer();
+    await loadCatalog();
+    if (document.getElementById('vd-sec-inventory')?.classList.contains('active')) renderInventory();
+  } catch (e) {
+    if (!existing) vdInventory.push(item);
+    vdSave();
+  }
+}
+
 function filterAC(input, itemId) {
   const q = input.value.trim().toLowerCase();
   const drop = input.parentElement.querySelector('.ac-drop');
@@ -5246,7 +5607,13 @@ function filterAC(input, itemId) {
 
 function selectAC(el, itemId) {
   const row = vdOrderItems.find(r=>r.id===itemId);
-  if (row) { row.name=el.dataset.name; row.sku=el.dataset.sku; if(!row.price) row.price=Number(el.dataset.price)||0; }
+  if (row) {
+    row.name = el.dataset.name;
+    row.sku = el.dataset.sku;
+    row.price = Number(el.dataset.price) || row.price || 0;
+    vdApplyPriceToMatchingItems(row);
+    vdUpsertInventoryFromOrderItem(row);
+  }
   renderItems();
   vdUpdatePreviewDebounced();
 }
@@ -5275,6 +5642,20 @@ function updateItem(id, field, val) {
   if (field==='name'||field==='sku') {
     const inv = vdInventory.find(p=>field==='name'?p.name===val:p.sku===val);
     if (inv) { row.name=inv.name; row.sku=inv.sku||''; row.price=inv.price||0; }
+  }
+  if (field === 'price' && row.price) {
+    vdApplyPriceToMatchingItems(row);
+    vdUpsertInventoryFromOrderItem(row);
+    vdOrderItems.forEach(r => {
+      if (vdProductKey(r) === vdProductKey(row)) {
+        const priceInput = document.getElementById(`itemPrice-${r.id}`);
+        if (priceInput && Number(priceInput.value) !== Number(r.price)) priceInput.value = r.price || '';
+        updateItemLineTotal(r.id);
+      }
+    });
+    updateTotals();
+    vdUpdatePreviewDebounced();
+    return;
   }
   updateItemLineTotal(id);
   updateTotals();
@@ -5313,7 +5694,7 @@ function renderItems() {
           oninput="updateItem('${r.id}','qty',this.value)" style="width:55px;text-align:center;">
       </td>
       <td style="padding:5px 6px;text-align:right;">
-        <input class="inp inp-sm" type="number" min="0" value="${r.price||''}" placeholder="0"
+        <input class="inp inp-sm" id="itemPrice-${r.id}" type="number" min="0" value="${r.price||''}" placeholder="0"
           oninput="updateItem('${r.id}','price',this.value)" style="width:110px;text-align:right;">
       </td>
       <td id="itemLineTotal-${r.id}" style="padding:5px 6px;text-align:right;font-weight:700;font-size:13px;white-space:nowrap;">
@@ -5818,7 +6199,7 @@ function closeInvModal() {
   document.getElementById('modalOverlay').style.display = 'none';
 }
 
-function saveInvItem() {
+async function saveInvItem() {
   const name = document.getElementById('invName').value.trim();
   if (!name) { toast('Vui lòng nhập tên sản phẩm','err'); return; }
   const id = document.getElementById('invId').value||vdUid();
@@ -5832,17 +6213,33 @@ function saveInvItem() {
     lowStockAlert: Number(document.getElementById('invLowAlert').value)||5,
     unit:          document.getElementById('invUnit').value||'cái'
   };
-  const idx = vdInventory.findIndex(p=>p.id===id);
-  if (idx>=0) vdInventory[idx]=item; else vdInventory.push(item);
-  vdSave(); closeInvModal(); renderInventory();
+  const existed = vdInventory.some(p=>p.id===id);
+  let saved = item;
+  try {
+    saved = vdInventoryFromApi(await api(existed ? `/api/inventory/${encodeURIComponent(id)}` : '/api/inventory', existed ? 'PUT' : 'POST', vdInventoryToApi(item)));
+  } catch (e) {
+    toast('Khong luu duoc len server, da luu tam tren trinh duyet: '+e.message, 'err');
+  }
+  const idx = vdInventory.findIndex(p=>p.id===saved.id);
+  if (idx>=0) vdInventory[idx]=saved; else vdInventory.push(saved);
+  vdOrderItems.forEach(row => {
+    if (vdProductKey(row) && vdProductKey(row) === vdProductKey(saved)) {
+      row.name = saved.name;
+      row.sku = saved.sku || row.sku || '';
+      row.price = saved.price || row.price || 0;
+    }
+  });
+  vdSave(); closeInvModal(); renderInventory(); renderItems(); loadCatalog();
   toast(`✓ Đã lưu "${name}"`);
 }
 
-function deleteInvItem(id) {
+async function deleteInvItem(id) {
   const item = vdInventory.find(p=>p.id===id);
   if (!confirm(`Xóa sản phẩm "${item?.name}"?`)) return;
+  try { await api(`/api/inventory/${encodeURIComponent(id)}`, 'DELETE'); }
+  catch(e) { toast('Khong xoa duoc tren server, da xoa tam tren trinh duyet: '+e.message, 'err'); }
   vdInventory = vdInventory.filter(p=>p.id!==id);
-  vdSave(); renderInventory();
+  vdSave(); renderInventory(); loadCatalog();
   toast('Đã xóa sản phẩm!');
 }
 
@@ -5967,7 +6364,13 @@ async function vdInit() {
 }
 
 checkServer();
-loadDashboard();
+const initialAdminPage = (location.hash || '').replace(/^#/, '');
+if (initialAdminPage && document.getElementById('page-' + initialAdminPage)) nav(initialAdminPage);
+else loadDashboard();
+window.addEventListener('hashchange', () => {
+  const page = (location.hash || '').replace(/^#/, '');
+  if (page && document.getElementById('page-' + page)) nav(page);
+});
 
 // Slug: mark manual edit to prevent auto-overwrite
 document.addEventListener('input', e=>{

@@ -214,14 +214,24 @@ db.exec(`
     hashtags TEXT DEFAULT '',
     cta TEXT DEFAULT '',
     website_link TEXT DEFAULT 'https://bongbanviet.com',
+    image_path TEXT DEFAULT '',
     image_prompt TEXT DEFAULT '',
+    image_source TEXT DEFAULT '',
     scheduled_time TEXT DEFAULT '',
+    facebook_post_id TEXT DEFAULT '',
+    posted_at TEXT DEFAULT '',
+    error_message TEXT DEFAULT '',
     created_at TEXT DEFAULT (datetime('now')),
     updated_at TEXT DEFAULT (datetime('now'))
   )
 `);
 
 try { db.exec("ALTER TABLE fb_posts ADD COLUMN source_id TEXT DEFAULT ''"); } catch {}
+try { db.exec("ALTER TABLE fb_posts ADD COLUMN image_path TEXT DEFAULT ''"); } catch {}
+try { db.exec("ALTER TABLE fb_posts ADD COLUMN image_source TEXT DEFAULT ''"); } catch {}
+try { db.exec("ALTER TABLE fb_posts ADD COLUMN facebook_post_id TEXT DEFAULT ''"); } catch {}
+try { db.exec("ALTER TABLE fb_posts ADD COLUMN posted_at TEXT DEFAULT ''"); } catch {}
+try { db.exec("ALTER TABLE fb_posts ADD COLUMN error_message TEXT DEFAULT ''"); } catch {}
 try { db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_fb_posts_source_id ON fb_posts(source_id) WHERE source_id <> ''"); } catch {}
 try { db.exec("ALTER TABLE orders ADD COLUMN order_date TEXT DEFAULT ''"); } catch {}
 try { db.exec("ALTER TABLE orders ADD COLUMN total_qty INTEGER DEFAULT 0"); } catch {}
@@ -248,6 +258,26 @@ db.exec(`
     updated_at TEXT DEFAULT (datetime('now'))
   )
 `);
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS inventory_items (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    sku TEXT DEFAULT '',
+    barcode TEXT DEFAULT '',
+    price INTEGER DEFAULT 0,
+    cost_price INTEGER DEFAULT 0,
+    stock INTEGER DEFAULT 0,
+    low_stock_alert INTEGER DEFAULT 5,
+    unit TEXT DEFAULT 'cai',
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  )
+`);
+
+try { db.exec("CREATE INDEX IF NOT EXISTS idx_inventory_items_name ON inventory_items(name)"); } catch {}
+try { db.exec("CREATE INDEX IF NOT EXISTS idx_inventory_items_sku ON inventory_items(sku)"); } catch {}
+try { db.exec("CREATE INDEX IF NOT EXISTS idx_inventory_items_barcode ON inventory_items(barcode)"); } catch {}
 
 // Legacy one-off catalog backfill. Keep disabled by default so products deleted
 // from admin are not recreated on every server restart/redeploy.
