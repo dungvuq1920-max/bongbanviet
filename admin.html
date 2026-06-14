@@ -717,6 +717,16 @@
   .bg-filter-sel { padding:7px 10px; border:1px solid var(--border); border-radius:4px; font-family:inherit; font-size:13px; background:#fff; cursor:pointer; }
   .bg-btn { padding:7px 14px; border:1px solid var(--border); border-radius:4px; font-family:inherit; font-size:12.5px; font-weight:500; background:#fff; cursor:pointer; transition:.15s; }
   .bg-btn:hover { background:#F8FAFC; }
+  .bg-btn-primary { background:#0F172A; color:#fff; border-color:#0F172A; }
+  .bg-btn-primary:hover { background:#1E293B !important; }
+  .bg-add-panel { display:none; background:#fff; border:1px solid var(--border); border-radius:6px; padding:12px; margin:-4px 0 16px; }
+  .bg-add-panel.open { display:block; }
+  .bg-add-grid { display:grid; grid-template-columns:150px minmax(220px,1fr) 130px 130px minmax(180px,1fr) auto; gap:8px; align-items:end; }
+  .bg-add-field label { display:block; font-size:10px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-bottom:5px; }
+  .bg-add-field input { width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:4px; font-family:inherit; font-size:12.5px; background:#fff; }
+  .bg-add-field input:focus { outline:none; border-color:#0F172A; }
+  .bg-add-actions { display:flex; gap:7px; align-items:center; }
+  .bg-add-actions .bg-btn { height:36px; }
   .bg-dirty-bar { display:flex; align-items:center; gap:10px; background:#FFFBEB; border:1px solid #FDE68A; padding:6px 14px; border-radius:4px; font-size:13px; }
   .bg-dirty-bar .bg-dirty-count { font-weight:600; color:#B45309; }
   .bg-btn-save-all { background:#D97706; color:#fff; border-color:#D97706; font-size:12px; padding:5px 12px; }
@@ -2665,7 +2675,38 @@ Có chủ đề nào bạn muốn chúng tôi cover? Comment nhé!
         <select class="bg-filter-sel" id="bgBrand" onchange="bgFilter()">
           <option value="">Tất cả hãng</option>
         </select>
+        <button class="bg-btn bg-btn-primary" onclick="bgToggleAddPanel()">+ Thêm sản phẩm</button>
         <button class="bg-btn" onclick="bgLoadData()">🔄 Tải lại</button>
+      </div>
+
+      <div class="bg-add-panel" id="bgAddPanel">
+        <div class="bg-add-grid">
+          <div class="bg-add-field">
+            <label>Hãng</label>
+            <input id="bgAddBrand" list="bgBrandList" placeholder="VD: Tibhar">
+            <datalist id="bgBrandList"></datalist>
+          </div>
+          <div class="bg-add-field">
+            <label>Tên sản phẩm</label>
+            <input id="bgAddName" placeholder="Nhập tên sản phẩm">
+          </div>
+          <div class="bg-add-field">
+            <label>Giá bán lẻ</label>
+            <input id="bgAddRetail" type="number" min="0" step="1000" placeholder="0">
+          </div>
+          <div class="bg-add-field">
+            <label>Giá đại lý</label>
+            <input id="bgAddDealer" type="number" min="0" step="1000" placeholder="0">
+          </div>
+          <div class="bg-add-field">
+            <label>Khuyến mãi / ghi chú</label>
+            <input id="bgAddPromo" placeholder="Tuỳ chọn">
+          </div>
+          <div class="bg-add-actions">
+            <button class="bg-btn bg-btn-primary" id="bgAddSaveBtn" onclick="bgAddProduct()">Lưu</button>
+            <button class="bg-btn" onclick="bgResetAddForm()">Xoá</button>
+          </div>
+        </div>
       </div>
 
       <div class="bg-summary">
@@ -4750,6 +4791,66 @@ function bgPopulateBrands() {
   const cur = sel.value;
   sel.innerHTML = '<option value="">Tất cả hãng</option>'
     + brands.map(b=>`<option value="${esc(b)}"${b===cur?' selected':''}>${esc(b.toUpperCase())}</option>`).join('');
+  const list = document.getElementById('bgBrandList');
+  if (list) list.innerHTML = brands.map(b => `<option value="${esc(b)}"></option>`).join('');
+}
+
+function bgToggleAddPanel() {
+  const panel = document.getElementById('bgAddPanel');
+  if (!panel) return;
+  panel.classList.toggle('open');
+  if (panel.classList.contains('open')) {
+    const brand = document.getElementById('bgBrand')?.value || '';
+    if (brand && !document.getElementById('bgAddBrand').value) {
+      document.getElementById('bgAddBrand').value = brand;
+    }
+    setTimeout(() => document.getElementById('bgAddName')?.focus(), 0);
+  }
+}
+
+function bgResetAddForm() {
+  const selectedBrand = document.getElementById('bgBrand')?.value || '';
+  ['bgAddName','bgAddRetail','bgAddDealer','bgAddPromo'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const brandEl = document.getElementById('bgAddBrand');
+  if (brandEl) brandEl.value = selectedBrand;
+  document.getElementById('bgAddName')?.focus();
+}
+
+async function bgAddProduct() {
+  const btn = document.getElementById('bgAddSaveBtn');
+  const brand = (document.getElementById('bgAddBrand')?.value || '').trim();
+  const name = (document.getElementById('bgAddName')?.value || '').trim();
+  const retail = parseInt(document.getElementById('bgAddRetail')?.value, 10) || 0;
+  const dealer = parseInt(document.getElementById('bgAddDealer')?.value, 10) || 0;
+  const promo = (document.getElementById('bgAddPromo')?.value || '').trim();
+
+  if (!brand) return toast('Vui lòng nhập hãng', 'err');
+  if (!name) return toast('Vui lòng nhập tên sản phẩm', 'err');
+  if (retail <= 0) return toast('Vui lòng nhập giá bán lẻ', 'err');
+  if (dealer <= 0) return toast('Vui lòng nhập giá đại lý', 'err');
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Đang lưu...';
+  }
+  try {
+    const created = await api('/api/price-list', 'POST', { brand, name, retail, dealer, promo });
+    bgResetAddForm();
+    await bgLoadData();
+    const row = created?.rowNum ? document.querySelector(`tr[data-rn="${created.rowNum}"]`) : null;
+    row?.scrollIntoView({ block:'center', behavior:'smooth' });
+    toast('Đã thêm sản phẩm vào bảng giá');
+  } catch (e) {
+    toast('Lỗi thêm sản phẩm: ' + e.message, 'err');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Lưu';
+    }
+  }
 }
 
 function bgUpdateStats() {

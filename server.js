@@ -4077,6 +4077,14 @@ function cellNum(cell) {
   return 0;
 }
 
+function copyExcelRowStyle(srcRow, destRow, maxCol = 6) {
+  if (!srcRow || !destRow) return;
+  destRow.height = srcRow.height;
+  for (let i = 1; i <= maxCol; i++) {
+    destRow.getCell(i).style = JSON.parse(JSON.stringify(srcRow.getCell(i).style || {}));
+  }
+}
+
 app.get('/api/price-list', async (req, res) => {
   try {
     if (!fs.existsSync(PRICE_LIST_FILE)) {
@@ -4137,6 +4145,56 @@ app.put('/api/price-list/:rowNum', requireAuth, async (req, res) => {
 let _catalogCache = null;
 let _catalogCacheTime = 0;
 const CATALOG_TTL = 30_000;
+
+app.post('/api/price-list', requireAuth, async (req, res) => {
+  try {
+    if (!fs.existsSync(PRICE_LIST_FILE)) {
+      return res.status(404).json({ error: 'File không tồn tại' });
+    }
+
+    const brand = String(req.body.brand || '').trim();
+    const name = String(req.body.name || '').trim();
+    const promo = String(req.body.promo || '').trim();
+    const retail = Number(req.body.retail) || 0;
+    const dealer = Number(req.body.dealer) || 0;
+
+    if (!brand) return res.status(400).json({ error: 'Vui lòng nhập hãng' });
+    if (!name) return res.status(400).json({ error: 'Vui lòng nhập tên sản phẩm' });
+    if (retail <= 0) return res.status(400).json({ error: 'Giá bán lẻ không hợp lệ' });
+    if (dealer <= 0) return res.status(400).json({ error: 'Giá đại lý không hợp lệ' });
+
+    const wb = new ExcelJS.Workbook();
+    await wb.xlsx.readFile(PRICE_LIST_FILE);
+    const ws = wb.worksheets[0];
+    let lastDataRowNum = 26;
+
+    ws.eachRow((row, rowNum) => {
+      if (rowNum < 27) return;
+      const productName = String(row.getCell(3).value || '').trim();
+      if (productName) lastDataRowNum = Math.max(lastDataRowNum, rowNum);
+    });
+
+    const rowNum = lastDataRowNum + 1;
+    const srcRow = lastDataRowNum >= 27 ? ws.getRow(lastDataRowNum) : null;
+    const row = ws.getRow(rowNum);
+    copyExcelRowStyle(srcRow, row);
+    row.getCell(1).value = '';
+    row.getCell(2).value = brand;
+    row.getCell(3).value = name;
+    row.getCell(4).value = retail;
+    row.getCell(5).value = dealer;
+    row.getCell(6).value = promo;
+    row.commit();
+
+    await wb.xlsx.writeFile(PRICE_LIST_FILE);
+    _catalogCache = null;
+    _catalogCacheTime = 0;
+    res.json({ ok: true, rowNum, brand, name, retail, dealer, promo });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: e.message });
+  }
+});
 
 app.get('/api/product-catalog', async (req, res) => {
   try {
