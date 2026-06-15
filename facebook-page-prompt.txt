@@ -361,6 +361,8 @@ Buoc 4: Tao anh
 - Neu co anh san pham that: uu tien anh san pham.
 - Neu la Knowledge/Community/Website: tao infographic 1080x1080.
 - Anh phai ro, de doc tren mobile, co BongBanViet + website/Zalo.
+- Moi prompt tao anh bat buoc dung logo BongBanViet tu file logo_bongbanviet.png trong anh cuoi.
+- Logo phai ro nhung tinh te o goc hoac footer; khong ve lai, khong lam meo, khong thay bang logo gia.
 
 Buoc 5: Review
 - Kiem tra fact, nguon, loi chinh ta, hashtag, CTA.
@@ -416,6 +418,7 @@ Nguyen tac:
   BongBanViet - Tu Van Chuan, Hang Chinh Hang
   Website: bongbanviet.com
   Hotline/Zalo: 096.1269.386
+- image_prompt phai ghi ro: Use the BongBanViet logo image from logo_bongbanviet.png in the final design.
 
 Hashtag can co:
 - Hashtag thuong hieu: #BongBanViet #BongBanVietCom
@@ -433,7 +436,7 @@ Output bat buoc la JSON hop le, khong them giai thich ngoai JSON:
   "caption": "...",
   "hashtags": "#BongBanViet ...",
   "cta": "...",
-  "image_prompt": "English prompt for a 1080x1080 Facebook infographic"
+  "image_prompt": "English prompt for a 1080x1080 Facebook infographic. Use the BongBanViet logo image from logo_bongbanviet.png in the final design."
 }
 
 12. PROMPT TAO INFOGRAPHIC
@@ -455,6 +458,7 @@ Visual style:
 - No clutter.
 - Use 3 concise points.
 - Include subtle table tennis visual element: racket, ball, table line or serve motion.
+- Use the BongBanViet logo image from logo_bongbanviet.png as the brand asset; place it clearly but tastefully in a corner or footer, without redrawing or distorting it.
 - Footer text:
   BongBanViet - Tu Van Chuan, Hang Chinh Hang
   bongbanviet.com | Zalo 096.1269.386
@@ -541,7 +545,7 @@ Khi can tao caption:
 "Hay tao caption Facebook cho topic nay theo dung thuong hieu BongBanViet, dung nguon da cho, dung slot/muc tieu lich dang, tra ve JSON caption/hashtags/cta/image_prompt."
 
 Khi can tao anh:
-"Hay tao prompt infographic 1080x1080 cho bai nay, text ngan, 3 y chinh, ro tren mobile, co BongBanViet, bongbanviet.com va Zalo 096.1269.386."
+"Hay tao prompt infographic 1080x1080 cho bai nay, text ngan, 3 y chinh, ro tren mobile, co BongBanViet, bongbanviet.com va Zalo 096.1269.386, va bat buoc su dung logo tu file logo_bongbanviet.png trong anh cuoi."
 
 Khi can toi uu lich:
 "Hay phan tich hieu suat 14 ngay gan nhat theo slot/pillar, de xuat tang/giam tan suat tung nhom noi dung ma khong lam page thanh catalog ban hang."

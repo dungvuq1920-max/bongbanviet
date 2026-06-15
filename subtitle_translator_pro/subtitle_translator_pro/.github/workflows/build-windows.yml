@@ -1,0 +1,36 @@
+name: Build Windows EXE
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        shell: powershell
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r subtitle_translator_pro/requirements.txt
+          python -m pip install pyinstaller
+
+      - name: Build exe
+        shell: powershell
+        run: |
+          Set-Location subtitle_translator_pro
+          pyinstaller --noconfirm SubtitleTranslatorPro.spec
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SubtitleTranslatorPro-windows
+          path: subtitle_translator_pro/dist/SubtitleTranslatorPro.exe

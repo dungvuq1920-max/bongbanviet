@@ -14,6 +14,14 @@ const { CONTENT_PILLARS } = require('./researcher');
 
 // Thư mục chứa ảnh sản phẩm
 const IMAGES_DIR = path.join(__dirname, '..', '..', 'images');
+const LOGO_IMAGE_SOURCE = 'logo_bongbanviet.png';
+const LOGO_PROMPT_SUFFIX = `Use the BongBanViet logo image from ${LOGO_IMAGE_SOURCE} in the final design. Place it clearly but tastefully in a corner or footer; keep it readable and do not redraw, replace, distort, or invent the logo.`;
+
+function withLogoPrompt(prompt) {
+  const value = String(prompt || '').trim();
+  if (!value) return '';
+  return /logo_bongbanviet\.png/i.test(value) ? value : `${value}\n\nBrand asset: ${LOGO_PROMPT_SUFFIX}`;
+}
 
 // Template infographic theo content pillar
 const INFOGRAPHIC_TEMPLATES = {
@@ -21,31 +29,31 @@ const INFOGRAPHIC_TEMPLATES = {
     style: 'modern educational infographic',
     colors: 'dark navy blue gradient background with red (#EF4444) accent highlights',
     layout: 'clean layout with numbered points, icons, and a table tennis visual element',
-    branding: 'BongBanViet logo watermark, website bongbanviet.com at bottom',
+    branding: `BongBanViet logo from ${LOGO_IMAGE_SOURCE}, website bongbanviet.com at bottom`,
   },
   product: {
     style: 'premium product showcase',
     colors: 'clean white background with subtle gray gradients and red accent borders',
     layout: 'product image centered, specs on the sides, price badge, brand logo',
-    branding: 'BongBanViet logo, "Chính Hãng 100%" badge',
+    branding: `BongBanViet logo from ${LOGO_IMAGE_SOURCE}, "Chính Hãng 100%" badge`,
   },
   news: {
     style: 'sports news banner',
     colors: 'dynamic dark background with energetic red and white text',
     layout: 'breaking news style header, event photo, key details highlighted',
-    branding: 'BongBanViet news banner header',
+    branding: `BongBanViet news banner header using logo from ${LOGO_IMAGE_SOURCE}`,
   },
   engagement: {
     style: 'social media poll/quiz card',
     colors: 'vibrant gradient from navy to deep red, white text',
     layout: 'large question text centered, 2-4 option boxes below, emoji icons',
-    branding: 'BongBanViet watermark, engagement-focused design',
+    branding: `BongBanViet logo from ${LOGO_IMAGE_SOURCE}, engagement-focused design`,
   },
   promo: {
     style: 'promotional sale banner',
     colors: 'bold red (#EF4444) primary with gold/yellow accents for urgency',
     layout: 'big discount percentage, product combo images, price comparison, CTA button',
-    branding: 'BongBanViet logo prominent, Hotline/Zalo info, website URL',
+    branding: `BongBanViet logo from ${LOGO_IMAGE_SOURCE} prominent, Hotline/Zalo info, website URL`,
   },
 };
 
@@ -92,7 +100,7 @@ Design specifications:
 - NO placeholder text - all text should be in Vietnamese related to the topic
 - The design should look like it was made by a professional graphic designer`;
 
-  return prompt;
+  return withLogoPrompt(prompt);
 }
 
 /**
@@ -211,4 +219,5 @@ module.exports = {
   findMatchingImage,
   processImage,
   INFOGRAPHIC_TEMPLATES,
+  withLogoPrompt,
 };

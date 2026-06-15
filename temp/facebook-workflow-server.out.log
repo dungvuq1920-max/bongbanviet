@@ -1,0 +1,16 @@
+
+> bongbanviet@1.0.0 dev
+> node server.js
+
+⚠️  Port 3000 đang bận — đang tắt server cũ...
+♻️  Đã tắt server cũ trên port 3000, đang khởi động lại...
+
+✅ BongBanViet server chạy tại http://localhost:3000
+   Admin panel:  http://localhost:3000/admin.html
+   Website:      http://localhost:3000/index.html
+
+⚠️  TELEGRAM_BOT_TOKEN chưa set — coin tracker & bot disabled
+[Facebook JSON Auto Import] Watching C:\Users\dungvuq1920\Desktop\facebook-posts.json
+[Facebook JSON Auto Import] 36 posts (0 created, 36 updated) from C:\Users\dungvuq1920\Desktop\facebook-posts.json
+[Facebook JSON Auto Import] 36 posts (0 created, 36 updated) from C:\Users\dungvuq1920\Desktop\facebook-posts.json
+[Facebook JSON Auto Import] 36 posts (0 created, 36 updated) from C:\Users\dungvuq1920\Desktop\facebook-posts.json

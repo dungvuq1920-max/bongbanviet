@@ -46,6 +46,8 @@ body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-ser
     <nav class="tabs" aria-label="Local tools">
       <button class="tab active" data-tab="facebook" onclick="setToolTab('facebook')">Facebook</button>
       <button class="tab" data-tab="download" onclick="setToolTab('download')">Download Video</button>
+      <button class="tab" data-tab="subtitle" onclick="setToolTab('subtitle')">Dịch Subtitle</button>
+      <button class="tab" data-tab="twofa" onclick="setToolTab('twofa')">2FA Code</button>
       <button class="tab" data-tab="prompt" onclick="setToolTab('prompt')">Prompt Mẫu</button>
     </nav>
     <a class="open-link" id="openCurrent" href="/facebook.html" target="_blank" rel="noopener">Mở tab riêng</a>
@@ -53,6 +55,8 @@ body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-ser
   <main class="frames">
     <iframe class="frame active" id="frame-facebook" src="/facebook.html" title="Facebook"></iframe>
     <iframe class="frame" id="frame-download" src="/download.html" title="Download Video"></iframe>
+    <iframe class="frame" id="frame-subtitle" src="/subtitle-translator.html" title="Dịch Subtitle"></iframe>
+    <iframe class="frame" id="frame-twofa" src="/2fa-code.html" title="2FA Code"></iframe>
     <iframe class="frame" id="frame-prompt" src="/prompt" title="Prompt Mẫu"></iframe>
   </main>
 </div>
@@ -60,6 +64,8 @@ body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-ser
 const TOOL_TABS = {
   facebook: { href:'/facebook.html' },
   download: { href:'/download.html' },
+  subtitle: { href:'/subtitle-translator.html' },
+  twofa: { href:'/2fa-code.html' },
   prompt: { href:'/prompt' },
 };
 

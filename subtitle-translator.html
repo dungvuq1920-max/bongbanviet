@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dịch Subtitle | BongBanViet Local</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f8fafc;--card:#fff;--line:#e2e8f0;--text:#0f172a;--muted:#64748b;
+  --red:#d62b2b;--dark:#0f172a;--green:#10b981;--blue:#2563eb;
+}
+body{background:var(--bg);color:var(--text);font-family:Inter,"Be Vietnam Pro",system-ui,sans-serif;min-height:100vh}
+.wrap{max-width:1180px;margin:0 auto;padding:18px}
+.head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px}
+.title h1{font-size:20px;font-weight:850;letter-spacing:-.01em}
+.title p{font-size:13px;color:var(--muted);margin-top:4px}
+.btn{border:0;border-radius:7px;padding:10px 14px;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;cursor:pointer}
+.btn.primary{background:var(--red);color:#fff}.btn.dark{background:var(--dark);color:#fff}.btn.light{background:#fff;color:var(--dark);border:1px solid var(--line)}
+.btn:disabled{opacity:.55;cursor:wait}
+.grid{display:grid;grid-template-columns:minmax(320px,420px) 1fr;gap:14px;align-items:start}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px;box-shadow:0 1px 2px rgba(15,23,42,.04)}
+.panel h2{font-size:13px;font-weight:850;letter-spacing:.06em;text-transform:uppercase;margin-bottom:13px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:flex;flex-direction:column;gap:6px;margin-bottom:11px}
+label{font-size:10px;font-weight:850;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+input{width:100%;border:1px solid var(--line);border-radius:7px;padding:10px 11px;font:13px Inter,system-ui,sans-serif;outline:none;background:#fff;color:var(--text)}
+input:focus{border-color:var(--dark)}
+.drop{border:1.5px dashed #cbd5e1;border-radius:8px;padding:24px 16px;text-align:center;background:#f8fafc;color:var(--muted);transition:.18s;margin-top:4px}
+.drop.over,.drop:hover{border-color:var(--red);background:#fff5f5}
+.drop input{display:none}.drop strong{display:block;color:var(--text);font-size:14px;margin:8px 0 3px}.drop p{font-size:12px;margin-bottom:12px}
+.drop-icon{width:48px;height:48px;border-radius:10px;margin:0 auto;display:flex;align-items:center;justify-content:center;background:var(--dark);color:#fff;font-weight:900;font-size:13px;letter-spacing:.08em}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.status{font-size:12px;color:var(--muted);margin-top:10px;min-height:18px}
+.list,.results{display:flex;flex-direction:column;gap:8px;max-height:420px;overflow:auto}
+.item{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:7px;padding:10px 12px;background:#fff}
+.name{font-size:13px;font-weight:800;word-break:break-word}.meta{font-size:11px;color:var(--muted);margin-top:2px}
+.mini{border:1px solid var(--line);background:#f8fafc;color:var(--dark);border-radius:6px;padding:7px 10px;font-size:11px;font-weight:800;cursor:pointer}
+.mini:hover{background:var(--dark);border-color:var(--dark);color:#fff}
+.empty{border:1.5px dashed var(--line);border-radius:8px;color:#94a3b8;padding:34px;text-align:center;font-size:13px}
+.wide{grid-column:1/-1}.log{min-height:170px;max-height:300px;overflow:auto;background:#0f172a;color:#d1fae5;border-radius:8px;padding:14px;font:12px/1.65 Consolas,monospace;white-space:pre-wrap}
+@media(max-width:820px){.wrap{padding:12px}.grid,.row{grid-template-columns:1fr}.head{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div class="title">
+      <h1>Dịch Subtitle Pro</h1>
+      <p>Upload file/folder .srt, dịch batch song song, giữ nguyên index và timecode.</p>
+    </div>
+    <button class="btn primary" id="translateTopBtn" onclick="translateSubtitles()">Bắt đầu dịch</button>
+  </div>
+
+  <div class="grid">
+    <section class="panel">
+      <h2>Cấu hình</h2>
+      <div class="row">
+        <div class="field"><label>Ngôn ngữ nguồn</label><input id="sourceLang" value="tiếng Trung"></div>
+        <div class="field"><label>Ngôn ngữ đích</label><input id="targetLang" value="tiếng Việt"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Model</label><input id="model" value="gpt-5-mini"></div>
+        <div class="field"><label>Batch size</label><input id="batchSize" type="number" min="1" max="300" value="100"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Workers</label><input id="workers" type="number" min="1" max="12" value="6"></div>
+        <div class="field"><label>OpenAI API Key</label><input id="apiKey" type="password" autocomplete="off" placeholder="Để trống nếu đã lưu key"></div>
+      </div>
+
+      <div class="drop" id="dropZone">
+        <input id="files" type="file" accept=".srt" multiple onchange="addFiles(this.files)">
+        <input id="folder" type="file" accept=".srt" multiple webkitdirectory directory onchange="addFiles(this.files)">
+        <div class="drop-icon">SRT</div>
+        <strong>Kéo thả file .srt vào đây</strong>
+        <p>Hoặc chọn nhiều file / chọn cả folder subtitle</p>
+        <div class="actions" style="justify-content:center;margin-top:0">
+          <button class="btn light" type="button" onclick="document.getElementById('files').click()">Thêm file</button>
+          <button class="btn light" type="button" onclick="document.getElementById('folder').click()">Thêm folder</button>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn primary" id="translateBtn" onclick="translateSubtitles()">Bắt đầu dịch</button>
+        <button class="btn light" onclick="clearAll()">Xóa danh sách</button>
+        <button class="btn dark" id="downloadAllBtn" onclick="downloadAll()" disabled>Tải tất cả</button>
+      </div>
+      <div class="status" id="status">Sẵn sàng. Chọn file .srt để bắt đầu.</div>
+    </section>
+
+    <section class="panel">
+      <h2>File đầu vào</h2>
+      <div class="list" id="fileList"><div class="empty">Chưa có file .srt nào.</div></div>
+    </section>
+
+    <section class="panel wide">
+      <h2>Kết quả</h2>
+      <div class="results" id="resultList"><div class="empty">Kết quả dịch sẽ hiển thị tại đây.</div></div>
+    </section>
+
+    <section class="panel wide">
+      <h2>Log xử lý</h2>
+      <pre class="log" id="log">Chưa chạy.</pre>
+    </section>
+  </div>
+</div>
+
+<script>
+let selectedFiles=[];let results=[];
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function fmtNum(n){return Number(n||0).toLocaleString('vi-VN')}
+function setStatus(msg,type){const el=document.getElementById('status');el.textContent=msg||'';el.style.color=type==='err'?'#991b1b':type==='ok'?'#166534':'#64748b'}
+function setBusy(busy){['translateBtn','translateTopBtn'].forEach(id=>document.getElementById(id).disabled=busy)}
+function addFiles(list){
+  const incoming=Array.from(list||[]).filter(f=>/\.srt$/i.test(f.name));
+  const seen=new Set(selectedFiles.map(f=>`${f.name}:${f.size}:${f.lastModified}`));
+  incoming.forEach(f=>{const k=`${f.name}:${f.size}:${f.lastModified}`;if(!seen.has(k)){selectedFiles.push(f);seen.add(k)}});
+  document.getElementById('files').value='';document.getElementById('folder').value='';
+  renderFiles();setStatus(selectedFiles.length?`Đã chọn ${selectedFiles.length} file .srt.`:'Chưa có file .srt nào.');
+}
+function renderFiles(){
+  const el=document.getElementById('fileList');
+  if(!selectedFiles.length){el.innerHTML='<div class="empty">Chưa có file .srt nào.</div>';return}
+  el.innerHTML=selectedFiles.map((f,i)=>`<div class="item"><div><div class="name">${esc(f.webkitRelativePath||f.name)}</div><div class="meta">${(f.size/1024).toFixed(1)} KB</div></div><button class="mini" onclick="removeFile(${i})">Xóa</button></div>`).join('');
+}
+function removeFile(i){selectedFiles.splice(i,1);renderFiles();setStatus(selectedFiles.length?`Còn ${selectedFiles.length} file .srt.`:'Đã xóa hết file.')}
+function renderResults(){
+  const el=document.getElementById('resultList');document.getElementById('downloadAllBtn').disabled=!results.length;
+  if(!results.length){el.innerHTML='<div class="empty">Kết quả dịch sẽ hiển thị tại đây.</div>';return}
+  el.innerHTML=results.map((r,i)=>`<div class="item"><div><div class="name">${esc(r.outputName||r.inputName||'subtitle_vi.srt')}</div><div class="meta">${fmtNum(r.count||0)} subtitle${r.warning?' · '+esc(r.warning):''}</div></div><button class="mini" onclick="downloadResult(${i})">Tải SRT</button></div>`).join('');
+}
+function downloadResult(i){
+  const r=results[i];if(!r)return;
+  const blob=new Blob([r.content||''],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=r.outputName||'subtitle_vi.srt';a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+function downloadAll(){results.forEach((_r,i)=>downloadResult(i))}
+function clearAll(){selectedFiles=[];results=[];renderFiles();renderResults();document.getElementById('log').textContent='Chưa chạy.';setStatus('Sẵn sàng. Chọn file .srt để bắt đầu.')}
+async function translateSubtitles(){
+  if(!selectedFiles.length){setStatus('Chưa có file .srt nào để dịch.','err');return}
+  const fd=new FormData();
+  selectedFiles.forEach(f=>fd.append('files',f,f.webkitRelativePath||f.name));
+  fd.append('apiKey',document.getElementById('apiKey').value.trim());
+  fd.append('model',document.getElementById('model').value.trim()||'gpt-5-mini');
+  fd.append('batchSize',document.getElementById('batchSize').value||'100');
+  fd.append('workers',document.getElementById('workers').value||'6');
+  fd.append('sourceLang',document.getElementById('sourceLang').value.trim()||'tiếng Trung');
+  fd.append('targetLang',document.getElementById('targetLang').value.trim()||'tiếng Việt');
+  setBusy(true);results=[];renderResults();document.getElementById('log').textContent='Đang gửi file lên server và dịch...';setStatus('Đang dịch. File dài có thể mất vài phút...');
+  try{
+    const res=await fetch('/api/subtitle-translator/translate',{method:'POST',body:fd});
+    const data=await res.json();if(!res.ok)throw new Error(data.error||`HTTP ${res.status}`);
+    results=data.results||[];renderResults();document.getElementById('log').textContent=(data.logs||[]).join('\n')||'Hoàn tất.';setStatus(`Hoàn tất ${results.length}/${selectedFiles.length} file.`,'ok');
+  }catch(e){document.getElementById('log').textContent=e.message||'Dịch subtitle thất bại.';setStatus('Lỗi dịch subtitle: '+(e.message||'không xác định'),'err')}
+  finally{setBusy(false)}
+}
+const drop=document.getElementById('dropZone');
+['dragenter','dragover'].forEach(evt=>drop.addEventListener(evt,e=>{e.preventDefault();drop.classList.add('over')}));
+['dragleave','drop'].forEach(evt=>drop.addEventListener(evt,e=>{e.preventDefault();drop.classList.remove('over')}));
+drop.addEventListener('drop',e=>addFiles(e.dataTransfer?.files||[]));
+</script>
+</body>
+</html>

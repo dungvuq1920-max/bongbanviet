@@ -170,27 +170,36 @@
     }
 
     /* ── Search grid (Douyin-style) ──────────────────────────────── */
-    .sr-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
-    @media(max-width:520px){.sr-grid{grid-template-columns:repeat(2,1fr);gap:8px}}
+    .sr-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:16px;margin-top:12px}
+    @media(max-width:1120px){.sr-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}}
+    @media(max-width:920px){.sr-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}}
+    @media(max-width:680px){.sr-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}}
+    @media(max-width:460px){.sr-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}}
 
-    .sr-card{background:var(--card);border:1.5px solid var(--line);border-radius:8px;overflow:hidden;transition:transform .15s,box-shadow .15s;display:flex;flex-direction:column}
-    .sr-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.1)}
+    .sr-card{position:relative;aspect-ratio:3/4;background:#000;border:0;border-radius:7px;overflow:hidden;transition:transform .15s,box-shadow .15s;display:block;box-shadow:none}
+    .sr-card:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,0,0,.18)}
 
-    .sr-card-thumb{position:relative;width:100%;aspect-ratio:9/16;background:#F3F4F6;overflow:hidden;cursor:pointer;flex-shrink:0}
+    .sr-card-thumb{position:absolute;inset:0;width:100%;height:100%;background:#111;overflow:hidden;cursor:pointer}
+    .sr-card-thumb.playing{cursor:default;background:#000}
     .sr-card-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+    .sr-inline-video{width:100%;height:100%;object-fit:contain;background:#000;display:block}
+    .sr-inline-close{position:absolute;top:6px;right:6px;width:24px;height:24px;border:0;border-radius:50%;background:rgba(0,0,0,.62);color:#fff;font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:3}
+    .sr-inline-close:hover{background:rgba(0,0,0,.85)}
     .sr-thumb-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#F3F4F6}
     .sr-play-ov{position:absolute;inset:0;background:rgba(0,0,0,.42);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s}
     .sr-card-thumb:hover .sr-play-ov{opacity:1}
-    .sr-card-dur{position:absolute;bottom:6px;right:7px;background:rgba(0,0,0,.62);color:#fff;font-size:10px;font-weight:600;padding:2px 5px;border-radius:3px;pointer-events:none}
+    .sr-card-dur{position:absolute;left:9px;bottom:8px;background:rgba(0,0,0,.4);color:#fff;font-size:11px;font-weight:700;padding:1px 5px;border-radius:4px;pointer-events:none;z-index:3}
 
-    .sr-card-info{padding:8px 9px 10px;display:flex;flex-direction:column;flex:1}
-    .sr-card-title{font-size:12px;font-weight:600;color:var(--dark);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.4;margin-bottom:3px;cursor:pointer}
-    .sr-card-title:hover{color:var(--accent)}
-    .sr-card-sub{font-size:10px;color:var(--mid);margin-bottom:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .sr-card-acts{display:flex;gap:3px;align-items:center;margin-top:auto}
-    .sr-card-acts .music-sel{flex:1;min-width:0;font-size:10px;height:24px;padding:2px 3px;max-width:none;width:0}
-    .sr-card-acts .btn-sm{font-size:10px;padding:3px 7px;flex-shrink:0}
-    .sr-card-acts .btn-sm.proc{padding:3px 6px}
+    .sr-card-info{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:44px 10px 10px;background:linear-gradient(to top,rgba(0,0,0,.74),rgba(0,0,0,.38) 54%,transparent);display:flex;flex-direction:column;justify-content:flex-end;min-height:46%}
+    .sr-card-title{font-size:13px;font-weight:700;color:#fff;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.25;margin:0 0 4px;cursor:pointer;text-shadow:0 1px 2px rgba(0,0,0,.55)}
+    .sr-card-title:hover{color:#fff}
+    .sr-card-sub{font-size:11px;color:rgba(255,255,255,.82);margin-bottom:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+    .sr-card-acts{position:absolute;top:8px;right:8px;left:8px;z-index:4;display:flex;gap:4px;align-items:center;justify-content:flex-end;opacity:0;transition:opacity .15s;pointer-events:none}
+    .sr-card:hover .sr-card-acts{opacity:1;pointer-events:auto}
+    .sr-card-acts .music-sel{flex:1;min-width:0;font-size:10px;height:25px;padding:2px 4px;max-width:92px;width:92px;background:rgba(255,255,255,.94);border-color:rgba(255,255,255,.8)}
+    .sr-card-acts .btn-sm{font-size:10px;padding:4px 7px;flex-shrink:0;background:rgba(17,17,17,.82);box-shadow:0 2px 8px rgba(0,0,0,.18)}
+    .sr-card-acts .btn-sm.proc{padding:4px 7px;background:rgba(237,233,254,.94)}
+    @media(hover:none){.sr-card-acts{opacity:1;pointer-events:auto}}
     .btn-sm.add-col{background:#EDE9FE;color:#7C3AED;padding:3px 7px}
     .btn-sm.add-col:hover{background:#DDD6FE}
     .btn-sm.add-col.in-col{background:#DCFCE7;color:#166534}
@@ -229,6 +238,190 @@
     .sched-badge.pending{background:#FEF3C7;color:#92400E}
     .sched-badge.due{background:#FEE2E2;color:#991B1B}
     .sched-badge.done{background:#DCFCE7;color:#166534}
+
+    /* ── Search Suggestions Board ── */
+    .sg-board-container {
+      margin-top: 24px;
+      border: 1.5px solid var(--line);
+      border-radius: 12px;
+      background: #FFFFFF;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.02);
+    }
+    .sg-board-header {
+      padding: 14px 18px;
+      background: #F9FAFB;
+      border-bottom: 1.5px solid var(--line);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sg-board-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--dark);
+      letter-spacing: -0.01em;
+    }
+    .sg-board-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      padding: 18px;
+    }
+    .sg-board-container.sg-collapsed .sg-board-grid {
+      display: none;
+    }
+    .sg-board-container.sg-focused .sg-card {
+      display: none;
+    }
+    .sg-board-container.sg-focused .sg-card.sg-open {
+      display: flex;
+    }
+    @media (max-width: 1024px) {
+      .sg-board-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 580px) {
+      .sg-board-grid { grid-template-columns: 1fr; gap: 12px; padding: 12px; }
+    }
+    .sg-card {
+      background: #FAFAF8;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .sg-card-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--dark);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding-bottom: 6px;
+      border-bottom: 1px dashed var(--line);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .sg-tags-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .sg-tag {
+      display: inline-block;
+      padding: 4px 10px;
+      background: #FFFFFF;
+      border: 1px solid var(--line);
+      border-radius: 100px;
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--mid);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      white-space: nowrap;
+      user-select: none;
+    }
+    .sg-tag:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(232, 80, 58, 0.05);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(232, 80, 58, 0.12);
+    }
+    .sg-tag:active {
+      transform: scale(0.96);
+    }
+
+    /* ── Weekday Schedule Header ── */
+    .sg-schedule-container {
+      padding: 16px 18px;
+      background: #FAFAF8;
+      border-bottom: 1.5px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .sg-schedule-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--mid);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .sg-schedule-days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+    }
+    @media (max-width: 980px) {
+      .sg-schedule-days { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    }
+    @media (max-width: 580px) {
+      .sg-schedule-days { grid-template-columns: repeat(2, 1fr); }
+    }
+    .sg-day-card {
+      background: #FFFFFF;
+      border: 1.5px solid var(--line);
+      border-radius: 8px;
+      padding: 10px 8px;
+      text-align: center;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .sg-day-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(232, 80, 58, 0.08);
+    }
+    .sg-day-card.active-day {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #FFFFFF;
+      box-shadow: 0 4px 14px rgba(232, 80, 58, 0.25);
+      transform: translateY(-2px);
+    }
+    .sg-day-name {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .sg-day-card.active-day .sg-day-name {
+      color: rgba(255, 255, 255, 0.9);
+    }
+    .sg-day-topic {
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .sg-day-card:not(.active-day) .sg-day-topic {
+      color: var(--dark);
+    }
+    .sg-day-card.active-day .sg-day-topic {
+      color: #FFFFFF;
+    }
+    .sg-day-badge {
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 100px;
+      background: rgba(232, 80, 58, 0.1);
+      color: var(--accent);
+      align-self: center;
+      letter-spacing: 0.02em;
+    }
+    .sg-day-card.active-day .sg-day-badge {
+      background: rgba(255, 255, 255, 0.25);
+      color: #FFFFFF;
+    }
   </style>
 </head>
 <body>
@@ -319,8 +512,233 @@
           <button class="btn-resolve" id="srBtn" onclick="doSearch()">Tìm Kiếm</button>
         </div>
         <p class="input-hint">Tự động dịch sang tiếng Trung rồi tìm trên Douyin</p>
-        <div id="srDurFilterWrap" style="display:none;margin-bottom:10px;align-items:center;gap:8px;flex-wrap:wrap">
-          <select id="srDurSel" onchange="applyDurFilter()" style="padding:6px 10px;border:1.5px solid var(--line);border-radius:6px;font-family:'Inter',sans-serif;font-size:12px;color:var(--dark);background:#fff;outline:none;cursor:pointer">
+
+        <!-- Bảng gợi ý từ khóa tìm kiếm (Bóng bàn) -->
+        <!-- Bảng gợi ý từ khóa tìm kiếm (Bóng bàn) -->
+        <div class="sg-board-container" id="sgGuide">
+          <div class="sg-board-header">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/>
+            </svg>
+            <span class="sg-board-title">Ý tưởng Tìm kiếm Video Bóng bàn thịnh hành</span>
+          </div>
+
+          <!-- Lịch nội dung tuần (Giao diện Lịch cao cấp) -->
+          <div class="sg-schedule-container">
+            <span class="sg-schedule-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              Lịch tìm kiếm & Đăng video theo ngày trong tuần (Bấm để nhảy nhanh tới nhóm)
+            </span>
+            <div class="sg-schedule-days">
+              <div class="sg-day-card" onclick="scrollToCategory('sgCardStars')">
+                <span class="sg-day-name">Thứ Hai</span>
+                <span class="sg-day-topic">🏆 Siêu Sao</span>
+                <span class="sg-day-badge">LỊCH ĐĂNG</span>
+              </div>
+              <div class="sg-day-card" onclick="scrollToCategory('sgCardSkills')">
+                <span class="sg-day-name">Thứ Ba</span>
+                <span class="sg-day-topic">🎓 Kỹ Thuật</span>
+                <span class="sg-day-badge">LỊCH ĐĂNG</span>
+              </div>
+              <div class="sg-day-card" onclick="scrollToCategory('sgCardAmateur')">
+                <span class="sg-day-name">Thứ Tư</span>
+                <span class="sg-day-topic">🏠 Dân Gian</span>
+                <span class="sg-day-badge">LỊCH ĐĂNG</span>
+              </div>
+              <div class="sg-day-card" onclick="scrollToCategory('sgCardNational')">
+                <span class="sg-day-name">Thứ Năm</span>
+                <span class="sg-day-topic">🎯 Đội Tuyển</span>
+                <span class="sg-day-badge">LỊCH ĐĂNG</span>
+              </div>
+              <div class="sg-day-card" onclick="scrollToCategory('sgCardHumor')">
+                <span class="sg-day-name">Thứ Sáu</span>
+                <span class="sg-day-topic">😂 Giải Trí</span>
+                <span class="sg-day-badge">LỊCH ĐĂNG</span>
+              </div>
+              <div class="sg-day-card" onclick="scrollToCategory('sgCardRallies')">
+                <span class="sg-day-name">Thứ Bảy</span>
+                <span class="sg-day-topic">⚔️ Siêu Phẩm</span>
+                <span class="sg-day-badge">LỊCH ĐĂNG</span>
+              </div>
+              <div class="sg-day-card" onclick="scrollToCategory('sgCardTrending')">
+                <span class="sg-day-name">Chủ Nhật</span>
+                <span class="sg-day-topic">🔥 Xu Hướng</span>
+                <span class="sg-day-badge">LỊCH ĐĂNG</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="sg-results-slot">
+            <div id="srDurFilterWrap" style="display:none;margin-bottom:10px;align-items:center;gap:8px;flex-wrap:wrap">
+              <select id="srDurSel" onchange="applyDurFilter()" style="padding:6px 10px;border:1.5px solid var(--line);border-radius:6px;font-family:'Inter',sans-serif;font-size:12px;color:var(--dark);background:#fff;outline:none;cursor:pointer">
+                <option value="all">⏱ Tất cả thời lượng</option>
+                <option value="30">Dưới 30 giây</option>
+                <option value="60">Dưới 1 phút</option>
+                <option value="120">Dưới 2 phút</option>
+                <option value="300">Dưới 5 phút</option>
+                <option value="600">Dưới 10 phút</option>
+                <option value="600+">Hơn 10 phút</option>
+              </select>
+              <span id="srDurCount" style="font-size:12px;color:var(--mid)"></span>
+            </div>
+            <div class="search-hint" id="srHint"></div>
+            <div class="msg msg-err" id="srErr"></div>
+            <div class="msg msg-load" id="srLoad"><div class="spinner"></div><span id="srLoadTxt">Đang tìm kiếm...</span></div>
+            <div id="srResults"></div>
+          </div>
+
+          <div class="sg-board-grid">
+            <!-- Nhóm 1: Danh thủ & Siêu sao -->
+            <div class="sg-card" id="sgCardStars">
+              <span class="sg-card-title">🏆 Danh thủ & Siêu sao</span>
+              <div class="sg-tags-wrap">
+                <span class="sg-tag" onclick="quickSearch('马龙 高光时刻 超燃')">Mã Long siêu cháy</span>
+                <span class="sg-tag" onclick="quickSearch('樊振东 暴力弧圈')">Phàn Chấn Đông giật vòng cung</span>
+                <span class="sg-tag" onclick="quickSearch('王楚钦 神仙球')">Vương Sở Khâm bóng thần sầu</span>
+                <span class="sg-tag" onclick="quickSearch('孙颖莎 高光')">Tôn Dĩnh Sa highlights</span>
+                <span class="sg-tag" onclick="quickSearch('樊振东 高光时刻')">Phàn Chấn Đông High</span>
+                <span class="sg-tag" onclick="quickSearch('马龙 经典比赛')">Mã Long kinh điển</span>
+                <span class="sg-tag" onclick="quickSearch('孙颖莎 神仙球')">Tôn Dĩnh Sa bóng ảo</span>
+                <span class="sg-tag" onclick="quickSearch('王楚钦 暴力反手')">Vương Sở Khâm trái tay</span>
+                <span class="sg-tag" onclick="quickSearch('张继科 经典高光')">Trương Kế Khoa high</span>
+                <span class="sg-tag" onclick="quickSearch('伊藤美诚 乒乓球')">Mima Ito bóng bàn</span>
+                <span class="sg-tag" onclick="quickSearch('张本智和 爆燃')">Harimoto bóng bàn</span>
+                <span class="sg-tag" onclick="quickSearch('女乒高光时刻')">Nữ tuyển highlights</span>
+                <span class="sg-tag" onclick="quickSearch('马龙 高光时刻 超燃 高清60帧')">Mã Long 60FPS</span>
+                <span class="sg-tag" onclick="quickSearch('樊振东 暴力弧圈 超燃')">Phàn Chấn Đông siêu giật</span>
+                <span class="sg-tag" onclick="quickSearch('王楚钦 神仙球 必看')">Vương Sở Khâm thần bóng</span>
+                <span class="sg-tag" onclick="quickSearch('孙颖莎 高光时刻 今日热门')">Tôn Dĩnh Sa hot hôm nay</span>
+              </div>
+            </div>
+
+            <!-- Nhóm 2: Đối đầu & Siêu phẩm -->
+            <div class="sg-card" id="sgCardRallies">
+              <span class="sg-card-title">⚔️ Đối đầu & Siêu phẩm</span>
+              <div class="sg-tags-wrap">
+                <span class="sg-tag" onclick="quickSearch('乒乓球精彩集锦 超燃')">Highlights bóng bàn</span>
+                <span class="sg-tag" onclick="quickSearch('神仙球乒乓')">Pha bóng xuất thần</span>
+                <span class="sg-tag" onclick="quickSearch('极限救球')">Cứu bóng ảo ma</span>
+                <span class="sg-tag" onclick="quickSearch('对拉大战')">Đôi công cự ly xa</span>
+                <span class="sg-tag" onclick="quickSearch('乒乓球 神仙球 超燃')">Thần sầu siêu cháy</span>
+                <span class="sg-tag" onclick="quickSearch('极限救球 慢动作')">Cứu bóng Slow motion</span>
+                <span class="sg-tag" onclick="quickSearch('民间高手乒乓 爆款')">Bóng bàn dân gian hot</span>
+                <span class="sg-tag" onclick="quickSearch('乒乓球 看爽了')">Xem cực đã</span>
+                <span class="sg-tag" onclick="quickSearch('逆天乒乓球')">Bóng bàn nghịch thiên</span>
+                <span class="sg-tag" onclick="quickSearch('太强了 乒乓球')">Quá đỉnh bóng bàn</span>
+                <span class="sg-tag" onclick="quickSearch('离谱神仙球')">Bóng ảo ma dị thường</span>
+                <span class="sg-tag" onclick="quickSearch('高光时刻 乒乓球')">Khoảnh khắc đỉnh cao</span>
+                <span class="sg-tag" onclick="quickSearch('乒乓球 慢动作 高潮')">Chậm cực phiêu</span>
+                <span class="sg-tag" onclick="quickSearch('暴力扣杀 乒乓球')">Đập bóng uy lực</span>
+                <span class="sg-tag" onclick="quickSearch('超远台对拉')">Đôi công xa bàn</span>
+                <span class="sg-tag" onclick="quickSearch('极限反杀 乒乓球')">Lội ngược dòng ngoạn mục</span>
+                <span class="sg-tag" onclick="quickSearch('神级回球')">Thần cấp hồi cầu</span>
+                <span class="sg-tag" onclick="quickSearch('超强防守')">Siêu cấp phòng thủ</span>
+                <span class="sg-tag" onclick="quickSearch('连续對拉')">Đôi công liên tục</span>
+                <span class="sg-tag" onclick="quickSearch('极限操作')">极限操作 (Trình siêu đẳng)</span>
+                <span class="sg-tag" onclick="quickSearch('乒乓球 必看合集')">Tuyển tập phải xem</span>
+                <span class="sg-tag" onclick="quickSearch('全场沸腾 乒乓球')">Khán đài bùng nổ</span>
+                <span class="sg-tag" onclick="quickSearch('最强乒乓球回合')">Hồi bóng xuất sắc nhất</span>
+                <span class="sg-tag" onclick="quickSearch('经典神仙球合集')">Tổng hợp siêu phẩm</span>
+              </div>
+            </div>
+
+            <!-- Nhóm 3: Cao thủ Dân gian -->
+            <div class="sg-card" id="sgCardAmateur">
+              <span class="sg-card-title">🏠 Cao thủ Dân gian</span>
+              <div class="sg-tags-wrap">
+                <span class="sg-tag" onclick="quickSearch('民间高手乒乓 爆款')">民间高手 (Cao thủ ẩn dật)</span>
+                <span class="sg-tag" onclick="quickSearch('野球场大神')">Dị nhân phủi bóng bàn</span>
+                <span class="sg-tag" onclick="quickSearch('业余高手 乒乓球')">Nghiệp dư trình cao</span>
+                <span class="sg-tag" onclick="quickSearch('路人王乒乓球')">Độc cô cầu bại đường phố</span>
+                <span class="sg-tag" onclick="quickSearch('业余高手 逆天球技')">Nghiệp dư võ nghệ siêu phàm</span>
+                <span class="sg-tag" onclick="quickSearch('高手过招 乒乓球')">Cao thủ đọ tài</span>
+                <span class="sg-tag" onclick="quickSearch('民间高手 神操作')">Dân gian thần sầu</span>
+                <span class="sg-tag" onclick="quickSearch('高手隐藏实力 乒乓球')">Giấu nghề giả gà</span>
+                <span class="sg-tag" onclick="quickSearch('街头乒乓球高手')">Bóng bàn vỉa hè</span>
+                <span class="sg-tag" onclick="quickSearch('职业选手 VS 路人')">Chuyên nghiệp vs Nghiệp dư</span>
+                <span class="sg-tag" onclick="quickSearch('国家队 VS 民间高手')">Tuyển quốc gia đại chiến Phủi</span>
+                <span class="sg-tag" onclick="quickSearch('高手挑战赛 乒乓球')">Đại hội Thách đấu</span>
+                <span class="sg-tag" onclick="quickSearch('一局封神 乒乓球')">Một trận lưu danh</span>
+              </div>
+            </div>
+
+            <!-- Nhóm 4: Kỹ thuật & Hướng dẫn -->
+            <div class="sg-card" id="sgCardSkills">
+              <span class="sg-card-title">🎓 Kỹ thuật & Dạy học</span>
+              <div class="sg-tags-wrap">
+                <span class="sg-tag" onclick="quickSearch('乒乓球教学')">乒乓球教学 (Học bóng bàn)</span>
+                <span class="sg-tag" onclick="quickSearch('发球教学')">发球 (Giao bóng cơ bản)</span>
+                <span class="sg-tag" onclick="quickSearch('接发球技巧')">接发球 (Đỡ giao bóng)</span>
+                <span class="sg-tag" onclick="quickSearch('反手拧拉 教学')">Trái tay Chiquita</span>
+                <span class="sg-tag" onclick="quickSearch('反手拧拉 超燃')">Trái tay giật cực ảo</span>
+                <span class="sg-tag" onclick="quickSearch('正手爆冲')">正手爆冲 (Giật bạt thuận tay)</span>
+                <span class="sg-tag" onclick="quickSearch('侧旋发球 教学')">Giao bóng xoáy ngang</span>
+                <span class="sg-tag" onclick="quickSearch('下旋发球 教学')">Giao bóng xoáy xuống</span>
+                <span class="sg-tag" onclick="quickSearch('接发球 神级操作')">Đỡ giao bóng thần sầu</span>
+              </div>
+            </div>
+
+            <!-- Nhóm 5: Đội tuyển & Chuyên nghiệp -->
+            <div class="sg-card" id="sgCardNational">
+              <span class="sg-card-title">🎯 Đội tuyển & Chuyên nghiệp</span>
+              <div class="sg-tags-wrap">
+                <span class="sg-tag" onclick="quickSearch('乒乓球 国家队训练')">国家队训练 (Tuyển QG tập)</span>
+                <span class="sg-tag" onclick="quickSearch('国乒训练 高燃')">Tuyển Trung Quốc siêu cháy</span>
+                <span class="sg-tag" onclick="quickSearch('国家队乒乓球训练')">National Team Training</span>
+                <span class="sg-tag" onclick="quickSearch('专业乒乓球比赛')">Thi đấu chuyên nghiệp</span>
+                <span class="sg-tag" onclick="quickSearch('世界级乒乓球对拉')">Đôi công đẳng cấp thế giới</span>
+              </div>
+            </div>
+
+            <!-- Nhóm 6: Giải trí & Độc lạ -->
+            <div class="sg-card" id="sgCardHumor">
+              <span class="sg-card-title">😂 Giải trí & Độc lạ</span>
+              <div class="sg-tags-wrap">
+                <span class="sg-tag" onclick="quickSearch('乒乓球搞笑')">Bóng bàn hài hước</span>
+                <span class="sg-tag" onclick="quickSearch('打乒乓翻车')">Pha xử lý tấu hài</span>
+                <span class="sg-tag" onclick="quickSearch('搞笑乒乓合集')">Tổng hợp vui nhộn</span>
+                <span class="sg-tag" onclick="quickSearch('离谱乒乓球')">离谱 (Bóng bàn dị biệt)</span>
+                <span class="sg-tag" onclick="quickSearch('女生打乒乓球')">Nữ nhân đánh bóng bàn</span>
+                <span class="sg-tag" onclick="quickSearch('美女乒乓球')">Mỹ nhân đánh bóng</span>
+                <span class="sg-tag" onclick="quickSearch('女队训练 乒乓球')">Nữ tuyển luyện tập</span>
+                <span class="sg-tag" onclick="quickSearch('小学生打乒乓')">Nhi đồng giật bóng</span>
+                <span class="sg-tag" onclick="quickSearch('老人乒乓球高手')">Cụ già đả bại trai tráng</span>
+                <span class="sg-tag" onclick="quickSearch('小女孩打乒乓球')">Cô bé thần đồng</span>
+                <span class="sg-tag" onclick="quickSearch('少年天才乒乓球')">Tài năng trẻ bóng bàn</span>
+              </div>
+            </div>
+
+            <!-- Nhóm 7: Xu hướng & Định dạng -->
+            <div class="sg-card" id="sgCardTrending">
+              <span class="sg-card-title">🔥 Xu hướng & Định dạng</span>
+              <div class="sg-tags-wrap">
+                <span class="sg-tag" onclick="quickSearch('乒乓球 今日精选')">今日精选 (Bóng bàn chọn lọc)</span>
+                <span class="sg-tag" onclick="quickSearch('本周最佳乒乓')">Best of the Week</span>
+                <span class="sg-tag" onclick="quickSearch('乒乓球 热门视频')">Video Hot Trend</span>
+                <span class="sg-tag" onclick="quickSearch('乒乓球 爆款合集')">Vạn views tổng hợp</span>
+                <span class="sg-tag" onclick="quickSearch('高清60帧')">HD 60FPS</span>
+                <span class="sg-tag" onclick="quickSearch('慢动作')">慢动作 (Slow-motion)</span>
+                <span class="sg-tag" onclick="quickSearch('超燃')">超燃 (Cực cháy)</span>
+                <span class="sg-tag" onclick="quickSearch('必看')">必看 (Must Watch)</span>
+                <span class="sg-tag" onclick="quickSearch('今日热门')">Hot Today</span>
+                <span class="sg-tag" onclick="quickSearch('一分钟')">一 phút siêu tốc</span>
+                <span class="sg-tag" onclick="quickSearch('乒乓球 热门合集')">Bộ sưu tập triệu view</span>
+                <span class="sg-tag" onclick="quickSearch('今日最火乒乓球')">Bóng bàn thịnh hành nhất</span>
+                <span class="sg-tag" onclick="quickSearch('抖音热门乒乓球')">Hot TikTok/Douyin</span>
+                <span class="sg-tag" onclick="quickSearch('爆款乒乓球视频')">爆款 (Video viral)</span>
+                <span class="sg-tag" onclick="quickSearch('高清乒乓球比赛')">Giải đấu HD</span>
+                <span class="sg-tag" onclick="quickSearch('4K 乒乓球')">4K Ultra HD</span>
+                <span class="sg-tag" onclick="quickSearch('60FPS 乒乓球')">60FPS mượt mà</span>
+                <span class="sg-tag" onclick="quickSearch('超清乒乓球集锦')">Siêu nét Compilation</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="display:none">
+        <div id="srDurFilterWrapOld" style="display:none;margin-bottom:10px;align-items:center;gap:8px;flex-wrap:wrap">
+          <select id="srDurSelOld" onchange="applyDurFilter()" style="padding:6px 10px;border:1.5px solid var(--line);border-radius:6px;font-family:'Inter',sans-serif;font-size:12px;color:var(--dark);background:#fff;outline:none;cursor:pointer">
             <option value="all">⏱ Tất cả thời lượng</option>
             <option value="30">Dưới 30 giây</option>
             <option value="60">Dưới 1 phút</option>
@@ -329,12 +747,13 @@
             <option value="600">Dưới 10 phút</option>
             <option value="600+">Hơn 10 phút</option>
           </select>
-          <span id="srDurCount" style="font-size:12px;color:var(--mid)"></span>
+          <span id="srDurCountOld" style="font-size:12px;color:var(--mid)"></span>
         </div>
-        <div class="search-hint" id="srHint"></div>
-        <div class="msg msg-err" id="srErr"></div>
-        <div class="msg msg-load" id="srLoad"><div class="spinner"></div><span id="srLoadTxt">Đang tìm kiếm...</span></div>
-        <div id="srResults"></div>
+        <div class="search-hint" id="srHintOld"></div>
+        <div class="msg msg-err" id="srErrOld"></div>
+        <div class="msg msg-load" id="srLoadOld"><div class="spinner"></div><span id="srLoadTxtOld">Đang tìm kiếm...</span></div>
+        <div id="srResultsOld"></div>
+        </div>
       </div>
 
       <!-- ── Collection sidebar ──────────────────────────────────── -->
@@ -496,6 +915,81 @@
 <script src="/ffmpeg-proxy/ffmpeg.js"></script>
 <script src="/ffmpeg-proxy/util.js"></script>
 <script>
+function quickSearch(kw) {
+  var input = document.getElementById('srInput');
+  if (!input) return;
+  input.value = withTableTennisContext(kw);
+  input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  setTimeout(function() {
+    doSearch();
+  }, 200);
+}
+
+function withTableTennisContext(kw) {
+  kw = String(kw || '').trim();
+  if (!kw) return '';
+  var hasSport = /乒乓|乒乓球|table\s*tennis|ping\s*pong|b[oó]ng\s*b[aà]n/i.test(kw);
+  return hasSport ? kw : kw + ' 乒乓球';
+}
+
+function scrollToCategory(id) {
+  var el = document.getElementById(id);
+  var guide = document.getElementById('sgGuide');
+  if (guide) {
+    guide.classList.remove('sg-collapsed');
+    guide.classList.add('sg-focused');
+    guide.querySelectorAll('.sg-card').forEach(function(card){
+      card.classList.toggle('sg-open', card.id === id);
+    });
+  }
+  document.querySelectorAll('.sg-day-card').forEach(function(card){
+    var onclick = card.getAttribute('onclick') || '';
+    card.classList.toggle('active-day', onclick.indexOf(id) !== -1);
+  });
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.style.borderColor = 'var(--accent)';
+    el.style.boxShadow = '0 0 15px rgba(232, 80, 58, 0.25)';
+    setTimeout(function() {
+      el.style.borderColor = '';
+      el.style.boxShadow = '';
+    }, 1500);
+  }
+}
+
+function collapseSearchGuideDetails() {
+  var guide = document.getElementById('sgGuide');
+  if (!guide) return;
+  guide.classList.add('sg-collapsed');
+  guide.classList.remove('sg-focused');
+  guide.querySelectorAll('.sg-card').forEach(function(card){
+    card.classList.remove('sg-open');
+  });
+  document.querySelectorAll('.sg-day-card').forEach(function(card){
+    card.classList.remove('active-day');
+  });
+  highlightCurrentDay();
+}
+
+function highlightCurrentDay() {
+  var day = new Date().getDay(); // 0 (Sunday) to 6 (Saturday)
+  var map = [6, 0, 1, 2, 3, 4, 5]; // Sunday maps to index 6, Monday to index 0, Tuesday to index 1...
+  var index = map[day];
+  var cards = document.querySelectorAll('.sg-day-card');
+  if (cards && cards[index]) {
+    cards[index].classList.add('active-day');
+    var badge = cards[index].querySelector('.sg-day-badge');
+    if (badge) badge.textContent = 'HÔM NAY';
+  }
+}
+
+// Automatically highlight current day on load
+if (document.readyState === 'complete') {
+  highlightCurrentDay();
+} else {
+  window.addEventListener('load', highlightCurrentDay);
+}
+
 var _bResolved = [];
 var _uVideos = [], _uUrl = '', _uCursor = 0, _uHasMore = false, _uCount = 0;
 var _srResults = [], _srCursor = 0, _srHasMore = false, _srQuery = '', _srDurFilter = 'all';
@@ -627,6 +1121,7 @@ function mkThumb(coverUrl, onclickStr){
 
 // ── Preview modal ─────────────────────────────────────────────────────────────
 var _pvUrl='', _pvFn='', _pvAwemeId='';
+var _srPlayingIdx=null;
 
 function openPvIdx(type, i){
   var v;
@@ -634,12 +1129,58 @@ function openPvIdx(type, i){
   else if(type==='u') v=_uVideos[i];
   else if(type==='sr') v=_srResults[i];
   if(!v||!v.play_url) return;
+  if(type==='sr'){ playSrInline(i); return; }
   var fn=v.filename||((v.title||'video').slice(0,60).replace(/[\\/:*?"<>|#\r\n]/g,'_')+'.mp4');
   _pvAwemeId=v.aweme_id||'';
-  // Search results: CDN play_url may be inaccessible from server; skip directly to preview/:id
-  var streamUrl=(type==='sr'&&_pvAwemeId)?'':v.play_url;
-  openPv(streamUrl, fn, v.title, v.author, v.duration, v.cover_url);
-  if(type==='sr') _pvUrl=v.play_url; // restore for "Tải Video" button
+  openPv(v.play_url, fn, v.title, v.author, v.duration, v.cover_url);
+}
+
+function srVideoFilename(v){
+  return (v.filename||((v.title||'video').slice(0,60).replace(/[\\/:*?"<>|#\r\n]/g,'_')+'.mp4'));
+}
+
+function restoreSrThumb(idx){
+  var v=_srResults[idx], thumb=$('srThumb_'+idx);
+  if(!v||!thumb) return;
+  var playIco='<svg width="22" height="22" viewBox="0 0 24 24" fill="#fff" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
+  var thumbInner='<div class="sr-thumb-ph" style="background:#F3F4F6;width:100%;height:100%"></div>';
+  if(v.cover_url){
+    var directSrc=esc(v.cover_url);
+    var proxySrc=esc('/api/douyin/image?url='+encodeURIComponent(v.cover_url));
+    thumbInner='<img src="'+directSrc+'" alt="" loading="eager" data-fallback="'+proxySrc+'" onerror="if(!this.dataset.tried){this.dataset.tried=1;this.src=this.dataset.fallback}else{this.style.visibility=\'hidden\'}">';
+  }
+  thumb.classList.remove('playing');
+  thumb.setAttribute('onclick','playSrInline('+idx+')');
+  thumb.innerHTML=thumbInner+'<div class="sr-play-ov">'+playIco+'</div>'+(v.duration?'<span class="sr-card-dur">▷ '+fmtDur(v.duration)+'</span>':'');
+  if(_srPlayingIdx===idx) _srPlayingIdx=null;
+}
+
+function playSrInline(idx){
+  var v=_srResults[idx], thumb=$('srThumb_'+idx);
+  if(!v||!v.play_url||!thumb) return;
+  document.querySelectorAll('.sr-inline-video').forEach(function(vid){ if(vid.id!=='srVideo_'+idx) vid.pause(); });
+  _srPlayingIdx=idx;
+  var fn=srVideoFilename(v);
+  var primary='/api/douyin/stream-url?url='+encodeURIComponent(v.play_url)+'&filename='+encodeURIComponent(fn)+'&inline=1';
+  var fallback=v.aweme_id?'/api/douyin/preview/'+encodeURIComponent(v.aweme_id):'';
+  thumb.classList.add('playing');
+  thumb.removeAttribute('onclick');
+  thumb.innerHTML=
+    '<video class="sr-inline-video" id="srVideo_'+idx+'" controls autoplay playsinline preload="auto" '+(v.cover_url?'poster="'+esc(thumbUrl(v.cover_url))+'"':'')+'></video>'+
+    '<button class="sr-inline-close" onclick="event.stopPropagation();restoreSrThumb('+idx+')" title="Đóng">×</button>';
+  var vid=$('srVideo_'+idx);
+  vid.onerror=function(){
+    if(fallback&&!vid.dataset.fallback){
+      vid.dataset.fallback='1';
+      vid.src=fallback;
+      vid.load();
+      vid.play().catch(function(){});
+    }
+  };
+  vid.src=primary;
+  vid.play().catch(function(err){
+    if(err&&err.name==='NotAllowedError'){ vid.muted=true; vid.play().catch(function(){}); }
+  });
 }
 
 function openPv(videoUrl, filename, title, author, dur, cover){
@@ -1111,7 +1652,7 @@ function renderBatch(results){
     } else {
       var v=item.video, alb=v.media_type==='gallery';
       div.className='result-item';
-      var pvClick=(!alb&&v.play_url)?'openPvIdx("b",'+i+')':null;
+      var pvClick=(!alb&&v.play_url)?"openPvIdx('b',"+i+")":null;
       var th=mkThumb(v.cover_url, pvClick);
       var titleCls=pvClick?' clickable':'', titleClick=pvClick?' onclick="'+pvClick+'"':'';
       var btnH=alb
@@ -1199,7 +1740,7 @@ function renderUser(d,first,startIdx){
     var idx=startIdx+j;
     var div=document.createElement('div'); div.className='result-item';
     var alb=v.media_type==='gallery';
-    var pvClick=(!alb&&v.play_url)?'openPvIdx("u",'+idx+')':null;
+    var pvClick=(!alb&&v.play_url)?"openPvIdx('u',"+idx+")":null;
     var th=mkThumb(v.cover_url, pvClick);
     var titleCls=pvClick?' clickable':'', titleClick=pvClick?' onclick="'+pvClick+'"':'';
     var btnH=alb?'<button class="btn-sm album">Album</button>':
@@ -1235,6 +1776,7 @@ async function doSearch(){
   _srQuery=query; _srCursor=0; _srResults=[]; _srHasMore=false; _srDurFilter='all';
   var durSel=$('srDurSel'); if(durSel) durSel.value='all';
   hide('srErr'); hide('srHint'); hide('srDurFilterWrap'); $('srResults').innerHTML=''; show('srLoad',true);
+  collapseSearchGuideDetails();
   $('srBtn').disabled=true; $('srLoadTxt').textContent='Đang dịch và tìm kiếm...';
   await fetchSearch(true);
   $('srBtn').disabled=false;
@@ -1288,8 +1830,8 @@ function renderSearchResults(videos,startIdx,first){
       var proxySrc=esc('/api/douyin/image?url='+encodeURIComponent(v.cover_url));
       thumbInner='<img src="'+directSrc+'" alt="" loading="eager" data-fallback="'+proxySrc+'" onerror="if(!this.dataset.tried){this.dataset.tried=1;this.src=this.dataset.fallback}else{this.style.visibility=\'hidden\'}">';
     }
-    var durBadge=v.duration?'<span class="sr-card-dur">'+fmtDur(v.duration)+'</span>':'';
-    var thumbClick=v.play_url?'openPvIdx("sr",'+idx+')':'';
+    var durBadge=v.duration?'<span class="sr-card-dur">▷ '+fmtDur(v.duration)+'</span>':'';
+    var thumbClick=v.play_url?'playSrInline('+idx+')':'';
     var actsHtml=v.play_url
       ?'<div class="sr-card-acts" id="acts_sr_'+idx+'">'+
           '<select class="music-sel" id="msel_sr_'+idx+'" title="Chọn nhạc nền" onchange="stopPreview()"><option value="-1">♫ Nhạc</option>'+_mOptHtml+'</select>'+
@@ -1300,7 +1842,7 @@ function renderSearchResults(videos,startIdx,first){
         '</div>'
       :'<span class="badge-sm" style="font-size:10px">No URL</span>';
     card.innerHTML=
-      '<div class="sr-card-thumb"'+(thumbClick?' onclick="'+thumbClick+'"':'')+'>'
+      '<div class="sr-card-thumb" id="srThumb_'+idx+'"'+(thumbClick?' onclick="'+thumbClick+'"':'')+'>'
         +thumbInner
         +(thumbClick?'<div class="sr-play-ov">'+playIco+'</div>':'')
         +durBadge+

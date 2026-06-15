@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Facebook Dashboard | BÓNG BÀN VIỆT</title>
+<link rel="icon" href="/favicon.png">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -37,6 +38,9 @@ input,textarea,select{font-family:inherit;font-size:inherit;outline:none}
 .auto-chip{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.22);color:#6ee7b7;border-radius:999px;padding:3px 9px;font-size:11px;font-weight:700;white-space:nowrap}
 .auto-chip.err{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.25);color:#fca5a5}
 .auto-chip.off{background:rgba(100,116,139,.12);border-color:var(--line);color:var(--muted)}
+.btn-guide,.btn-upload-all{background:var(--surf2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;white-space:nowrap}
+.btn-guide:hover,.btn-upload-all:hover{background:var(--surf3)}
+.btn-upload-all{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.25);color:#6ee7b7}
 @media(max-width:980px){
   .hdr{height:auto;min-height:56px;flex-wrap:wrap;padding:8px 12px}
   .hdr-right{margin-left:0;flex-wrap:wrap}
@@ -44,7 +48,7 @@ input,textarea,select{font-family:inherit;font-size:inherit;outline:none}
 }
 
 /* ── Pillar filter bar ── */
-.pbar{padding:9px 20px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line);background:var(--surf)}
+.pbar{display:none}
 .ppill{background:none;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:3px 12px;font-size:12px;font-weight:500}
 .ppill:hover{border-color:rgba(255,255,255,.2);color:var(--text)}
 
@@ -74,16 +78,46 @@ input,textarea,select{font-family:inherit;font-size:inherit;outline:none}
 .ic.edit:hover{color:var(--blue)}
 .ic.del:hover{color:var(--red);background:rgba(239,68,68,.08)}
 .ic.done{color:var(--green)}
+.ic.upload:hover{color:var(--green)}
 .sdot{width:7px;height:7px;border-radius:50%;margin-left:auto;flex-shrink:0}
 .sdot.draft{background:var(--muted)}
 .sdot.scheduled{background:var(--warn)}
 .sdot.posted{background:var(--green)}
+.sdot.failed{background:var(--red)}
 
 /* ── Empty ── */
 .empty{text-align:center;padding:70px 24px;color:var(--muted)}
 .empty h3{color:var(--text);font-size:16px;margin-bottom:8px}
 .empty-wf{display:inline-block;text-align:left;background:var(--surf);border:1px solid var(--line);border-radius:12px;padding:18px 22px;margin-top:18px;font-size:13px;line-height:2;color:var(--muted)}
 .empty-wf b{color:var(--text)}
+
+/* Auto Facebook guide */
+.fb-guide{margin:14px 20px 0;background:var(--surf);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;grid-template-columns:minmax(0,1.4fr) minmax(260px,.9fr);gap:14px;align-items:start}
+.fb-guide h2{font-size:14px;font-weight:800;color:var(--text);margin-bottom:7px}
+.fb-guide ol{margin-left:18px;color:#cbd5e1;font-size:12.5px;line-height:1.75}
+.fb-guide li+li{margin-top:3px}
+.fb-guide b{color:var(--text)}
+.guide-side{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px;display:flex;flex-direction:column;gap:9px}
+.guide-state{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.state-card{background:var(--surf2);border:1px solid var(--line);border-radius:7px;padding:8px}
+.state-card span{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:800;margin-bottom:2px}
+.state-card strong{font-size:12px;color:var(--text);font-weight:800;word-break:break-word}
+.guide-actions{display:flex;flex-wrap:wrap;gap:7px}
+.guide-actions button{background:var(--surf2);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:6px 10px;font-size:12px;font-weight:700}
+.guide-actions button.primary{background:var(--green);border-color:var(--green);color:#fff}
+.guide-actions button.warn{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.28);color:#fcd34d}
+.guide-actions button:hover{background:var(--surf3)}
+.guide-actions button.primary:hover{background:#059669}
+.guide-note{font-size:11.5px;color:var(--muted);line-height:1.55}
+@media(max-width:900px){.fb-guide{grid-template-columns:1fr;margin:10px 12px 0}}
+.ai-key-panel{margin:12px 20px 0;background:var(--surf);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;grid-template-columns:minmax(180px,.75fr) minmax(260px,1.25fr) auto auto;gap:9px;align-items:end}
+.ai-key-title{font-size:12px;font-weight:800;color:var(--text);line-height:1.35}
+.ai-key-title span{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-top:2px}
+.ai-key-panel input{background:var(--bg);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:8px 10px;font-size:12px;min-width:0}
+.ai-key-panel button{background:var(--surf2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:8px 12px;font-size:12px;font-weight:800;white-space:nowrap}
+.ai-key-panel button.primary{background:rgba(16,185,129,.14);border-color:rgba(16,185,129,.3);color:#6ee7b7}
+.ai-key-state{grid-column:2 / -1;font-size:11.5px;color:var(--muted);line-height:1.45}
+@media(max-width:820px){.ai-key-panel{grid-template-columns:1fr}.ai-key-state{grid-column:auto}.ai-key-panel button{width:100%}}
 
 /* ── Overlay / Modal ── */
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px}
@@ -140,7 +174,7 @@ input,textarea,select{font-family:inherit;font-size:inherit;outline:none}
 .cal-wrap{padding:14px 20px 80px;overflow-x:auto}
 .cal-nav{display:flex;align-items:center;gap:10px;margin-bottom:14px}
 .cal-wk-label{font-weight:700;font-size:13px;color:var(--text);min-width:160px;text-align:center}
-.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(148px,1fr));gap:10px;min-width:1036px}
+.cal-grid{display:grid;grid-template-columns:repeat(var(--cal-cols,7),minmax(148px,1fr));gap:10px;min-width:min(1036px,calc(var(--cal-cols,7) * 158px))}
 .cal-day{background:var(--surf);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
 .cal-day.today{border-color:rgba(59,130,246,.55)}
 .cal-day-hd{background:var(--surf2);padding:9px 10px;text-align:center;border-bottom:1px solid var(--line)}
@@ -156,14 +190,22 @@ input,textarea,select{font-family:inherit;font-size:inherit;outline:none}
 .cal-post-meta{display:flex;align-items:center;gap:5px;margin-bottom:3px}
 .cal-post-main{font-size:11px;font-weight:800;line-height:1.25;color:var(--text);margin-bottom:3px}
 .cal-post-sub{font-size:10.5px;color:var(--muted);line-height:1.35}
-.cal-post-actions{display:flex;gap:4px;margin-top:6px}
+.cal-post-actions{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+.cal-post.is-used{border-color:rgba(16,185,129,.38);border-left-color:var(--green);background:rgba(16,185,129,.06)}
 .mini-copy{background:var(--surf2);border:1px solid var(--line);color:var(--text);border-radius:5px;padding:3px 6px;font-size:10.5px;font-weight:700}
 .mini-copy:hover{border-color:var(--green);color:var(--green)}
+.cal-used{display:inline-flex;align-items:center;gap:4px;background:var(--surf2);border:1px solid var(--line);color:var(--muted);border-radius:5px;padding:3px 6px;font-size:10.5px;font-weight:700;white-space:nowrap;cursor:pointer}
+.cal-used input{width:12px;height:12px;accent-color:var(--green);cursor:pointer}
+.cal-used.is-used{border-color:rgba(16,185,129,.5);color:#6ee7b7;background:rgba(16,185,129,.1)}
 .cal-badge{border-radius:3px;padding:1px 5px;font-size:9.5px;font-weight:700;letter-spacing:.03em}
 .cal-sdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 .cal-sdot.draft{background:var(--muted)}
 .cal-sdot.scheduled{background:var(--warn)}
 .cal-sdot.posted{background:var(--green)}
+.cal-sdot.failed{background:var(--red)}
+.mini-copy.upload{border-color:rgba(16,185,129,.35);color:#6ee7b7}
+.mini-copy.uploaded{border-color:rgba(59,130,246,.35);color:#93c5fd;cursor:default}
+.mini-copy.err{border-color:rgba(239,68,68,.35);color:#fca5a5}
 .cal-empty{color:var(--muted);font-size:11px;text-align:center;padding:16px 0;opacity:.6}
 .cal-count{font-size:10px;color:var(--muted);padding:4px 7px;text-align:center;border-top:1px solid var(--line)}
 /* ── View toggle ── */
@@ -175,6 +217,14 @@ input,textarea,select{font-family:inherit;font-size:inherit;outline:none}
 .file-lbl{display:inline-flex;align-items:center;gap:6px;background:var(--surf2);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:6px 13px;font-size:12px;cursor:pointer;font-family:inherit;transition:background .15s}
 .file-lbl:hover{background:var(--surf3)}
 input[type=file]{display:none}
+.image-picker{display:grid;grid-template-columns:104px 1fr;gap:10px;align-items:start;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px}
+.image-preview{width:104px;aspect-ratio:1/1;border-radius:7px;border:1px solid var(--line);background:var(--surf2);object-fit:cover;display:block}
+.image-preview.empty{display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:11px;text-align:center;padding:10px}
+.image-actions{display:flex;flex-direction:column;gap:7px;min-width:0}
+.image-actions .hint{font-size:11.5px;color:var(--muted);line-height:1.5}
+.image-path{font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:620px){.setup-grid{grid-template-columns:1fr}.image-picker{grid-template-columns:1fr}.image-preview{width:100%}}
 </style>
 </head>
 <body>
@@ -188,11 +238,14 @@ input[type=file]{display:none}
     <button class="stab active" data-s="all" onclick="setStatus('all')">Tất Cả</button>
     <button class="stab" data-s="draft" onclick="setStatus('draft')">Draft</button>
     <button class="stab" data-s="scheduled" onclick="setStatus('scheduled')">Lên Lịch</button>
-    <button class="stab" data-s="posted" onclick="setStatus('posted')">Đã Đăng</button>
+    <button class="stab" data-s="posted" onclick="setStatus('posted')">Đã Dùng</button>
+    <button class="stab" data-s="failed" onclick="setStatus('failed')">Lỗi</button>
   </div>
   <div class="hdr-right">
     <input type="date" id="topWeekDate" class="top-week-date" onchange="syncPromptWeekDate('top')" title="Tuần bắt đầu từ Thứ 2">
     <button class="btn-master" onclick="copyMasterPrompt()" title="Copy Master Prompt để chạy bằng GPT, Claude hoặc Antigravity">📋 Copy Master Prompt</button>
+    <button class="btn-guide" onclick="openFbSetup()" title="Cấu hình Facebook Page và Auto Schedule">Auto Schedule</button>
+    <button class="btn-upload-all" onclick="schedulePendingFbPosts()" title="Đẩy các bài đủ điều kiện lên Facebook Schedule">Upload FB</button>
     <label class="top-file-lbl" for="topImportFile" title="Chọn file JSON để nhập thẳng vào lịch">📂 Nhập JSON</label>
     <input type="file" id="topImportFile" accept=".json,.txt" onchange="loadAndImportTopFile(event)">
     <span class="auto-chip" id="autoImportChip" title="Server local tự theo dõi Desktop/facebook-posts.json">Auto JSON</span>
@@ -201,7 +254,42 @@ input[type=file]{display:none}
   </div>
 </div>
 
-<div class="pbar" id="pbar"></div>
+<section class="ai-key-panel" id="fbAiKeyPanel">
+  <div class="ai-key-title">OpenAI API Key<span>Dung de tao bai va tao anh AI cho Facebook</span></div>
+  <input type="password" id="fbOpenaiKey" placeholder="sk-...">
+  <button class="primary" onclick="saveFbOpenaiKey()">Luu key</button>
+  <button onclick="testFbOpenaiKey()">Test API</button>
+  <div class="ai-key-state" id="fbOpenaiState">Dang kiem tra API key...</div>
+</section>
+
+<section class="fb-guide" id="fbGuide">
+  <div>
+    <h2>Hướng dẫn auto post lên Facebook Page theo lịch</h2>
+    <ol>
+      <li>Vào <b>Auto Schedule</b>, nhập <b>Page ID</b> và <b>Page Access Token</b> có quyền <b>pages_manage_posts</b>, rồi bấm <b>Lưu cấu hình</b>.</li>
+      <li>Bấm <b>Kiểm tra token</b>. Khi Page và Token đều báo sẵn sàng, bật <b>Auto Schedule</b>.</li>
+      <li>Tạo bài bằng <b>Copy Master Prompt</b> hoặc nhập JSON. Mỗi bài cần có <b>scheduled_time</b> cách hiện tại ít nhất 11 phút.</li>
+      <li>Mở từng bài, copy <b>Image Prompt</b> để tạo ảnh, chọn file ảnh vào bài. Khi upload Facebook, hệ thống gửi cả nội dung và ảnh.</li>
+      <li>Bấm <b>Upload FB</b> để đẩy ngay các bài đủ điều kiện, hoặc để Auto Schedule tự chạy nền mỗi 2 phút.</li>
+    </ol>
+  </div>
+  <aside class="guide-side">
+    <div class="guide-state">
+      <div class="state-card"><span>Page</span><strong id="fbPageState">Đang kiểm tra</strong></div>
+      <div class="state-card"><span>Token</span><strong id="fbTokenState">Đang kiểm tra</strong></div>
+      <div class="state-card"><span>Auto</span><strong id="fbAutoState">Đang kiểm tra</strong></div>
+      <div class="state-card"><span>Chờ upload</span><strong id="fbPendingState">0 bài</strong></div>
+    </div>
+    <div class="guide-actions">
+      <button onclick="openFbSetup()">Cấu hình</button>
+      <button onclick="verifyFbToken()">Kiểm tra token</button>
+      <button class="primary" id="btnToggleFbAuto" onclick="toggleFbAutoSchedule()">Bật Auto</button>
+      <button class="warn" onclick="schedulePendingFbPosts()">Upload FB</button>
+    </div>
+    <div class="guide-note">Facebook sẽ tự đăng đúng giờ sau khi bài được schedule thành công trên Page. Server local không cần thức đúng thời điểm đăng.</div>
+  </aside>
+</section>
+
 <div class="cal-wrap" id="calWrap"></div>
 
 <!-- ── Import modal ── -->
@@ -252,6 +340,58 @@ input[type=file]{display:none}
   </div>
 </div>
 
+<!-- ── Facebook setup modal ── -->
+<div class="ov" id="ovFbSetup" style="display:none" onclick="if(event.target===this)closeFbSetup()">
+  <div class="modal">
+    <div class="mhd">
+      <h3>Cấu hình Facebook Page</h3>
+      <button class="mcls" onclick="closeFbSetup()">✕</button>
+    </div>
+    <div class="mbody">
+      <div class="wf-steps">
+        <b>Cách lấy Page Access Token:</b><br>
+        1. Vào Facebook Developers → Graph API Explorer<br>
+        2. Chọn App quản lý Page → Generate Access Token<br>
+        3. Tick quyền <b>pages_manage_posts</b>, <b>pages_read_engagement</b>, <b>pages_show_list</b><br>
+        4. Gọi <b>GET /me/accounts</b> → copy <b>access_token</b> của đúng Page<br>
+        5. Dán Page ID và Page Access Token vào form dưới đây
+      </div>
+      <div class="import-hint" style="margin-top:8px">
+        Cach don gian nhat: dan <b>User Access Token</b> co quyen quan ly Page vao o token, bam <b>Ket noi Page tu token</b>.
+        He thong se tu goi <code>/me/accounts</code> de lay Page token. Neu hien nhieu Page, bam <b>Chon ID</b> roi bam ket noi lai.
+        Mo nhanh: <a href="https://developers.facebook.com/tools/explorer/" target="_blank" rel="noopener">Graph API Explorer</a>.
+      </div>
+      <div class="setup-grid">
+        <div class="fld">
+          <label>Facebook Page ID</label>
+          <input type="text" id="fbSetupPageId" placeholder="123456789012345">
+        </div>
+        <div class="fld">
+          <label>Graph API Version</label>
+          <input type="text" id="fbSetupGraphVersion" placeholder="v24.0">
+        </div>
+      </div>
+      <div class="fld">
+        <label>Page Access Token</label>
+        <input type="password" id="fbSetupToken" placeholder="Dán token mới nếu muốn cập nhật">
+        <div class="import-hint">Để trống nếu chỉ muốn giữ token đã lưu. Token hiện tại: <span id="fbSetupTokenTail">chưa có</span></div>
+      </div>
+      <div class="wf-steps" id="fbSetupPages" style="display:none"></div>
+      <label class="cal-used" style="width:max-content">
+        <input type="checkbox" id="fbSetupAuto">
+        <span>Bật Auto Schedule nền mỗi 2 phút</span>
+      </label>
+      <div class="import-hint">Bài có status <b>Lên Lịch</b>, có <b>scheduled_time</b> hợp lệ và chưa có Facebook Post ID sẽ được upload/schedule. Nếu đã chọn ảnh, Facebook nhận cả ảnh và nội dung.</div>
+    </div>
+    <div class="mfoot">
+      <button class="btn-c" onclick="closeFbSetup()">Đóng</button>
+      <button class="btn-c" onclick="connectFbPage()">Kết nối Page từ token</button>
+      <button class="btn-c" onclick="verifyFbToken()">Kiểm tra token</button>
+      <button class="btn-s" id="btnSaveFbSetup" onclick="saveFbSetup()">Lưu cấu hình</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── Edit modal ── -->
 <div class="ov" id="ovEdit" style="display:none" onclick="if(event.target===this)closeEdit()">
   <div class="modal wide">
@@ -277,7 +417,8 @@ input[type=file]{display:none}
           <select id="eStatus">
             <option value="draft">Draft</option>
             <option value="scheduled">Đã lên lịch</option>
-            <option value="posted">Đã đăng</option>
+            <option value="posted">Đã dùng</option>
+            <option value="failed">Lỗi upload</option>
           </select>
         </div>
       </div>
@@ -310,6 +451,21 @@ input[type=file]{display:none}
       <div class="fld">
         <label>Image Prompt (dùng để tạo ảnh)</label>
         <textarea id="eImgPrompt" style="min-height:76px" placeholder="English prompt for 1080x1080 infographic…"></textarea>
+      </div>
+      <div class="fld">
+        <label>Ảnh upload cùng bài viết</label>
+        <div class="image-picker">
+          <div class="image-preview empty" id="eImageEmpty">Chưa chọn ảnh</div>
+          <img class="image-preview" id="eImagePreview" alt="Ảnh bài viết" style="display:none">
+          <div class="image-actions">
+            <label class="file-lbl" for="eImageFile">Chọn ảnh từ máy</label>
+            <input type="file" id="eImageFile" accept="image/*" onchange="uploadSelectedPostImage(event)">
+            <button class="btn-copy-img" type="button" onclick="copyEditImagePrompt()">Copy Image Prompt</button>
+            <button class="btn-copy-img" type="button" onclick="if(_editId)revealPostImage(_editId)">Mo folder anh</button>
+            <div class="hint">Tạo ảnh theo prompt ở trên bằng ChatGPT/Gemini/Canva, sau đó chọn file ảnh. Khi bấm Upload FB, bài sẽ gửi cả content và ảnh này.</div>
+            <div class="image-path" id="eImagePath"></div>
+          </div>
+        </div>
       </div>
       <div class="fld">
         <label>Fact Summary / Source Notes</label>
@@ -356,19 +512,29 @@ var activeStatus = 'all';
 var activePillar = 'all';
 var calWeekStart = null;
 var _editId = null;
+var _editImagePath = '';
 var _copyPost = null;
 var _autoImportRevision = null;
+var _fbSchedulerState = null;
+const LOGO_IMAGE_SOURCE = 'logo_bongbanviet.png';
+const IMAGE_LOGO_PROMPT_SUFFIX = `Use the BongBanViet logo image from ${LOGO_IMAGE_SOURCE} in the final design. Place the logo clearly but tastefully in a corner or footer; keep it readable and do not redraw, replace, distort, or invent the logo.`;
 
-function nextMondayString(){
+function withLogoImagePrompt(prompt){
+  const value=String(prompt||'').trim();
+  if(!value)return '';
+  return /logo_bongbanviet\.png/i.test(value) ? value : `${value}\n\nBrand asset: ${IMAGE_LOGO_PROMPT_SUFFIX}`;
+}
+
+function currentMondayString(){
   const d=new Date();
   const day=d.getDay();
-  const diff=day===0?1:day===1?0:8-day;
+  const diff=day===0?-6:1-day;
   d.setDate(d.getDate()+diff);
-  return d.toISOString().slice(0,10);
+  return localDateKey(d);
 }
 
 function setPromptWeekDate(value){
-  const v=value||nextMondayString();
+  const v=value||currentMondayString();
   const top=document.getElementById('topWeekDate');
   const modal=document.getElementById('importWeekDate');
   if(top) top.value=v;
@@ -378,7 +544,7 @@ function setPromptWeekDate(value){
 
 function initPromptWeekDate(){
   const top=document.getElementById('topWeekDate');
-  return setPromptWeekDate((top&&top.value)||nextMondayString());
+  return setPromptWeekDate((top&&top.value)||currentMondayString());
 }
 
 function getPromptWeekDate(){
@@ -389,7 +555,7 @@ function getPromptWeekDate(){
 
 function syncPromptWeekDate(origin){
   const source=origin==='modal'?document.getElementById('importWeekDate'):document.getElementById('topWeekDate');
-  setPromptWeekDate((source&&source.value)||nextMondayString());
+  setPromptWeekDate((source&&source.value)||currentMondayString());
 }
 
 const PILLARS = {
@@ -460,9 +626,20 @@ const SCHEDULE_SLOTS = {
 // ─── API ──────────────────────────────────────────────────────────────────────
 async function api(method, path, body) {
   const opts = { method, headers: {'Content-Type':'application/json'} };
+  const token = sessionStorage.getItem('adminToken');
+  if(token) opts.headers['x-admin-token'] = token;
   if (body !== undefined) opts.body = JSON.stringify(body);
   const r = await fetch(path, opts);
   if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+async function apiForm(method, path, formData) {
+  const headers = {};
+  const token = sessionStorage.getItem('adminToken');
+  if(token) headers['x-admin-token'] = token;
+  const r = await fetch(path, { method, headers, body: formData });
+  if(!r.ok) throw new Error(await r.text());
   return r.json();
 }
 
@@ -470,13 +647,216 @@ async function api(method, path, body) {
 async function load(resetCal) {
   posts = await api('GET', '/api/fb-posts');
   if(resetCal) calWeekStart = null;
-  buildPBar();
   render();
+  loadFbSchedulerState();
+  loadFbAiConfig();
+}
+
+function renderFbAiState(cfg){
+  const st=document.getElementById('fbOpenaiState');
+  if(!st) return;
+  const openai=cfg?.aiKeys?.openai || {};
+  st.textContent=openai.configured
+    ? `OpenAI da cau hinh${openai.tail?' ...'+openai.tail:''}. Co the dung de tao bai/anh AI.`
+    : 'Chua co OpenAI API key. Dan key vao o tren, bam Luu key roi Test API.';
+}
+
+async function loadFbAiConfig(){
+  try{
+    const cfg=await api('GET','/api/facebook/config');
+    renderFbAiState(cfg);
+  }catch(e){
+    const st=document.getElementById('fbOpenaiState');
+    if(st) st.textContent='Khong doc duoc cau hinh API key.';
+  }
+}
+
+async function saveFbOpenaiKey(){
+  const input=document.getElementById('fbOpenaiKey');
+  const key=input.value.trim();
+  if(!key){ toast('Nhap OpenAI API key truoc khi luu','err'); return; }
+  try{
+    const cfg=await api('PUT','/api/facebook/config',{openaiApiKey:key});
+    input.value='';
+    renderFbAiState(cfg);
+    toast('Da luu OpenAI API key cho Facebook','ok');
+  }catch(e){ toast('Luu API key loi: '+cleanErr(e.message),'err'); }
+}
+
+async function testFbOpenaiKey(){
+  const key=document.getElementById('fbOpenaiKey').value.trim();
+  const st=document.getElementById('fbOpenaiState');
+  if(st) st.textContent='Dang test OpenAI API key...';
+  try{
+    const r=await api('POST','/api/fb-posts/test-ai-key',{provider:'openai',openaiApiKey:key});
+    if(st) st.textContent=`OpenAI API OK${r.tail?' ...'+r.tail:''}. Tim thay ${r.modelCount||0} model.`;
+    toast('OpenAI API key hop le','ok');
+  }catch(e){
+    if(st) st.textContent='OpenAI API key loi: '+cleanErr(e.message);
+    toast('Test API loi: '+cleanErr(e.message),'err');
+  }
+}
+
+function renderFbSchedulerState(state){
+  _fbSchedulerState = state || {};
+  const pageReady=!!state?.pageIdConfigured;
+  const tokenReady=!!state?.pageTokenConfigured;
+  document.getElementById('fbPageState').textContent=pageReady?(state.pageId||'Đã lưu'):'Chưa có';
+  document.getElementById('fbTokenState').textContent=tokenReady?('Đã lưu'+(state.pageTokenTail?' ...'+state.pageTokenTail:'')):'Chưa có';
+  document.getElementById('fbAutoState').textContent=state?.autoSchedulerEnabled?'Đang bật':'Đang tắt';
+  document.getElementById('fbPendingState').textContent=(state?.pendingUpload||0)+' bài';
+  const btn=document.getElementById('btnToggleFbAuto');
+  if(btn) btn.textContent=state?.autoSchedulerEnabled?'Tắt Auto':'Bật Auto';
+}
+
+async function loadFbSchedulerState(){
+  try{
+    const state=await api('GET','/api/fb-posts/scheduler-state');
+    renderFbSchedulerState(state);
+  }catch(e){
+    renderFbSchedulerState({pageIdConfigured:false,pageTokenConfigured:false,autoSchedulerEnabled:false,pendingUpload:0});
+  }
+}
+
+function openFbSetup(){
+  const s=_fbSchedulerState||{};
+  document.getElementById('fbSetupPageId').value=s.pageId||'';
+  document.getElementById('fbSetupGraphVersion').value=s.graphVersion||'v24.0';
+  document.getElementById('fbSetupToken').value='';
+  document.getElementById('fbSetupTokenTail').textContent=s.pageTokenTail?('...'+s.pageTokenTail):'chưa có';
+  document.getElementById('fbSetupAuto').checked=!!s.autoSchedulerEnabled;
+  renderFbSetupPages([]);
+  document.getElementById('ovFbSetup').style.display='flex';
+}
+
+function closeFbSetup(){ document.getElementById('ovFbSetup').style.display='none'; }
+
+function renderFbSetupPages(pages, message){
+  const box=document.getElementById('fbSetupPages');
+  if(!box) return;
+  const list=Array.isArray(pages)?pages:[];
+  if(!list.length&&!message){ box.style.display='none'; box.innerHTML=''; return; }
+  box.style.display='block';
+  const items=list.map(p=>`<div style="display:flex;justify-content:space-between;gap:10px;border-top:1px solid var(--line);padding-top:7px;margin-top:7px">
+    <span><b>${esc(p.name||'Facebook Page')}</b><br><code>${esc(p.id||'')}</code></span>
+    <button class="btn-c" type="button" onclick="useDiscoveredFbPage('${esc(p.id||'')}')">Chọn ID</button>
+  </div>`).join('');
+  box.innerHTML=`${message?`<div>${esc(message)}</div>`:''}${items}`;
+}
+
+function useDiscoveredFbPage(id){
+  document.getElementById('fbSetupPageId').value=id;
+  toast('Đã điền Page ID, bấm kết nối lại để lưu đúng Page token','ok');
+}
+
+async function saveFbSetup(){
+  const btn=document.getElementById('btnSaveFbSetup');
+  btn.disabled=true;
+  try{
+    const body={
+      pageId:document.getElementById('fbSetupPageId').value.trim(),
+      pageAccessToken:document.getElementById('fbSetupToken').value.trim(),
+      graphVersion:document.getElementById('fbSetupGraphVersion').value.trim()||'v24.0',
+      autoSchedulerEnabled:document.getElementById('fbSetupAuto').checked,
+    };
+    const state=await api('PUT','/api/fb-posts/scheduler-state',body);
+    renderFbSchedulerState(state);
+    document.getElementById('fbSetupToken').value='';
+    toast('Đã lưu cấu hình Facebook','ok');
+  }catch(e){
+    const parsed=parseApiError(e.message);
+    if(parsed&&Array.isArray(parsed.pages)) renderFbSetupPages(parsed.pages, parsed.message||'Chọn Page ID rồi lưu/kết nối lại.');
+    toast('Lỗi lưu cấu hình: '+cleanErr(e.message),'err');
+  }
+  finally{ btn.disabled=false; }
+}
+
+async function connectFbPage(){
+  try{
+    const body={
+      pageId:document.getElementById('fbSetupPageId').value.trim(),
+      pageAccessToken:document.getElementById('fbSetupToken').value.trim(),
+      graphVersion:document.getElementById('fbSetupGraphVersion').value.trim()||'v24.0',
+    };
+    const r=await api('POST','/api/fb-posts/connect-page',body);
+    renderFbSetupPages(r.pages||[], r.message||'');
+    if(r.connected){
+      if(r.page?.id) document.getElementById('fbSetupPageId').value=r.page.id;
+      document.getElementById('fbSetupToken').value='';
+      renderFbSchedulerState(r.state);
+      toast(r.message||'Đã kết nối Facebook Page','ok');
+    }else{
+      toast(r.message||'Cần chọn Page ID rồi kết nối lại','err');
+    }
+  }catch(e){
+    toast('Kết nối Page lỗi: '+cleanErr(e.message),'err');
+  }
+}
+
+async function verifyFbToken(){
+  try{
+    const body={
+      pageId:document.getElementById('fbSetupPageId')?.value.trim()||'',
+      pageAccessToken:document.getElementById('fbSetupToken')?.value.trim()||'',
+      graphVersion:document.getElementById('fbSetupGraphVersion')?.value.trim()||'v24.0',
+    };
+    const r=await api('POST','/api/fb-posts/verify-token',body);
+    renderFbSetupPages(r.availablePages||[], r.pageIdMatchesToken?'Page ID khớp token.':(r.suggestedPageId?('Token hợp lệ. Page ID gợi ý: '+r.suggestedPageId):'Token hợp lệ.'));
+    toast(r.valid?(r.pageIdMatchesToken?'Token hợp lệ và Page ID khớp':'Token hợp lệ, cần kiểm tra Page ID'):'Token không hợp lệ',r.pageIdMatchesToken?'ok':'err');
+    await loadFbSchedulerState();
+  }catch(e){ toast('Token lỗi: '+cleanErr(e.message),'err'); }
+}
+
+async function toggleFbAutoSchedule(){
+  const next=!(_fbSchedulerState&&_fbSchedulerState.autoSchedulerEnabled);
+  try{
+    const state=await api('PUT','/api/fb-posts/scheduler-state',{autoSchedulerEnabled:next});
+    renderFbSchedulerState(state);
+    toast(next?'Đã bật Auto Schedule':'Đã tắt Auto Schedule','ok');
+  }catch(e){ toast('Không đổi được Auto Schedule: '+cleanErr(e.message),'err'); }
+}
+
+async function schedulePendingFbPosts(){
+  try{
+    const r=await api('POST','/api/fb-posts/schedule',{limit:30});
+    await load(true);
+    const ok=(r.results||[]).filter(x=>x.ok).length;
+    const fail=(r.results||[]).filter(x=>!x.ok).length;
+    toast(`Upload FB xong: ${ok} thành công, ${fail} lỗi`, fail?'err':'ok');
+  }catch(e){ toast('Upload FB lỗi: '+cleanErr(e.message),'err'); }
+}
+
+async function scheduleOneFbPost(id){
+  try{
+    const r=await api('POST','/api/fb-posts/'+id+'/schedule',{});
+    if(r.post){
+      const idx=posts.findIndex(x=>x.id===id);
+      if(idx!==-1) posts[idx]=r.post;
+    }
+    await loadFbSchedulerState();
+    render();
+    toast('Đã upload/schedule bài lên Facebook','ok');
+  }catch(e){
+    await load(false);
+    toast('Upload FB lỗi: '+cleanErr(e.message),'err');
+  }
+}
+
+function cleanErr(message){
+  const parsed=parseApiError(message);
+  if(parsed) return parsed.error||parsed.message||parsed.msg||message;
+  return String(message||'').replace(/^Error:\s*/,'');
+}
+
+function parseApiError(message){
+  try{ return JSON.parse(message); }
+  catch{ return null; }
 }
 
 // ─── Pillar bar ───────────────────────────────────────────────────────────────
 function buildPBar() {
   const bar = document.getElementById('pbar');
+  if(!bar)return;
   const items = [{ p:'all', label:'Tất cả' }, ...PILLAR_ORDER.map(p => ({ p, label:(PILLARS[p]||{}).label||p }))];
   bar.innerHTML = items.map(({ p, label }) => {
     const pl = PILLARS[p] || {};
@@ -500,11 +880,26 @@ function setPillar(p) { activePillar = p; buildPBar(); render(); }
 function render() {
   const list = posts.filter(p => {
     if (activeStatus !== 'all' && p.status !== activeStatus) return false;
-    if (activePillar !== 'all' && p.pillar !== activePillar) return false;
     return true;
   });
   document.getElementById('countChip').textContent = list.length + ' bài';
   renderCalendar(list);
+  decorateImageRevealButtons(list);
+}
+
+function decorateImageRevealButtons(list){
+  (list||[]).filter(p=>p.image_path).forEach(p=>{
+    document.querySelectorAll(`button[onclick*="openPostImage('${p.id}')"]`).forEach(btn=>{
+      if(btn.nextElementSibling&&btn.nextElementSibling.classList&&btn.nextElementSibling.classList.contains('reveal-img-btn')) return;
+      const reveal=document.createElement('button');
+      reveal.type='button';
+      reveal.className=(btn.classList.contains('mini-copy')?'mini-copy ':'ic img ')+'reveal-img-btn';
+      reveal.textContent='DIR';
+      reveal.title='Mo dung file anh trong folder';
+      reveal.onclick=(event)=>{ event.stopPropagation(); revealPostImage(p.id); };
+      btn.insertAdjacentElement('afterend', reveal);
+    });
+  });
 }
 
 function cardHTML(p) {
@@ -512,6 +907,7 @@ function cardHTML(p) {
   const timeStr = p.scheduled_time ? fmtTime(p.scheduled_time) : '';
   const text = buildFacebookPostText(p);
   const long = text.length > 260;
+  const hasFb = !!p.facebook_post_id;
   return `<div class="card" id="card-${p.id}">
     <div class="card-top">
       <span class="pbadge" style="background:${pl.bg};color:${pl.color}">${pl.label}</span>
@@ -523,15 +919,18 @@ function cardHTML(p) {
     <div class="card-foot">
       <button class="ic copy" onclick="openCopy('${p.id}')" title="Copy bài đăng">📋</button>
       ${p.image_prompt?`<button class="ic img" onclick="copyImgDirect('${p.id}')" title="Copy image prompt">🖼</button>`:''}
+      ${p.image_path?`<button class="ic img" onclick="openPostImage('${p.id}')" title="Mở ảnh đã chọn">🖼️</button>`:''}
+      ${hasFb?`<button class="ic upload done" title="Đã upload Facebook">FB</button>`:`<button class="ic upload" onclick="scheduleOneFbPost('${p.id}')" title="Upload content ${p.image_path?'và ảnh ':''}lên Facebook Schedule">FB</button>`}
       <button class="ic edit" onclick="openEdit('${p.id}')" title="Sửa bài">✏️</button>
-      <button class="ic${p.status==='posted'?' done':''}" onclick="togglePosted('${p.id}')" title="${p.status==='posted'?'Bỏ đánh dấu':'Đánh dấu đã đăng'}">✓</button>
+      <button class="ic${p.status==='posted'?' done':''}" onclick="togglePosted('${p.id}')" title="${p.status==='posted'?'Bỏ đánh dấu đã dùng':'Đánh dấu đã dùng'}">✓</button>
       <button class="ic del" onclick="delPost('${p.id}')" title="Xóa">🗑</button>
       <span class="sdot ${p.status||'draft'}" style="margin-left:auto" title="${p.status||'draft'}"></span>
     </div>
   </div>`;
 }
 
-function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function escJs(s){ return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\r?\n/g,'\\n'); }
 
 function fmtTime(s){
   if(!s)return '';
@@ -611,7 +1010,7 @@ function openCopy(id){
   const hasImg=!!p.image_prompt;
   document.getElementById('imgSection').style.display=hasImg?'block':'none';
   document.getElementById('btnCopyImg').style.display=hasImg?'inline-flex':'none';
-  if(hasImg) document.getElementById('imgBox').textContent=p.image_prompt;
+  if(hasImg) document.getElementById('imgBox').textContent=withLogoImagePrompt(p.image_prompt);
   document.getElementById('ovCopy').style.display='flex';
 }
 
@@ -625,13 +1024,13 @@ async function copyAll(){
 
 async function copyImgFromModal(){
   if(!_copyPost||!_copyPost.image_prompt)return;
-  try{ await navigator.clipboard.writeText(_copyPost.image_prompt); toast('Đã copy image prompt!','ok'); } catch{ toast('Lỗi copy','err'); }
+  try{ await navigator.clipboard.writeText(withLogoImagePrompt(_copyPost.image_prompt)); toast('Đã copy image prompt!','ok'); } catch{ toast('Lỗi copy','err'); }
 }
 
 async function copyImgDirect(id){
   const p=posts.find(x=>x.id===id);
   if(!p||!p.image_prompt)return;
-  try{ await navigator.clipboard.writeText(p.image_prompt); toast('Đã copy image prompt!','ok'); } catch{ toast('Lỗi copy','err'); }
+  try{ await navigator.clipboard.writeText(withLogoImagePrompt(p.image_prompt)); toast('Đã copy image prompt!','ok'); } catch{ toast('Lỗi copy','err'); }
 }
 
 async function copyPostDirect(id){
@@ -641,13 +1040,32 @@ async function copyPostDirect(id){
 }
 
 // ─── Toggle posted ────────────────────────────────────────────────────────────
+async function setPostUsed(id, used){
+  const p=posts.find(x=>x.id===id);
+  if(!p)return;
+  const oldStatus=p.status||'draft';
+  const ns=used?'posted':(p.scheduled_time?'scheduled':'draft');
+  p.status=ns;
+  render();
+  try{
+    await api('PUT','/api/fb-posts/'+id,{...p,status:ns,source_urls:[]});
+    toast(ns==='posted'?'✓ Đã đánh dấu đã dùng':'Đã bỏ đánh dấu đã dùng','ok');
+  }catch(e){
+    p.status=oldStatus;
+    render();
+    toast('Lỗi cập nhật trạng thái','err');
+  }
+}
+
 async function togglePosted(id){
   const p=posts.find(x=>x.id===id);
   if(!p)return;
-  const ns=p.status==='posted'?'draft':'posted';
-  await api('PUT','/api/fb-posts/'+id,{...p,status:ns,source_urls:[]});
-  p.status=ns; render();
-  toast(ns==='posted'?'✓ Đã đăng!':'Chuyển về Draft','ok');
+  await setPostUsed(id, p.status!=='posted');
+}
+
+async function toggleUsed(e,id){
+  e.stopPropagation();
+  await setPostUsed(id, e.target.checked);
 }
 
 // ─── Delete ───────────────────────────────────────────────────────────────────
@@ -675,12 +1093,76 @@ function openEdit(id){
   document.getElementById('eHashtags').value=p.hashtags||'';
   document.getElementById('eCta').value=p.cta||'';
   document.getElementById('eImgPrompt').value=p.image_prompt||'';
+  _editImagePath=p.image_path||'';
+  setEditImagePreview(_editImagePath);
   document.getElementById('eSourceNotes').value=p.source_notes||'';
   document.getElementById('ovEdit').style.display='flex';
   setTimeout(()=>document.getElementById('eTopic').focus(),80);
 }
 
-function closeEdit(){ document.getElementById('ovEdit').style.display='none'; _editId=null; }
+function closeEdit(){ document.getElementById('ovEdit').style.display='none'; _editId=null; _editImagePath=''; }
+
+function setEditImagePreview(path){
+  const img=document.getElementById('eImagePreview');
+  const empty=document.getElementById('eImageEmpty');
+  const pathEl=document.getElementById('eImagePath');
+  const file=document.getElementById('eImageFile');
+  if(file) file.value='';
+  if(path){
+    img.src=path;
+    img.style.display='block';
+    empty.style.display='none';
+    pathEl.textContent=path;
+  }else{
+    img.removeAttribute('src');
+    img.style.display='none';
+    empty.style.display='flex';
+    pathEl.textContent='';
+  }
+}
+
+async function uploadSelectedPostImage(e){
+  if(!_editId){ toast('Mở bài cần sửa trước khi chọn ảnh','err'); return; }
+  const file=e.target.files&&e.target.files[0];
+  if(!file)return;
+  const fd=new FormData();
+  fd.append('image',file);
+  try{
+    const r=await apiForm('POST','/api/fb-posts/'+_editId+'/image',fd);
+    _editImagePath=r.image_path||'';
+    setEditImagePreview(_editImagePath);
+    const idx=posts.findIndex(x=>x.id===_editId);
+    if(idx!==-1&&r.post) posts[idx]=r.post;
+    await loadFbSchedulerState();
+    render();
+    toast('Đã gắn ảnh vào bài viết','ok');
+  }catch(err){ toast('Upload ảnh lỗi: '+cleanErr(err.message),'err'); }
+}
+
+async function copyEditImagePrompt(){
+  const prompt=withLogoImagePrompt(document.getElementById('eImgPrompt').value.trim());
+  if(!prompt){ toast('Bài chưa có image prompt','err'); return; }
+  try{ await navigator.clipboard.writeText(prompt); toast('Đã copy image prompt','ok'); }
+  catch{ toast('Lỗi copy prompt','err'); }
+}
+
+function openPostImage(id){
+  const p=posts.find(x=>x.id===id);
+  if(!p||!p.image_path)return;
+  window.open(p.image_path,'_blank','noopener');
+}
+
+async function revealPostImage(id){
+  const p=posts.find(x=>x.id===id);
+  if(!p||!p.image_path){ toast('Bai chua co anh','err'); return; }
+  try{
+    const r=await api('POST','/api/fb-posts/'+id+'/reveal-image',{});
+    if(r.path&&navigator.clipboard) await navigator.clipboard.writeText(r.path).catch(()=>{});
+    toast(r.ok?'Da mo folder va copy duong dan anh':'Da copy duong dan anh','ok');
+  }catch(err){
+    toast('Khong mo duoc folder: '+cleanErr(err.message),'err');
+  }
+}
 
 async function saveEdit(){
   if(!_editId)return;
@@ -695,7 +1177,9 @@ async function saveEdit(){
     caption: document.getElementById('eCaption').value.trim(),
     hashtags: document.getElementById('eHashtags').value.trim(),
     cta: document.getElementById('eCta').value.trim(),
-    image_prompt: document.getElementById('eImgPrompt').value.trim(),
+    image_path: _editImagePath,
+    image_prompt: withLogoImagePrompt(document.getElementById('eImgPrompt').value.trim()),
+    image_source: _editImagePath ? 'Manual dashboard upload' : '',
     source_notes: document.getElementById('eSourceNotes').value.trim(),
     brand_voice:'', fact_summary:'',
   };
@@ -705,7 +1189,7 @@ async function saveEdit(){
     if(idx!==-1) posts[idx]={...posts[idx],...body};
     closeEdit(); buildPBar(); render();
     toast('Đã cập nhật','ok');
-  }catch{ toast('Lỗi khi lưu','err'); }
+  }catch(e){ toast('Lỗi khi lưu: '+cleanErr(e.message),'err'); }
   finally{ btn.disabled=false; }
 }
 
@@ -833,12 +1317,17 @@ Bóng Bàn Việt - Đồng Hành Cùng Mọi Tay Vợt
 📞 Hotline/Zalo: 096.1269.386
 - Dùng icon/bullet hợp lý, bố trí khoa học, không nhồi bán hàng.
 
+YÊU CẦU BẮT BUỘC CHO IMAGE_PROMPT:
+- Mỗi bài phải có image_prompt bằng tiếng Anh cho ảnh vuông 1080x1080.
+- Mọi image_prompt bắt buộc ghi rõ: use the BongBanViet logo image from "logo_bongbanviet.png" in the final design.
+- Logo phải xuất hiện rõ nhưng tinh tế ở góc hoặc footer, không bị méo, không bị vẽ lại, không thay bằng logo giả.
+
 YÊU CẦU: Tạo đủ 36 bài cho TUẦN bắt đầu từ Thứ 2 ngày __WEEK_START__.
 Tính toán ngày cụ thể cho mỗi slot từ ngày đó (T2 = __WEEK_START__, T3 = +1 ngày, ..., CN = +6 ngày).
 Điền scheduled_time theo format ISO: "YYYY-MM-DDTHH:MM:00" — phải có ngày thực tế, không dùng placeholder.
 
 OUTPUT — Chỉ trả về JSON, không viết thêm gì khác:
-{"posts":[{"source_id":"bbv-facebook-YYYYMMDD-HHMM","topic":"Tiêu đề nội bộ ngắn","pillar":"knowledge|combo|product|engagement|promo|trust","status":"scheduled","post_text":"[Kiến thức] - Title\\n\\nBài viết Facebook đầy đủ gồm miêu tả, bullet và CTA.\\n\\nBóng Bàn Việt - Đồng Hành Cùng Mọi Tay Vợt\\n📌 Website: bongbanviet.com\\n📞 Hotline/Zalo: 096.1269.386\\n\\n#BongBanViet #TableTennis","website_link":"https://bongbanviet.com","image_prompt":"English 1080x1080 image prompt","scheduled_time":"2026-MM-DDTHH:MM:00","source_notes":"Mục tiêu slot"}]}`;
+{"posts":[{"source_id":"bbv-facebook-YYYYMMDD-HHMM","topic":"Tiêu đề nội bộ ngắn","pillar":"knowledge|combo|product|engagement|promo|trust","status":"scheduled","post_text":"[Kiến thức] - Title\\n\\nBài viết Facebook đầy đủ gồm miêu tả, bullet và CTA.\\n\\nBóng Bàn Việt - Đồng Hành Cùng Mọi Tay Vợt\\n📌 Website: bongbanviet.com\\n📞 Hotline/Zalo: 096.1269.386\\n\\n#BongBanViet #TableTennis","website_link":"https://bongbanviet.com","image_prompt":"English 1080x1080 image prompt. Use the BongBanViet logo image from logo_bongbanviet.png in the final design.","scheduled_time":"2026-MM-DDTHH:MM:00","source_notes":"Mục tiêu slot"}]}`;
 
 const LOCAL_IMPORT_APPENDIX=`
 
@@ -854,7 +1343,7 @@ BỔ SUNG BẮT BUỘC CHO WORKFLOW LOCAL → DASHBOARD:
   npm run dev
 
 SCHEMA CUỐI CÙNG:
-{"posts":[{"source_id":"bbv-facebook-YYYYMMDD-HHMM","topic":"Tiêu đề nội bộ ngắn","pillar":"knowledge|combo|product|engagement|promo|trust","status":"scheduled","post_text":"[Kiến thức] - Title\\n\\nBài viết Facebook đầy đủ gồm miêu tả, bullet và CTA.\\n\\nBóng Bàn Việt - Đồng Hành Cùng Mọi Tay Vợt\\n📌 Website: bongbanviet.com\\n📞 Hotline/Zalo: 096.1269.386\\n\\n#BongBanViet #TableTennis","website_link":"https://bongbanviet.com","image_prompt":"English 1080x1080 image prompt","scheduled_time":"YYYY-MM-DDTHH:MM:00","source_notes":"Mục tiêu slot"}]}`;
+{"posts":[{"source_id":"bbv-facebook-YYYYMMDD-HHMM","topic":"Tiêu đề nội bộ ngắn","pillar":"knowledge|combo|product|engagement|promo|trust","status":"scheduled","post_text":"[Kiến thức] - Title\\n\\nBài viết Facebook đầy đủ gồm miêu tả, bullet và CTA.\\n\\nBóng Bàn Việt - Đồng Hành Cùng Mọi Tay Vợt\\n📌 Website: bongbanviet.com\\n📞 Hotline/Zalo: 096.1269.386\\n\\n#BongBanViet #TableTennis","website_link":"https://bongbanviet.com","image_prompt":"English 1080x1080 image prompt. Use the BongBanViet logo image from logo_bongbanviet.png in the final design.","scheduled_time":"YYYY-MM-DDTHH:MM:00","source_notes":"Mục tiêu slot"}]}`;
 
 function buildPrompt(){
   const weekDate=getPromptWeekDate();
@@ -961,16 +1450,33 @@ function getMonday(date){
   return d;
 }
 
+function localDateKey(date){
+  const d=new Date(date);
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,'0');
+  const day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
 function renderCalendarPost(p){
   const pl=PILLARS[p.pillar]||{bg:'rgba(100,116,139,.15)',color:'#94a3b8',label:'?'};
   const tStr=fmtClock(p.scheduled_time);
   const preview=postPreview(p);
-  return `<div class="cal-post" onclick="openEdit('${p.id}')" title="${esc(p.topic||'')}">
+  const isUsed=p.status==='posted'||p.is_used===true;
+  const hasFb=!!p.facebook_post_id;
+  return `<div class="cal-post${isUsed?' is-used':''}" onclick="openEdit('${p.id}')" title="${esc(p.topic||'')}">
     <div class="cal-post-main">${esc(tStr?`${tStr} - ${pl.label}`:pl.label)}</div>
     <div class="cal-post-sub">${esc(preview||p.topic||'(Chưa đặt nội dung)')}</div>
     <div class="cal-post-actions">
       <button class="mini-copy" onclick="event.stopPropagation();copyPostDirect('${p.id}')" title="Copy toàn bộ bài đăng">Copy bài</button>
       ${p.image_prompt?`<button class="mini-copy" onclick="event.stopPropagation();copyImgDirect('${p.id}')" title="Copy prompt tạo ảnh">Copy ảnh</button>`:''}
+      ${p.image_path?`<button class="mini-copy" onclick="event.stopPropagation();openPostImage('${p.id}')" title="Mở ảnh đã chọn">Ảnh</button>`:''}
+      ${hasFb?`<button class="mini-copy uploaded" onclick="event.stopPropagation()" title="${esc(p.facebook_post_id)}">Đã upload</button>`:`<button class="mini-copy upload" onclick="event.stopPropagation();scheduleOneFbPost('${p.id}')" title="Upload content ${p.image_path?'và ảnh ':''}lên Facebook Schedule">Upload FB</button>`}
+      ${p.status==='failed'&&p.error_message?`<button class="mini-copy err" onclick="event.stopPropagation();alert('${escJs(p.error_message)}')" title="Xem lỗi">Lỗi</button>`:''}
+      <label class="cal-used${isUsed?' is-used':''}" onclick="event.stopPropagation()" title="${isUsed?'Bỏ đánh dấu đã dùng':'Đánh dấu đã dùng'}">
+        <input type="checkbox" ${isUsed?'checked':''} onchange="toggleUsed(event,'${p.id}')">
+        <span>Đã dùng</span>
+      </label>
       <span class="cal-sdot ${p.status||'draft'}" style="margin-left:auto;margin-top:6px"></span>
     </div>
   </div>`;
@@ -994,15 +1500,8 @@ function renderCalendar(list){
     return;
   }
 
-  // auto-pick week from earliest scheduled post if not set
   if(!calWeekStart){
-    const withTime=displayList.filter(p=>p.scheduled_time);
-    if(withTime.length){
-      const earliest=withTime.reduce((a,b)=>a.scheduled_time<b.scheduled_time?a:b);
-      calWeekStart=getMonday(new Date(earliest.scheduled_time));
-    } else {
-      calWeekStart=getMonday(new Date());
-    }
+    calWeekStart=getMonday(new Date());
   }
 
   const days=[];
@@ -1013,7 +1512,7 @@ function renderCalendar(list){
   }
 
   const DAY_NAMES=['Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7','CN'];
-  const todayKey=new Date().toISOString().slice(0,10);
+  const todayKey=localDateKey(new Date());
 
   // group posts by date
   const byDay={};
@@ -1025,8 +1524,12 @@ function renderCalendar(list){
   });
   Object.values(byDay).forEach(arr=>arr.sort((a,b)=>a.scheduled_time.localeCompare(b.scheduled_time)));
 
-  const totalInWeek=days.reduce((acc,d)=>acc+(byDay[d.toISOString().slice(0,10)]||[]).length,0);
-  const wLabel=`${days[0].getDate()}/${days[0].getMonth()+1} – ${days[6].getDate()}/${days[6].getMonth()+1}/${days[6].getFullYear()}`;
+  const visibleDays=days.filter(d=>(byDay[localDateKey(d)]||[]).length);
+  const renderDays=visibleDays.length?visibleDays:days;
+  const totalInWeek=days.reduce((acc,d)=>acc+(byDay[localDateKey(d)]||[]).length,0);
+  const firstDay=renderDays[0];
+  const lastDay=renderDays[renderDays.length-1];
+  const wLabel=`${firstDay.getDate()}/${firstDay.getMonth()+1} – ${lastDay.getDate()}/${lastDay.getMonth()+1}/${lastDay.getFullYear()}`;
 
   wrap.innerHTML=`
     <div class="cal-nav">
@@ -1035,23 +1538,16 @@ function renderCalendar(list){
       <button class="btn-c" style="padding:5px 13px;font-size:12px" onclick="calNav(1)">Tuần sau ›</button>
       <span style="margin-left:8px;font-size:12px;color:var(--muted)">${totalInWeek} bài trong tuần</span>
     </div>
-    <div class="cal-grid">
-      ${days.map((d,i)=>{
-        const key=d.toISOString().slice(0,10);
+    <div class="cal-grid" style="--cal-cols:${renderDays.length}">
+      ${renderDays.map((d)=>{
+        const key=localDateKey(d);
         const dp=byDay[key]||[];
         const isToday=key===todayKey;
-        const used=new Set();
-        const slotHtml=(SCHEDULE_SLOTS[i]||[]).map(slot=>{
-          const [time,pillar]=slot;
-          const match=dp.find(p=>!used.has(p.id)&&fmtClock(p.scheduled_time)===time);
-          if(match){ used.add(match.id); return renderCalendarPost(match); }
-          return activeStatus==='all'&&activePillar==='all'?renderSlotPlaceholder(slot):'';
-        }).join('');
-        const extraHtml=dp.filter(p=>!used.has(p.id)).map(renderCalendarPost).join('');
-        const dayHtml=(slotHtml+extraHtml).trim();
+        const dayIndex=(d.getDay()+6)%7;
+        const dayHtml=dp.map(renderCalendarPost).join('');
         return `<div class="cal-day${isToday?' today':''}">
           <div class="cal-day-hd">
-            <div class="dn">${DAY_NAMES[i]}</div>
+            <div class="dn">${DAY_NAMES[dayIndex]}</div>
             <div class="dd">${d.getDate()}/${d.getMonth()+1}</div>
           </div>
           <div class="cal-slots">
@@ -1092,6 +1588,7 @@ initPromptWeekDate();
 load();
 pollAutoImportState();
 setInterval(pollAutoImportState,3000);
+setInterval(loadFbSchedulerState,10000);
 </script>
 </body>
 </html>

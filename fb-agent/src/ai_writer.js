@@ -11,6 +11,15 @@
 const OpenAI = require('openai');
 const logger = require('./logger');
 
+const LOGO_IMAGE_SOURCE = 'logo_bongbanviet.png';
+const LOGO_PROMPT_SUFFIX = `Use the BongBanViet logo image from ${LOGO_IMAGE_SOURCE} in the final design. Place it clearly but tastefully in a corner or footer; keep it readable and do not redraw, replace, distort, or invent the logo.`;
+
+function withLogoPrompt(prompt) {
+  const value = String(prompt || '').trim();
+  if (!value) return '';
+  return /logo_bongbanviet\.png/i.test(value) ? value : `${value}\n\nBrand asset: ${LOGO_PROMPT_SUFFIX}`;
+}
+
 // Lazy-init client để tránh lỗi khi chưa set OPENAI_API_KEY
 let _client = null;
 function getClient() {
@@ -110,6 +119,7 @@ Yêu cầu chi tiết:
 3. image_prompt: Mô tả ngắn (tiếng Anh, 1-2 câu) cho ảnh infographic phù hợp bài viết.
    - Phong cách: Modern, professional, table tennis themed
    - Phù hợp đăng Facebook (vuông hoặc ngang)
+   - Bắt buộc dùng logo file "${LOGO_IMAGE_SOURCE}" trong ảnh cuối; logo rõ nhưng tinh tế, không vẽ lại hoặc làm méo
 
 Trả về JSON format:
 {
@@ -147,7 +157,7 @@ Trả về JSON format:
   return {
     caption:      (parsed.caption      || '').trim(),
     hashtags:     (parsed.hashtags     || '').trim(),
-    image_prompt: (parsed.image_prompt || '').trim(),
+    image_prompt: withLogoPrompt(parsed.image_prompt || ''),
   };
 }
 
