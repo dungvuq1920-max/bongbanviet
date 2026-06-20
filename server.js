@@ -36,6 +36,7 @@ const PORT = process.env.PORT || 3000;
 const DATA_DIR = process.env.DATA_DIR
   ? path.resolve(process.env.DATA_DIR)
   : __dirname;
+const PUBLIC_SITE_URL = (process.env.PUBLIC_SITE_URL || 'https://bongbanviet.com').replace(/\/+$/, '');
 const SHOPEE_AI_CONFIG_FILE = path.join(DATA_DIR, 'shopee-ai-config.json');
 const FACEBOOK_CONFIG_FILE = path.join(DATA_DIR, 'facebook-config.json');
 const FACEBOOK_LOCAL_IMPORT_FILE = path.resolve(
@@ -337,10 +338,26 @@ app.post('/api/lichtap', (req, res) => {
   }
 });
 
+const immutableStaticOptions = {
+  maxAge: '30d',
+  immutable: true,
+};
+const uploadedImageStaticOptions = {
+  maxAge: '1d',
+  setHeaders(res) {
+    res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
+  },
+};
+
 // Serve uploaded images from persistent volume first
-app.use('/images/products', express.static(path.join(DATA_DIR, 'images', 'products')));
-app.use('/images/banners', express.static(path.join(DATA_DIR, 'images', 'banners')));
-app.use('/images/facebook', express.static(path.join(DATA_DIR, 'images', 'facebook')));
+app.use('/images/optimized', express.static(path.join(__dirname, 'images', 'optimized'), immutableStaticOptions));
+app.use('/images/products', express.static(path.join(DATA_DIR, 'images', 'products'), uploadedImageStaticOptions));
+app.use('/images/banners', express.static(path.join(DATA_DIR, 'images', 'banners'), uploadedImageStaticOptions));
+app.use('/images/facebook', express.static(path.join(DATA_DIR, 'images', 'facebook'), uploadedImageStaticOptions));
+app.get('/images/products/:file', (_req, res) => {
+  res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
+  res.sendFile(path.join(__dirname, 'images', 'optimized', 'logo-bongbanviet-160.webp'));
+});
 // Serve lichtap React app — inject Firebase runtime config from Railway env vars
 app.get(['/lichtap', '/lichtap/'], (req, res) => {
   const indexPath = path.join(__dirname, 'lichtap', 'index.html');
@@ -499,21 +516,298 @@ function isLocalRequest(req) {
 }
 
 const LIGHT_THEME_HREF = '/css/light-theme.css?v=20260521';
+const GLOBAL_POLISH_CSS = `
+<style id="_bbv_global_polish">
+  html, body { max-width: 100%; overflow-x: hidden; }
+  img { max-width: 100%; height: auto; }
+  .mega-panel { max-width: calc(100vw - 32px); }
+  .mega-brands, .mega-brands.wide { min-width: min(680px, calc(100vw - 32px)) !important; }
+  .mega-gear { min-width: min(340px, calc(100vw - 32px)) !important; }
+  .toolbar, .contact-layout, .footer-cta-inner { min-width: 0; }
+  .site-container .nav-cta,
+  .site-container .btn-red,
+  .nav-cta,
+  .btn-red {
+    background: #D62B2B !important;
+    border-color: #D62B2B !important;
+    color: #fff !important;
+  }
+  .site-container .nav-cta:hover,
+  .site-container .btn-red:hover,
+  .nav-cta:hover,
+  .btn-red:hover {
+    background: #1A1A1A !important;
+    border-color: #1A1A1A !important;
+    color: #fff !important;
+  }
+  @media (max-width: 760px) {
+    .toolbar, .contact-layout, .footer-cta-inner { flex-wrap: wrap; }
+    .price-filter { width: 100%; flex-wrap: wrap; }
+    .price-input, .search-input { width: 100% !important; }
+  }
+</style>`;
 
-function sendThemedHtml(res, filePath) {
+const PUBLIC_PAGE_META = {
+  'index.html': {
+    title: 'BÓNG BÀN VIỆT | Dụng cụ bóng bàn chính hãng, tư vấn theo lối chơi',
+    description: 'BÓNG BÀN VIỆT cung cấp cốt vợt, mặt vợt, bóng, bàn và combo vợt bóng bàn chính hãng. Tư vấn chọn dụng cụ theo trình độ, lối chơi và ngân sách.',
+    image: '/images/optimized/banner-homepage-1600.webp',
+  },
+  'cot-vot.html': {
+    title: 'Cốt vợt bóng bàn chính hãng | BÓNG BÀN VIỆT',
+    description: 'Cốt vợt bóng bàn chính hãng Butterfly, Tibhar, Unrex, Yinhe. Tư vấn chọn cốt theo trình độ, lối chơi, ngân sách và cảm giác bóng.',
+    image: '/images/optimized/banner-cot-vot-card.webp',
+  },
+  'mat-vot.html': {
+    title: 'Mặt vợt bóng bàn chính hãng | BÓNG BÀN VIỆT',
+    description: 'Mặt vợt bóng bàn chính hãng cho tấn công, kiểm soát, giật xoáy và phòng thủ. Tư vấn độ cứng, độ dày, speed, spin, control.',
+    image: '/images/optimized/banner-mat-vot-card.webp',
+  },
+  'bong.html': {
+    title: 'Bóng bóng bàn tập luyện và thi đấu | BÓNG BÀN VIỆT',
+    description: 'Bóng bóng bàn tập luyện và thi đấu chính hãng, bóng 3 sao, bóng ITTF, hộp và thùng cho cá nhân, CLB, học viện.',
+    image: '/images/optimized/banner-bong-card.webp',
+  },
+  'ban.html': {
+    title: 'Bàn bóng bàn gia đình, CLB và thi đấu | BÓNG BÀN VIỆT',
+    description: 'Bàn bóng bàn trong nhà, ngoài trời, bàn gia đình, CLB và thi đấu. Tư vấn độ dày mặt bàn, không gian đặt bàn và lắp đặt.',
+    image: '/images/optimized/banner-ban-card.webp',
+  },
+  'do-thi-dau.html': {
+    title: 'Đồ thi đấu bóng bàn | Giày, áo, quần, phụ kiện',
+    description: 'Đồ thi đấu bóng bàn gồm giày, áo, quần, vớ và phụ kiện. Tư vấn trang bị phù hợp tập luyện, thi đấu phong trào và CLB.',
+    image: '/images/optimized/banner-do-thi-dau-card.webp',
+  },
+  'combo-vot.html': {
+    title: 'Combo vợt bóng bàn khuyên dùng theo trình độ | BÓNG BÀN VIỆT',
+    description: 'Combo vợt bóng bàn gồm cốt, mặt thuận tay, mặt trái tay được gợi ý theo trình độ, lối chơi và ngân sách. Hỗ trợ lắp vợt.',
+    image: '/images/optimized/banner-combo-vot-card.webp',
+  },
+  'do-cu.html': {
+    title: 'Đồ bóng bàn đã qua sử dụng | BÓNG BÀN VIỆT',
+    description: 'Đồ bóng bàn đã qua sử dụng được kiểm tra tình trạng, mô tả rõ ràng và tư vấn minh bạch trước khi mua.',
+    image: '/images/optimized/banner-cot-vot-card.webp',
+  },
+  'kien-thuc.html': {
+    title: 'Kiến thức bóng bàn, hướng dẫn chọn vợt | BÓNG BÀN VIỆT',
+    description: 'Kiến thức bóng bàn, hướng dẫn chọn cốt vợt, mặt vợt, combo, kỹ thuật tập luyện và kinh nghiệm thi đấu thực tế.',
+    image: '/images/optimized/chia-se-kien-thuc-card.webp',
+  },
+  'huong-dan-mua-hang.html': {
+    title: 'Hướng dẫn mua hàng tại BÓNG BÀN VIỆT',
+    description: 'Hướng dẫn mua hàng, tư vấn sản phẩm, xác nhận đơn, giao hàng, COD, chuyển khoản và hỗ trợ sau mua tại BÓNG BÀN VIỆT.',
+    image: '/images/optimized/logo-bongbanviet-160.webp',
+  },
+  'chinh-sach-doi-tra.html': {
+    title: 'Chính sách đổi trả và hoàn tiền | BÓNG BÀN VIỆT',
+    description: 'Chính sách đổi trả, hoàn tiền, bảo hành và quy trình xử lý khi sản phẩm lỗi, giao sai hoặc hư hỏng vận chuyển.',
+    image: '/images/optimized/logo-bongbanviet-160.webp',
+  },
+  'lien-he.html': {
+    title: 'Liên hệ BÓNG BÀN VIỆT | Tư vấn dụng cụ bóng bàn',
+    description: 'Liên hệ BÓNG BÀN VIỆT tại 286 Nguyễn Xiển, Thanh Liệt, Hà Nội. Hotline và Zalo 096.1269.386 để được tư vấn dụng cụ bóng bàn.',
+    image: '/images/optimized/logo-bongbanviet-160.webp',
+  },
+  'san-pham.html': {
+    title: 'Chi tiết sản phẩm bóng bàn | BÓNG BÀN VIỆT',
+    description: 'Chi tiết sản phẩm bóng bàn tại BÓNG BÀN VIỆT. Xem thông số, hình ảnh và nhận tư vấn chọn dụng cụ phù hợp.',
+    image: '/images/optimized/logo-bongbanviet-160.webp',
+  },
+};
+
+function escapeHtmlAttr(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function stripHtml(value) {
+  return String(value || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function absolutePublicUrl(pathname = '/') {
+  if (/^https?:\/\//i.test(pathname)) return pathname;
+  return PUBLIC_SITE_URL + (String(pathname).startsWith('/') ? pathname : `/${pathname}`);
+}
+
+function upsertHeadTag(html, test, tag) {
+  if (test.test(html)) return html;
+  return html.replace(/<\/head>/i, `  ${tag}\n</head>`);
+}
+
+function metaForProductRequest(req) {
+  const slug = String(req.query.id || req.query.slug || '').trim();
+  if (!slug) return null;
+
+  const product = db.prepare('SELECT * FROM products WHERE slug = ? OR id = ?').get(slug, slug);
+  if (product) {
+    const p = productRow(product);
+    const description = stripHtml(p.description).slice(0, 158) || `${p.name} tại BÓNG BÀN VIỆT. Tư vấn thông số, giá và cách phối đồ phù hợp.`;
+    return {
+      title: `${p.name} | BÓNG BÀN VIỆT`,
+      description,
+      image: p.images?.[0] || '/images/optimized/logo-bongbanviet-160.webp',
+      canonicalPath: `/san-pham.html?id=${encodeURIComponent(p.slug)}`,
+      type: 'product',
+    };
+  }
+
+  const combo = db.prepare('SELECT * FROM combos WHERE slug = ? OR id = ?').get(slug, slug);
+  if (combo) {
+    const description = stripHtml(combo.description).slice(0, 158) || `${combo.name}: combo cốt vợt và mặt vợt được tư vấn theo trình độ tại BÓNG BÀN VIỆT.`;
+    const images = parseJSON(combo.images, []);
+    return {
+      title: `${combo.name} | Combo vợt BÓNG BÀN VIỆT`,
+      description,
+      image: images[0] || '/images/optimized/banner-combo-vot-card.webp',
+      canonicalPath: `/san-pham.html?id=${encodeURIComponent(combo.slug)}`,
+      type: 'product',
+    };
+  }
+  return null;
+}
+
+function injectSeoMeta(html, req, filePath) {
+  const fileName = path.basename(filePath);
+  const baseMeta = PUBLIC_PAGE_META[fileName] || {};
+  const productMeta = fileName === 'san-pham.html' ? metaForProductRequest(req) : null;
+  const meta = { ...baseMeta, ...productMeta };
+  if (!meta.title && !meta.description) return html;
+
+  const canonicalPath = meta.canonicalPath || (fileName === 'index.html' ? '/' : `/${fileName}`);
+  const canonical = absolutePublicUrl(canonicalPath);
+  const image = absolutePublicUrl(meta.image || '/images/optimized/logo-bongbanviet-160.webp');
+  const title = meta.title || baseMeta.title || 'BÓNG BÀN VIỆT';
+  const description = meta.description || baseMeta.description || '';
+
+  html = html.replace(/(["'])\/?logo_bongbanviet\.png\1/g, '$1/images/optimized/logo-bongbanviet-160.webp$1');
+  html = html.replace(/href=(["'])\/favicon\.png\1/g, 'href=$1/images/optimized/favicon-96.png$1');
+  html = html.replace(/href=(["'])\/?favicon\.png\1/g, 'href=$1/images/optimized/favicon-96.png$1');
+  if (fileName === 'index.html') {
+    html = upsertHeadTag(html, /rel=["']preload["'][^>]+banner-homepage/i,
+      '<link rel="preload" as="image" href="/images/optimized/banner-homepage-1600.webp" media="(min-width: 861px)" fetchpriority="high">\n  <link rel="preload" as="image" href="/images/optimized/banner-homepage-900.webp" media="(max-width: 860px)" fetchpriority="high">');
+  }
+
+  if (/<title>.*?<\/title>/is.test(html)) {
+    html = html.replace(/<title>.*?<\/title>/is, `<title>${escapeHtmlAttr(title)}</title>`);
+  } else {
+    html = upsertHeadTag(html, /<title>/i, `<title>${escapeHtmlAttr(title)}</title>`);
+  }
+
+  if (/<meta\s+name=["']description["'][^>]*>/i.test(html)) {
+    html = html.replace(/<meta\s+name=["']description["'][^>]*>/i,
+      `<meta name="description" content="${escapeHtmlAttr(description)}">`);
+  } else if (description) {
+    html = upsertHeadTag(html, /<meta\s+name=["']description["']/i,
+      `<meta name="description" content="${escapeHtmlAttr(description)}">`);
+  }
+
+  if (/<link\s+rel=["']canonical["'][^>]*>/i.test(html)) {
+    html = html.replace(/<link\s+rel=["']canonical["'][^>]*>/i,
+      `<link rel="canonical" href="${escapeHtmlAttr(canonical)}">`);
+  } else {
+    html = upsertHeadTag(html, /<link\s+rel=["']canonical["']/i,
+      `<link rel="canonical" href="${escapeHtmlAttr(canonical)}">`);
+  }
+
+  const ogTags = [
+    ['og:type', meta.type || 'website'],
+    ['og:title', title],
+    ['og:description', description],
+    ['og:url', canonical],
+    ['og:image', image],
+    ['twitter:card', 'summary_large_image'],
+    ['twitter:title', title],
+    ['twitter:description', description],
+    ['twitter:image', image],
+  ];
+  for (const [property, content] of ogTags) {
+    if (!content) continue;
+    const attr = property.startsWith('twitter:') ? 'name' : 'property';
+    const re = new RegExp(`<meta\\s+${attr}=["']${property.replace(/[-/:]/g, '\\$&')}["'][^>]*>`, 'i');
+    const tag = `<meta ${attr}="${property}" content="${escapeHtmlAttr(content)}">`;
+    html = re.test(html) ? html.replace(re, tag) : upsertHeadTag(html, re, tag);
+  }
+
+  return html;
+}
+
+function sendThemedHtml(req, res, filePath) {
   let html = fs.readFileSync(filePath, 'utf8');
+  html = injectSeoMeta(html, req, filePath);
   if (!html.includes(LIGHT_THEME_HREF)) {
     html = html.replace(
       /<\/head>/i,
       `  <link rel="stylesheet" href="${LIGHT_THEME_HREF}">\n</head>`
     );
   }
+  if (!html.includes('_bbv_global_polish')) {
+    html = html.replace(/<\/head>/i, `${GLOBAL_POLISH_CSS}\n</head>`);
+  }
+  res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=600');
   res.type('html').send(html);
 }
 
+function sitemapUrl(pathname, priority = '0.7', changefreq = 'weekly') {
+  return `  <url><loc>${escapeHtmlAttr(absolutePublicUrl(pathname))}</loc><changefreq>${changefreq}</changefreq><priority>${priority}</priority></url>`;
+}
+
+app.get('/robots.txt', (_req, res) => {
+  res.type('text/plain').send([
+    'User-agent: *',
+    'Allow: /',
+    'Disallow: /admin.html',
+    'Disallow: /local.html',
+    'Disallow: /facebook.html',
+    'Disallow: /download.html',
+    `Sitemap: ${absolutePublicUrl('/sitemap.xml')}`,
+    '',
+  ].join('\n'));
+});
+
+app.get('/sitemap.xml', (_req, res) => {
+  const publicPages = [
+    ['/', '1.0', 'daily'],
+    ['/cot-vot.html', '0.9', 'daily'],
+    ['/mat-vot.html', '0.9', 'daily'],
+    ['/bong.html', '0.8', 'weekly'],
+    ['/ban.html', '0.8', 'weekly'],
+    ['/do-thi-dau.html', '0.8', 'weekly'],
+    ['/combo-vot.html', '0.8', 'weekly'],
+    ['/do-cu.html', '0.6', 'weekly'],
+    ['/kien-thuc.html', '0.8', 'weekly'],
+    ['/huong-dan-mua-hang.html', '0.6', 'monthly'],
+    ['/chinh-sach-doi-tra.html', '0.5', 'monthly'],
+    ['/lien-he.html', '0.7', 'monthly'],
+  ];
+  const urls = publicPages.map(([pathname, priority, changefreq]) => sitemapUrl(pathname, priority, changefreq));
+
+  const products = db.prepare(`SELECT slug, updated_at FROM products WHERE in_stock=1 ORDER BY updated_at DESC LIMIT 1000`).all();
+  for (const product of products) {
+    urls.push(sitemapUrl(`/san-pham.html?id=${encodeURIComponent(product.slug)}`, '0.7', 'weekly'));
+  }
+
+  const combos = db.prepare(`SELECT slug FROM combos WHERE in_stock=1 ORDER BY sort_order ASC LIMIT 100`).all();
+  for (const combo of combos) {
+    urls.push(sitemapUrl(`/san-pham.html?id=${encodeURIComponent(combo.slug)}`, '0.6', 'weekly'));
+  }
+
+  res.type('application/xml').send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>\n`);
+});
+
 app.get(['/', '/local'], (req, res, next) => {
-  if (!isLocalRequest(req)) return next();
-  sendThemedHtml(res, path.join(__dirname, 'local.html'));
+  if (isLocalRequest(req) && req.path !== '/') {
+    return sendThemedHtml(req, res, path.join(__dirname, 'local.html'));
+  }
+  if (isLocalRequest(req) && req.path === '/') {
+    return sendThemedHtml(req, res, path.join(__dirname, 'local.html'));
+  }
+  if (req.path === '/') {
+    return sendThemedHtml(req, res, path.join(__dirname, 'index.html'));
+  }
+  return next();
 });
 
 app.get(/^\/[A-Za-z0-9_-]+(?:\.html)?$/, (req, res, next) => {
@@ -521,10 +815,17 @@ app.get(/^\/[A-Za-z0-9_-]+(?:\.html)?$/, (req, res, next) => {
   const htmlName = rawName.toLowerCase().endsWith('.html') ? rawName : `${rawName}.html`;
   const filePath = path.join(__dirname, htmlName);
   if (!filePath.startsWith(__dirname) || !fs.existsSync(filePath)) return next();
-  sendThemedHtml(res, filePath);
+  sendThemedHtml(req, res, filePath);
 });
 
-app.use(express.static(__dirname, { extensions: ['html'] }));
+app.use(express.static(__dirname, {
+  extensions: ['html'],
+  setHeaders(res, filePath) {
+    if (/\.(?:css|js|webp|png|jpe?g|svg|ico|woff2?)$/i.test(filePath)) {
+      res.setHeader('Cache-Control', 'public, max-age=604800, stale-while-revalidate=2592000');
+    }
+  },
+}));
 
 // ─── Douyin Downloader (native Node.js, no Python dependency) ────────────────
 const dy = require('./douyin');
@@ -1150,6 +1451,112 @@ function productRow(row) {
     in_stock: row.in_stock !== 0,
   };
 }
+
+function comboRowAsProduct(row) {
+  if (!row) return null;
+  const images = parseJSON(row.images, []);
+  const specs = {
+    'Trình độ': row.level,
+    'Cốt vợt': row.blade || 'Tư vấn theo tay đánh',
+    'Mặt thuận tay': row.rubber_fh || 'Tư vấn theo lối chơi',
+    'Mặt trái tay': row.rubber_bh || 'Tư vấn theo lối chơi',
+  };
+  return {
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    category_slug: 'combo-vot',
+    brand_slug: '',
+    gear_subcategory: row.level,
+    description: row.description || '',
+    specs,
+    images,
+    featured: true,
+    condition: 'new',
+    badge: row.badge || 'Khuyên dùng',
+    sort_order: row.sort_order || 0,
+    price: row.price || '',
+    in_stock: row.in_stock !== 0,
+    variants: [],
+    created_at: '',
+    updated_at: '',
+  };
+}
+
+function ensureDefaultCombos() {
+  const count = db.prepare('SELECT COUNT(*) as c FROM combos').get().c;
+  if (count > 0) return;
+  const now = Date.now().toString(36);
+  const combos = [
+    {
+      id: `combo-${now}-beginner`,
+      slug: 'combo-beginner-control',
+      name: 'Combo Beginner Control',
+      level: 'beginner',
+      blade: 'Cốt 5 lớp gỗ all-round',
+      rubber_fh: 'Mặt bám xoáy mềm vừa',
+      rubber_bh: 'Mặt kiểm soát dễ chặn',
+      description: 'Combo khởi điểm cho người mới chơi cần cảm giác bóng rõ, dễ kiểm soát lực và học kỹ thuật nền tảng. Phù hợp tập giao bóng, gò, đôi công và giật cơ bản.',
+      images: JSON.stringify(['/images/optimized/banner-combo-vot-card.webp']),
+      badge: 'Dễ chơi',
+      sort_order: 1,
+      price: 'từ 950.000',
+      in_stock: 1,
+    },
+    {
+      id: `combo-${now}-loop`,
+      slug: 'combo-allround-loop',
+      name: 'Combo All-round Loop',
+      level: 'intermediate',
+      blade: 'Cốt all-round/offensive có độ flex',
+      rubber_fh: 'Mặt thuận tay bám xoáy 47°',
+      rubber_bh: 'Mặt trái tay cân bằng 45°',
+      description: 'Combo cân bằng cho người chơi phong trào đã đánh đều hai càng, muốn tăng chất lượng topspin nhưng vẫn giữ độ an toàn khi vào trận.',
+      images: JSON.stringify(['/images/optimized/banner-combo-vot-card.webp']),
+      badge: 'Bán chạy',
+      sort_order: 2,
+      price: 'từ 1.650.000',
+      in_stock: 1,
+    },
+    {
+      id: `combo-${now}-offensive`,
+      slug: 'combo-offensive-carbon',
+      name: 'Combo Offensive Carbon',
+      level: 'advanced',
+      blade: 'Cốt carbon tấn công',
+      rubber_fh: 'Mặt tốc độ cao, xoáy mạnh',
+      rubber_bh: 'Mặt nảy nhanh, dễ phản công',
+      description: 'Combo cho người chơi đã có lực tay và timing tốt, cần tốc độ cao hơn trong đôi công, giật bóng xa bàn và kết thúc điểm.',
+      images: JSON.stringify(['/images/optimized/banner-combo-vot-card.webp']),
+      badge: 'Tấn công',
+      sort_order: 3,
+      price: 'từ 2.500.000',
+      in_stock: 1,
+    },
+    {
+      id: `combo-${now}-coach`,
+      slug: 'combo-club-coach',
+      name: 'Combo Club & Coach',
+      level: 'pro',
+      blade: 'Cấu hình theo giáo án/CLB',
+      rubber_fh: 'Tùy biến theo lối chơi học viên',
+      rubber_bh: 'Tùy biến theo bài tập',
+      description: 'Combo tư vấn riêng cho HLV, CLB và học viện cần cấu hình đồng bộ theo nhóm trình độ, ngân sách và mục tiêu huấn luyện.',
+      images: JSON.stringify(['/images/optimized/banner-combo-vot-card.webp']),
+      badge: 'Tư vấn riêng',
+      sort_order: 4,
+      price: 'Liên hệ',
+      in_stock: 1,
+    },
+  ];
+  const stmt = db.prepare(`INSERT OR IGNORE INTO combos
+    (id, slug, name, level, blade, rubber_fh, rubber_bh, description, images, badge, sort_order, price, in_stock)
+    VALUES (@id, @slug, @name, @level, @blade, @rubber_fh, @rubber_bh, @description, @images, @badge, @sort_order, @price, @in_stock)`);
+  const tx = db.transaction((rows) => rows.forEach((row) => stmt.run(row)));
+  tx(combos);
+}
+
+ensureDefaultCombos();
 
 function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -3257,7 +3664,12 @@ app.get('/api/products', (req, res) => {
 app.get('/api/products/:slug', (req, res) => {
   const row = db.prepare('SELECT * FROM products WHERE slug = ? OR id = ?')
     .get(req.params.slug, req.params.slug);
-  if (!row) return res.status(404).json({ error: 'Không tìm thấy sản phẩm' });
+  if (!row) {
+    const combo = db.prepare('SELECT * FROM combos WHERE slug = ? OR id = ?')
+      .get(req.params.slug, req.params.slug);
+    if (combo) return res.json(comboRowAsProduct(combo));
+    return res.status(404).json({ error: 'Không tìm thấy sản phẩm' });
+  }
   res.json(productRow(row));
 });
 

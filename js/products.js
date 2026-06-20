@@ -57,7 +57,7 @@ function renderProdCard(p, idx, opts) {
   const href     = 'san-pham.html?id=' + _esc(p.slug);
 
   const imgHtml = (p.images && p.images.length)
-    ? `<img src="${_esc(p.images[0])}" alt="${_esc(p.name)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;">`
+    ? `<img src="${_esc(p.images[0])}" alt="${_esc(p.name)}" loading="lazy" onerror="this.onerror=null;this.src='/images/optimized/logo-bongbanviet-160.webp';this.style.objectFit='contain';this.style.padding='22px';" style="width:100%;height:100%;object-fit:cover;display:block;">`
     : `<div class="prod-wm">${_abbr(p.name)}</div>`;
 
   const rawPrice = String(p.price || '');
@@ -105,21 +105,27 @@ function renderComboCard(c, idx) {
   const levelLabel = levelMap[c.level] || _esc(c.level);
 
   const imgHtml = (c.images && c.images.length)
-    ? `<img src="${_esc(c.images[0])}" alt="${_esc(c.name)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;">`
+    ? `<img src="${_esc(c.images[0])}" alt="${_esc(c.name)}" loading="lazy" onerror="this.onerror=null;this.src='/images/optimized/logo-bongbanviet-160.webp';this.style.objectFit='contain';this.style.padding='22px';" style="width:100%;height:100%;object-fit:cover;display:block;">`
     : `<div class="prod-wm">${_abbr(c.name)}</div>`;
 
   const badgeHtml = c.badge ? `<span class="prod-badge">${_esc(c.badge)}</span>` : '';
   const stockHtml = c.in_stock === false
     ? `<span style="font-size:10px;color:#D62B2B;font-weight:700;letter-spacing:.08em;text-transform:uppercase;display:block;margin-top:5px;">● Hết Hàng</span>`
     : `<span style="font-size:10px;color:#166534;font-weight:700;letter-spacing:.08em;text-transform:uppercase;display:block;margin-top:5px;">● Còn Hàng</span>`;
+  const priceHtml = c.price
+    ? `<span class="prod-price-inline">${_esc(_fmtPrice(c.price))}</span>`
+    : `<span class="prod-price-inline">Liên hệ</span>`;
 
   return `<a href="${href}" class="prod-card" data-level="${_esc(c.level)}" data-name="${_esc(c.name.toLowerCase())}" data-featured="${c.featured ? '1' : '0'}">
   <div class="prod-img ${bg}">
     <div class="prod-img-inner">${imgHtml}</div>
     ${badgeHtml}
   </div>
-  <p class="prod-brand">Combo · ${_esc(levelLabel)}</p>
-  <h3 class="prod-name">${_esc(c.name)}</h3>
+  <div class="prod-card-body">
+    <div class="prod-card-tags"><span class="prod-sub-tag">${_esc(levelLabel.toUpperCase())}</span>${c.badge ? `<span class="prod-badge-tag">${_esc(c.badge)}</span>` : '<span></span>'}</div>
+    <h3 class="prod-name">${_esc(c.name)}</h3>
+    <div class="prod-card-footer"><span class="prod-origin">COMBO</span>${priceHtml}</div>
+  </div>
   ${stockHtml}
 </a>`;
 }
@@ -141,6 +147,7 @@ async function loadProdGrid(params, options) {
   const countId  = options.countId  || 'prodCount';
   const showCat  = options.showCat  || false;
   const isCombo  = options.isCombo  || false;
+  const emptyMessage = options.emptyMessage || 'Chưa có sản phẩm nào.';
 
   const grid     = document.getElementById(gridId);
   const countEl  = document.getElementById(countId);
@@ -157,7 +164,7 @@ async function loadProdGrid(params, options) {
     const data = await res.json();
 
     if (!data.length) {
-      grid.innerHTML = '<div style="grid-column:1/-1;padding:48px;text-align:center;color:#6B6B6B;font-size:14px;">Chưa có sản phẩm nào.</div>';
+      grid.innerHTML = `<div style="grid-column:1/-1;padding:48px;text-align:center;color:#6B6B6B;font-size:14px;line-height:1.7;background:#fff;border:1px solid #E5E5E3;border-radius:14px;">${emptyMessage}</div>`;
       if (countEl) countEl.textContent = '0 sản phẩm';
       return;
     }

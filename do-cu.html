@@ -199,6 +199,7 @@
   // Load từ API
   loadProdGrid({ category: 'do-cu' }, {
     gridId: 'prodGrid', countId: 'prodCount',
+    emptyMessage: 'Hiện chưa có đồ đã qua sử dụng đang mở bán. Bạn có thể nhắn Zalo 096.1269.386 để hỏi hàng mới về hoặc ký gửi dụng cụ cần bán.',
     onDone: () => { if(typeof applyFilter==='function') applyFilter(); }
   });
 </script>
