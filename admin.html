@@ -558,17 +558,39 @@
   .st-empty { border:1.5px dashed var(--border); color:#94A3B8; padding:32px; text-align:center; font-size:13px; border-radius:6px; }
   .st-log { min-height:180px; max-height:320px; overflow:auto; background:#0F172A; color:#D1FAE5; border-radius:6px; padding:14px; font-size:12px; line-height:1.65; white-space:pre-wrap; font-family:Consolas, monospace; }
 
+    /* ─── Mobile Menu Toggle ─────────────────────────────── */
+    .mob-toggle { display: none; background: none; border: none; padding: 8px; cursor: pointer; }
+    .mob-toggle svg { display: block; }
+    .mob-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 998; }
+
     @media (max-width: 1024px) { .sidebar { width: 210px; } }
     @media (max-width: 768px) {
-      .sidebar { width: 180px; }
+      body { overflow: auto; height: auto; }
+      .main-wrap { height: auto; overflow: visible; }
+      .mob-toggle { display: block; }
+      .sidebar {
+        position: fixed; left: 0; top: 0; bottom: 0; z-index: 999; width: 260px;
+        transform: translateX(-100%); transition: transform .3s;
+      }
+      .sidebar.open { transform: translateX(0); }
+      .mob-overlay.show { display: block; }
+      .topbar { padding: 0 14px; height: 52px; }
+      .topbar-title { font-size: 14px; }
+      .topbar-actions { gap: 6px; }
+      .btn-red { padding: 7px 12px; font-size: 10px; }
       .p-card-body { flex-direction: column; }
-      .p-img-col { width: 100%; border-right: none; border-bottom: 1px solid var(--border); flex-direction: row; }
-      .p-actions { width: 100%; flex-direction: row; border-left: none; border-top: 1px solid var(--border); }
-      .btn-save, .btn-del { flex: 1; }
+      .p-img-col { width: 100%; border-right: none; border-bottom: 1px solid var(--border); flex-direction: row; flex-wrap: wrap; }
+      .p-actions { width: 100%; flex-direction: column; border-left: none; border-top: 1px solid var(--border); }
+      .btn-save, .btn-del { flex: 1; width: 100%; }
       .f-row2, .f-row3, .f-row4 { grid-template-columns: 1fr; }
       .sp-grid, .sp-row { grid-template-columns: 1fr; }
       .st-grid { grid-template-columns: 1fr; }
       .sp-generated { grid-template-columns: 1fr; }
+      .main-content { padding: 16px !important; }
+      .dash-grid { grid-template-columns: 1fr !important; }
+      .prod-grid { grid-template-columns: 1fr !important; }
+      input, textarea, select { font-size: 16px !important; }
+      .btn-add-var { width: 100%; }
     }
 
     /* ─── Login Overlay ───────────────────────────────────── */
@@ -975,6 +997,9 @@
   </div>
 </div>
 
+<!-- ─── Mobile Overlay ──────────────────────────────────────────── -->
+<div class="mob-overlay" id="mobOverlay"></div>
+
 <div style="display:flex;width:100%;height:100vh;overflow:hidden;">
 
 <!-- ════════════════ SIDEBAR ════════════════ -->
@@ -1089,6 +1114,11 @@
 <!-- ════════════════ MAIN ════════════════ -->
 <div class="main-wrap">
   <header class="topbar">
+    <button class="mob-toggle" id="mobToggle" aria-label="Menu">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
     <div class="topbar-title" id="topbarTitle">Dashboard</div>
     <div class="topbar-actions" id="topbarActions"></div>
   </header>
@@ -6476,6 +6506,31 @@ window.addEventListener('hashchange', () => {
 // Slug: mark manual edit to prevent auto-overwrite
 document.addEventListener('input', e=>{
   if (e.target.classList.contains('f-slug')) e.target.dataset.manual = '1';
+});
+
+// Mobile menu toggle
+const mobToggle = document.getElementById('mobToggle');
+const mobOverlay = document.getElementById('mobOverlay');
+const sidebar = document.querySelector('.sidebar');
+
+mobToggle?.addEventListener('click', () => {
+  sidebar.classList.add('open');
+  mobOverlay.classList.add('show');
+});
+
+mobOverlay?.addEventListener('click', () => {
+  sidebar.classList.remove('open');
+  mobOverlay.classList.remove('show');
+});
+
+// Close sidebar when clicking nav items on mobile
+document.querySelectorAll('.sb-item').forEach(item => {
+  item.addEventListener('click', () => {
+    if (window.innerWidth <= 768) {
+      sidebar.classList.remove('open');
+      mobOverlay.classList.remove('show');
+    }
+  });
 });
 </script>
 </body>
