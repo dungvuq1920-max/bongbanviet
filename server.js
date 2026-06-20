@@ -516,6 +516,17 @@ function isLocalRequest(req) {
 }
 
 const LIGHT_THEME_HREF = '/css/light-theme.css?v=20260521';
+const RAW_HTML_PAGES = new Set([
+  'admin.html',
+  'local.html',
+  'facebook.html',
+  'download.html',
+  '2fa-code.html',
+  'prompt.html',
+  'tracking.html',
+  'process.html',
+  'subtitle-translator.html',
+]);
 const GLOBAL_POLISH_CSS = `
 <style id="_bbv_global_polish">
   html, body { max-width: 100%; overflow-x: hidden; }
@@ -736,17 +747,22 @@ function injectSeoMeta(html, req, filePath) {
 
 function sendThemedHtml(req, res, filePath) {
   let html = fs.readFileSync(filePath, 'utf8');
-  html = injectSeoMeta(html, req, filePath);
-  if (!html.includes(LIGHT_THEME_HREF)) {
-    html = html.replace(
-      /<\/head>/i,
-      `  <link rel="stylesheet" href="${LIGHT_THEME_HREF}">\n</head>`
-    );
+  const fileName = path.basename(filePath);
+  if (!RAW_HTML_PAGES.has(fileName)) {
+    html = injectSeoMeta(html, req, filePath);
+    if (!html.includes(LIGHT_THEME_HREF)) {
+      html = html.replace(
+        /<\/head>/i,
+        `  <link rel="stylesheet" href="${LIGHT_THEME_HREF}">\n</head>`
+      );
+    }
+    if (!html.includes('_bbv_global_polish')) {
+      html = html.replace(/<\/head>/i, `${GLOBAL_POLISH_CSS}\n</head>`);
+    }
+    res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=600');
+  } else {
+    res.setHeader('Cache-Control', 'no-store');
   }
-  if (!html.includes('_bbv_global_polish')) {
-    html = html.replace(/<\/head>/i, `${GLOBAL_POLISH_CSS}\n</head>`);
-  }
-  res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=600');
   res.type('html').send(html);
 }
 
@@ -4028,6 +4044,12 @@ app.delete('/api/inventory/:id', requireAuth, (req, res) => {
 });
 
 app.get('/api/stats', (req, res) => {
+  const byCatRows = db.prepare(`
+    SELECT category_slug, COUNT(*) as c
+    FROM products
+    GROUP BY category_slug
+    ORDER BY c DESC
+  `).all();
   res.json({
     products: db.prepare('SELECT COUNT(*) as c FROM products').get().c,
     products_in_stock: db.prepare('SELECT COUNT(*) as c FROM products WHERE in_stock=1').get().c,
@@ -4036,6 +4058,7 @@ app.get('/api/stats', (req, res) => {
     articles: db.prepare('SELECT COUNT(*) as c FROM articles').get().c,
     featured: db.prepare('SELECT COUNT(*) as c FROM products WHERE featured=1').get().c,
     used: db.prepare("SELECT COUNT(*) as c FROM products WHERE condition='used'").get().c,
+    by_cat: Object.fromEntries(byCatRows.map(row => [row.category_slug, row.c])),
   });
 });
 

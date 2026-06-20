@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Panel | BÓNG BÀN VIỆT</title>
-  <link rel="icon" type="image/png" href="/favicon.png">
-  <link rel="apple-touch-icon" href="/favicon.png">
+  <link rel="icon" type="image/png" href="/images/optimized/favicon-96.png">
+  <link rel="apple-touch-icon" href="/images/optimized/apple-touch-180.png">
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
@@ -947,6 +947,385 @@
     #page-don-hang .preview-wrapper { display: none !important; }
   }
 
+  /* ─── Admin polish system ─────────────────────────────────────── */
+  :root {
+    --sb: #101114;
+    --sb-border: rgba(255,255,255,.08);
+    --bg: #F5F6F8;
+    --card: #FFFFFF;
+    --border: #E5E7EB;
+    --muted: #667085;
+    --soft: #F9FAFB;
+    --shadow-sm: 0 1px 2px rgba(16, 24, 40, .06);
+    --shadow-md: 0 14px 32px rgba(16, 24, 40, .10);
+  }
+  body { background: var(--bg); color: #171717; }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(214,43,43,.055), rgba(214,43,43,0) 260px);
+    z-index: -1;
+  }
+  .sidebar {
+    width: 274px;
+    background:
+      linear-gradient(180deg, rgba(214,43,43,.14), rgba(214,43,43,0) 210px),
+      #101114;
+    border-right: 1px solid rgba(255,255,255,.08);
+  }
+  .sb-logo {
+    padding: 22px 22px 18px;
+    border-bottom-color: rgba(255,255,255,.08);
+  }
+  .sb-logo img {
+    height: 52px !important;
+    padding: 6px;
+    background: #fff;
+    border-radius: 8px;
+  }
+  .sb-logo-sub {
+    margin-top: 10px;
+    color: rgba(255,255,255,.56);
+    letter-spacing: .16em;
+  }
+  .sb-nav { padding: 14px 12px; }
+  .sb-group {
+    padding: 18px 10px 7px;
+    color: rgba(255,255,255,.34);
+  }
+  .sb-item {
+    min-height: 38px;
+    padding: 9px 10px;
+    border-radius: 8px;
+    color: rgba(255,255,255,.68);
+    font-size: 12.5px;
+  }
+  .sb-item + .sb-item { margin-top: 2px; }
+  .sb-item:hover { background: rgba(255,255,255,.08); color: #fff; }
+  .sb-item.active {
+    background: #D62B2B;
+    box-shadow: 0 10px 24px rgba(214,43,43,.25);
+  }
+  .sb-count {
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.08);
+  }
+  .sb-footer {
+    padding: 16px 22px 20px;
+    background: rgba(0,0,0,.18);
+  }
+  .srv-badge { border-radius: 8px; padding: 9px 10px; }
+  .sb-link, .sb-btn-link { color: rgba(255,255,255,.58); }
+  .main-wrap { background: transparent; }
+  .admin-shell {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+  }
+  .topbar {
+    height: 68px;
+    padding: 0 30px;
+    background: rgba(255,255,255,.86);
+    backdrop-filter: blur(12px);
+    box-shadow: var(--shadow-sm);
+  }
+  .topbar-title { font-size: 18px; letter-spacing: -.01em; }
+  .page-content {
+    padding: 28px 30px 36px;
+    max-width: 1540px;
+    width: 100%;
+    margin: 0 auto;
+  }
+  .admin-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 18px;
+    align-items: center;
+    background: #161616;
+    color: #fff;
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 18px;
+    box-shadow: var(--shadow-md);
+    position: relative;
+    overflow: hidden;
+  }
+  .admin-hero > * { position: relative; z-index: 1; }
+  .admin-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.58);
+    margin-bottom: 8px;
+  }
+  .admin-kicker::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #D62B2B;
+    box-shadow: 0 0 0 4px rgba(214,43,43,.20);
+  }
+  .admin-hero h1 {
+    font-size: clamp(24px, 3vw, 38px);
+    line-height: 1.08;
+    letter-spacing: -.03em;
+    margin: 0 0 8px;
+  }
+  .admin-hero p {
+    color: rgba(255,255,255,.66);
+    max-width: 720px;
+    line-height: 1.7;
+  }
+  .admin-hero-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+  .admin-hero .btn-red,
+  .admin-hero .btn-outline {
+    border-radius: 6px;
+    min-height: 38px;
+  }
+  .admin-hero .btn-outline {
+    background: rgba(255,255,255,.08);
+    border-color: rgba(255,255,255,.20);
+    color: #fff;
+  }
+  .dash-stats {
+    grid-template-columns: repeat(5, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .stat-card {
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    border-left: 0;
+    padding: 18px;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    background: #CBD5E1;
+  }
+  .stat-card.c-red::before { background: var(--red); }
+  .stat-card.c-green::before { background: var(--green); }
+  .stat-card.c-blue::before { background: #2563EB; }
+  .stat-card.c-yellow::before { background: var(--yellow); }
+  .stat-num { font-size: 32px; letter-spacing: -.035em; }
+  .stat-label { color: #475467; }
+  .stat-sub { color: #98A2B3; line-height: 1.5; }
+  .dash-ops-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.12fr) minmax(320px, .88fr);
+    gap: 16px;
+    margin: 16px 0;
+  }
+  .ops-panel,
+  .dash-quick-panel,
+  .p-card,
+  .banner-card,
+  .set-card,
+  #page-don-hang .vd-card {
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    box-shadow: var(--shadow-sm);
+  }
+  .ops-panel { padding: 18px; min-width: 0; }
+  .ops-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .ops-title { font-size: 14px; font-weight: 800; color: #101828; }
+  .ops-sub { color: #98A2B3; font-size: 12px; margin-top: 2px; }
+  .ops-updated {
+    font-size: 11px;
+    color: #667085;
+    background: #F2F4F7;
+    border: 1px solid #EAECF0;
+    border-radius: 999px;
+    padding: 4px 9px;
+    white-space: nowrap;
+  }
+  .admin-health { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .health-item {
+    display: grid;
+    grid-template-columns: 30px 1fr;
+    gap: 10px;
+    align-items: start;
+    padding: 12px;
+    border: 1px solid #EAECF0;
+    border-radius: 8px;
+    background: #FCFCFD;
+  }
+  .health-dot {
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    font-weight: 900;
+    font-size: 13px;
+  }
+  .health-item.ok .health-dot { background: #ECFDF3; color: #067647; }
+  .health-item.warn .health-dot { background: #FEF3F2; color: #B42318; }
+  .health-label { font-size: 12.5px; font-weight: 800; color: #101828; }
+  .health-detail { font-size: 11.5px; color: #667085; line-height: 1.5; margin-top: 2px; }
+  .cat-pulse { display: flex; flex-direction: column; gap: 10px; }
+  .cat-row {
+    display: grid;
+    grid-template-columns: minmax(112px, .9fr) minmax(120px, 1.2fr) 52px;
+    gap: 10px;
+    align-items: center;
+  }
+  .cat-name { font-size: 12px; font-weight: 800; color: #344054; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cat-bar { height: 8px; border-radius: 999px; background: #F2F4F7; overflow: hidden; }
+  .cat-bar span { display: block; height: 100%; border-radius: inherit; background: #D62B2B; }
+  .cat-count { font-size: 12px; color: #667085; text-align: right; font-weight: 700; }
+  .dash-quick-panel {
+    padding: 18px;
+    margin-top: 16px;
+  }
+  .dash-section-title { color: #475467; margin-bottom: 12px; }
+  .dash-quick { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+  .dash-btn {
+    border-radius: 8px;
+    border: 1px solid #EAECF0;
+    background: #FCFCFD;
+    min-height: 42px;
+    text-align: left;
+  }
+  .dash-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+  }
+  .sec-head {
+    background: rgba(255,255,255,.72);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    box-shadow: var(--shadow-sm);
+  }
+  .sec-title { font-size: 20px; letter-spacing: -.01em; }
+  .count-badge { background: #F2F4F7; color: #475467; }
+  .admin-search,
+  .fi,
+  .fs,
+  .ft,
+  #page-don-hang .inp,
+  #page-don-hang .sel,
+  #page-don-hang .txt {
+    border-radius: 6px;
+    border-color: #D0D5DD;
+    box-shadow: 0 1px 2px rgba(16,24,40,.04);
+  }
+  .admin-search:focus,
+  .fi:focus,
+  .fs:focus,
+  .ft:focus {
+    border-color: #D62B2B;
+    box-shadow: 0 0 0 3px rgba(214,43,43,.10);
+  }
+  .btn-red,
+  .btn-dark,
+  .btn-outline,
+  .btn-ghost,
+  .btn-save,
+  .btn-del,
+  .btn-view-sp,
+  .xl-btn,
+  #page-don-hang .btn {
+    border-radius: 6px;
+  }
+  .p-card { margin-bottom: 10px; overflow: hidden; }
+  .p-card-head {
+    min-height: 68px;
+    background: #fff;
+    grid-template-columns: 52px minmax(0, 1fr) 140px 150px 28px;
+  }
+  .p-card-head:hover { background: #FCFCFD; }
+  .p-card:not(.collapsed) .p-card-head { background: #F9FAFB; }
+  .p-head-thumb,
+  .ig-slot,
+  .v-img-box,
+  .set-logo-preview,
+  .banner-prev,
+  .xl-drop,
+  .modal,
+  .chpass-box,
+  .login-box {
+    border-radius: 8px;
+  }
+  .p-img-col { background: #F9FAFB; }
+  .p-actions { background: #FCFCFD; }
+  .pill { border-radius: 999px; }
+  .modal-bg,
+  .login-overlay {
+    backdrop-filter: blur(10px);
+  }
+  .modal { box-shadow: 0 24px 64px rgba(16,24,40,.24); }
+  .login-overlay {
+    background:
+      linear-gradient(180deg, rgba(16,17,20,.92), rgba(16,17,20,.98)),
+      radial-gradient(circle at 50% -10%, rgba(214,43,43,.28), transparent 420px);
+  }
+  .login-box {
+    background: rgba(255,255,255,.07);
+    border: 1px solid rgba(255,255,255,.14);
+    box-shadow: 0 24px 80px rgba(0,0,0,.32);
+  }
+  .login-logo img {
+    border-radius: 8px;
+    background: #fff;
+    padding: 8px;
+  }
+  #toast { border-radius: 8px; box-shadow: var(--shadow-md); }
+  @media (max-width: 1180px) {
+    .dash-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dash-ops-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 768px) {
+    .admin-shell {
+      min-height: 100vh;
+      height: auto;
+      overflow: visible;
+    }
+    .page-content { padding: 16px; }
+    .admin-hero { grid-template-columns: 1fr; padding: 20px; }
+    .admin-hero-actions { justify-content: flex-start; }
+    .dash-stats,
+    .admin-health { grid-template-columns: 1fr; }
+    .sec-head { align-items: stretch; flex-direction: column; }
+    .sec-head-right { width: 100%; flex-wrap: wrap; }
+    .admin-search-wrap,
+    .admin-search,
+    .admin-search:focus { width: 100%; }
+    .p-card-head {
+      grid-template-columns: 44px minmax(0,1fr) 28px;
+    }
+    .p-head-price,
+    .p-head-right { display: none; }
+    .cat-row { grid-template-columns: minmax(100px, .9fr) minmax(90px, 1fr) 42px; }
+  }
+
   /* Print label (for vandon print, not admin ordPrintFrame) */
   @media print {
     @page { size: 100mm 150mm; margin: 0; }
@@ -971,7 +1350,7 @@
 <div class="login-overlay" id="loginOverlay">
   <div class="login-box">
     <div class="login-logo">
-      <img src="/logo_bongbanviet.png" alt="Bóng Bàn Việt">
+      <img src="/images/optimized/logo-bongbanviet-160.webp" alt="Bóng Bàn Việt">
     </div>
     <p class="login-title">Quản Trị Viên</p>
     <p class="login-sub">BÓNG BÀN VIỆT · Admin Panel</p>
@@ -1000,12 +1379,12 @@
 <!-- ─── Mobile Overlay ──────────────────────────────────────────── -->
 <div class="mob-overlay" id="mobOverlay"></div>
 
-<div style="display:flex;width:100%;height:100vh;overflow:hidden;">
+<div class="admin-shell">
 
 <!-- ════════════════ SIDEBAR ════════════════ -->
 <aside class="sidebar">
   <div class="sb-logo">
-    <img src="/logo_bongbanviet.png" alt="Bóng Bàn Việt" style="height:44px;width:auto;display:block;margin-bottom:4px;">
+    <img src="/images/optimized/logo-bongbanviet-160.webp" alt="Bóng Bàn Việt" style="height:44px;width:auto;display:block;margin-bottom:4px;">
     <div class="sb-logo-sub">Admin Panel</div>
   </div>
 
@@ -1127,20 +1506,59 @@
 
     <!-- ── Dashboard ────────────────────────────── -->
     <div class="page active" id="page-dashboard">
+      <section class="admin-hero" aria-labelledby="adminHeroTitle">
+        <div>
+          <span class="admin-kicker">Bóng Bàn Việt Admin</span>
+          <h1 id="adminHeroTitle">Trung tâm vận hành</h1>
+          <p id="adminHeroSub">Đang đồng bộ dữ liệu catalog, combo, nội dung và vận đơn.</p>
+        </div>
+        <div class="admin-hero-actions">
+          <button class="btn-red" onclick="nav('cot-vot');setTimeout(()=>addCard('cot-vot'),100)">Thêm sản phẩm</button>
+          <button class="btn-outline" onclick="openImportModal()">Import Excel</button>
+          <button class="btn-outline" onclick="window.open('/index.html','_blank')">Xem website</button>
+        </div>
+      </section>
       <div class="dash-stats" id="dashStats">
         <div class="loading-state" style="grid-column:1/-1">Đang tải…</div>
       </div>
-      <div class="dash-section-title" style="margin-top:4px;">Thao Tác Nhanh</div>
-      <div class="dash-quick">
-        <button class="dash-btn" onclick="nav('cot-vot');setTimeout(()=>addCard('cot-vot'),100)">+ Cốt Vợt mới</button>
-        <button class="dash-btn" onclick="nav('mat-vot');setTimeout(()=>addCard('mat-vot'),100)">+ Mặt Vợt mới</button>
-        <button class="dash-btn" onclick="nav('bong');setTimeout(()=>addCard('bong'),100)">+ Bóng mới</button>
-        <button class="dash-btn" onclick="nav('combo-vot');setTimeout(()=>addCard('combo-vot'),100)">+ Combo mới</button>
-        <button class="dash-btn" onclick="nav('kien-thuc');setTimeout(()=>addCard('kien-thuc'),100)">+ Bài viết mới</button>
-        <button class="dash-btn" onclick="openImportModal()">📥 Import Excel</button>
-        <button class="dash-btn" onclick="nav('banners')">🖼 Quản lý Banner</button>
-        <button class="dash-btn" onclick="nav('settings')">⚙ Cài Đặt Website</button>
+      <div class="dash-ops-grid">
+        <section class="ops-panel">
+          <div class="ops-head">
+            <div>
+              <div class="ops-title">Checklist catalog</div>
+              <div class="ops-sub">Các tín hiệu cần đủ để website bán hàng trông hoàn thiện.</div>
+            </div>
+            <span class="ops-updated" id="dashUpdatedAt">Đang tải</span>
+          </div>
+          <div class="admin-health" id="adminHealthPanel">
+            <div class="loading-state">Đang tải…</div>
+          </div>
+        </section>
+        <section class="ops-panel">
+          <div class="ops-head">
+            <div>
+              <div class="ops-title">Phân bổ danh mục</div>
+              <div class="ops-sub">Tỷ trọng sản phẩm đang có trong catalog.</div>
+            </div>
+          </div>
+          <div class="cat-pulse" id="categoryPulse">
+            <div class="loading-state">Đang tải…</div>
+          </div>
+        </section>
       </div>
+      <section class="dash-quick-panel">
+        <div class="dash-section-title">Thao Tác Nhanh</div>
+        <div class="dash-quick">
+          <button class="dash-btn" onclick="nav('cot-vot');setTimeout(()=>addCard('cot-vot'),100)">+ Cốt Vợt mới</button>
+          <button class="dash-btn" onclick="nav('mat-vot');setTimeout(()=>addCard('mat-vot'),100)">+ Mặt Vợt mới</button>
+          <button class="dash-btn" onclick="nav('bong');setTimeout(()=>addCard('bong'),100)">+ Bóng mới</button>
+          <button class="dash-btn" onclick="nav('combo-vot');setTimeout(()=>addCard('combo-vot'),100)">+ Combo mới</button>
+          <button class="dash-btn" onclick="nav('kien-thuc');setTimeout(()=>addCard('kien-thuc'),100)">+ Bài viết mới</button>
+          <button class="dash-btn" onclick="openImportModal()">Import Excel</button>
+          <button class="dash-btn" onclick="nav('banners')">Quản lý Banner</button>
+          <button class="dash-btn" onclick="nav('settings')">Cài Đặt Website</button>
+        </div>
+      </section>
     </div>
 
     <!-- ── Cốt Vợt ───────────────────────────────── -->
@@ -2791,7 +3209,7 @@ Có chủ đề nào bạn muốn chúng tôi cover? Comment nhé!
             <span class="aiimg-upload-label">Kéo thả hoặc click để chọn ảnh sản phẩm</span>
             <span class="aiimg-upload-sub">JPG / PNG / WEBP &nbsp;·&nbsp; khuyến nghị &ge; 800&times;800</span>
           </div>
-          <img id="aiImgPreviewImg" class="aiimg-preview-img" style="display:none">
+          <img id="aiImgPreviewImg" class="aiimg-preview-img" src="/images/optimized/logo-bongbanviet-160.webp" alt="" style="display:none">
 
           <div class="aiimg-field">
             <label>Tên sản phẩm <span style="font-weight:400;color:#94A3B8">(tuỳ chọn – dùng làm headline)</span></label>
@@ -3133,6 +3551,46 @@ function textToSpecs(t) {
   return s;
 }
 function fmtNum(n) { return Number(n||0).toLocaleString('vi-VN'); }
+function pct(part, total) {
+  const n = Number(part || 0);
+  const t = Number(total || 0);
+  return t > 0 ? Math.round((n / t) * 100) : 0;
+}
+function dashTimeLabel(date = new Date()) {
+  return new Intl.DateTimeFormat('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
+}
+function healthItem(ok, label, detail) {
+  return `<div class="health-item ${ok ? 'ok' : 'warn'}">
+    <div class="health-dot">${ok ? '✓' : '!'}</div>
+    <div>
+      <div class="health-label">${esc(label)}</div>
+      <div class="health-detail">${esc(detail)}</div>
+    </div>
+  </div>`;
+}
+function renderCategoryPulse(byCat = {}, total = 0) {
+  const entries = Object.entries(byCat || {})
+    .filter(([, n]) => Number(n || 0) > 0)
+    .sort((a, b) => Number(b[1] || 0) - Number(a[1] || 0));
+  if (!entries.length) {
+    return '<div class="empty-state" style="padding:28px;">Chưa có dữ liệu danh mục.</div>';
+  }
+  const max = Math.max(...entries.map(([, n]) => Number(n || 0)), 1);
+  return entries.map(([key, value]) => {
+    const count = Number(value || 0);
+    const width = Math.max(6, Math.round((count / max) * 100));
+    return `<div class="cat-row">
+      <div class="cat-name">${esc(CAT_LBL[key] || key)}</div>
+      <div class="cat-bar" aria-label="${pct(count, total)}%"><span style="width:${width}%"></span></div>
+      <div class="cat-count">${fmtNum(count)}</div>
+    </div>`;
+  }).join('');
+}
 
 /* ─── API ──────────────────────────────────────────────────── */
 async function api(url, method='GET', body=null) {
@@ -3622,33 +4080,63 @@ async function loadArticles() {
 async function loadDashboard() {
   try {
     const s = await api('/api/stats');
+    const totalProducts = Number(s.products || 0);
+    const inStock = Number(s.products_in_stock || 0);
+    const outStock = Math.max(0, totalProducts - inStock);
+    const stockRate = pct(inStock, totalProducts);
+    const comboCount = Number(s.combos || 0);
+    const articleCount = Number(s.articles || 0);
+    const featuredCount = Number(s.featured || 0);
+    const usedCount = Number(s.used || 0);
     const statsEl = document.getElementById('dashStats');
     statsEl.innerHTML = `
       <div class="stat-card c-red">
-        <div class="stat-num">${fmtNum(s.products)}</div>
+        <div class="stat-num">${fmtNum(totalProducts)}</div>
         <div class="stat-label">Tổng Sản Phẩm</div>
-        <div class="stat-sub">${fmtNum(s.products_in_stock||0)} còn hàng · ${fmtNum((s.products||0)-(s.products_in_stock||0))} hết hàng</div>
+        <div class="stat-sub">${fmtNum(inStock)} còn hàng · ${fmtNum(outStock)} hết hàng</div>
       </div>
       <div class="stat-card c-blue">
-        <div class="stat-num">${fmtNum(s.combos)}</div>
+        <div class="stat-num">${fmtNum(comboCount)}</div>
         <div class="stat-label">Combo Vợt</div>
         <div class="stat-sub">Bộ combo đã cấu hình</div>
       </div>
       <div class="stat-card c-yellow">
-        <div class="stat-num">${fmtNum(s.articles)}</div>
+        <div class="stat-num">${fmtNum(articleCount)}</div>
         <div class="stat-label">Bài Viết</div>
         <div class="stat-sub">Kiến thức & review</div>
       </div>
       <div class="stat-card c-green">
-        <div class="stat-num">${fmtNum(s.featured)}</div>
+        <div class="stat-num">${fmtNum(featuredCount)}</div>
         <div class="stat-label">Sản Phẩm Nổi Bật</div>
         <div class="stat-sub">Hiển thị ở trang chủ</div>
       </div>
       <div class="stat-card">
-        <div class="stat-num">${fmtNum(s.used)}</div>
+        <div class="stat-num">${fmtNum(usedCount)}</div>
         <div class="stat-label">Đồ Cũ</div>
         <div class="stat-sub">Second-hand còn tốt</div>
       </div>`;
+    const heroSub = document.getElementById('adminHeroSub');
+    if (heroSub) {
+      heroSub.textContent = `${fmtNum(totalProducts)} sản phẩm · ${fmtNum(comboCount)} combo · ${stockRate}% catalog còn hàng`;
+    }
+    const updatedAt = document.getElementById('dashUpdatedAt');
+    if (updatedAt) updatedAt.textContent = `Cập nhật ${dashTimeLabel()}`;
+    const healthEl = document.getElementById('adminHealthPanel');
+    if (healthEl) {
+      healthEl.innerHTML = [
+        healthItem(totalProducts >= 40, 'Catalog đủ rộng', `${fmtNum(totalProducts)} sản phẩm đang quản lý`),
+        healthItem(stockRate >= 75, 'Tồn kho hiển thị tốt', `${stockRate}% sản phẩm đang còn hàng`),
+        healthItem(featuredCount >= 6, 'Trang chủ có hàng nổi bật', `${fmtNum(featuredCount)} sản phẩm được đánh dấu nổi bật`),
+        healthItem(comboCount >= 4, 'Combo theo trình độ', `${fmtNum(comboCount)} combo đã cấu hình`),
+        healthItem(articleCount >= 3, 'Nội dung tư vấn', `${fmtNum(articleCount)} bài kiến thức đang có`),
+        healthItem((s.by_cat && Object.keys(s.by_cat).length >= 5), 'Danh mục cân bằng', `${fmtNum(Object.keys(s.by_cat || {}).length)} danh mục có sản phẩm`),
+      ].join('');
+    }
+    const catPulse = document.getElementById('categoryPulse');
+    if (catPulse) catPulse.innerHTML = renderCategoryPulse(s.by_cat || {}, totalProducts);
+    setCount('combo-vot', comboCount);
+    setCount('kien-thuc', articleCount);
+    setCount('do-cu', usedCount);
     // Update sidebar counts
     if (s.by_cat) {
       Object.entries(s.by_cat).forEach(([k,v])=>{
@@ -3656,7 +4144,13 @@ async function loadDashboard() {
         if (nc) nc.textContent = v;
       });
     }
-  } catch { document.getElementById('dashStats').innerHTML = '<div class="loading-state">Không thể tải thống kê.</div>'; }
+  } catch {
+    document.getElementById('dashStats').innerHTML = '<div class="loading-state">Không thể tải thống kê.</div>';
+    const healthEl = document.getElementById('adminHealthPanel');
+    if (healthEl) healthEl.innerHTML = '<div class="empty-state" style="padding:28px;">Không thể tải checklist.</div>';
+    const catPulse = document.getElementById('categoryPulse');
+    if (catPulse) catPulse.innerHTML = '<div class="empty-state" style="padding:28px;">Không thể tải danh mục.</div>';
+  }
 }
 
 /* ─── Add card ─────────────────────────────────────────────── */
