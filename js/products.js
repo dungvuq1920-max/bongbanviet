@@ -5,7 +5,8 @@
 
 const BBV_BRANDS = {
   butterfly: 'Butterfly', tibhar: 'Tibhar',
-  unrex: 'Unrex', yinhe: 'Yinhe', khac: 'Các Hãng Khác',
+  unrex: 'Unrex', yinhe: 'Yinhe', avx: 'Avalox',
+  dhs: 'DHS', dawei: 'Dawei', palio: 'Palio', khac: 'Các Hãng Khác',
 };
 const BBV_CATS = {
   'cot-vot': 'Cốt Vợt', 'mat-vot': 'Mặt Vợt', 'bong': 'Bóng',
@@ -23,6 +24,13 @@ function _abbr(name) {
   if (words.length === 1) return _esc(name);
   const mid = Math.ceil(words.length / 2);
   return _esc(words.slice(0, mid).join(' ')) + '<br>' + _esc(words.slice(mid).join(' '));
+}
+
+function _catalogRouteBrand(category) {
+  var match = location.pathname.match(/^\/([^\/]+)\/([^\/]+?)(?:\.html)?\/?$/i);
+  if (!match) return '';
+  if (category && match[1].toLowerCase() !== String(category).toLowerCase()) return '';
+  return decodeURIComponent(match[2]).toLowerCase();
 }
 
 function _shortDesc(p) {
@@ -57,7 +65,7 @@ function renderProdCard(p, idx, opts) {
   const href     = 'san-pham.html?id=' + _esc(p.slug);
 
   const imgHtml = (p.images && p.images.length)
-    ? `<img src="${_esc(p.images[0])}" alt="${_esc(p.name)}" loading="lazy" onerror="this.onerror=null;this.src='/images/optimized/logo-bongbanviet-160.webp';this.style.objectFit='contain';this.style.padding='22px';" style="width:100%;height:100%;object-fit:cover;display:block;">`
+    ? `<img src="${_esc(p.images[0])}" alt="${_esc(p.name)}" loading="lazy" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=&quot;prod-wm&quot;>Anh<br>san pham</div>';" style="width:100%;height:100%;object-fit:cover;display:block;">`
     : `<div class="prod-wm">${_abbr(p.name)}</div>`;
 
   const rawPrice = String(p.price || '');
@@ -105,7 +113,7 @@ function renderComboCard(c, idx) {
   const levelLabel = levelMap[c.level] || _esc(c.level);
 
   const imgHtml = (c.images && c.images.length)
-    ? `<img src="${_esc(c.images[0])}" alt="${_esc(c.name)}" loading="lazy" onerror="this.onerror=null;this.src='/images/optimized/logo-bongbanviet-160.webp';this.style.objectFit='contain';this.style.padding='22px';" style="width:100%;height:100%;object-fit:cover;display:block;">`
+    ? `<img src="${_esc(c.images[0])}" alt="${_esc(c.name)}" loading="lazy" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=&quot;prod-wm&quot;>Anh<br>san pham</div>';" style="width:100%;height:100%;object-fit:cover;display:block;">`
     : `<div class="prod-wm">${_abbr(c.name)}</div>`;
 
   const badgeHtml = c.badge ? `<span class="prod-badge">${_esc(c.badge)}</span>` : '';
@@ -157,6 +165,8 @@ async function loadProdGrid(params, options) {
 
   try {
     const qs = new URLSearchParams(params);
+    const routeBrand = _catalogRouteBrand(qs.get('category'));
+    if (routeBrand && !qs.get('brand')) qs.set('brand', routeBrand);
     qs.set('limit', qs.get('limit') || '200');
     const endpoint = isCombo ? '/api/combos' : '/api/products';
     const res  = await fetch(endpoint + '?' + qs.toString());

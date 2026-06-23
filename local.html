@@ -3,82 +3,204 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BongBanViet Local Tools</title>
+<title>BongBanViet Local Workspace</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0f172a;
-  --surf:#1e293b;
-  --surf2:#263347;
-  --line:rgba(255,255,255,.08);
-  --text:#e2e8f0;
-  --muted:#94a3b8;
+  --bg:#0b1220;
+  --top:#111827;
+  --panel:#172033;
+  --panel2:#202b42;
+  --line:rgba(226,232,240,.13);
+  --text:#e5edf7;
+  --muted:#8fa2bc;
   --blue:#3b82f6;
+  --red:#ef4444;
   --green:#10b981;
+  --shadow:0 18px 50px rgba(0,0,0,.22);
 }
 html,body{height:100%}
-body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;overflow:hidden}
-.shell{height:100%;display:flex;flex-direction:column}
-.topbar{height:54px;background:var(--surf);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 18px;flex-shrink:0}
-.brand{font-size:14px;font-weight:800;color:var(--text);white-space:nowrap}
-.brand span{color:var(--blue)}
-.tabs{display:flex;gap:3px;background:var(--bg);border-radius:9px;padding:4px}
-.tab{background:none;border:0;color:var(--muted);border-radius:7px;padding:7px 16px;font:700 13px Inter,system-ui,sans-serif;cursor:pointer;white-space:nowrap}
-.tab:hover{color:var(--text)}
-.tab.active{background:var(--surf2);color:var(--text)}
-.open-link{margin-left:auto;color:var(--muted);text-decoration:none;font-size:12px;font-weight:700;border:1px solid var(--line);border-radius:8px;padding:6px 11px}
-.open-link:hover{color:var(--text);background:var(--surf2)}
-.frames{position:relative;flex:1;min-height:0}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  overflow:hidden;
+}
+button,a{font:inherit}
+.shell{height:100%;min-width:0;display:grid;grid-template-rows:auto 1fr}
+.topbar{
+  min-width:0;
+  background:var(--top);
+  border-bottom:1px solid var(--line);
+  box-shadow:var(--shadow);
+}
+.toprow{
+  min-height:58px;
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:center;
+  gap:14px;
+  padding:10px 18px;
+}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand-mark{
+  width:30px;height:30px;border-radius:8px;
+  display:grid;place-items:center;
+  background:#fff;color:#111827;font-weight:900;font-size:13px;
+}
+.brand-copy{min-width:0}
+.brand-name{font-size:14px;font-weight:900;letter-spacing:.01em;white-space:nowrap}
+.brand-name span{color:var(--red)}
+.brand-sub{font-size:11px;color:var(--muted);margin-top:1px;white-space:nowrap}
+.tabs-wrap{min-width:0;overflow-x:auto;scrollbar-width:thin}
+.tabs{display:flex;align-items:center;gap:6px;width:max-content;min-width:100%;padding:2px}
+.tab{
+  border:1px solid transparent;
+  background:transparent;
+  color:var(--muted);
+  border-radius:8px;
+  padding:8px 12px;
+  font-size:12px;
+  font-weight:800;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.tab:hover{color:var(--text);background:rgba(255,255,255,.05)}
+.tab.active{color:#fff;background:var(--panel2);border-color:var(--line)}
+.actions{display:flex;align-items:center;gap:8px}
+.icon-btn,.open-link{
+  min-height:34px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:rgba(255,255,255,.03);
+  color:var(--text);
+  text-decoration:none;
+  cursor:pointer;
+}
+.icon-btn{width:36px;font-size:17px}
+.open-link{padding:0 12px;font-size:12px;font-weight:800;white-space:nowrap}
+.icon-btn:hover,.open-link:hover{background:var(--panel2)}
+.statusrow{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:0 18px 10px;
+  color:var(--muted);
+  font-size:11px;
+  min-width:0;
+}
+.pill{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  min-height:24px;
+  padding:0 9px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  background:rgba(255,255,255,.03);
+  white-space:nowrap;
+}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+.status-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.frames{position:relative;min-height:0;min-width:0}
 .frame{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff;display:none}
 .frame.active{display:block}
-@media(max-width:640px){
-  .topbar{height:auto;min-height:54px;flex-wrap:wrap;padding:8px 10px}
-  .tabs{order:2;width:100%}
-  .tab{flex:1;padding:7px 8px}
-  .open-link{margin-left:0}
+@media(max-width:820px){
+  .toprow{grid-template-columns:1fr auto;gap:10px;padding:9px 10px}
+  .tabs-wrap{grid-column:1/-1;order:3}
+  .tabs{min-width:max-content}
+  .tab{padding:8px 11px}
+  .brand-sub{display:none}
+  .statusrow{padding:0 10px 9px;overflow-x:auto}
+}
+@media(max-width:460px){
+  .brand-mark{width:28px;height:28px}
+  .brand-name{font-size:13px}
+  .open-link{padding:0 10px}
+  .status-text{display:none}
 }
 </style>
 </head>
 <body>
 <div class="shell">
   <header class="topbar">
-    <div class="brand"><span>BongBanViet</span> Local</div>
-    <nav class="tabs" aria-label="Local tools">
-      <button class="tab active" data-tab="facebook" onclick="setToolTab('facebook')">Facebook</button>
-      <button class="tab" data-tab="download" onclick="setToolTab('download')">Download Video</button>
-      <button class="tab" data-tab="subtitle" onclick="setToolTab('subtitle')">Dịch Subtitle</button>
-      <button class="tab" data-tab="twofa" onclick="setToolTab('twofa')">2FA Code</button>
-      <button class="tab" data-tab="prompt" onclick="setToolTab('prompt')">Prompt Mẫu</button>
-    </nav>
-    <a class="open-link" id="openCurrent" href="/facebook.html" target="_blank" rel="noopener">Mở tab riêng</a>
+    <div class="toprow">
+      <div class="brand">
+        <div class="brand-mark">BBV</div>
+        <div class="brand-copy">
+          <div class="brand-name"><span>BongBanViet</span> Local</div>
+          <div class="brand-sub">Storefront, admin và automation trong một workspace</div>
+        </div>
+      </div>
+      <nav class="tabs-wrap" aria-label="Local workspace">
+        <div class="tabs">
+          <button class="tab active" data-tab="website" onclick="setToolTab('website')">Website</button>
+          <button class="tab" data-tab="admin" onclick="setToolTab('admin')">Admin</button>
+          <button class="tab" data-tab="facebook" onclick="setToolTab('facebook')">Facebook</button>
+          <button class="tab" data-tab="download" onclick="setToolTab('download')">Download</button>
+          <button class="tab" data-tab="subtitle" onclick="setToolTab('subtitle')">Subtitle</button>
+          <button class="tab" data-tab="twofa" onclick="setToolTab('twofa')">2FA</button>
+          <button class="tab" data-tab="prompt" onclick="setToolTab('prompt')">Prompt</button>
+        </div>
+      </nav>
+      <div class="actions">
+        <button class="icon-btn" type="button" title="Tải lại tab hiện tại" onclick="reloadCurrent()">↻</button>
+        <a class="open-link" id="openCurrent" href="/index.html" target="_blank" rel="noopener">Mở tab riêng</a>
+      </div>
+    </div>
+    <div class="statusrow">
+      <span class="pill"><span class="dot"></span>localhost:3001</span>
+      <span class="pill" id="activeLabel">Website</span>
+      <span class="status-text" id="activePath">/index.html</span>
+    </div>
   </header>
   <main class="frames">
-    <iframe class="frame active" id="frame-facebook" src="/facebook.html" title="Facebook"></iframe>
-    <iframe class="frame" id="frame-download" src="/download.html" title="Download Video"></iframe>
-    <iframe class="frame" id="frame-subtitle" src="/subtitle-translator.html" title="Dịch Subtitle"></iframe>
-    <iframe class="frame" id="frame-twofa" src="/2fa-code.html" title="2FA Code"></iframe>
-    <iframe class="frame" id="frame-prompt" src="/prompt" title="Prompt Mẫu"></iframe>
+    <iframe class="frame active" id="frame-website" src="/index.html" title="Website"></iframe>
+    <iframe class="frame" id="frame-admin" src="/admin.html" title="Admin"></iframe>
+    <iframe class="frame" id="frame-facebook" src="/facebook.html" title="Facebook"></iframe>
+    <iframe class="frame" id="frame-download" src="/download.html" title="Download"></iframe>
+    <iframe class="frame" id="frame-subtitle" src="/subtitle-translator.html" title="Subtitle"></iframe>
+    <iframe class="frame" id="frame-twofa" src="/2fa-code.html" title="2FA"></iframe>
+    <iframe class="frame" id="frame-prompt" src="/prompt.html" title="Prompt"></iframe>
   </main>
 </div>
 <script>
 const TOOL_TABS = {
-  facebook: { href:'/facebook.html' },
-  download: { href:'/download.html' },
-  subtitle: { href:'/subtitle-translator.html' },
-  twofa: { href:'/2fa-code.html' },
-  prompt: { href:'/prompt' },
+  website: { label:'Website', href:'/index.html' },
+  admin: { label:'Admin', href:'/admin.html' },
+  facebook: { label:'Facebook', href:'/facebook.html' },
+  download: { label:'Download', href:'/download.html' },
+  subtitle: { label:'Subtitle', href:'/subtitle-translator.html' },
+  twofa: { label:'2FA', href:'/2fa-code.html' },
+  prompt: { label:'Prompt', href:'/prompt.html' },
 };
 
+let currentTab = 'website';
+
 function setToolTab(tab){
-  if(!TOOL_TABS[tab]) tab='facebook';
+  if(!TOOL_TABS[tab]) tab='website';
+  currentTab = tab;
+  const current = TOOL_TABS[tab];
   document.querySelectorAll('.tab').forEach(btn=>btn.classList.toggle('active', btn.dataset.tab===tab));
   document.querySelectorAll('.frame').forEach(frame=>frame.classList.toggle('active', frame.id===`frame-${tab}`));
-  document.getElementById('openCurrent').href=TOOL_TABS[tab].href;
+  document.getElementById('openCurrent').href=current.href;
+  document.getElementById('activeLabel').textContent=current.label;
+  document.getElementById('activePath').textContent=current.href;
   localStorage.setItem('bbv_local_tool_tab', tab);
   if(location.hash!==`#${tab}`) history.replaceState(null, '', `#${tab}`);
+  const activeButton = document.querySelector(`.tab[data-tab="${tab}"]`);
+  activeButton?.scrollIntoView({block:'nearest', inline:'nearest'});
 }
 
-const initial=(location.hash||'').replace('#','')||localStorage.getItem('bbv_local_tool_tab')||'facebook';
+function reloadCurrent(){
+  const frame = document.getElementById(`frame-${currentTab}`);
+  if(frame) frame.contentWindow.location.reload();
+}
+
+const initial=(location.hash||'').replace('#','')||localStorage.getItem('bbv_local_tool_tab')||'website';
 setToolTab(initial);
 </script>
 </body>

@@ -173,14 +173,14 @@
 
 <div class="brand-tabs">
   <div class="brand-tabs-inner">
-    <div class="brand-tab active" data-brand="butterfly" onclick="scrollToBrand('butterfly',this)">Butterfly</div>
-    <div class="brand-tab" data-brand="tibhar" onclick="scrollToBrand('tibhar',this)">Tibhar</div>
-    <div class="brand-tab" data-brand="unrex" onclick="scrollToBrand('unrex',this)">Unrex</div>
-    <div class="brand-tab" data-brand="yinhe" onclick="scrollToBrand('yinhe',this)">Yinhe</div>
-    <div class="brand-tab" data-brand="dhs" onclick="scrollToBrand('dhs',this)">DHS</div>
-    <div class="brand-tab" data-brand="dawei" onclick="scrollToBrand('dawei',this)">Dawei</div>
-    <div class="brand-tab" data-brand="palio" onclick="scrollToBrand('palio',this)">Palio</div>
-    <div class="brand-tab" data-brand="khac" onclick="scrollToBrand('khac',this)">Các Hãng Khác</div>
+    <a class="brand-tab active" data-brand="butterfly" href="/mat-vot/butterfly.html">Butterfly</a>
+    <a class="brand-tab" data-brand="tibhar" href="/mat-vot/tibhar.html">Tibhar</a>
+    <a class="brand-tab" data-brand="unrex" href="/mat-vot/unrex.html">Unrex</a>
+    <a class="brand-tab" data-brand="yinhe" href="/mat-vot/yinhe.html">Yinhe</a>
+    <a class="brand-tab" data-brand="dhs" href="/mat-vot/dhs.html">DHS</a>
+    <a class="brand-tab" data-brand="dawei" href="/mat-vot/dawei.html">Dawei</a>
+    <a class="brand-tab" data-brand="palio" href="/mat-vot/palio.html">Palio</a>
+    <a class="brand-tab" data-brand="khac" href="/mat-vot/khac.html">Các Hãng Khác</a>
   </div>
 </div>
 
@@ -253,7 +253,19 @@ function scrollToBrand(slug, el) {
   if (sect) { const top = sect.getBoundingClientRect().top + window.scrollY - 100; window.scrollTo({top,behavior:'smooth'}); }
 }
 
-BRANDS_MV.forEach(function(b) {
+function getRouteBrand() {
+  const pathMatch = location.pathname.match(/^\/mat-vot\/([^\/]+?)(?:\.html)?\/?$/i);
+  return pathMatch ? decodeURIComponent(pathMatch[1]).toLowerCase() : new URLSearchParams(location.search).get('brand');
+}
+
+const initBrand = getRouteBrand();
+const activeBrands = initBrand ? BRANDS_MV.filter(function(b){ return b.slug === initBrand; }) : BRANDS_MV;
+if (initBrand) {
+  document.querySelectorAll('.brand-tab').forEach(function(t){ t.classList.toggle('active', t.dataset.brand === initBrand); });
+  document.querySelectorAll('.brand-section').forEach(function(s){ if (s.id !== 'sect-' + initBrand) s.remove(); });
+}
+
+activeBrands.forEach(function(b) {
   loadProdGrid({ category: 'mat-vot', brand: b.slug }, {
     gridId: 'grid-'+b.slug,
     onDone: function(data) {
@@ -263,12 +275,6 @@ BRANDS_MV.forEach(function(b) {
     }
   });
 });
-
-const initBrand = new URLSearchParams(location.search).get('brand');
-if (initBrand) {
-  const tab = document.querySelector('[data-brand="'+initBrand+'"]');
-  setTimeout(function(){ scrollToBrand(initBrand, tab); }, 700);
-}
 
 const obs = new IntersectionObserver(function(entries) {
   entries.forEach(function(e) {
@@ -280,7 +286,7 @@ const obs = new IntersectionObserver(function(entries) {
     }
   });
 }, { threshold:0.15, rootMargin:'-90px 0px -55% 0px' });
-BRANDS_MV.forEach(function(b){ const el=document.getElementById('sect-'+b.slug); if(el) obs.observe(el); });
+activeBrands.forEach(function(b){ const el=document.getElementById('sect-'+b.slug); if(el) obs.observe(el); });
 </script>
 </div><!-- /site-container -->
 

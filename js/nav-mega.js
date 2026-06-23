@@ -86,12 +86,12 @@
         '<div class="mega-panel mega-brands wide">' +
           '<div class="mega-head"><span class="mega-head-label">Cốt Vợt theo thương hiệu</span><a href="/cot-vot.html" class="mega-head-all">Xem tất cả →</a></div>' +
           '<div class="mega-brands-grid" style="grid-template-columns:repeat(6,1fr)">' +
-            brandCard('/cot-vot.html?brand=butterfly', 'Butterfly', 'Cao cấp, Nhật Bản') +
-            brandCard('/cot-vot.html?brand=tibhar',    'Tibhar',    'Chuyên nghiệp, Đức') +
-            brandCard('/cot-vot.html?brand=unrex',     'Unrex',     'Đa dạng kiểu chơi') +
-            brandCard('/cot-vot.html?brand=yinhe',     'Yinhe',     'Giá tốt, hiệu quả') +
-            brandCard('/cot-vot.html?brand=avx',       'Avalox',    'Cốt carbon & gỗ') +
-            brandCard('/cot-vot.html?brand=khac',      'Khác',      'Thương hiệu khác') +
+            brandCard('/cot-vot/butterfly.html', 'Butterfly', 'Cao cấp, Nhật Bản') +
+            brandCard('/cot-vot/tibhar.html',    'Tibhar',    'Chuyên nghiệp, Đức') +
+            brandCard('/cot-vot/unrex.html',     'Unrex',     'Đa dạng kiểu chơi') +
+            brandCard('/cot-vot/yinhe.html',     'Yinhe',     'Giá tốt, hiệu quả') +
+            brandCard('/cot-vot/avx.html',       'Avalox',    'Cốt carbon & gỗ') +
+            brandCard('/cot-vot/khac.html',      'Khác',      'Thương hiệu khác') +
           '</div>' +
         '</div>' +
       '</li>' +
@@ -100,14 +100,14 @@
         '<div class="mega-panel mega-brands wide">' +
           '<div class="mega-head"><span class="mega-head-label">Mặt Vợt theo thương hiệu</span><a href="/mat-vot.html" class="mega-head-all">Xem tất cả →</a></div>' +
           '<div class="mega-brands-grid" style="grid-template-columns:repeat(4,1fr)">' +
-            brandCard('/mat-vot.html?brand=butterfly', 'Butterfly', 'Cao cấp, Nhật Bản') +
-            brandCard('/mat-vot.html?brand=tibhar',    'Tibhar',    'Chuyên nghiệp, Đức') +
-            brandCard('/mat-vot.html?brand=unrex',     'Unrex',     'Đa dạng kiểu chơi') +
-            brandCard('/mat-vot.html?brand=yinhe',     'Yinhe',     'Giá tốt, hiệu quả') +
-            brandCard('/mat-vot.html?brand=dhs',       'DHS',       'Tacky kiểu Trung Quốc') +
-            brandCard('/mat-vot.html?brand=dawei',     'Dawei',     'Gai dài, gai trung') +
-            brandCard('/mat-vot.html?brand=palio',     'Palio',     'Châu Âu, giá tốt') +
-            brandCard('/mat-vot.html?brand=khac',      'Khác',      'Thương hiệu khác') +
+            brandCard('/mat-vot/butterfly.html', 'Butterfly', 'Cao cấp, Nhật Bản') +
+            brandCard('/mat-vot/tibhar.html',    'Tibhar',    'Chuyên nghiệp, Đức') +
+            brandCard('/mat-vot/unrex.html',     'Unrex',     'Đa dạng kiểu chơi') +
+            brandCard('/mat-vot/yinhe.html',     'Yinhe',     'Giá tốt, hiệu quả') +
+            brandCard('/mat-vot/dhs.html',       'DHS',       'Tacky kiểu Trung Quốc') +
+            brandCard('/mat-vot/dawei.html',     'Dawei',     'Gai dài, gai trung') +
+            brandCard('/mat-vot/palio.html',     'Palio',     'Châu Âu, giá tốt') +
+            brandCard('/mat-vot/khac.html',      'Khác',      'Thương hiệu khác') +
           '</div>' +
         '</div>' +
       '</li>' +
@@ -138,7 +138,8 @@
   };
 
   function brandCard(href, name, desc) {
-    var slug = href.split('brand=')[1] || '';
+    var match = href.match(/\/([^\/?#]+)\.html(?:[?#]|$)/);
+    var slug = match ? match[1] : '';
     var logoUrl = _brandLogos[slug] || '';
     var logoHtml = logoUrl
       ? '<img src="' + logoUrl + '" alt="' + name + '" style="height:18px;width:auto;max-width:80px;object-fit:contain;mix-blend-mode:multiply;opacity:.55;margin-bottom:4px;display:block;">'
@@ -170,23 +171,23 @@
         '</div>' +
         '<div class="mobile-nav-links">' +
           mGroup('mg-cot', 'Cốt Vợt',
-            '<a href="/cot-vot.html?brand=butterfly">Butterfly</a>' +
-            '<a href="/cot-vot.html?brand=tibhar">Tibhar</a>' +
-            '<a href="/cot-vot.html?brand=unrex">Unrex</a>' +
-            '<a href="/cot-vot.html?brand=yinhe">Yinhe</a>' +
-            '<a href="/cot-vot.html?brand=avx">Avalox</a>' +
-            '<a href="/cot-vot.html?brand=khac">Các Thương Hiệu Khác</a>' +
+            '<a href="/cot-vot/butterfly.html">Butterfly</a>' +
+            '<a href="/cot-vot/tibhar.html">Tibhar</a>' +
+            '<a href="/cot-vot/unrex.html">Unrex</a>' +
+            '<a href="/cot-vot/yinhe.html">Yinhe</a>' +
+            '<a href="/cot-vot/avx.html">Avalox</a>' +
+            '<a href="/cot-vot/khac.html">Các Thương Hiệu Khác</a>' +
             '<a href="/cot-vot.html" class="m-group-view-all">Xem Tất Cả Cốt Vợt →</a>'
           ) +
           mGroup('mg-mat', 'Mặt Vợt',
-            '<a href="/mat-vot.html?brand=butterfly">Butterfly</a>' +
-            '<a href="/mat-vot.html?brand=tibhar">Tibhar</a>' +
-            '<a href="/mat-vot.html?brand=unrex">Unrex</a>' +
-            '<a href="/mat-vot.html?brand=yinhe">Yinhe</a>' +
-            '<a href="/mat-vot.html?brand=dhs">DHS</a>' +
-            '<a href="/mat-vot.html?brand=dawei">Dawei</a>' +
-            '<a href="/mat-vot.html?brand=palio">Palio</a>' +
-            '<a href="/mat-vot.html?brand=khac">Các Thương Hiệu Khác</a>' +
+            '<a href="/mat-vot/butterfly.html">Butterfly</a>' +
+            '<a href="/mat-vot/tibhar.html">Tibhar</a>' +
+            '<a href="/mat-vot/unrex.html">Unrex</a>' +
+            '<a href="/mat-vot/yinhe.html">Yinhe</a>' +
+            '<a href="/mat-vot/dhs.html">DHS</a>' +
+            '<a href="/mat-vot/dawei.html">Dawei</a>' +
+            '<a href="/mat-vot/palio.html">Palio</a>' +
+            '<a href="/mat-vot/khac.html">Các Thương Hiệu Khác</a>' +
             '<a href="/mat-vot.html" class="m-group-view-all">Xem Tất Cả Mặt Vợt →</a>'
           ) +
           '<a href="/bong.html">Bóng</a>' +

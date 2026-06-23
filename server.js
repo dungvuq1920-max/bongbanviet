@@ -44,13 +44,41 @@ const FACEBOOK_LOCAL_IMPORT_FILE = path.resolve(
   path.join(os.homedir(), 'Desktop', 'facebook-posts.json')
 );
 const FACEBOOK_IMPORT_TOKEN = process.env.FACEBOOK_IMPORT_TOKEN || '';
+const IS_MANAGED_DEPLOY =
+  !!(process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_PROJECT_ID || process.env.RENDER || process.env.FLY_APP_NAME);
+const IS_LOCAL_DEV = process.env.BBV_LOCAL_DEV === '1' || (!IS_MANAGED_DEPLOY && process.env.NODE_ENV !== 'production');
+const CORS_ALLOWED_ORIGINS = new Set([
+  PUBLIC_SITE_URL,
+  `http://localhost:${PORT}`,
+  `http://127.0.0.1:${PORT}`,
+  ...(process.env.CORS_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean),
+]);
 
-app.use(cors());
+function isAllowedRequestOrigin(req) {
+  const origin = req.get('origin');
+  return !origin || CORS_ALLOWED_ORIGINS.has(origin);
+}
+
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || CORS_ALLOWED_ORIGINS.has(origin)) return callback(null, true);
+    return callback(null, false);
+  },
+}));
 app.use(express.json({ limit: process.env.JSON_BODY_LIMIT || '5mb' }));
+app.use((req, res, next) => {
+  if (isAllowedRequestOrigin(req)) return next();
+  res.status(403).json({ error: 'Origin không được phép' });
+});
 
 // ─── Admin Auth ──────────────────────────────────────────────────────────────
 
 const adminTokens = new Set();
+
+function hasAdminAccess(req) {
+  const token = req.headers['x-admin-token'];
+  return (IS_LOCAL_DEV && isLocalRequest(req) && isAllowedRequestOrigin(req)) || (token && adminTokens.has(token));
+}
 
 function getAdminPassword() {
   const row = db.prepare("SELECT value FROM settings WHERE key = 'admin_password'").get();
@@ -272,10 +300,7 @@ async function callFacebookTextProvider(provider, prompt) {
 }
 
 function requireAuth(req, res, next) {
-  const token = req.headers['x-admin-token'];
-  const ip = String(req.ip || req.socket?.remoteAddress || '').replace(/^::ffff:/, '');
-  if (ip === '127.0.0.1' || ip === '::1' || ip === 'localhost') return next();
-  if (token && adminTokens.has(token)) return next();
+  if (hasAdminAccess(req)) return next();
   res.status(401).json({ error: 'Chưa đăng nhập' });
 }
 
@@ -329,7 +354,7 @@ app.get('/api/lichtap', (req, res) => {
   }
 });
 
-app.post('/api/lichtap', (req, res) => {
+app.post('/api/lichtap', requireAuth, (req, res) => {
   try {
     fs.writeFileSync(LICHTAP_VOLUME_FILE, JSON.stringify(req.body));
     res.json({ ok: true });
@@ -355,8 +380,8 @@ app.use('/images/products', express.static(path.join(DATA_DIR, 'images', 'produc
 app.use('/images/banners', express.static(path.join(DATA_DIR, 'images', 'banners'), uploadedImageStaticOptions));
 app.use('/images/facebook', express.static(path.join(DATA_DIR, 'images', 'facebook'), uploadedImageStaticOptions));
 app.get('/images/products/:file', (_req, res) => {
-  res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
-  res.sendFile(path.join(__dirname, 'images', 'optimized', 'logo-bongbanviet-160.webp'));
+  res.setHeader('Cache-Control', 'public, max-age=60');
+  res.status(404).end();
 });
 // Serve lichtap React app — inject Firebase runtime config from Railway env vars
 app.get(['/lichtap', '/lichtap/'], (req, res) => {
@@ -516,6 +541,7 @@ function isLocalRequest(req) {
 }
 
 const LIGHT_THEME_HREF = '/css/light-theme.css?v=20260521';
+const CATALOG_ROUTE_PAGES = new Set(['cot-vot', 'mat-vot', 'bong', 'ban', 'do-thi-dau', 'do-cu']);
 const RAW_HTML_PAGES = new Set([
   'admin.html',
   'local.html',
@@ -531,6 +557,7 @@ const GLOBAL_POLISH_CSS = `
 <style id="_bbv_global_polish">
   html, body { max-width: 100%; overflow-x: hidden; }
   img { max-width: 100%; height: auto; }
+  img[src*="logo_bongbanviet.png"] { background: transparent !important; object-fit: contain; }
   .mega-panel { max-width: calc(100vw - 32px); }
   .mega-brands, .mega-brands.wide { min-width: min(680px, calc(100vw - 32px)) !important; }
   .mega-gear { min-width: min(340px, calc(100vw - 32px)) !important; }
@@ -607,22 +634,22 @@ const PUBLIC_PAGE_META = {
   'huong-dan-mua-hang.html': {
     title: 'Hướng dẫn mua hàng tại BÓNG BÀN VIỆT',
     description: 'Hướng dẫn mua hàng, tư vấn sản phẩm, xác nhận đơn, giao hàng, COD, chuyển khoản và hỗ trợ sau mua tại BÓNG BÀN VIỆT.',
-    image: '/images/optimized/logo-bongbanviet-160.webp',
+    image: '/logo_bongbanviet.png',
   },
   'chinh-sach-doi-tra.html': {
     title: 'Chính sách đổi trả và hoàn tiền | BÓNG BÀN VIỆT',
     description: 'Chính sách đổi trả, hoàn tiền, bảo hành và quy trình xử lý khi sản phẩm lỗi, giao sai hoặc hư hỏng vận chuyển.',
-    image: '/images/optimized/logo-bongbanviet-160.webp',
+    image: '/logo_bongbanviet.png',
   },
   'lien-he.html': {
     title: 'Liên hệ BÓNG BÀN VIỆT | Tư vấn dụng cụ bóng bàn',
     description: 'Liên hệ BÓNG BÀN VIỆT tại 286 Nguyễn Xiển, Thanh Liệt, Hà Nội. Hotline và Zalo 096.1269.386 để được tư vấn dụng cụ bóng bàn.',
-    image: '/images/optimized/logo-bongbanviet-160.webp',
+    image: '/logo_bongbanviet.png',
   },
   'san-pham.html': {
     title: 'Chi tiết sản phẩm bóng bàn | BÓNG BÀN VIỆT',
     description: 'Chi tiết sản phẩm bóng bàn tại BÓNG BÀN VIỆT. Xem thông số, hình ảnh và nhận tư vấn chọn dụng cụ phù hợp.',
-    image: '/images/optimized/logo-bongbanviet-160.webp',
+    image: '/logo_bongbanviet.png',
   },
 };
 
@@ -659,7 +686,7 @@ function metaForProductRequest(req) {
     return {
       title: `${p.name} | BÓNG BÀN VIỆT`,
       description,
-      image: p.images?.[0] || '/images/optimized/logo-bongbanviet-160.webp',
+      image: p.images?.[0] || '/logo_bongbanviet.png',
       canonicalPath: `/san-pham.html?id=${encodeURIComponent(p.slug)}`,
       type: 'product',
     };
@@ -689,11 +716,10 @@ function injectSeoMeta(html, req, filePath) {
 
   const canonicalPath = meta.canonicalPath || (fileName === 'index.html' ? '/' : `/${fileName}`);
   const canonical = absolutePublicUrl(canonicalPath);
-  const image = absolutePublicUrl(meta.image || '/images/optimized/logo-bongbanviet-160.webp');
+  const image = absolutePublicUrl(meta.image || '/logo_bongbanviet.png');
   const title = meta.title || baseMeta.title || 'BÓNG BÀN VIỆT';
   const description = meta.description || baseMeta.description || '';
 
-  html = html.replace(/(["'])\/?logo_bongbanviet\.png\1/g, '$1/images/optimized/logo-bongbanviet-160.webp$1');
   html = html.replace(/href=(["'])\/favicon\.png\1/g, 'href=$1/images/optimized/favicon-96.png$1');
   html = html.replace(/href=(["'])\/?favicon\.png\1/g, 'href=$1/images/optimized/favicon-96.png$1');
   if (fileName === 'index.html') {
@@ -800,6 +826,22 @@ app.get('/sitemap.xml', (_req, res) => {
   ];
   const urls = publicPages.map(([pathname, priority, changefreq]) => sitemapUrl(pathname, priority, changefreq));
 
+  const catalogBrands = db.prepare(`
+    SELECT DISTINCT category_slug, brand_slug
+    FROM products
+    WHERE in_stock=1
+      AND category_slug IS NOT NULL
+      AND brand_slug IS NOT NULL
+      AND TRIM(brand_slug) <> ''
+  `).all();
+  for (const row of catalogBrands) {
+    const category = String(row.category_slug || '').trim();
+    const brand = String(row.brand_slug || '').trim();
+    if (CATALOG_ROUTE_PAGES.has(category) && brand) {
+      urls.push(sitemapUrl(`/${category}/${encodeURIComponent(brand)}.html`, '0.75', 'weekly'));
+    }
+  }
+
   const products = db.prepare(`SELECT slug, updated_at FROM products WHERE in_stock=1 ORDER BY updated_at DESC LIMIT 1000`).all();
   for (const product of products) {
     urls.push(sitemapUrl(`/san-pham.html?id=${encodeURIComponent(product.slug)}`, '0.7', 'weekly'));
@@ -824,6 +866,11 @@ app.get(['/', '/local'], (req, res, next) => {
     return sendThemedHtml(req, res, path.join(__dirname, 'index.html'));
   }
   return next();
+});
+
+app.get(/^\/(cot-vot|mat-vot|bong|ban|do-thi-dau|do-cu)\/([A-Za-z0-9_-]+)(?:\.html)?$/, (req, res) => {
+  const category = req.params[0];
+  sendThemedHtml(req, res, path.join(__dirname, `${category}.html`));
 });
 
 app.get(/^\/[A-Za-z0-9_-]+(?:\.html)?$/, (req, res, next) => {
@@ -1456,12 +1503,30 @@ function parseJSON(val, fallback) {
   try { return JSON.parse(val); } catch { return fallback; }
 }
 
+function publicImageExists(src) {
+  if (!src) return false;
+  const value = String(src).trim();
+  if (/^https?:\/\//i.test(value)) return true;
+  if (!value.startsWith('/images/')) return true;
+  const normalized = value.replace(/^\/+/, '').replace(/[\\/]+/g, path.sep);
+  const candidates = [
+    path.join(DATA_DIR, normalized),
+    path.join(__dirname, normalized),
+  ];
+  return candidates.some((candidate) => fs.existsSync(candidate));
+}
+
+function filterExistingImages(images) {
+  if (!Array.isArray(images)) return [];
+  return images.filter(publicImageExists);
+}
+
 function productRow(row) {
   if (!row) return null;
   return {
     ...row,
     specs: parseJSON(row.specs, {}),
-    images: parseJSON(row.images, []),
+    images: filterExistingImages(parseJSON(row.images, [])),
     variants: parseJSON(row.variants, []),
     featured: !!row.featured,
     in_stock: row.in_stock !== 0,
@@ -1470,7 +1535,7 @@ function productRow(row) {
 
 function comboRowAsProduct(row) {
   if (!row) return null;
-  const images = parseJSON(row.images, []);
+  const images = filterExistingImages(parseJSON(row.images, []));
   const specs = {
     'Trình độ': row.level,
     'Cốt vợt': row.blade || 'Tư vấn theo tay đánh',
@@ -4705,14 +4770,23 @@ app.get('/api/product-catalog', async (req, res) => {
 
 // ─── Settings (Banner / Homepage images) ────────────────────────────────────
 
+function isPublicSettingKey(key) {
+  return /^(banner_|home_)/.test(String(key || ''));
+}
+
 app.get('/api/settings', (req, res) => {
   const rows = db.prepare('SELECT key, value FROM settings').all();
   const out = {};
-  rows.forEach(r => { out[r.key] = r.value; });
+  rows.forEach(r => {
+    if (hasAdminAccess(req) || isPublicSettingKey(r.key)) out[r.key] = r.value;
+  });
   res.json(out);
 });
 
 app.get('/api/settings/:key', (req, res) => {
+  if (!hasAdminAccess(req) && !isPublicSettingKey(req.params.key)) {
+    return res.status(401).json({ error: 'Chưa đăng nhập' });
+  }
   const row = db.prepare('SELECT value FROM settings WHERE key = ?').get(req.params.key);
   res.json({ key: req.params.key, value: row ? row.value : null });
 });
@@ -5872,7 +5946,7 @@ _defBanners.forEach(([k, v]) => _bIns.run(k, v));
 
 // ─── Prompts Library ─────────────────────────────────────────────────────────
 
-app.get('/api/prompts', (req, res) => {
+app.get('/api/prompts', requireLocalOrAdmin, (req, res) => {
   const { q, tag } = req.query;
   let rows = db.prepare('SELECT * FROM prompts ORDER BY use_count DESC, updated_at DESC').all();
   if (q) {
@@ -5887,7 +5961,7 @@ app.get('/api/prompts', (req, res) => {
   res.json(rows.map(r => ({ ...r, tags: JSON.parse(r.tags || '[]') })));
 });
 
-app.post('/api/prompts', (req, res) => {
+app.post('/api/prompts', requireLocalOrAdmin, (req, res) => {
   const { title, content, tags = [] } = req.body || {};
   if (!title || !content) return res.status(400).json({ error: 'Thiếu title hoặc content' });
   const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -5897,7 +5971,7 @@ app.post('/api/prompts', (req, res) => {
   res.json({ ok: true, id });
 });
 
-app.put('/api/prompts/:id', (req, res) => {
+app.put('/api/prompts/:id', requireLocalOrAdmin, (req, res) => {
   const { title, content, tags } = req.body || {};
   const set = [];
   const vals = [];
@@ -5911,12 +5985,12 @@ app.put('/api/prompts/:id', (req, res) => {
   res.json({ ok: true });
 });
 
-app.delete('/api/prompts/:id', (req, res) => {
+app.delete('/api/prompts/:id', requireLocalOrAdmin, (req, res) => {
   db.prepare('DELETE FROM prompts WHERE id=?').run(req.params.id);
   res.json({ ok: true });
 });
 
-app.post('/api/prompts/:id/use', (req, res) => {
+app.post('/api/prompts/:id/use', requireLocalOrAdmin, (req, res) => {
   db.prepare('UPDATE prompts SET use_count=use_count+1 WHERE id=?').run(req.params.id);
   res.json({ ok: true });
 });
@@ -5929,8 +6003,7 @@ function isLoopbackRequest(req) {
 }
 
 function requireLocalOrAdmin(req, res, next) {
-  const token = req.headers['x-admin-token'];
-  if (isLoopbackRequest(req) || (token && adminTokens.has(token))) return next();
+  if (hasAdminAccess(req)) return next();
   res.status(401).json({ error: 'Chưa đăng nhập' });
 }
 
@@ -6031,7 +6104,7 @@ async function scheduleLegacyFbPost(row, options = {}) {
   return result;
 }
 
-app.get('/api/fb-posts', (req, res) => {
+app.get('/api/fb-posts', requireLocalOrAdmin, (req, res) => {
   const { status, pillar, q } = req.query;
   let rows = db.prepare('SELECT * FROM fb_posts ORDER BY created_at DESC').all();
   if (status && status !== 'all') rows = rows.filter(r => r.status === status);
