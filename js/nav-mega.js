@@ -8,8 +8,8 @@
   var _a  = {
     cot:   _f === 'cot-vot.html'           || _p.indexOf('/cot-vot/')  > -1,
     mat:   _f === 'mat-vot.html'           || _p.indexOf('/mat-vot/')  > -1,
-    bong:  _f === 'bong.html',
-    ban:   _f === 'ban.html',
+    bong:  _f === 'bong.html'              || _p.indexOf('/bong/') > -1,
+    ban:   _f === 'ban.html'               || _p.indexOf('/ban/') > -1,
     thi:   _f === 'do-thi-dau.html'        || _p.indexOf('/do-thi-dau/') > -1,
     combo: _f === 'combo-vot.html',
     cu:    _f === 'do-cu.html',
@@ -111,8 +111,27 @@
           '</div>' +
         '</div>' +
       '</li>' +
-      '<li><a href="/bong.html"'        + ac('bong')  + '>Bóng</a></li>' +
-      '<li><a href="/ban.html"'         + ac('ban')   + '>Bàn</a></li>' +
+      '<li class="mega-item">' +
+        '<a href="/bong.html"' + ac('bong') + '>Bóng</a>' +
+        '<div class="mega-panel mega-brands">' +
+          '<div class="mega-head"><span class="mega-head-label">Bóng theo thương hiệu</span><a href="/bong.html" class="mega-head-all">Xem tất cả →</a></div>' +
+          '<div class="mega-brands-grid" style="grid-template-columns:repeat(3,1fr)">' +
+            brandCard('/bong/yinhe.html',  'Yinhe',  'Bóng tập và thi đấu') +
+            brandCard('/bong/unrex.html',  'Unrex',  'Bóng luyện tập') +
+            brandCard('/bong/tibhar.html', 'Tibhar', 'Bóng chính hãng') +
+          '</div>' +
+        '</div>' +
+      '</li>' +
+      '<li class="mega-item">' +
+        '<a href="/ban.html"' + ac('ban') + '>Bàn</a>' +
+        '<div class="mega-panel mega-brands">' +
+          '<div class="mega-head"><span class="mega-head-label">Bàn theo thương hiệu</span><a href="/ban.html" class="mega-head-all">Xem tất cả →</a></div>' +
+          '<div class="mega-brands-grid" style="grid-template-columns:repeat(2,1fr)">' +
+            brandCard('/ban/unrex.html', 'Unrex', 'Bàn tập, CLB, thi đấu') +
+            brandCard('/ban/yinhe.html', 'Yinhe', 'Bàn bóng bàn chính hãng') +
+          '</div>' +
+        '</div>' +
+      '</li>' +
       '<li class="mega-item">' +
         '<a href="/do-thi-dau.html"' + ac('thi') + '>Đồ Thi Đấu</a>' +
         '<div class="mega-panel mega-gear">' +
@@ -190,8 +209,17 @@
             '<a href="/mat-vot/khac.html">Các Thương Hiệu Khác</a>' +
             '<a href="/mat-vot.html" class="m-group-view-all">Xem Tất Cả Mặt Vợt →</a>'
           ) +
-          '<a href="/bong.html">Bóng</a>' +
-          '<a href="/ban.html">Bàn</a>' +
+          mGroup('mg-bong', 'Bóng',
+            '<a href="/bong/yinhe.html">Yinhe</a>' +
+            '<a href="/bong/unrex.html">Unrex</a>' +
+            '<a href="/bong/tibhar.html">Tibhar</a>' +
+            '<a href="/bong.html" class="m-group-view-all">Xem Tất Cả Bóng →</a>'
+          ) +
+          mGroup('mg-ban', 'Bàn',
+            '<a href="/ban/unrex.html">Unrex</a>' +
+            '<a href="/ban/yinhe.html">Yinhe</a>' +
+            '<a href="/ban.html" class="m-group-view-all">Xem Tất Cả Bàn →</a>'
+          ) +
           mGroup('mg-thi', 'Đồ Thi Đấu',
             '<a href="/do-thi-dau.html#giay">Giày</a>' +
             '<a href="/do-thi-dau.html#trang-phuc">Trang Phục &amp; Phụ Kiện</a>' +

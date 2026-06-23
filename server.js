@@ -377,6 +377,9 @@ const uploadedImageStaticOptions = {
 // Serve uploaded images from persistent volume first
 app.use('/images/optimized', express.static(path.join(__dirname, 'images', 'optimized'), immutableStaticOptions));
 app.use('/images/products', express.static(path.join(DATA_DIR, 'images', 'products'), uploadedImageStaticOptions));
+if (path.resolve(DATA_DIR) !== path.resolve(__dirname)) {
+  app.use('/images/products', express.static(path.join(__dirname, 'images', 'products'), uploadedImageStaticOptions));
+}
 app.use('/images/banners', express.static(path.join(DATA_DIR, 'images', 'banners'), uploadedImageStaticOptions));
 app.use('/images/facebook', express.static(path.join(DATA_DIR, 'images', 'facebook'), uploadedImageStaticOptions));
 app.get('/images/products/:file', (_req, res) => {
@@ -714,12 +717,14 @@ function injectSeoMeta(html, req, filePath) {
   const meta = { ...baseMeta, ...productMeta };
   if (!meta.title && !meta.description) return html;
 
-  const canonicalPath = meta.canonicalPath || (fileName === 'index.html' ? '/' : `/${fileName}`);
+  const catalogMatch = req.path.match(/^\/(cot-vot|mat-vot|bong|ban|do-thi-dau|do-cu)\/([A-Za-z0-9_-]+)(?:\.html)?$/);
+  const canonicalPath = meta.canonicalPath || (catalogMatch ? req.path : (fileName === 'index.html' ? '/' : `/${fileName}`));
   const canonical = absolutePublicUrl(canonicalPath);
   const image = absolutePublicUrl(meta.image || '/logo_bongbanviet.png');
   const title = meta.title || baseMeta.title || 'BÓNG BÀN VIỆT';
   const description = meta.description || baseMeta.description || '';
 
+  html = html.replace(/src=(["'])logo_bongbanviet\.png\1/g, 'src=$1/logo_bongbanviet.png$1');
   html = html.replace(/href=(["'])\/favicon\.png\1/g, 'href=$1/images/optimized/favicon-96.png$1');
   html = html.replace(/href=(["'])\/?favicon\.png\1/g, 'href=$1/images/optimized/favicon-96.png$1');
   if (fileName === 'index.html') {
@@ -3735,7 +3740,12 @@ app.get('/api/products', (req, res) => {
   if (gear_subcategory) { sql += ' AND gear_subcategory = ?';  params.push(gear_subcategory); }
   if (q)                { sql += ' AND (name LIKE ? OR description LIKE ?)'; params.push(`%${q}%`, `%${q}%`); }
 
-  sql += ' ORDER BY sort_order, created_at DESC LIMIT ? OFFSET ?';
+  sql += ` ORDER BY
+    CASE WHEN images IS NOT NULL AND TRIM(images) NOT IN ('', '[]') THEN 0 ELSE 1 END,
+    featured DESC,
+    sort_order,
+    created_at DESC
+    LIMIT ? OFFSET ?`;
   params.push(Number(limit), Number(offset));
 
   const rows = db.prepare(sql).all(...params);
