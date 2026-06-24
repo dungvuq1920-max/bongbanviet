@@ -818,7 +818,7 @@ async function toggleFbAutoSchedule(){
 
 async function schedulePendingFbPosts(){
   try{
-    const r=await api('POST','/api/fb-posts/schedule',{limit:30});
+    const r=await api('POST','/api/fb-posts/publish',{limit:1});
     await load(true);
     const ok=(r.results||[]).filter(x=>x.ok).length;
     const fail=(r.results||[]).filter(x=>!x.ok).length;
@@ -828,7 +828,7 @@ async function schedulePendingFbPosts(){
 
 async function scheduleOneFbPost(id){
   try{
-    const r=await api('POST','/api/fb-posts/'+id+'/schedule',{});
+    const r=await api('POST','/api/fb-posts/'+id+'/publish',{});
     if(r.post){
       const idx=posts.findIndex(x=>x.id===id);
       if(idx!==-1) posts[idx]=r.post;

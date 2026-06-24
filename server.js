@@ -2990,6 +2990,49 @@ async function scheduleFacebookPhotoPost(message, scheduledUnixTs, imagePath) {
   return { success: true, postId: res.data?.post_id || res.data?.id || '' };
 }
 
+function facebookPublishPermissionHint(error) {
+  const msg = String(error?.message || error || '');
+  if (!/\[FB #200\]|permissions?/i.test(msg)) return msg;
+  return `${msg}. Kiểm tra token đang là Page access token của đúng Page và app/user có quyền pages_manage_posts + pages_read_engagement, đồng thời tài khoản có quyền tạo nội dung trên Page.`;
+}
+
+async function publishFacebookTextPost(message) {
+  const cfg = requireFacebookPageRuntime();
+  const res = await facebookGraphRequest(() => axios.post(facebookGraphUrl(cfg, `${cfg.pageId}/feed`), {
+    message,
+    access_token: cfg.pageAccessToken,
+  }, { timeout: 15000 }));
+  return { success: true, postId: res.data?.id || '' };
+}
+
+async function publishFacebookPhotoPost(message, imagePath) {
+  const cfg = requireFacebookPageRuntime();
+  const url = facebookGraphUrl(cfg, `${cfg.pageId}/photos`);
+  if (/^https?:\/\//i.test(imagePath)) {
+    const res = await facebookGraphRequest(() => axios.post(url, {
+      url: imagePath,
+      message,
+      access_token: cfg.pageAccessToken,
+    }, { timeout: 30000 }));
+    return { success: true, postId: res.data?.post_id || res.data?.id || '' };
+  }
+
+  if (!fs.existsSync(imagePath)) {
+    return { success: false, error: `File ảnh không tồn tại: ${imagePath}` };
+  }
+  const form = new FormData();
+  form.append('source', fs.createReadStream(imagePath));
+  form.append('message', message);
+  form.append('access_token', cfg.pageAccessToken);
+  const res = await facebookGraphRequest(() => axios.post(url, form, {
+    headers: form.getHeaders(),
+    timeout: 60000,
+    maxContentLength: Infinity,
+    maxBodyLength: Infinity,
+  }));
+  return { success: true, postId: res.data?.post_id || res.data?.id || '' };
+}
+
 function parseFacebookScheduledTime(value) {
   if (!value) return NaN;
   const raw = String(value).trim().replace('T', ' ');
@@ -6128,6 +6171,49 @@ async function scheduleLegacyFbPost(row, options = {}) {
   return result;
 }
 
+async function publishLegacyFbPost(row, options = {}) {
+  const post = legacyFbPostRow(row);
+  if (post.facebook_post_id && !options.force) {
+    throw new Error('Bài này đã có Facebook post ID. Dùng force nếu muốn đăng lại.');
+  }
+  if (!post.caption && !post.topic) {
+    throw new Error('Bài cần có nội dung trước khi upload Facebook.');
+  }
+  const dedupeKey = post.dedupe_key || fbDedupeKey(post);
+  const conflict = facebookDedupeConflict(dedupeKey, post.id);
+  if (conflict && !options.force) {
+    throw new Error(`Bài trùng với nội dung đã đánh dấu đăng: ${conflict.topic || conflict.post_id || dedupeKey}`);
+  }
+
+  const message = buildLegacyFacebookPostText(post);
+  const imagePath = post.image_path ? fbPublicPathToFile(post.image_path) : '';
+  let result;
+  try {
+    result = imagePath
+      ? await publishFacebookPhotoPost(message, imagePath)
+      : await publishFacebookTextPost(message);
+  } catch (e) {
+    throw new Error(facebookPublishPermissionHint(e));
+  }
+
+  if (!result.success) throw new Error(result.error || 'Facebook API không trả về thành công.');
+  const postedAt = new Date().toISOString();
+  const tx = db.transaction(() => {
+    db.prepare(`UPDATE fb_posts SET
+      status='posted', facebook_post_id=?, posted_at=?, error_message='', updated_at=datetime('now')
+      WHERE id=?`)
+      .run(result.postId || '', postedAt, post.id);
+    markFacebookPostHistory({ ...post, status: 'posted', facebook_post_id: result.postId || '', posted_at: postedAt }, {
+      dedupeKey,
+      facebookPostId: result.postId || '',
+      sourceStatus: 'posted',
+      postedAt,
+    });
+  });
+  tx();
+  return result;
+}
+
 app.get('/api/fb-posts', requireLocalOrAdmin, (req, res) => {
   const { status, pillar, q } = req.query;
   let rows = db.prepare('SELECT * FROM fb_posts ORDER BY created_at DESC').all();
@@ -6472,6 +6558,32 @@ app.post('/api/fb-posts/schedule', requireLocalOrAdmin, async (req, res) => {
   res.json({ ok: true, processed: results.length, results, state: legacyFbSchedulerSummary() });
 });
 
+app.post('/api/fb-posts/publish', requireLocalOrAdmin, async (req, res) => {
+  try {
+    requireFacebookPageRuntime();
+  } catch (e) {
+    return res.status(400).json({ ok: false, error: e.message, state: legacyFbSchedulerSummary() });
+  }
+  const ids = Array.isArray(req.body?.ids) ? req.body.ids.filter(Boolean) : [];
+  const limit = Math.max(1, Math.min(10, Number(req.body?.limit) || 1));
+  const rows = ids.length
+    ? db.prepare(`SELECT * FROM fb_posts WHERE id IN (${ids.map(() => '?').join(',')})`).all(...ids)
+    : db.prepare(`SELECT * FROM fb_posts
+        WHERE status IN ('scheduled','approved','failed') AND COALESCE(facebook_post_id,'')=''
+        ORDER BY scheduled_time ASC, created_at ASC LIMIT ?`).all(limit);
+  const results = [];
+  for (const row of rows) {
+    try {
+      const result = await publishLegacyFbPost(row, { force: !!req.body?.force });
+      results.push({ id: row.id, ok: true, facebook_post_id: result.postId || '' });
+    } catch (e) {
+      db.prepare(`UPDATE fb_posts SET status='failed', error_message=?, updated_at=datetime('now') WHERE id=?`).run(e.message, row.id);
+      results.push({ id: row.id, ok: false, error: e.message });
+    }
+  }
+  res.json({ ok: true, processed: results.length, results, state: legacyFbSchedulerSummary() });
+});
+
 app.post('/api/fb-posts/:id/schedule', requireLocalOrAdmin, async (req, res) => {
   try {
     requireFacebookPageRuntime();
@@ -6482,6 +6594,23 @@ app.post('/api/fb-posts/:id/schedule', requireLocalOrAdmin, async (req, res) => 
   if (!row) return res.status(404).json({ error: 'Không tìm thấy bài' });
   try {
     const result = await scheduleLegacyFbPost(row, { force: !!req.body?.force });
+    res.json({ ok: true, facebook_post_id: result.postId || '', post: legacyFbPostRow(db.prepare('SELECT * FROM fb_posts WHERE id=?').get(req.params.id)) });
+  } catch (e) {
+    db.prepare(`UPDATE fb_posts SET status='failed', error_message=?, updated_at=datetime('now') WHERE id=?`).run(e.message, row.id);
+    res.status(400).json({ ok: false, error: e.message, post: legacyFbPostRow(db.prepare('SELECT * FROM fb_posts WHERE id=?').get(req.params.id)) });
+  }
+});
+
+app.post('/api/fb-posts/:id/publish', requireLocalOrAdmin, async (req, res) => {
+  try {
+    requireFacebookPageRuntime();
+  } catch (e) {
+    return res.status(400).json({ ok: false, error: e.message, post: null });
+  }
+  const row = db.prepare('SELECT * FROM fb_posts WHERE id=?').get(req.params.id);
+  if (!row) return res.status(404).json({ error: 'Không tìm thấy bài' });
+  try {
+    const result = await publishLegacyFbPost(row, { force: !!req.body?.force });
     res.json({ ok: true, facebook_post_id: result.postId || '', post: legacyFbPostRow(db.prepare('SELECT * FROM fb_posts WHERE id=?').get(req.params.id)) });
   } catch (e) {
     db.prepare(`UPDATE fb_posts SET status='failed', error_message=?, updated_at=datetime('now') WHERE id=?`).run(e.message, row.id);
