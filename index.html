@@ -676,7 +676,7 @@
           <div class="section-head">
             <div>
               <p class="section-kicker">Sản phẩm nổi bật</p>
-              <h2 class="section-title">Catalog thật, tải từ hệ thống hiện tại.</h2>
+              <h2 class="section-title">Sản phẩm nổi bật</h2>
             </div>
             <div class="product-tabs" aria-label="Lọc sản phẩm">
               <button class="product-tab active" data-cat="cot-vot">Cốt vợt</button>
@@ -1032,12 +1032,22 @@
       return variant ? "từ " + variant.price : "Liên hệ";
     }
 
+    function productUrl(product) {
+      const category = product.category_slug || "";
+      const brand = product.brand_slug || "";
+      const slug = product.slug || "";
+      if (category && brand && brand !== "khac" && slug) {
+        return `/${encodeURIComponent(category)}/${encodeURIComponent(brand)}/${encodeURIComponent(slug)}`;
+      }
+      return `/san-pham.html?id=${encodeURIComponent(slug)}`;
+    }
+
     function productCard(product) {
       const image = Array.isArray(product.images) && product.images.length ? product.images[0] : "";
       const brand = product.brand_slug || "chính hãng";
       const badge = product.badge || product.gear_subcategory || "Tư vấn";
       return `
-        <a class="product-card" href="/san-pham.html?id=${encodeURIComponent(product.slug || "")}">
+        <a class="product-card" href="${productUrl(product)}">
           <div class="product-image">
             ${image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(product.name)}" loading="lazy" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=&quot;product-placeholder&quot;>Ảnh sản phẩm</div>';">` : '<div class="product-placeholder">Ảnh sản phẩm</div>'}
           </div>

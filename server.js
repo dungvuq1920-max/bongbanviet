@@ -545,6 +545,15 @@ function isLocalRequest(req) {
 
 const LIGHT_THEME_HREF = '/css/light-theme.css?v=20260521';
 const CATALOG_ROUTE_PAGES = new Set(['cot-vot', 'mat-vot', 'bong', 'ban', 'do-thi-dau', 'do-cu']);
+function publicProductPath(product) {
+  const category = String(product?.category_slug || '').trim();
+  const brand = String(product?.brand_slug || '').trim();
+  const slug = String(product?.slug || '').trim();
+  if (CATALOG_ROUTE_PAGES.has(category) && brand && brand !== 'khac' && slug) {
+    return `/${encodeURIComponent(category)}/${encodeURIComponent(brand)}/${encodeURIComponent(slug)}`;
+  }
+  return `/san-pham.html?id=${encodeURIComponent(slug)}`;
+}
 const RAW_HTML_PAGES = new Set([
   'admin.html',
   'local.html',
@@ -679,7 +688,8 @@ function upsertHeadTag(html, test, tag) {
 }
 
 function metaForProductRequest(req) {
-  const slug = String(req.query.id || req.query.slug || '').trim();
+  const pathMatch = req.path.match(/^\/(cot-vot|mat-vot|bong|ban|do-thi-dau|do-cu)\/([A-Za-z0-9_-]+)\/([A-Za-z0-9_-]+)(?:\.html)?$/);
+  const slug = String(req.query.id || req.query.slug || pathMatch?.[3] || '').trim();
   if (!slug) return null;
 
   const product = db.prepare('SELECT * FROM products WHERE slug = ? OR id = ?').get(slug, slug);
@@ -690,7 +700,7 @@ function metaForProductRequest(req) {
       title: `${p.name} | BÓNG BÀN VIỆT`,
       description,
       image: p.images?.[0] || '/logo_bongbanviet.png',
-      canonicalPath: `/san-pham.html?id=${encodeURIComponent(p.slug)}`,
+      canonicalPath: publicProductPath(p),
       type: 'product',
     };
   }
@@ -847,9 +857,9 @@ app.get('/sitemap.xml', (_req, res) => {
     }
   }
 
-  const products = db.prepare(`SELECT slug, updated_at FROM products WHERE in_stock=1 ORDER BY updated_at DESC LIMIT 1000`).all();
+  const products = db.prepare(`SELECT slug, category_slug, brand_slug, updated_at FROM products WHERE in_stock=1 ORDER BY updated_at DESC LIMIT 1000`).all();
   for (const product of products) {
-    urls.push(sitemapUrl(`/san-pham.html?id=${encodeURIComponent(product.slug)}`, '0.7', 'weekly'));
+    urls.push(sitemapUrl(publicProductPath(product), '0.7', 'weekly'));
   }
 
   const combos = db.prepare(`SELECT slug FROM combos WHERE in_stock=1 ORDER BY sort_order ASC LIMIT 100`).all();
@@ -871,6 +881,10 @@ app.get(['/', '/local'], (req, res, next) => {
     return sendThemedHtml(req, res, path.join(__dirname, 'index.html'));
   }
   return next();
+});
+
+app.get(/^\/(cot-vot|mat-vot|bong|ban|do-thi-dau|do-cu)\/([A-Za-z0-9_-]+)\/([A-Za-z0-9_-]+)(?:\.html)?$/, (req, res) => {
+  sendThemedHtml(req, res, path.join(__dirname, 'san-pham.html'));
 });
 
 app.get(/^\/(cot-vot|mat-vot|bong|ban|do-thi-dau|do-cu)\/([A-Za-z0-9_-]+)(?:\.html)?$/, (req, res) => {

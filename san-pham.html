@@ -426,6 +426,23 @@ const brandLabels = {
   butterfly:'Butterfly', tibhar:'Tibhar', unrex:'Unrex', yinhe:'Yinhe', khac:'Các Hãng Khác',
 };
 
+function productUrl(product) {
+  const category = product.category_slug || '';
+  const brand = product.brand_slug || '';
+  const slug = product.slug || '';
+  if (category && brand && brand !== 'khac' && slug) {
+    return '/' + [category, brand, slug].map(encodeURIComponent).join('/');
+  }
+  return '/san-pham.html?id=' + encodeURIComponent(slug);
+}
+
+function currentProductSlug() {
+  const id = new URLSearchParams(location.search).get('id') || new URLSearchParams(location.search).get('slug');
+  if (id) return id;
+  const parts = location.pathname.split('/').filter(Boolean);
+  return parts.length >= 3 ? decodeURIComponent(parts[parts.length - 1].replace(/\.html$/i, '')) : '';
+}
+
 // ── Advice cards per category ─────────────────────────────────────────────────
 const ADVICE = {
   'cot-vot':{
@@ -630,7 +647,7 @@ async function loadRelated(category, excludeId) {
     const related = list.filter(p => p.id !== excludeId).slice(0, 4);
     if (!related.length) return;
     document.getElementById('relatedGrid').innerHTML = related.map(p => `
-      <a href="san-pham.html?id=${p.slug}" class="rel-card">
+      <a href="${productUrl(p)}" class="rel-card">
         <div class="rel-img">
           ${p.images?.[0]
             ? `<img src="${p.images[0]}" alt="${p.name}" loading="lazy" onerror="this.parentNode.innerHTML='<div class=rel-img-ph>📦</div>'">`
@@ -669,7 +686,7 @@ const STATIC_PRODUCTS = {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 async function init() {
-  const id = new URLSearchParams(location.search).get('id');
+  const id = currentProductSlug();
   if (!id) { showError(); return; }
   try {
     const res = await fetch(`/api/products/${id}`, { signal: AbortSignal.timeout(2500) });

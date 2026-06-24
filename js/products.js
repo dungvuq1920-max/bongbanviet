@@ -15,6 +15,16 @@ const BBV_CATS = {
 };
 const BG_CLASSES = ['pb-1','pb-2','pb-3','pb-4','pb-5','pb-6','pb-7','pb-8'];
 
+function _productUrl(p) {
+  const category = p.category_slug || '';
+  const brand = p.brand_slug || '';
+  const slug = p.slug || '';
+  if (category && brand && brand !== 'khac' && slug) {
+    return '/' + [category, brand, slug].map(encodeURIComponent).join('/');
+  }
+  return '/san-pham.html?id=' + encodeURIComponent(slug);
+}
+
 function _esc(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
@@ -62,7 +72,7 @@ function renderProdCard(p, idx, opts) {
   const bg       = BG_CLASSES[idx % BG_CLASSES.length];
   const brand    = BBV_BRANDS[p.brand_slug] || '';
   const catLabel = BBV_CATS[p.category_slug] || '';
-  const href     = 'san-pham.html?id=' + _esc(p.slug);
+  const href     = _productUrl(p);
 
   const imgHtml = (p.images && p.images.length)
     ? `<img src="${_esc(p.images[0])}" alt="${_esc(p.name)}" loading="lazy" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=&quot;prod-wm&quot;>Anh<br>san pham</div>';" style="width:100%;height:100%;object-fit:cover;display:block;">`
