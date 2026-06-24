@@ -1771,7 +1771,10 @@ async function facebookGraphRequest(work, attempt = 0) {
       await sleep(2000 * Math.pow(2, attempt));
       return facebookGraphRequest(work, attempt + 1);
     }
-    throw new Error(fbError ? `[FB #${fbCode}] ${fbMsg}` : `[HTTP ${status || 'network'}] ${fbMsg}`);
+    const authHint = fbCode === 190
+      ? ' Token Facebook đã hết hạn hoặc bị thu hồi. Hãy tạo Page Access Token mới rồi bấm Kết nối Page từ token.'
+      : '';
+    throw new Error(fbError ? `[FB #${fbCode}] ${fbMsg}${authHint}` : `[HTTP ${status || 'network'}] ${fbMsg}`);
   }
 }
 
