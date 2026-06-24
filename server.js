@@ -6312,7 +6312,9 @@ function importFacebookPosts(posts) {
       const p = normalizeFbImportPost(raw);
       const existing = p.source_id ? findBySource.get(p.source_id) : null;
       if (existing) {
-        const nextStatus = existing.status === 'posted' && p.status !== 'posted' ? 'posted' : p.status;
+        const nextStatus = existing.status === 'posted' || existing.status === 'published' || existing.facebook_post_id
+          ? existing.status
+          : p.status;
         update.run(p.topic, p.pillar, nextStatus, p.brand_voice, p.source_type, p.source_urls, p.source_notes, p.fact_summary, p.caption, p.hashtags, p.cta, p.website_link, p.image_path, p.image_path, p.image_prompt, p.image_source || (p.image_path ? 'JSON image path' : ''), p.image_source || (p.image_path ? 'JSON image path' : ''), p.scheduled_time, p.source_id);
         ids.push(existing.id);
         updated += 1;

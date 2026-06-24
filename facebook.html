@@ -245,7 +245,7 @@ input[type=file]{display:none}
     <input type="date" id="topWeekDate" class="top-week-date" onchange="syncPromptWeekDate('top')" title="Tuần bắt đầu từ Thứ 2">
     <button class="btn-master" onclick="copyMasterPrompt()" title="Copy Master Prompt để chạy bằng GPT, Claude hoặc Antigravity">📋 Copy Master Prompt</button>
     <button class="btn-guide" onclick="openFbSetup()" title="Cấu hình Facebook Page và Auto Schedule">Auto Schedule</button>
-    <button class="btn-upload-all" onclick="schedulePendingFbPosts()" title="Đẩy các bài đủ điều kiện lên Facebook Schedule">Upload FB</button>
+    <button class="btn-upload-all" onclick="schedulePendingFbPosts()" title="Đăng ngay 1 bài đủ điều kiện lên Facebook">Upload FB</button>
     <label class="top-file-lbl" for="topImportFile" title="Chọn file JSON để nhập thẳng vào lịch">📂 Nhập JSON</label>
     <input type="file" id="topImportFile" accept=".json,.txt" onchange="loadAndImportTopFile(event)">
     <span class="auto-chip" id="autoImportChip" title="Server local tự theo dõi Desktop/facebook-posts.json">Auto JSON</span>
@@ -270,7 +270,7 @@ input[type=file]{display:none}
       <li>Bấm <b>Kiểm tra token</b>. Khi Page và Token đều báo sẵn sàng, bật <b>Auto Schedule</b>.</li>
       <li>Tạo bài bằng <b>Copy Master Prompt</b> hoặc nhập JSON. Mỗi bài cần có <b>scheduled_time</b> cách hiện tại ít nhất 11 phút.</li>
       <li>Mở từng bài, copy <b>Image Prompt</b> để tạo ảnh, chọn file ảnh vào bài. Khi upload Facebook, hệ thống gửi cả nội dung và ảnh.</li>
-      <li>Bấm <b>Upload FB</b> để đẩy ngay các bài đủ điều kiện, hoặc để Auto Schedule tự chạy nền mỗi 2 phút.</li>
+      <li>Bấm <b>Upload FB</b> để đăng ngay 1 bài đủ điều kiện, hoặc để Auto Schedule tự chạy nền mỗi 2 phút.</li>
     </ol>
   </div>
   <aside class="guide-side">
@@ -920,7 +920,7 @@ function cardHTML(p) {
       <button class="ic copy" onclick="openCopy('${p.id}')" title="Copy bài đăng">📋</button>
       ${p.image_prompt?`<button class="ic img" onclick="copyImgDirect('${p.id}')" title="Copy image prompt">🖼</button>`:''}
       ${p.image_path?`<button class="ic img" onclick="openPostImage('${p.id}')" title="Mở ảnh đã chọn">🖼️</button>`:''}
-      ${hasFb?`<button class="ic upload done" title="Đã upload Facebook">FB</button>`:`<button class="ic upload" onclick="scheduleOneFbPost('${p.id}')" title="Upload content ${p.image_path?'và ảnh ':''}lên Facebook Schedule">FB</button>`}
+      ${hasFb?`<button class="ic upload done" title="Đã upload Facebook">FB</button>`:`<button class="ic upload" onclick="scheduleOneFbPost('${p.id}')" title="Upload content ${p.image_path?'và ảnh ':''}lên Facebook ngay">FB</button>`}
       <button class="ic edit" onclick="openEdit('${p.id}')" title="Sửa bài">✏️</button>
       <button class="ic${p.status==='posted'?' done':''}" onclick="togglePosted('${p.id}')" title="${p.status==='posted'?'Bỏ đánh dấu đã dùng':'Đánh dấu đã dùng'}">✓</button>
       <button class="ic del" onclick="delPost('${p.id}')" title="Xóa">🗑</button>
@@ -1471,7 +1471,7 @@ function renderCalendarPost(p){
       <button class="mini-copy" onclick="event.stopPropagation();copyPostDirect('${p.id}')" title="Copy toàn bộ bài đăng">Copy bài</button>
       ${p.image_prompt?`<button class="mini-copy" onclick="event.stopPropagation();copyImgDirect('${p.id}')" title="Copy prompt tạo ảnh">Copy ảnh</button>`:''}
       ${p.image_path?`<button class="mini-copy" onclick="event.stopPropagation();openPostImage('${p.id}')" title="Mở ảnh đã chọn">Ảnh</button>`:''}
-      ${hasFb?`<button class="mini-copy uploaded" onclick="event.stopPropagation()" title="${esc(p.facebook_post_id)}">Đã upload</button>`:`<button class="mini-copy upload" onclick="event.stopPropagation();scheduleOneFbPost('${p.id}')" title="Upload content ${p.image_path?'và ảnh ':''}lên Facebook Schedule">Upload FB</button>`}
+      ${hasFb?`<button class="mini-copy uploaded" onclick="event.stopPropagation()" title="${esc(p.facebook_post_id)}">Đã upload</button>`:`<button class="mini-copy upload" onclick="event.stopPropagation();scheduleOneFbPost('${p.id}')" title="Upload content ${p.image_path?'và ảnh ':''}lên Facebook ngay">Upload FB</button>`}
       ${p.status==='failed'&&p.error_message?`<button class="mini-copy err" onclick="event.stopPropagation();alert('${escJs(p.error_message)}')" title="Xem lỗi">Lỗi</button>`:''}
       <label class="cal-used${isUsed?' is-used':''}" onclick="event.stopPropagation()" title="${isUsed?'Bỏ đánh dấu đã dùng':'Đánh dấu đã dùng'}">
         <input type="checkbox" ${isUsed?'checked':''} onchange="toggleUsed(event,'${p.id}')">
