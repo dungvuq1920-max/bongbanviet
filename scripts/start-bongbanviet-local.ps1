@@ -1,11 +1,11 @@
 $ErrorActionPreference = 'Stop'
 
 $ProjectRoot = Split-Path -Parent $PSScriptRoot
-$Port = 3001
-$Url = "http://localhost:$Port/local.html"
+$Port = 24680
+$Url = "http://localhost:$Port/"
 $TempDir = Join-Path $ProjectRoot 'temp'
-$OutLog = Join-Path $TempDir 'local-server-3001.out.log'
-$ErrLog = Join-Path $TempDir 'local-server-3001.err.log'
+$OutLog = Join-Path $TempDir 'local-server-24680.out.log'
+$ErrLog = Join-Path $TempDir 'local-server-24680.err.log'
 
 New-Item -ItemType Directory -Force -Path $TempDir | Out-Null
 
@@ -30,7 +30,7 @@ if (-not (Test-LocalServer)) {
   if (-not $runningNode) {
     Start-Process `
       -FilePath 'cmd.exe' `
-      -ArgumentList '/c', 'set PORT=3001&&npm run dev' `
+      -ArgumentList '/c', 'set PORT=24680&&npm run dev' `
       -WorkingDirectory $ProjectRoot `
       -RedirectStandardOutput $OutLog `
       -RedirectStandardError $ErrLog `

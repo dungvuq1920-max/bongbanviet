@@ -279,6 +279,22 @@ try { db.exec("CREATE INDEX IF NOT EXISTS idx_inventory_items_name ON inventory_
 try { db.exec("CREATE INDEX IF NOT EXISTS idx_inventory_items_sku ON inventory_items(sku)"); } catch {}
 try { db.exec("CREATE INDEX IF NOT EXISTS idx_inventory_items_barcode ON inventory_items(barcode)"); } catch {}
 
+// Additive production indexes and persistent sessions; existing rows remain intact.
+db.exec(`
+  CREATE TABLE IF NOT EXISTS admin_sessions (
+    token_hash TEXT PRIMARY KEY,
+    expires_at TEXT NOT NULL,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_products_category ON products(category_slug);
+  CREATE INDEX IF NOT EXISTS idx_products_brand ON products(brand_slug);
+  CREATE INDEX IF NOT EXISTS idx_products_stock_featured ON products(in_stock, featured);
+  CREATE INDEX IF NOT EXISTS idx_products_updated ON products(updated_at DESC);
+  CREATE INDEX IF NOT EXISTS idx_orders_phone_created ON orders(customer_phone, created_at DESC);
+  CREATE INDEX IF NOT EXISTS idx_orders_status_created ON orders(status, created_at DESC);
+  CREATE INDEX IF NOT EXISTS idx_admin_sessions_expiry ON admin_sessions(expires_at);
+`);
+
 // Legacy one-off catalog backfill. Keep disabled by default so products deleted
 // from admin are not recreated on every server restart/redeploy.
 if (process.env.BBV_RUN_LEGACY_PRODUCT_MIGRATIONS === '1') {

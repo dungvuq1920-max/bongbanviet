@@ -2330,20 +2330,63 @@ fetch('/api/settings/home_hero_image')
         if (popupSpecs && popupDesc && e.relatedTarget && (popupSpecs.contains(e.relatedTarget) || popupDesc.contains(e.relatedTarget))) return;
         hidePopups();
       });
-      card.addEventListener('click', function(e) {
+      card.addEventListener('click', async function(e) {
         e.preventDefault();
-        var p = flowCache[getSlug(this)];
+        var slug = getSlug(this);
+        var p = flowCache[slug];
+        if (!p && slug) {
+          try {
+            var response = await fetch('/api/products/' + encodeURIComponent(slug));
+            if (response.ok) {
+              p = await response.json();
+              flowCache[slug] = p;
+            }
+          } catch (_) {}
+        }
         if (p) { hidePopups(); showDrawer(p); }
       });
     });
   }
 
   function getSlug(card) {
-    return (card.getAttribute('href') || '').replace('san-pham.html?id=', '');
+    var href = card.getAttribute('href') || '';
+    try {
+      var url = new URL(href, window.location.origin);
+      var querySlug = url.searchParams.get('id') || url.searchParams.get('slug');
+      if (querySlug) return decodeURIComponent(querySlug);
+      var parts = url.pathname.split('/').filter(Boolean);
+      return decodeURIComponent((parts[parts.length - 1] || '').replace(/\.html$/i, ''));
+    } catch (_) {
+      return href.replace(/^.*(?:id=|slug=)/, '').replace(/\.html$/i, '');
+    }
   }
+
+  // Delegated handler keeps the recovered SPA compatible with cards rendered
+  // asynchronously and with the newer clean product URLs.
+  document.addEventListener('click', async function(e) {
+    var card = e.target.closest && e.target.closest('.prod-card');
+    if (!card) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    var slug = getSlug(card);
+    var product = flowCache[slug];
+    if (!product && slug) {
+      try {
+        var response = await fetch('/api/products/' + encodeURIComponent(slug));
+        if (response.ok) {
+          product = await response.json();
+          flowCache[slug] = product;
+        }
+      } catch (_) {}
+    }
+    if (product) { hidePopups(); showDrawer(product); }
+  }, true);
 
   /* ── Product Detail Drawer ──────────────────────── */
   function showDrawer(p) {
+    window.BBV_ACTIVE_PRODUCT = p;
+    window.BBV_ACTIVE_VARIANT = '';
+    window.BBV_LAST_FOCUS = document.activeElement;
     var drawer  = document.getElementById('prodDrawer');
     var overlay = document.getElementById('prodDrawerOverlay');
 
@@ -2413,6 +2456,7 @@ fetch('/api/settings/home_hero_image')
           variantsEl.querySelectorAll('.pd-variant-btn').forEach(function(b){ b.classList.remove('active'); });
           this.classList.add('active');
           var v = variants[parseInt(this.getAttribute('data-idx'), 10)];
+          window.BBV_ACTIVE_VARIANT = v.name || '';
           
           priceEl.textContent = v.price;
           
@@ -2453,12 +2497,21 @@ fetch('/api/settings/home_hero_image')
     drawer.scrollTop = 0;
     overlay.classList.add('active');
     drawer.classList.add('open');
+    drawer.setAttribute('role', 'dialog');
+    drawer.setAttribute('aria-modal', 'true');
+    drawer.setAttribute('aria-labelledby', 'pdName');
+    document.getElementById('pdClose').focus();
+    window.dispatchEvent(new CustomEvent('bbv:product-open', { detail: p }));
     history.pushState({ modal: 'prodDrawer' }, '');
   }
+
+  window.BBV_SHOW_PRODUCT = showDrawer;
 
   function closeDrawer(fromPopState) {
     document.getElementById('prodDrawer').classList.remove('open');
     document.getElementById('prodDrawerOverlay').classList.remove('active');
+    window.dispatchEvent(new CustomEvent('bbv:product-close'));
+    if (window.BBV_LAST_FOCUS && typeof window.BBV_LAST_FOCUS.focus === 'function') window.BBV_LAST_FOCUS.focus();
     if (fromPopState !== true && history.state && history.state.modal === 'prodDrawer') {
       history.replaceState(null, '');
       history.back();

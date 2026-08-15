@@ -32,7 +32,8 @@ function loadLocalEnvFile() {
 loadLocalEnvFile();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+// Railway injects PORT at runtime; local development uses the dedicated BBV port.
+const PORT = Number(process.env.PORT) || 24680;
 const DATA_DIR = process.env.DATA_DIR
   ? path.resolve(process.env.DATA_DIR)
   : __dirname;
@@ -73,20 +74,51 @@ app.use((req, res, next) => {
 
 // ─── Admin Auth ──────────────────────────────────────────────────────────────
 
-const adminTokens = new Set();
+const ADMIN_SESSION_HOURS = Math.max(1, Math.min(168, Number(process.env.ADMIN_SESSION_HOURS) || 24));
+const loginAttempts = new Map();
+
+function tokenHash(token) {
+  return crypto.createHash('sha256').update(String(token || '')).digest('hex');
+}
+
+function passwordHash(password, salt = crypto.randomBytes(16).toString('hex')) {
+  return `${salt}:${crypto.scryptSync(String(password), salt, 64).toString('hex')}`;
+}
+
+function passwordMatches(password, stored) {
+  if (!String(stored || '').startsWith('scrypt$')) return String(password) === String(stored || '');
+  const [salt, expectedHex] = String(stored).slice(7).split(':');
+  if (!salt || !expectedHex) return false;
+  const actual = crypto.scryptSync(String(password), salt, 64);
+  const expected = Buffer.from(expectedHex, 'hex');
+  return actual.length === expected.length && crypto.timingSafeEqual(actual, expected);
+}
+
+function createAdminSession() {
+  const token = crypto.randomUUID() + crypto.randomBytes(24).toString('base64url');
+  const expiresAt = new Date(Date.now() + ADMIN_SESSION_HOURS * 3600000).toISOString();
+  db.prepare('DELETE FROM admin_sessions WHERE expires_at <= ?').run(new Date().toISOString());
+  db.prepare('INSERT INTO admin_sessions (token_hash,expires_at) VALUES (?,?)').run(tokenHash(token), expiresAt);
+  return token;
+}
+
+function validAdminToken(token) {
+  if (!token) return false;
+  return !!db.prepare('SELECT 1 FROM admin_sessions WHERE token_hash=? AND expires_at>?').get(tokenHash(token), new Date().toISOString());
+}
 
 function hasAdminAccess(req) {
   const token = req.headers['x-admin-token'];
-  return (IS_LOCAL_DEV && isLocalRequest(req) && isAllowedRequestOrigin(req)) || (token && adminTokens.has(token));
+  return (IS_LOCAL_DEV && isLocalRequest(req) && isAllowedRequestOrigin(req)) || validAdminToken(token);
 }
 
 function getAdminPassword() {
   const row = db.prepare("SELECT value FROM settings WHERE key = 'admin_password'").get();
-  return row ? row.value : 'admin';
+  return row ? row.value : (process.env.ADMIN_PASSWORD || 'admin');
 }
 
 function isDefaultPassword() {
-  return !db.prepare("SELECT value FROM settings WHERE key = 'admin_password'").get();
+  return !process.env.ADMIN_PASSWORD && !db.prepare("SELECT value FROM settings WHERE key = 'admin_password'").get();
 }
 
 function readShopeeAiConfig() {
@@ -305,19 +337,32 @@ function requireAuth(req, res, next) {
 }
 
 app.post('/api/admin/login', (req, res) => {
-  const { password } = req.body;
-  if (password === getAdminPassword()) {
-    const token = crypto.randomUUID();
-    adminTokens.add(token);
+  if (IS_MANAGED_DEPLOY && isDefaultPassword()) {
+    return res.status(503).json({ error: 'Admin chưa được cấu hình. Hãy đặt ADMIN_PASSWORD trong Railway Variables.' });
+  }
+  const key = req.ip || req.socket.remoteAddress || 'unknown';
+  const now = Date.now();
+  const recent = (loginAttempts.get(key) || []).filter(time => now - time < 15 * 60 * 1000);
+  if (recent.length >= 10) return res.status(429).json({ error: 'Quá nhiều lần đăng nhập. Vui lòng thử lại sau.' });
+  const password = String(req.body?.password || '');
+  const stored = getAdminPassword();
+  if (passwordMatches(password, stored)) {
+    loginAttempts.delete(key);
+    if (!String(stored).startsWith('scrypt$') && !isDefaultPassword()) {
+      db.prepare("UPDATE settings SET value=?,updated_at=datetime('now') WHERE key='admin_password'").run(`scrypt$${passwordHash(password)}`);
+    }
+    const token = createAdminSession();
     res.json({ token, firstLogin: isDefaultPassword() });
   } else {
+    recent.push(now);
+    loginAttempts.set(key, recent);
     res.status(401).json({ error: 'Sai mật khẩu' });
   }
 });
 
 app.get('/api/admin/verify', (req, res) => {
   const token = req.headers['x-admin-token'];
-  if (token && adminTokens.has(token)) {
+  if (validAdminToken(token)) {
     res.json({ ok: true, firstLogin: isDefaultPassword() });
   } else {
     res.status(401).json({ ok: false });
@@ -326,18 +371,20 @@ app.get('/api/admin/verify', (req, res) => {
 
 app.post('/api/admin/change-password', requireAuth, (req, res) => {
   const { newPassword } = req.body;
-  if (!newPassword || newPassword.length < 4) {
-    return res.status(400).json({ error: 'Mật khẩu phải có ít nhất 4 ký tự' });
+  if (!newPassword || newPassword.length < 10) {
+    return res.status(400).json({ error: 'Mật khẩu phải có ít nhất 10 ký tự' });
   }
   db.prepare(`INSERT INTO settings (key, value, updated_at) VALUES ('admin_password', ?, datetime('now'))
     ON CONFLICT(key) DO UPDATE SET value=excluded.value, updated_at=excluded.updated_at`)
-    .run(newPassword);
+    .run(`scrypt$${passwordHash(newPassword)}`);
+  const currentToken = req.headers['x-admin-token'];
+  db.prepare('DELETE FROM admin_sessions WHERE token_hash<>?').run(tokenHash(currentToken));
   res.json({ ok: true });
 });
 
 app.post('/api/admin/logout', (req, res) => {
   const token = req.headers['x-admin-token'];
-  if (token) adminTokens.delete(token);
+  if (token) db.prepare('DELETE FROM admin_sessions WHERE token_hash=?').run(tokenHash(token));
   res.json({ ok: true });
 });
 
@@ -800,6 +847,12 @@ function sendThemedHtml(req, res, filePath) {
     if (!html.includes('_bbv_global_polish')) {
       html = html.replace(/<\/head>/i, `${GLOBAL_POLISH_CSS}\n</head>`);
     }
+    if (!html.includes('/css/storefront.css')) {
+      html = html.replace(/<\/head>/i, '  <link rel="stylesheet" href="/css/storefront.css?v=20260815b">\n</head>');
+    }
+    if (!html.includes('/js/storefront.js')) {
+      html = html.replace(/<\/body>/i, '  <script src="/js/storefront.js?v=20260815b" defer></script>\n</body>');
+    }
     res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=600');
   } else {
     res.setHeader('Cache-Control', 'no-store');
@@ -870,21 +923,18 @@ app.get('/sitemap.xml', (_req, res) => {
   res.type('application/xml').send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>\n`);
 });
 
-app.get(['/', '/local'], (req, res, next) => {
-  if (isLocalRequest(req) && req.path !== '/') {
+app.get(['/', '/index.html', '/local'], (req, res, next) => {
+  if (isLocalRequest(req) && req.path === '/local') {
     return sendThemedHtml(req, res, path.join(__dirname, 'local.html'));
   }
-  if (isLocalRequest(req) && req.path === '/') {
-    return sendThemedHtml(req, res, path.join(__dirname, 'local.html'));
-  }
-  if (req.path === '/') {
-    return sendThemedHtml(req, res, path.join(__dirname, 'index.html'));
+  if (req.path === '/' || req.path === '/index.html') {
+    return sendThemedHtml(req, res, path.join(__dirname, 'index-old-spa.html'));
   }
   return next();
 });
 
 app.get(/^\/(cot-vot|mat-vot|bong|ban|do-thi-dau|do-cu)\/([A-Za-z0-9_-]+)\/([A-Za-z0-9_-]+)(?:\.html)?$/, (req, res) => {
-  sendThemedHtml(req, res, path.join(__dirname, 'san-pham.html'));
+  sendThemedHtml(req, res, path.join(__dirname, 'index-old-spa.html'));
 });
 
 app.get(/^\/(cot-vot|mat-vot|bong|ban|do-thi-dau|do-cu)\/([A-Za-z0-9_-]+)(?:\.html)?$/, (req, res) => {
@@ -1519,6 +1569,7 @@ app.post('/api/upload', requireAuth, upload.single('image'), (req, res) => {
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 function parseJSON(val, fallback) {
+  if (val !== null && typeof val === 'object') return val;
   try { return JSON.parse(val); } catch { return fallback; }
 }
 
@@ -3789,7 +3840,9 @@ app.get('/api/brands', (req, res) => {
 // ─── Products ───────────────────────────────────────────────────────────────
 
 app.get('/api/products', (req, res) => {
-  const { category, brand, featured, condition, gear_subcategory, q, limit = 100, offset = 0 } = req.query;
+  const { category, brand, featured, condition, gear_subcategory, q, in_stock, sort = 'default' } = req.query;
+  const limit = Math.max(1, Math.min(500, Number(req.query.limit) || 100));
+  const offset = Math.max(0, Number(req.query.offset) || 0);
   let sql = 'SELECT * FROM products WHERE 1=1';
   const params = [];
 
@@ -3798,15 +3851,31 @@ app.get('/api/products', (req, res) => {
   if (featured)         { sql += ' AND featured = 1'; }
   if (condition)        { sql += ' AND condition = ?';         params.push(condition); }
   if (gear_subcategory) { sql += ' AND gear_subcategory = ?';  params.push(gear_subcategory); }
-  if (q)                { sql += ' AND (name LIKE ? OR description LIKE ?)'; params.push(`%${q}%`, `%${q}%`); }
+  if (in_stock === '1' || in_stock === 'true') { sql += ' AND in_stock = 1'; }
+  if (in_stock === '0' || in_stock === 'false') { sql += ' AND in_stock = 0'; }
+  if (q) {
+    const search = String(q).trim().slice(0, 100);
+    sql += ' AND (name LIKE ? OR description LIKE ? OR slug LIKE ? OR brand_slug LIKE ? OR category_slug LIKE ?)';
+    params.push(...Array(5).fill(`%${search}%`));
+  }
 
-  sql += ` ORDER BY
+  const total = db.prepare(sql.replace('SELECT *', 'SELECT COUNT(*) AS count')).get(...params).count;
+  res.setHeader('X-Total-Count', String(total));
+  res.setHeader('Access-Control-Expose-Headers', 'X-Total-Count');
+
+  const orderBy = {
+    'price-asc': "CAST(REPLACE(REPLACE(REPLACE(price,'.',''),'đ',''),'₫','') AS INTEGER) ASC, name COLLATE NOCASE",
+    'price-desc': "CAST(REPLACE(REPLACE(REPLACE(price,'.',''),'đ',''),'₫','') AS INTEGER) DESC, name COLLATE NOCASE",
+    'name-asc': 'name COLLATE NOCASE ASC',
+    'newest': 'created_at DESC',
+  }[sort];
+  sql += orderBy ? ` ORDER BY ${orderBy}` : ` ORDER BY
     CASE WHEN images IS NOT NULL AND TRIM(images) NOT IN ('', '[]') THEN 0 ELSE 1 END,
     featured DESC,
     sort_order,
-    created_at DESC
-    LIMIT ? OFFSET ?`;
-  params.push(Number(limit), Number(offset));
+    created_at DESC`;
+  sql += ' LIMIT ? OFFSET ?';
+  params.push(limit, offset);
 
   const rows = db.prepare(sql).all(...params);
   res.json(rows.map(productRow));
@@ -4015,6 +4084,80 @@ app.delete('/api/articles/:id', requireAuth, (req, res) => {
 });
 
 // ─── Orders ──────────────────────────────────────────────────────────────────
+
+function storefrontPrice(value) {
+  const digits = String(value || '').replace(/[^0-9]/g, '');
+  return digits ? Number(digits) : 0;
+}
+
+const checkoutAttempts = new Map();
+function checkoutRateLimit(req, res, next) {
+  const key = req.ip || req.socket.remoteAddress || 'unknown';
+  const now = Date.now();
+  const recent = (checkoutAttempts.get(key) || []).filter(time => now - time < 600000);
+  if (recent.length >= 8) return res.status(429).json({ error: 'Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau.' });
+  recent.push(now);
+  checkoutAttempts.set(key, recent);
+  next();
+}
+
+// Public COD checkout: prices and availability are always resolved from the old DB.
+app.post('/api/storefront/checkout', checkoutRateLimit, (req, res) => {
+  const body = req.body || {};
+  const customerName = String(body.customer_name || '').trim().slice(0, 120);
+  const customerPhone = String(body.customer_phone || '').replace(/\s+/g, '').trim().slice(0, 20);
+  const customerAddress = String(body.customer_address || '').trim().slice(0, 300);
+  const province = String(body.customer_province || '').trim().slice(0, 100);
+  const district = String(body.customer_district || '').trim().slice(0, 100);
+  const ward = String(body.customer_ward || '').trim().slice(0, 100);
+  const note = String(body.notes || '').trim().slice(0, 500);
+  const requestedItems = Array.isArray(body.items) ? body.items.slice(0, 50) : [];
+  if (customerName.length < 2) return res.status(400).json({ error: 'Vui lòng nhập họ tên.' });
+  if (!/^(?:\+?84|0)[0-9]{8,10}$/.test(customerPhone)) return res.status(400).json({ error: 'Số điện thoại chưa hợp lệ.' });
+  if (customerAddress.length < 5 || !province) return res.status(400).json({ error: 'Vui lòng nhập đầy đủ địa chỉ.' });
+  if (!requestedItems.length) return res.status(400).json({ error: 'Giỏ hàng đang trống.' });
+
+  const rawRequestId = String(body.request_id || '').trim();
+  const requestId = /^[A-Za-z0-9_-]{8,80}$/.test(rawRequestId) ? rawRequestId : crypto.randomUUID();
+  const orderId = `WEB-${requestId}`;
+  const existing = db.prepare('SELECT id,total_amount FROM orders WHERE id=?').get(orderId);
+  if (existing) return res.json({ ok: true, id: existing.id, total_amount: existing.total_amount, duplicate: true });
+
+  try {
+    const items = requestedItems.map(requested => {
+      const slug = String(requested.slug || '').trim();
+      const productRowValue = db.prepare('SELECT * FROM products WHERE slug=?').get(slug);
+      const comboRowValue = productRowValue ? null : db.prepare('SELECT * FROM combos WHERE slug=?').get(slug);
+      const product = productRowValue || (comboRowValue ? comboRowAsProduct(comboRowValue) : null);
+      if (!product || !product.in_stock) throw new Error(`Sản phẩm ${slug || 'không xác định'} hiện không còn hàng.`);
+      const variants = parseJSON(product.variants, []);
+      const variantName = String(requested.variant || '').trim();
+      const variant = variantName ? variants.find(v => String(v.name || '').trim() === variantName) : null;
+      if (variantName && !variant) throw new Error(`Lựa chọn của ${product.name} không còn tồn tại.`);
+      const quantity = Math.max(1, Math.min(20, parseInt(requested.quantity, 10) || 1));
+      const unitPrice = storefrontPrice(variant?.price || product.price);
+      if (!unitPrice) throw new Error(`${product.name} chưa có giá trực tuyến. Vui lòng liên hệ shop.`);
+      return { product_id: product.id, slug, name: product.name, variant: variant?.name || '', image: parseJSON(product.images, [])[0] || '', quantity, unit_price: unitPrice, line_total: unitPrice * quantity };
+    });
+    const totalQty = items.reduce((sum, item) => sum + item.quantity, 0);
+    const totalAmount = items.reduce((sum, item) => sum + item.line_total, 0);
+    db.prepare(`INSERT INTO orders (id,customer_name,customer_phone,customer_address,customer_province,customer_district,customer_ward,carrier,tracking_code,status,items,notes,order_date,total_qty,total_amount,created_at,updated_at)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'),datetime('now'))`)
+      .run(orderId, customerName, customerPhone, customerAddress, province, district, ward, 'Shop xác nhận', '', 'pending', JSON.stringify(items), `[Website COD] ${note}`.trim(), new Date().toISOString().slice(0, 10), totalQty, totalAmount);
+    res.status(201).json({ ok: true, id: orderId, total_amount: totalAmount });
+  } catch (error) {
+    res.status(400).json({ error: error.message || 'Không thể tạo đơn hàng.' });
+  }
+});
+
+app.get('/api/storefront/orders/:id', checkoutRateLimit, (req, res) => {
+  const id = String(req.params.id || '').trim().slice(0, 100);
+  const phone = String(req.query.phone || '').replace(/\s+/g, '').trim().slice(0, 20);
+  if (!id || !/^(?:\+?84|0)[0-9]{8,10}$/.test(phone)) return res.status(400).json({ error: 'Mã đơn hoặc số điện thoại chưa hợp lệ.' });
+  const row = db.prepare('SELECT id,status,total_qty,total_amount,carrier,tracking_code,created_at FROM orders WHERE id=? AND customer_phone=?').get(id, phone);
+  if (!row) return res.status(404).json({ error: 'Không tìm thấy đơn hàng phù hợp.' });
+  res.json(row);
+});
 
 app.get('/api/orders', requireAuth, (req, res) => {
   const { status, q, limit = 500 } = req.query;
