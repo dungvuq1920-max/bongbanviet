@@ -1593,11 +1593,18 @@ function filterExistingImages(images) {
 
 function productRow(row) {
   if (!row) return null;
+  const images = filterExistingImages(parseJSON(row.images, []));
+  const variants = parseJSON(row.variants, []).map((variant) => {
+    if (!variant || typeof variant !== 'object') return variant;
+    if (!variant.image || publicImageExists(variant.image)) return variant;
+    const { image, ...withoutBrokenImage } = variant;
+    return withoutBrokenImage;
+  });
   return {
     ...row,
     specs: parseJSON(row.specs, {}),
-    images: filterExistingImages(parseJSON(row.images, [])),
-    variants: parseJSON(row.variants, []),
+    images,
+    variants,
     featured: !!row.featured,
     in_stock: row.in_stock !== 0,
   };

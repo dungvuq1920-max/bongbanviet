@@ -1341,8 +1341,11 @@
     .pd-img-wrap img { width:100%; height:100%; object-fit:contain; display:block; }
     .pd-img-placeholder {
       width:100%; height:100%; display:flex; align-items:center;
-      justify-content:center; font-size:48px; color:#c8b0ab;
+      justify-content:center; flex-direction:column; gap:10px; padding:32px;
+      color:#8b8b8b; text-align:center;
     }
+    .pd-img-placeholder strong { color:var(--dark); font-size:18px; letter-spacing:.04em; }
+    .pd-img-placeholder span { font-size:11px; line-height:1.6; max-width:260px; }
     .pd-content { padding:22px 24px 32px; }
     .pd-tag-row { display:flex; align-items:center; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
     .pd-cat-tag { font-size:9px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; background:var(--red); color:#fff; padding:3px 10px; border-radius:100px; }
@@ -2397,11 +2400,23 @@ fetch('/api/settings/home_hero_image')
     /* Image */
     var imgWrap = document.getElementById('pdImgWrap');
     var origImg = p.images && p.images.length ? p.images[0] : null;
-    if (origImg) {
-      imgWrap.innerHTML = '<img src="' + origImg + '" alt="' + (p.name || '') + '" loading="lazy">';
-    } else {
-      imgWrap.innerHTML = '<div class="pd-img-placeholder">📷</div>';
+    function setDrawerImage(src, alt) {
+      imgWrap.replaceChildren();
+      if (!src) {
+        var placeholder = document.createElement('div');
+        placeholder.className = 'pd-img-placeholder';
+        placeholder.innerHTML = '<strong>Ảnh đang cập nhật</strong><span>Sản phẩm vẫn có thể đặt hàng và nhận tư vấn thông số đầy đủ.</span>';
+        imgWrap.appendChild(placeholder);
+        return;
+      }
+      var image = document.createElement('img');
+      image.src = src;
+      image.alt = alt || p.name || 'Ảnh sản phẩm';
+      image.loading = 'lazy';
+      image.addEventListener('error', function() { setDrawerImage(origImg && src !== origImg ? origImg : '', p.name); }, { once:true });
+      imgWrap.appendChild(image);
     }
+    setDrawerImage(origImg, p.name);
 
     /* Tag + badge */
     var catLabel   = CATS[p.category_slug] || (p.level ? 'COMBO VỢT' : 'SẢN PHẨM');
@@ -2461,11 +2476,11 @@ fetch('/api/settings/home_hero_image')
           priceEl.textContent = v.price;
           
           if (v.image) {
-            imgWrap.innerHTML = '<img src="' + v.image + '" alt="' + v.name + '" loading="lazy">';
+            setDrawerImage(v.image, v.name);
           } else if (origImg) {
-            imgWrap.innerHTML = '<img src="' + origImg + '" alt="' + (p.name || '') + '" loading="lazy">';
+            setDrawerImage(origImg, p.name);
           } else {
-            imgWrap.innerHTML = '<div class="pd-img-placeholder">📷</div>';
+            setDrawerImage('', p.name);
           }
           
           if (v.desc && v.desc.trim()) {
