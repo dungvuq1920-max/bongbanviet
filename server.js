@@ -1588,7 +1588,19 @@ function publicImageExists(src) {
 
 function filterExistingImages(images) {
   if (!Array.isArray(images)) return [];
-  return images.filter(publicImageExists);
+  return images.map(resolveProductImage).filter(Boolean);
+}
+
+function resolveProductImage(src) {
+  if (!src) return '';
+  if (publicImageExists(src)) return src;
+  const value = String(src).trim();
+  // Uploaded assets live on the Railway Volume. Local development can reuse
+  // the shop's own production asset when that upload is not checked into Git.
+  if (!IS_MANAGED_DEPLOY && value.startsWith('/images/products/')) {
+    return `${PUBLIC_SITE_URL}${value}`;
+  }
+  return '';
 }
 
 function productRow(row) {
@@ -1596,8 +1608,10 @@ function productRow(row) {
   const images = filterExistingImages(parseJSON(row.images, []));
   const variants = parseJSON(row.variants, []).map((variant) => {
     if (!variant || typeof variant !== 'object') return variant;
-    if (!variant.image || publicImageExists(variant.image)) return variant;
-    const { image, ...withoutBrokenImage } = variant;
+    if (!variant.image) return variant;
+    const resolvedImage = resolveProductImage(variant.image);
+    if (resolvedImage) return { ...variant, image: resolvedImage };
+    const { image: _brokenImage, ...withoutBrokenImage } = variant;
     return withoutBrokenImage;
   });
   return {
